@@ -1,342 +1,205 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ponrkit</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ponrkit</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap');
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #1e3a5f, #27496d);
-    color: #cbd5e1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 24px 16px 80px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .container {
-    background: rgba(42, 63, 85, 0.8);
-    backdrop-filter: blur(14px);
-    border-radius: 36px;
-    padding: 56px 56px 64px;
-    max-width: 720px;
-    width: 100%;
-    box-shadow:
-      0 12px 40px rgba(0,0,0,0.5),
-      inset 0 0 0 1px rgba(255,255,255,0.1);
-    text-align: center;
-    user-select: none;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-  .container:hover {
-    transform: translateY(-12px) scale(1.04);
-    box-shadow:
-      0 16px 50px rgba(0,0,0,0.65),
-      inset 0 0 0 1.5px rgba(255,255,255,0.15);
-  }
-
-  h1 {
-    font-weight: 600;
-    font-size: 3rem;
-    margin-bottom: 56px;
-    letter-spacing: 1.4px;
-    user-select: text;
-    color: #a3b8d1;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-  }
-
-  .btn-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 28px 36px;
-    margin-bottom: 56px;
-  }
-
-  .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 20px 32px;
-    border-radius: 72px;
-    font-weight: 600;
-    font-size: 1.4rem;
-    cursor: pointer;
-    text-decoration: none;
-    color: #e0e6f0;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.5);
-    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-    user-select: none;
-    border: 2.5px solid transparent;
-    width: 200px;
-    min-width: 150px;
-    max-width: 240px;
-    background: #2c3e50cc;
-    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6));
-  }
-  .btn:focus-visible {
-    outline: 3px solid #557da226;
-    outline-offset: 4px;
-  }
-
-  .btn-instagram {
-    background: #6a5acdcc;
-    color: #d1c4e9;
-    border-color: #836fa9;
-  }
-  .btn-instagram:hover {
-    background: #7b68e6cc;
-    box-shadow: 0 8px 24px #7b68e688;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn-facebook {
-    background: #345678cc;
-    color: #c3d1ff;
-    border-color: #aac4ff;
-  }
-  .btn-facebook:hover {
-    background: #456799cc;
-    box-shadow: 0 8px 24px #45679988;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn-resume {
-    background: #4b6e4dcc;
-    color: #c3d9b8;
-    border-color: #90b77ecc;
-  }
-  .btn-resume:hover {
-    background: #5b8e5dcc;
-    box-shadow: 0 8px 24px #5b8e5d88;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn-more {
-    background: #8b9dc3cc;
-    color: #d3d9f0;
-    border-color: #b0b9d7cc;
-  }
-  .btn-more:hover {
-    background: #a1b0d7cc;
-    box-shadow: 0 8px 24px #a1b0d788;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn-phone {
-    background: #3d8b99cc;
-    color: #d5f0f3;
-    border-color: #60a3b6cc;
-  }
-  .btn-phone:hover {
-    background: #55a1afcc;
-    box-shadow: 0 8px 24px #55a1af88;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn-email {
-    background: #3a8b99cc;
-    color: #d5f0f3;
-    border-color: #70afc9cc;
-  }
-  .btn-email:hover {
-    background: #4f9fafcc;
-    box-shadow: 0 8px 24px #4f9faf88;
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .btn .icon {
-    font-size: 28px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
-    user-select: none;
-  }
-
-  footer {
-    width: 100%;
-    padding: 16px 0;
-    background: rgba(42, 63, 85, 0.85);
-    color: #a3b8d1;
-    text-align: center;
-    font-weight: 600;
-    font-size: 15px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    backdrop-filter: blur(8px);
-    box-shadow: inset 0 1px 0 rgba(0,0,0,0.2);
-    user-select: none;
-    letter-spacing: 0.06em;
-    font-feature-settings: "liga" 0;
-  }
-
-  /* Modal styles */
-  .modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.55);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(10px);
-  }
-
-  .modal.active {
-    display: flex;
-  }
-
-  .modal-content {
-    background: #273746cc;
-    color: #d1d9e6;
-    border-radius: 16px;
-    padding: 36px 48px;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 16px 50px rgba(0,0,0,0.8);
-    text-align: center;
-    position: relative;
-  }
-
-  .modal-content p {
-    font-size: 1.5rem;
-    margin-bottom: 40px;
-    line-height: 1.6;
-    font-weight: 500;
-  }
-
-  .modal-close {
-    background: #3c6478;
-    color: #cce7ff;
-    font-weight: 700;
-    font-size: 1.1rem;
-    padding: 14px 38px;
-    border-radius: 48px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 12px 35px #2a4d62cc;
-    transition: all 0.3s ease;
-  }
-  .modal-close:hover {
-    box-shadow: 0 18px 48px #2a4d62ff;
-    transform: scale(1.12);
-  }
-  .modal-close:focus-visible {
-    outline: 3px solid #557da2;
-    outline-offset: 4px;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 720px) {
-    body, html {
-      padding: 20px 12px 90px;
+    *, *::before, *::after {
+      box-sizing: border-box;
     }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #2d4f6c, #4c7b9f);
+      color: #fff;
+      height: 100%;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
     .container {
-      padding: 40px 32px 52px;
-      max-width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      margin: 60px auto;
+      padding: 48px 32px;
+      border-radius: 24px;
+      max-width: 700px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      text-align: center;
     }
+
     h1 {
-      font-size: 2.4rem;
+      font-size: 2.5rem;
       margin-bottom: 40px;
+      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
     }
+
     .btn-group {
-      flex-direction: column;
-      gap: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
       margin-bottom: 40px;
     }
+
     .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      min-width: 160px;
+    }
+
+    .btn-instagram {
+      background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+    }
+    .btn-facebook {
+      background: #1877f2;
+    }
+    .btn-resume {
+      background: linear-gradient(to right, #43cea2, #185a9d);
+    }
+    .btn-more {
+      background: #ff6f61;
+    }
+    .btn-phone {
+      background: #009688;
+    }
+    .btn-email {
+      background: #3f51b5;
+    }
+
+    .btn:hover {
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(6px);
+      position: fixed;
       width: 100%;
-      max-width: none;
-      padding: 18px 0;
-      font-size: 1.25rem;
-      gap: 14px;
+      bottom: 0;
+      left: 0;
+      color: #ccc;
     }
-    .btn .icon {
-      font-size: 24px;
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
     }
-  }
-</style>
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e2a38;
+      color: white;
+      padding: 30px 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      max-width: 90%;
+    }
+
+    .modal-close {
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 30px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      .btn {
+        width: 100%;
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
-<body>
+<body oncontextmenu="return false" onkeydown="return disableKeys(event)">
 
-<div class="container" role="main" aria-label="ลิงก์โซเชียลและดาวน์โหลดเรซูเม่">
-  <h1>ponrakit Leartrungvichian</h1>
-
-  <div class="btn-group">
-    <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" rel="noopener noreferrer" class="btn btn-instagram" aria-label="ลิงก์ Instagram">
-      <span class="icon" aria-hidden="true">📸</span> Instagram
-    </a>
-    <a href="https://www.facebook.com/Ponrakitts" target="_blank" rel="noopener noreferrer" class="btn btn-facebook" aria-label="ลิงก์ Facebook">
-      <span class="icon" aria-hidden="true">📘</span> Facebook
-    </a>
-    <a href="My-resume.pdf" download class="btn btn-resume" aria-label="ดาวน์โหลด Resume">
-      <span class="icon" aria-hidden="true">📄</span> Resume
-    </a>
-    <a href="tel:061514432" class="btn btn-phone" aria-label="โทรไปยัง 061514432">
-      <span class="icon" aria-hidden="true">📞</span> โทรเลย
-    </a>
-    <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email" aria-label="ส่งอีเมล ponrakitt@outlook.co.th">
-      <span class="icon" aria-hidden="true">✉️</span> อีเมล
-    </a>
-    <button type="button" class="btn btn-more" aria-label="เพิ่มเติม" id="btnMore">
-      <span class="icon" aria-hidden="true">🔍</span> เพิ่มเติม
-    </button>
+  <div class="container">
+    <h1>ponrakit Leartrungvichian</h1>
+    <div class="btn-group">
+      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" class="btn btn-instagram" target="_blank">📸 Instagram</a>
+      <a href="https://www.facebook.com/Ponrakitts" class="btn btn-facebook" target="_blank">📘 Facebook</a>
+      <a href="My-resume.pdf" class="btn btn-resume" download>📄 ดาวน์โหลด Resume</a>
+      <button class="btn btn-more" id="btnMore">🔍 ดูเพิ่มเติม</button>
+      <a href="tel:0615144432" class="btn btn-phone">📞 โทรศัพท์</a>
+      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">📧 Email</a>
+    </div>
   </div>
-</div>
 
-<footer>
-  © 2025 ponrakit สงวนลิขสิทธิ์ทุกประการ
-</footer>
+  <footer>© 2025 ponrakit สงวนลิขสิทธิ์ทุกประการ</footer>
 
-<!-- Modal Popup -->
-<div class="modal" id="modalPopup" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-  <div class="modal-content">
-    <p id="modalDesc">ยังไม่เสร็จกรุณากลับมาภายหลังน้า</p>
-    <button class="modal-close" aria-label="ปิดหน้าต่าง" id="modalCloseBtn">ปิด</button>
+  <div class="modal" id="modalPopup">
+    <div class="modal-content">
+      <p>ยังไม่เสร็จกรุณากลับมาภายหลังน้า</p>
+      <button class="modal-close" id="closeModal">ปิด</button>
+    </div>
   </div>
-</div>
 
-<script>
-  const btnMore = document.getElementById('btnMore');
-  const modal = document.getElementById('modalPopup');
-  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  <script>
+    const btnMore = document.getElementById('btnMore');
+    const modal = document.getElementById('modalPopup');
+    const closeModal = document.getElementById('closeModal');
 
-  btnMore.addEventListener('click', () => {
-    modal.classList.add('active');
-  });
-  modalCloseBtn.addEventListener('click', () => {
-    modal.classList.remove('active');
-  });
-  modal.addEventListener('click', e => {
-    if (e.target === modal) modal.classList.remove('active');
-  });
+    btnMore.addEventListener('click', () => modal.classList.add('active'));
+    closeModal.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', e => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === "Escape") modal.classList.remove('active');
+    });
 
-  // ป้องกันคลิกขวา
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // ป้องกันการกด F12, Ctrl+Shift+I/C/J, Ctrl+U, Ctrl+S, Ctrl+P
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "F12") e.preventDefault();
-    if (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) e.preventDefault();
-    if (e.ctrlKey && e.key.toUpperCase() === 'U') e.preventDefault();
-    if (e.ctrlKey && e.key.toUpperCase() === 'S') e.preventDefault();
-    if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'S') e.preventDefault();
-    if (e.ctrlKey && e.key.toUpperCase() === 'P') e.preventDefault();
-  });
-</script>
-
+    function disableKeys(e) {
+      // ปิด F12, Ctrl+Shift+I, Ctrl+U
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        (e.ctrlKey && e.key === "U") ||
+        (e.ctrlKey && e.shiftKey && e.key === "C") ||
+        (e.ctrlKey && e.shiftKey && e.key === "J")
+      ) {
+        return false;
+      }
+    }
+  </script>
 </body>
 </html>
