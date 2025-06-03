@@ -2,174 +2,142 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ponrkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ponrkit</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap');
-
     *, *::before, *::after {
       box-sizing: border-box;
     }
-    html, body {
-      margin: 0;
-      padding: 0;
+    body, html {
+      margin: 0; padding: 0; height: 100%;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: linear-gradient(135deg, #2d4f6c, #4c7b9f);
-      color: #fff;
-      height: 100%;
-      overflow-x: hidden;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-
     .container {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(16px);
-      margin: 60px auto;
-      padding: 48px 32px;
-      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 36px 24px 44px;
       max-width: 700px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.37),
+                  inset 0 0 0 1px rgba(255,255,255,0.1);
       text-align: center;
+      user-select: none;
+      margin-top: 20px;
     }
-
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 40px;
-      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      font-weight: 700;
+      font-size: 2.4rem;
+      margin-bottom: 36px;
     }
-
     .btn-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
       justify-content: center;
-      margin-bottom: 40px;
+      gap: 16px;
     }
-
     .btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 14px 22px;
-      border: none;
-      border-radius: 40px;
-      font-size: 1.1rem;
+      padding: 14px 20px;
+      border-radius: 50px;
       font-weight: 600;
-      color: white;
-      text-decoration: none;
+      font-size: 1rem;
       cursor: pointer;
+      text-decoration: none;
+      color: #fff;
+      border: none;
+      min-width: 140px;
       transition: all 0.3s ease;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-      min-width: 160px;
     }
-
-    .btn-instagram {
-      background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
-    }
-    .btn-facebook {
-      background: #1877f2;
-    }
-    .btn-resume {
-      background: linear-gradient(to right, #43cea2, #185a9d);
-    }
-    .btn-more {
-      background: #ff6f61;
-    }
-    .btn-phone {
-      background: #009688;
-    }
-    .btn-email {
-      background: #3f51b5;
-    }
-
     .btn:hover {
-      transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
+    .btn-instagram { background: #d62976; }
+    .btn-facebook { background: #1877f2; }
+    .btn-resume { background: #28a745; }
+    .btn-more { background: #ff6f61; }
+    .btn-phone { background: #17a2b8; }
+    .btn-email { background: #ff9900; }
+    .btn-linkedin { background: #0077b5; }
 
     footer {
+      margin-top: 20px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: #aaa;
       text-align: center;
-      padding: 12px;
-      font-size: 0.9rem;
-      background: rgba(0,0,0,0.15);
-      backdrop-filter: blur(6px);
-      position: fixed;
       width: 100%;
-      bottom: 0;
-      left: 0;
-      color: #ccc;
     }
 
     .modal {
-      display: none;
       position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.7);
+      display: none;
       justify-content: center;
       align-items: center;
-      z-index: 999;
+      z-index: 9999;
     }
-
-    .modal.active {
-      display: flex;
-    }
-
+    .modal.active { display: flex; }
     .modal-content {
-      background: #1e2a38;
-      color: white;
+      background: #1f2937;
+      color: #fff;
+      border-radius: 12px;
       padding: 30px 40px;
-      border-radius: 16px;
+      max-width: 400px;
+      width: 90%;
       text-align: center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      max-width: 90%;
     }
-
     .modal-close {
       background: #ff6f61;
-      color: white;
+      color: #fff;
+      font-weight: bold;
+      padding: 10px 20px;
       border: none;
-      padding: 10px 24px;
-      border-radius: 30px;
+      border-radius: 25px;
       margin-top: 20px;
       cursor: pointer;
-      font-weight: bold;
     }
 
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-      .btn {
-        width: 100%;
-        font-size: 1rem;
-      }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8rem; }
+      .btn { font-size: 0.9rem; padding: 12px 16px; }
     }
   </style>
 </head>
-<body oncontextmenu="return false" onkeydown="return disableKeys(event)">
-
+<body oncontextmenu="return false" onkeydown="return disableKey(event)" onselectstart="return false">
   <div class="container">
-    <h1>ponrakit Leartrungvichian</h1>
+    <h1>Ponrakit Leartrungvichian</h1>
     <div class="btn-group">
-      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" class="btn btn-instagram" target="_blank">📸 Instagram</a>
-      <a href="https://www.facebook.com/Ponrakitts" class="btn btn-facebook" target="_blank">📘 Facebook</a>
-      <a href="My-resume.pdf" class="btn btn-resume" download>📄 ดาวน์โหลด Resume</a>
+      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" class="btn btn-instagram">📸 Instagram</a>
+      <a href="https://www.facebook.com/Ponrakitts" target="_blank" class="btn btn-facebook">📘 Facebook</a>
+      <a href="https://www.linkedin.com/in/yourprofile" target="_blank" class="btn btn-linkedin">💼 LinkedIn</a>
+      <a href="My-resume.pdf" download class="btn btn-resume">📄 Resume</a>
+      <a href="tel:0615144432" class="btn btn-phone">📞 โทร</a>
+      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">✉️ Email</a>
       <button class="btn btn-more" id="btnMore">🔍 ดูเพิ่มเติม</button>
-      <a href="tel:0615144432" class="btn btn-phone">📞 โทรศัพท์</a>
-      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">📧 Email</a>
     </div>
   </div>
 
-  <footer>© 2025 ponrakit สงวนลิขสิทธิ์ทุกประการ</footer>
+  <footer>
+    © 2025 ponrakit. All rights reserved.
+  </footer>
 
   <div class="modal" id="modalPopup">
     <div class="modal-content">
-      <p>ยังไม่เสร็จกรุณากลับมาภายหลังน้า</p>
+      <p>ยังไม่เสร็จ กรุณากลับมาภายหลัง</p>
       <button class="modal-close" id="closeModal">ปิด</button>
     </div>
   </div>
@@ -179,24 +147,16 @@
     const modal = document.getElementById('modalPopup');
     const closeModal = document.getElementById('closeModal');
 
-    btnMore.addEventListener('click', () => modal.classList.add('active'));
-    closeModal.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.classList.remove('active');
-    });
+    btnMore.onclick = () => modal.classList.add('active');
+    closeModal.onclick = () => modal.classList.remove('active');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
     document.addEventListener('keydown', e => {
-      if (e.key === "Escape") modal.classList.remove('active');
+      if (e.key === 'Escape') modal.classList.remove('active');
     });
 
-    function disableKeys(e) {
-      // ปิด F12, Ctrl+Shift+I, Ctrl+U
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && e.key === "I") ||
-        (e.ctrlKey && e.key === "U") ||
-        (e.ctrlKey && e.shiftKey && e.key === "C") ||
-        (e.ctrlKey && e.shiftKey && e.key === "J")
-      ) {
+    function disableKey(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
         return false;
       }
     }
