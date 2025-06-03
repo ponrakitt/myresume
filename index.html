@@ -160,6 +160,16 @@
         return false;
       }
     }
+    // เวลาจริง
+    function updateDateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const time = now.toLocaleTimeString('th-TH');
+      const date = now.toLocaleDateString('th-TH', options);
+      document.getElementById('datetime').innerText = `${date} ${time}`;
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
   </script>
 </body>
 </html>
