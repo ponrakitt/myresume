@@ -56,6 +56,7 @@
     justify-content: center;
     gap: 32px;
     flex-wrap: wrap;
+    margin-bottom: 32px;
   }
 
   .btn {
@@ -119,6 +120,26 @@
     transform: translateY(-7px) scale(1.08);
   }
 
+  /* ปุ่มโทร */
+  .btn-phone {
+    background: #28a745;
+    box-shadow: 0 10px 35px #28a745cc;
+  }
+  .btn-phone:hover {
+    box-shadow: 0 15px 45px #28a745ff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
+  /* ปุ่มอีเมล */
+  .btn-email {
+    background: #6c63ff;
+    box-shadow: 0 10px 35px #6c63ffcc;
+  }
+  .btn-email:hover {
+    box-shadow: 0 15px 45px #6c63ffff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
   .btn .icon {
     font-size: 28px;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
@@ -141,6 +162,27 @@
     user-select: none;
     z-index: 100;
     letter-spacing: 0.04em;
+  }
+
+  /* YouTube iframe styling */
+  .youtube-container {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+  }
+  .youtube-container iframe {
+    width: 320px;
+    height: 180px;
+    opacity: 0.6;
+    filter: grayscale(30%);
+    border-radius: 12px;
+    box-shadow: none;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+    border: none;
+  }
+  .youtube-container iframe:hover {
+    opacity: 1;
+    filter: grayscale(0%);
   }
 
   /* Modal styles */
@@ -221,6 +263,11 @@
     .btn .icon {
       font-size: 24px;
     }
+    .youtube-container iframe {
+      width: 100%;
+      height: auto;
+      opacity: 0.6;
+    }
   }
 </style>
 </head>
@@ -238,9 +285,25 @@
     <a href="My-resume.pdf" download class="btn btn-resume" aria-label="ดาวน์โหลด Resume">
       <span class="icon" aria-hidden="true">📄</span> ดาวน์โหลด Resume
     </a>
+    <a href="tel:061514432" class="btn btn-phone" aria-label="โทรไปยังหมายเลข 061514432">
+      <span class="icon" aria-hidden="true">📞</span> โทร 061514432
+    </a>
+    <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email" aria-label="ส่งอีเมลถึง ponrakitt@outlook.co.th">
+      <span class="icon" aria-hidden="true">✉️</span> อีเมล
+    </a>
     <button type="button" class="btn btn-more" aria-label="ดูเพิ่มเติม" id="btnMore">
       <span class="icon" aria-hidden="true">🔍</span> ดูเพิ่มเติม
     </button>
+  </div>
+
+  <div class="youtube-container" aria-label="วิดีโอ YouTube">
+    <iframe 
+      src="https://www.youtube.com/embed/BYTxPFj44uo?autoplay=1&mute=1&loop=1&playlist=BYTxPFj44uo" 
+      title="YouTube video player" 
+      allow="autoplay; encrypted-media" 
+      allowfullscreen
+      frameborder="0">
+    </iframe>
   </div>
 </div>
 
