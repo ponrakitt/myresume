@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>เชื่อมต่อกับเรา</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap');
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    background: rgba(255 255 255 / 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 32px;
+    padding: 48px 48px 56px;
+    max-width: 700px;
+    width: 90vw;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.37),
+      inset 0 0 0 1px rgba(255,255,255,0.1);
+    text-align: center;
+    user-select: none;
+    transition: transform 0.3s ease;
+  }
+  .container:hover {
+    transform: translateY(-12px) scale(1.05);
+    box-shadow:
+      0 14px 50px rgba(0,0,0,0.55),
+      inset 0 0 0 1.5px rgba(255,255,255,0.15);
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: 2.8rem;
+    margin-bottom: 48px;
+    text-shadow: 0 3px 8px rgba(0,0,0,0.35);
+    letter-spacing: 1.1px;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 18px 24px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 1.3rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    user-select: none;
+    border: none;
+    width: 180px;
+    min-width: 140px;
+    max-width: 220px;
+  }
+  .btn:focus-visible {
+    outline: 3px solid #ffd700;
+    outline-offset: 3px;
+  }
+
+  .btn-instagram {
+    background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+    box-shadow: 0 10px 35px #d62976cc;
+  }
+  .btn-instagram:hover {
+    box-shadow: 0 15px 45px #d62976ff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
+  .btn-facebook {
+    background: #1877f2;
+    box-shadow: 0 10px 35px #1877f2cc;
+  }
+  .btn-facebook:hover {
+    box-shadow: 0 15px 45px #1877f2ff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
+  .btn-resume {
+    background: linear-gradient(90deg, #1dd06e 0%, #10b759 100%);
+    box-shadow: 0 10px 35px #10b759cc;
+  }
+  .btn-resume:hover {
+    box-shadow: 0 15px 45px #10b759ff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
+  .btn-more {
+    background: #ff6f61;
+    box-shadow: 0 10px 35px #ff6f61cc;
+  }
+  .btn-more:hover {
+    box-shadow: 0 15px 45px #ff6f61ff;
+    transform: translateY(-7px) scale(1.08);
+  }
+
+  .btn .icon {
+    font-size: 28px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+    user-select: none;
+  }
+
+  footer {
+    width: 100%;
+    padding: 14px 0;
+    background: rgba(0,0,0,0.15);
+    color: #d0d8de;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    user-select: none;
+    z-index: 100;
+    letter-spacing: 0.04em;
+  }
+
+  /* Modal styles */
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .modal.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: #1f2937;
+    color: #fff;
+    border-radius: 12px;
+    padding: 30px 40px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    text-align: center;
+    position: relative;
+  }
+
+  .modal-content p {
+    font-size: 1.4rem;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .modal-close {
+    background: #ff6f61;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 12px 28px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 25px #ff6f61cc;
+    transition: all 0.3s ease;
+  }
+  .modal-close:hover {
+    box-shadow: 0 12px 35px #ff6f61ff;
+    transform: scale(1.1);
+  }
+  .modal-close:focus-visible {
+    outline: 3px solid #ffd700;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 720px) {
+    .container {
+      max-width: 90vw;
+      padding: 36px 24px 44px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 36px;
+    }
+    .btn-group {
+      flex-direction: column;
+      gap: 20px;
+    }
+    .btn {
+      width: 100%;
+      max-width: none;
+      padding: 14px 0;
+      font-size: 1.15rem;
+      gap: 12px;
+    }
+    .btn .icon {
+      font-size: 24px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" role="main" aria-label="ลิงก์โซเชียลและดาวน์โหลดเรซูเม่">
+  <h1>เชื่อมต่อกับเรา</h1>
+  <div class="btn-group">
+    <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" rel="noopener noreferrer" class="btn btn-instagram" aria-label="ลิงก์ Instagram">
+      <span class="icon" aria-hidden="true">📸</span> Instagram
+    </a>
+    <a href="https://www.facebook.com/Ponrakitts" target="_blank" rel="noopener noreferrer" class="btn btn-facebook" aria-label="ลิงก์ Facebook">
+      <span class="icon" aria-hidden="true">📘</span> Facebook
+    </a>
+    <a href="My-resume.pdf" download class="btn btn-resume" aria-label="ดาวน์โหลด Resume">
+      <span class="icon" aria-hidden="true">📄</span> ดาวน์โหลด Resume
+    </a>
+    <button type="button" class="btn btn-more" aria-label="ดูเพิ่มเติม" id="btnMore">
+      <span class="icon" aria-hidden="true">🔍</span> ดูเพิ่มเติม
+    </button>
+  </div>
+</div>
+
+<footer>
+  © 2025 ponrakit. สงวนลิขสิทธิ์ทุกประการ.
+</footer>
+
+<!-- Modal Popup -->
+<div class="modal" id="modalPopup" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+  <div class="modal-content">
+    <p id="modalDesc">ยังไม่เสร็จกรุณากลับมาภายหลัง</p>
+    <button class="modal-close" id="closeModal">ปิด</button>
+  </div>
+</div>
+
+<script>
+  const btnMore = document.getElementById('btnMore');
+  const modal = document.getElementById('modalPopup');
+  const closeModal = document.getElementById('closeModal');
+
+  btnMore.addEventListener('click', () => {
+    modal.classList.add('active');
+  });
+
+  closeModal.addEventListener('click', () => {
+    modal.classList.remove('active');
+  });
+
+  // กดพื้นที่นอก modal ก็ปิดได้
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+
+  // กด ESC ปิด modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape" && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+    }
+  });
+</script>
+
+</body>
+</html>
