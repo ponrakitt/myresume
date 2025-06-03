@@ -19,7 +19,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
   }
 
   .container {
@@ -35,6 +34,7 @@
     text-align: center;
     user-select: none;
     transition: transform 0.3s ease;
+    position: relative;
   }
   .container:hover {
     transform: translateY(-12px) scale(1.05);
@@ -57,7 +57,7 @@
     justify-content: center;
     gap: 32px;
     flex-wrap: wrap;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
   }
 
   .btn {
@@ -122,20 +122,20 @@
   }
 
   .btn-phone {
-    background: #0d7377;
-    box-shadow: 0 10px 35px #0d7377cc;
+    background: #ffb74d;
+    box-shadow: 0 10px 35px #ffb74dcc;
   }
   .btn-phone:hover {
-    box-shadow: 0 15px 45px #0d7377ff;
+    box-shadow: 0 15px 45px #ffb74dff;
     transform: translateY(-7px) scale(1.08);
   }
 
   .btn-email {
-    background: #f08a5d;
-    box-shadow: 0 10px 35px #f08a5dcc;
+    background: #42a5f5;
+    box-shadow: 0 10px 35px #42a5f5cc;
   }
   .btn-email:hover {
-    box-shadow: 0 15px 45px #f08a5dff;
+    box-shadow: 0 15px 45px #42a5f5ff;
     transform: translateY(-7px) scale(1.08);
   }
 
@@ -143,46 +143,6 @@
     font-size: 28px;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
     user-select: none;
-  }
-
-  /* YouTube iframe and mute toggle styles */
-  .youtube-wrapper {
-    position: relative;
-    width: 320px;
-    height: 180px;
-    margin: 0 auto 40px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-
-  .youtube-wrapper iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-
-  .mute-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(0,0,0,0.5);
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background 0.3s ease;
-    z-index: 10;
-    user-select: none;
-  }
-  .mute-toggle:hover {
-    background: rgba(0,0,0,0.75);
   }
 
   footer {
@@ -258,6 +218,45 @@
     outline-offset: 3px;
   }
 
+  /* YouTube iframe small and muted overlay button */
+  .youtube-wrapper {
+    position: relative;
+    width: 280px;
+    height: 158px; /* 16:9 aspect ratio */
+    margin: 0 auto 32px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  }
+  iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none; /* prevent clicking on iframe to keep UI simple */
+  }
+
+  .btn-sound-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    padding: 6px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    user-select: none;
+    transition: background 0.3s ease;
+    z-index: 10;
+  }
+  .btn-sound-toggle:hover {
+    background: rgba(0,0,0,0.9);
+  }
+
   @media (max-width: 720px) {
     .container {
       max-width: 90vw;
@@ -282,9 +281,9 @@
       font-size: 24px;
     }
     .youtube-wrapper {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 16 / 9;
+      width: 90vw;
+      height: calc(90vw * 9 / 16);
+      margin-bottom: 24px;
     }
   }
 </style>
@@ -293,6 +292,18 @@
 
 <div class="container" role="main" aria-label="ลิงก์โซเชียลและดาวน์โหลดเรซูเม่">
   <h1>ponrakit Leartrungvichian</h1>
+
+  <div class="youtube-wrapper" aria-label="เพลง YouTube เล่นอัตโนมัติ">
+    <iframe
+      id="youtubePlayer"
+      src="https://www.youtube.com/embed/BYTxPFj44uo?autoplay=1&mute=1&loop=1&playlist=BYTxPFj44uo&controls=0&rel=0&modestbranding=1"
+      title="YouTube audio player"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+    <button class="btn-sound-toggle" aria-label="สลับเสียงเพลง" id="btnSoundToggle" title="ปิดเสียง">🔇</button>
+  </div>
+
   <div class="btn-group">
     <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" rel="noopener noreferrer" class="btn btn-instagram" aria-label="ลิงก์ Instagram">
       <span class="icon" aria-hidden="true">📸</span> Instagram
@@ -303,27 +314,15 @@
     <a href="My-resume.pdf" download class="btn btn-resume" aria-label="ดาวน์โหลด Resume">
       <span class="icon" aria-hidden="true">📄</span> ดาวน์โหลด Resume
     </a>
+    <a href="tel:061514432" class="btn btn-phone" aria-label="โทรไปยัง 061514432">
+      <span class="icon" aria-hidden="true">📞</span> โทรเลย
+    </a>
+    <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email" aria-label="ส่งอีเมล ponrakitt@outlook.co.th">
+      <span class="icon" aria-hidden="true">✉️</span> อีเมล
+    </a>
     <button type="button" class="btn btn-more" aria-label="ดูเพิ่มเติม" id="btnMore">
       <span class="icon" aria-hidden="true">🔍</span> ดูเพิ่มเติม
     </button>
-    <a href="tel:061514432" class="btn btn-phone" aria-label="โทร 061514432">
-      <span class="icon" aria-hidden="true">📞</span> โทร
-    </a>
-    <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email" aria-label="ส่งอีเมล ponrakitt@outlook.co.th">
-      <span class="icon" aria-hidden="true">✉️</span> ส่งอีเมล
-    </a>
-  </div>
-
-  <div class="youtube-wrapper" aria-label="วิดีโอเพลง YouTube">
-    <button class="mute-toggle" aria-label="เปิดหรือปิดเสียงเพลง" id="muteToggle">🔇</button>
-    <iframe 
-      id="youtubePlayer"
-      src="https://www.youtube.com/embed/BYTxPFj44uo?autoplay=1&mute=1&loop=1&playlist=BYTxPFj44uo&enablejsapi=1" 
-      title="YouTube video player" 
-      allow="autoplay; encrypted-media" 
-      allowfullscreen
-      frameborder="0">
-    </iframe>
   </div>
 </div>
 
@@ -340,7 +339,7 @@
 </div>
 
 <script>
-  // Modal controls
+  // Modal functionality
   const btnMore = document.getElementById('btnMore');
   const modal = document.getElementById('modalPopup');
   const closeModal = document.getElementById('closeModal');
@@ -365,37 +364,57 @@
     }
   });
 
-  // YouTube IFrame API for controlling mute/unmute
-  var tag = document.createElement('script');
-  tag.src = "https://www.youtube.com/iframe_api";
-  var firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  // Sound toggle for YouTube iframe
+  const btnSoundToggle = document.getElementById('btnSoundToggle');
+  const iframe = document.getElementById('youtubePlayer');
+  let isMuted = true;
 
-  let player;
-  function onYouTubeIframeAPIReady() {
-    player = new YT.Player('youtubePlayer', {
-      events: {
-        'onReady': onPlayerReady
-      }
-    });
-  }
+  btnSoundToggle.addEventListener('click', () => {
+    isMuted = !isMuted;
+    // YouTube iframe API ไม่อนุญาตควบคุมเสียงโดยตรงผ่าน src param หลังโหลดแล้ว
+    // เลยใช้ workaround เปลี่ยน src ใหม่ โดยตั้ง autoplay และ mute ตามสถานะ
+    const videoId = 'BYTxPFj44uo';
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&mute=${isMuted ? 1 : 0}`;
+    btnSoundToggle.textContent = isMuted ? '🔇' : '🔊';
+    btnSoundToggle.title = isMuted ? 'ปิดเสียง' : 'เปิดเสียง';
+  });
 
-  function onPlayerReady(event) {
-    event.target.playVideo();
-  }
+  // ป้องกันคลิกขวา
+  document.addEventListener('contextmenu', e => e.preventDefault());
 
-  const muteToggle = document.getElementById('muteToggle');
-  muteToggle.addEventListener('click', () => {
-    if (!player) return;
-    if (player.isMuted()) {
-      player.unMute();
-      muteToggle.textContent = '🔊';
-    } else {
-      player.mute();
-      muteToggle.textContent = '🔇';
+  // ป้องกันปุ่ม F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+Shift+S, Ctrl+P, Ctrl+A (ถ้าต้องการ)
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === "F12") {
+      e.preventDefault();
     }
+    // Ctrl + Shift + I/C/J
+    if (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) {
+      e.preventDefault();
+    }
+    // Ctrl + U (view source)
+    if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+      e.preventDefault();
+    }
+    // Ctrl + S (save)
+    if (e.ctrlKey && e.key.toUpperCase() === 'S') {
+      e.preventDefault();
+    }
+    // Ctrl + Shift + S (save as)
+    if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'S') {
+      e.preventDefault();
+    }
+    // Ctrl + P (print)
+    if (e.ctrlKey && e.key.toUpperCase() === 'P') {
+      e.preventDefault();
+    }
+    // Ctrl + A (select all) -- ถ้าต้องการป้องกันคุมดำ ให้ uncomment ด้านล่าง
+    /*
+    if (e.ctrlKey && e.key.toUpperCase() === 'A') {
+      e.preventDefault();
+    }
+    */
   });
 </script>
-
 </body>
 </html>
