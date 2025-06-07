@@ -71,6 +71,12 @@
     .btn-email { background: #ff9900; }
     .btn-linkedin { background: #0077b5; }
 
+    #datetime {
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: #cccccc;
+    }
+
     footer {
       margin-top: 20px;
       padding: 10px 0;
@@ -111,9 +117,48 @@
       cursor: pointer;
     }
 
+    /* ปุ่มเปิด/ปิดเสียง และเปลี่ยนเพลง */
+    .audio-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+      z-index: 10000;
+      user-select: none;
+    }
+    .audio-controls button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #6a5acd;
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      transition: background 0.3s ease;
+    }
+    .audio-controls button:hover {
+      background: #483d8b;
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 1.8rem; }
       .btn { font-size: 0.9rem; padding: 12px 16px; }
+      .audio-controls {
+        gap: 6px;
+        bottom: 15px;
+        right: 15px;
+      }
+      .audio-controls button {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
     }
   </style>
 </head>
@@ -129,6 +174,7 @@
       <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">✉️ Email</a>
       <button class="btn btn-more" id="btnMore">🔍 ดูเพิ่มเติม</button>
     </div>
+    <div id="datetime"></div>
   </div>
 
   <footer>
@@ -140,6 +186,16 @@
       <p>ยังไม่เสร็จ กรุณากลับมาภายหลัง</p>
       <button class="modal-close" id="closeModal">ปิด</button>
     </div>
+  </div>
+
+  <!-- เพลง Lofi playlist -->
+  <audio id="audioLofi" loop></audio>
+
+  <!-- ปุ่มควบคุมเสียงเพลง -->
+  <div class="audio-controls">
+    <button id="btnPrev" title="เพลงก่อนหน้า">⏮️</button>
+    <button id="btnAudioToggle" title="เปิด/ปิดเพลง">🎵</button>
+    <button id="btnNext" title="เพลงถัดไป">⏭️</button>
   </div>
 
   <script>
@@ -160,6 +216,7 @@
         return false;
       }
     }
+
     // เวลาจริง
     function updateDateTime() {
       const now = new Date();
@@ -170,6 +227,54 @@
     }
     updateDateTime();
     setInterval(updateDateTime, 1000);
+
+    // ควบคุม playlist เพลง Lofi
+    const audio = document.getElementById('audioLofi');
+    const btnAudioToggle = document.getElementById('btnAudioToggle');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+
+    // กำหนดเพลงใน playlist (เก็บไฟล์ mp3 ไว้ในโฟลเดอร์เดียวกันกับไฟล์นี้)
+    const playlist = [
+      'good-night-lofi-cozy-chill-music-160166.mp3',
+      'summer-rain-lofi-vibes-216043.mp3',
+      'forest-guitar-lofi-161108.mp3',
+      'summer-sunset-lofi-slow-mix-154447.mp3',
+      // เพิ่มเพลงอื่นๆ ตามต้องการ
+    ];
+
+    let currentIndex = 0;
+    let playing = false;
+
+    function loadSong(index) {
+      audio.src = playlist[index];
+      audio.load();
+      if (playing) audio.play();
+    }
+
+    btnAudioToggle.addEventListener('click', () => {
+      if (playing) {
+        audio.pause();
+        btnAudioToggle.textContent = '🎵';
+      } else {
+        audio.play();
+        btnAudioToggle.textContent = '🔇';
+      }
+      playing = !playing;
+    });
+
+    btnPrev.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+      loadSong(currentIndex);
+    });
+
+    btnNext.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % playlist.length;
+      loadSong(currentIndex);
+    });
+
+    // โหลดเพลงแรกตอนเริ่ม
+    loadSong(currentIndex);
   </script>
 </body>
 </html>
