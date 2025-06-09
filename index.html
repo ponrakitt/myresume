@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ponrkit</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap');
     *, *::before, *::after {
@@ -65,11 +66,12 @@
     }
     .btn-instagram { background: #d62976; }
     .btn-facebook { background: #1877f2; }
+    .btn-linkedin { background: #0077b5; }
+    .btn-github { background: #333333; }
     .btn-resume { background: #28a745; }
-    .btn-more { background: #ff6f61; }
     .btn-phone { background: #17a2b8; }
     .btn-email { background: #ff9900; }
-    .btn-linkedin { background: #0077b5; }
+    .btn-more { background: #ff6f61; }
 
     #datetime {
       margin-top: 24px;
@@ -117,48 +119,32 @@
       cursor: pointer;
     }
 
-    /* ปุ่มเปิด/ปิดเสียง และเปลี่ยนเพลง */
-    .audio-controls {
+    .audio-toggle {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      display: flex;
-      gap: 8px;
-      z-index: 10000;
-      user-select: none;
-    }
-    .audio-controls button {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #6a5acd;
-      color: white;
+      background: rgba(255, 255, 255, 0.1);
       border: none;
-      font-size: 20px;
-      cursor: pointer;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      color: white;
+      font-size: 20px;
+      backdrop-filter: blur(10px);
       transition: background 0.3s ease;
     }
-    .audio-controls button:hover {
-      background: #483d8b;
+
+    .audio-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     @media (max-width: 600px) {
       h1 { font-size: 1.8rem; }
       .btn { font-size: 0.9rem; padding: 12px 16px; }
-      .audio-controls {
-        gap: 6px;
-        bottom: 15px;
-        right: 15px;
-      }
-      .audio-controls button {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-      }
     }
   </style>
 </head>
@@ -166,15 +152,17 @@
   <div class="container">
     <h1>Ponrakit Leartrungvichian</h1>
     <div class="btn-group">
-      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" class="btn btn-instagram">📸 Instagram</a>
-      <a href="https://www.facebook.com/Ponrakitts" target="_blank" class="btn btn-facebook">📘 Facebook</a>
-      <a href="https://www.linkedin.com/in/ponrakitt-leartrungvichian-470712207/" target="_blank" class="btn btn-linkedin">💼 LinkedIn</a>
-      <a href="My-resume.pdf" download class="btn btn-resume">📄 Resume</a>
-      <a href="tel:0615144432" class="btn btn-phone">📞 โทร</a>
-      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">✉️ Email</a>
-      <button class="btn btn-more" id="btnMore">🔍 ดูเพิ่มเติม</button>
+      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" class="btn btn-instagram"><i class="fab fa-instagram"></i> Instagram</a>
+      <a href="https://www.facebook.com/Ponrakitts" target="_blank" class="btn btn-facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
+      <a href="https://www.linkedin.com/in/ponrakitt-leartrungvichian-470712207/" target="_blank" class="btn btn-linkedin"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+      <a href="https://github.com/ponrakitt" target="_blank" class="btn btn-github"><i class="fab fa-github"></i> GitHub</a>
+      <a href="My-resume.pdf" download class="btn btn-resume"><i class="fas fa-file-alt"></i> Resume</a>
+      <a href="tel:0615144432" class="btn btn-phone"><i class="fas fa-phone-alt"></i> โทร</a>
+      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email"><i class="fas fa-envelope"></i> Email</a>
+      <button class="btn btn-more" id="btnMore"><i class="fas fa-search"></i> ดูเพิ่มเติม</button>
     </div>
     <div id="datetime"></div>
+    <div id="onlineDays"></div>
   </div>
 
   <footer>
@@ -188,17 +176,14 @@
     </div>
   </div>
 
-  <!-- เพลง Lofi playlist -->
-  <audio id="audioLofi" loop></audio>
-
-  <!-- ปุ่มควบคุมเสียงเพลง -->
-  <div class="audio-controls">
-    <button id="btnPrev" title="เพลงก่อนหน้า">⏮️</button>
-    <button id="btnAudioToggle" title="เปิด/ปิดเพลง">🎵</button>
-    <button id="btnNext" title="เพลงถัดไป">⏭️</button>
-  </div>
+  <!-- Player & Toggle -->
+  <audio id="lofiAudio" autoplay loop></audio>
+  <button class="audio-toggle" id="toggleAudio">
+    <i id="audioIcon" class="fas fa-volume-up"></i>
+  </button>
 
   <script>
+    // Modal
     const btnMore = document.getElementById('btnMore');
     const modal = document.getElementById('modalPopup');
     const closeModal = document.getElementById('closeModal');
@@ -217,7 +202,7 @@
       }
     }
 
-    // เวลาจริง
+    // เวลา
     function updateDateTime() {
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -228,53 +213,39 @@
     updateDateTime();
     setInterval(updateDateTime, 1000);
 
-    // ควบคุม playlist เพลง Lofi
-    const audio = document.getElementById('audioLofi');
-    const btnAudioToggle = document.getElementById('btnAudioToggle');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
+    // เพลง
+    const audio = document.getElementById('lofiAudio');
+    const toggleBtn = document.getElementById('toggleAudio');
+    const audioIcon = document.getElementById('audioIcon');
 
-    // กำหนดเพลงใน playlist (เก็บไฟล์ mp3 ไว้ในโฟลเดอร์เดียวกันกับไฟล์นี้)
+    // เพิ่มเพลงในเครื่อง (local)
     const playlist = [
-      'good-night-lofi-cozy-chill-music-160166.mp3',
-      'summer-rain-lofi-vibes-216043.mp3',
       'forest-guitar-lofi-161108.mp3',
+      'summer-rain-lofi-vibes-216043.mp3',
       'summer-sunset-lofi-slow-mix-154447.mp3',
-      // เพิ่มเพลงอื่นๆ ตามต้องการ
+      'good-night-lofi-cozy-chill-music-160166.mp3',
     ];
-
-    let currentIndex = 0;
-    let playing = false;
+    let currentSong = 0;
 
     function loadSong(index) {
       audio.src = playlist[index];
-      audio.load();
-      if (playing) audio.play();
+      audio.play();
     }
 
-    btnAudioToggle.addEventListener('click', () => {
-      if (playing) {
-        audio.pause();
-        btnAudioToggle.textContent = '🎵';
-      } else {
+    // สุ่มเพลงตอนเริ่ม
+    currentSong = Math.floor(Math.random() * playlist.length);
+    loadSong(currentSong);
+
+    toggleBtn.addEventListener('click', () => {
+      if (audio.paused) {
         audio.play();
-        btnAudioToggle.textContent = '🔇';
+        audioIcon.classList.replace('fa-volume-mute', 'fa-volume-up');
+      } else {
+        audio.pause();
+        audioIcon.classList.replace('fa-volume-up', 'fa-volume-mute');
       }
-      playing = !playing;
-    });
 
-    btnPrev.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-      loadSong(currentIndex);
     });
-
-    btnNext.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % playlist.length;
-      loadSong(currentIndex);
-    });
-
-    // โหลดเพลงแรกตอนเริ่ม
-    loadSong(currentIndex);
   </script>
 </body>
 </html>
