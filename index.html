@@ -15,7 +15,7 @@
     body, html {
       margin: 0; 
       padding: 0; 
-      height: 100%;
+      min-height: 100vh;
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #ffffff;
@@ -55,14 +55,14 @@
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(25px);
       border-radius: 32px;
-      padding: 48px 32px;
+      padding: 40px 24px;
       max-width: 800px;
-      width: 90vw;
+      width: 95vw;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2),
                   inset 0 0 0 1px rgba(255,255,255,0.2);
       text-align: center;
       user-select: none;
-      margin: 20px;
+      margin: 20px 10px;
       position: relative;
       overflow: hidden;
       transform: translateY(0);
@@ -92,8 +92,8 @@
     
     h1 {
       font-weight: 700;
-      font-size: 2.8rem;
-      margin-bottom: 48px;
+      font-size: 2.4rem;
+      margin-bottom: 32px;
       background: linear-gradient(135deg, #fff, #e0e7ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -104,8 +104,8 @@
     
     .btn-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
       margin-bottom: 32px;
     }
     
@@ -113,11 +113,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      padding: 18px 24px;
+      gap: 8px;
+      padding: 16px 12px;
       border-radius: 16px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       cursor: pointer;
       text-decoration: none;
       color: #fff;
@@ -128,6 +128,7 @@
       overflow: hidden;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 56px;
     }
 
     .btn::before {
@@ -146,12 +147,12 @@
     }
     
     .btn:hover {
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.25);
     }
 
     .btn:active {
-      transform: translateY(-4px) scale(1.02);
+      transform: translateY(-2px) scale(1.01);
     }
     
     .btn-instagram { 
@@ -178,13 +179,15 @@
     .btn-more { 
       background: linear-gradient(135deg, #ff6f61, #ff8a65);
       grid-column: 1 / -1;
-      font-size: 1.1rem;
-      padding: 20px 24px;
+      font-size: 1rem;
+      padding: 18px 24px;
+      min-height: 64px;
     }
 
     .btn i {
-      font-size: 1.2em;
+      font-size: 1.1em;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      flex-shrink: 0;
     }
 
     .btn-instagram i { color: #fff; }
@@ -198,10 +201,10 @@
 
     #datetime {
       margin-top: 32px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.8);
       font-weight: 400;
-      padding: 12px 20px;
+      padding: 12px 16px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       backdrop-filter: blur(10px);
@@ -209,9 +212,9 @@
     }
 
     footer {
-      margin-top: 32px;
-      padding: 20px;
-      font-size: 14px;
+      margin-top: 24px;
+      padding: 16px;
+      font-size: 12px;
       color: rgba(255, 255, 255, 0.7);
       text-align: center;
       width: 100%;
@@ -230,7 +233,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      padding: 20px;
+      padding: 16px;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
@@ -243,8 +246,8 @@
     .modal-content {
       background: linear-gradient(135deg, #1f2937, #374151);
       color: #fff;
-      border-radius: 24px;
-      padding: 40px;
+      border-radius: 20px;
+      padding: 24px;
       max-width: 900px;
       width: 100%;
       text-align: center;
@@ -262,8 +265,8 @@
     }
 
     .modal-content h2 {
-      font-size: 2.2rem;
-      margin-bottom: 32px;
+      font-size: 1.8rem;
+      margin-bottom: 24px;
       background: linear-gradient(135deg, #fff, #e0e7ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -273,21 +276,21 @@
 
     .project-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 16px;
-      margin: 32px 0;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 24px 0;
     }
 
     .project-btn {
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
       border: none;
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 12px;
+      padding: 16px;
       cursor: pointer;
       transition: all 0.3s ease;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       line-height: 1.4;
       text-align: left;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -296,8 +299,8 @@
     }
 
     .project-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
 
     .project-btn::before {
@@ -316,8 +319,8 @@
     }
 
     #pdfPreview {
-      margin-top: 32px;
-      border-radius: 16px;
+      margin-top: 24px;
+      border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       background: #000;
@@ -325,44 +328,44 @@
 
     #pdfFrame {
       border: none;
-      border-radius: 16px;
+      border-radius: 12px;
       width: 100%;
-      height: 500px;
+      height: 400px;
     }
     
     .modal-close {
       background: linear-gradient(135deg, #ff6f61, #ff8a65);
       color: #fff;
       font-weight: 600;
-      padding: 14px 32px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 25px;
-      margin-top: 32px;
+      border-radius: 20px;
+      margin-top: 24px;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     .modal-close:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(255, 111, 97, 0.4);
+      box-shadow: 0 8px 20px rgba(255, 111, 97, 0.3);
     }
 
     .audio-toggle {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
+      bottom: 20px;
+      right: 20px;
       background: rgba(255, 255, 255, 0.15);
       border: none;
       border-radius: 50%;
-      width: 56px;
-      height: 56px;
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: white;
-      font-size: 20px;
+      font-size: 16px;
       backdrop-filter: blur(15px);
       transition: all 0.3s ease;
       box-shadow: 0 8px 25px rgba(0,0,0,0.2);
@@ -371,48 +374,156 @@
 
     .audio-toggle:hover {
       background: rgba(255, 255, 255, 0.25);
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
 
-    @media (max-width: 768px) {
-      h1 { 
-        font-size: 2.2rem; 
-        margin-bottom: 32px;
+    /* Desktop styles */
+    @media (min-width: 769px) {
+      .container {
+        padding: 48px 32px;
+        width: 90vw;
       }
       
-      .container {
-        padding: 32px 24px;
-        margin: 10px;
+      h1 {
+        font-size: 2.8rem;
+        margin-bottom: 48px;
       }
       
       .btn-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
       }
       
-      .btn { 
-        font-size: 0.9rem; 
-        padding: 16px 20px; 
-      }
-
-      .modal-content {
-        padding: 24px;
-        margin: 10px;
-      }
-
-      .project-grid {
-        grid-template-columns: 1fr;
+      .btn {
+        padding: 18px 24px;
+        font-size: 0.95rem;
         gap: 12px;
       }
-
+      
+      .btn:hover {
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      }
+      
+      .btn-more {
+        font-size: 1.1rem;
+        padding: 20px 24px;
+      }
+      
+      #datetime {
+        font-size: 0.9rem;
+        padding: 12px 20px;
+      }
+      
+      footer {
+        margin-top: 32px;
+        padding: 20px;
+        font-size: 14px;
+      }
+      
+      .modal-content {
+        padding: 40px;
+      }
+      
+      .modal-content h2 {
+        font-size: 2.2rem;
+        margin-bottom: 32px;
+      }
+      
+      .project-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin: 32px 0;
+      }
+      
+      .project-btn {
+        padding: 20px;
+        font-size: 0.9rem;
+      }
+      
       #pdfFrame {
-        height: 300px;
+        height: 500px;
+      }
+      
+      .modal-close {
+        padding: 14px 32px;
+        margin-top: 32px;
+        font-size: 1rem;
+      }
+      
+      .audio-toggle {
+        bottom: 30px;
+        right: 30px;
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
       }
     }
 
+    /* Small mobile adjustments */
     @media (max-width: 480px) {
-      h1 { font-size: 1.8rem; }
-      .container { padding: 24px 16px; }
+      h1 { 
+        font-size: 2rem; 
+        margin-bottom: 24px;
+      }
+      
+      .container { 
+        padding: 32px 16px; 
+        margin: 15px 8px;
+      }
+      
+      .btn {
+        font-size: 0.8rem;
+        padding: 14px 10px;
+        gap: 6px;
+      }
+      
+      .btn i {
+        font-size: 1em;
+      }
+      
+      #datetime {
+        font-size: 0.8rem;
+        padding: 10px 14px;
+      }
+      
+      footer {
+        font-size: 11px;
+        padding: 12px;
+      }
+      
+      .audio-toggle {
+        bottom: 15px;
+        right: 15px;
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
+      }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+      .container {
+        width: 98vw;
+        margin: 10px 4px;
+        padding: 24px 12px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .btn {
+        font-size: 0.75rem;
+        padding: 12px 8px;
+        min-height: 50px;
+      }
+      
+      .btn-more {
+        font-size: 0.9rem;
+        padding: 16px 12px;
+        min-height: 58px;
+      }
     }
   </style>
 </head>
@@ -507,7 +618,7 @@
     // Create animated particles
     function createParticles() {
       const particlesContainer = document.getElementById('particles');
-      const particleCount = 50;
+      const particleCount = window.innerWidth < 768 ? 30 : 50;
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -583,7 +694,7 @@
     
     function loadSong(index) {
       audio.src = playlist[index];
-      audio.play();
+      audio.play().catch(e => console.log('Audio autoplay prevented'));
     }
     loadSong(currentSong);
 
@@ -611,6 +722,13 @@
           e.preventDefault();
         });
       }
+    });
+
+    // Handle window resize for particles
+    window.addEventListener('resize', () => {
+      const particlesContainer = document.getElementById('particles');
+      particlesContainer.innerHTML = '';
+      createParticles();
     });
   </script>
 </body>
