@@ -178,10 +178,6 @@
     }
     .btn-more { 
       background: linear-gradient(135deg, #ff6f61, #ff8a65);
-      grid-column: 1 / -1;
-      font-size: 1rem;
-      padding: 18px 24px;
-      min-height: 64px;
     }
 
     .btn i {
@@ -405,11 +401,6 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       }
       
-      .btn-more {
-        font-size: 1.1rem;
-        padding: 20px 24px;
-      }
-      
       #datetime {
         font-size: 0.9rem;
         padding: 12px 20px;
@@ -458,6 +449,10 @@
         height: 56px;
         font-size: 20px;
       }
+
+      .btn-update-log {
+        display: flex;
+      }
     }
 
     /* Small mobile adjustments */
@@ -473,9 +468,9 @@
       }
       
       .btn {
-        font-size: 0.8rem;
-        padding: 14px 10px;
-        gap: 6px;
+        font-size: 0.75rem;
+        padding: 12px 8px;
+        min-height: 50px;
       }
       
       .btn i {
@@ -499,6 +494,10 @@
         height: 44px;
         font-size: 14px;
       }
+
+      .btn-update-log {
+        display: none;
+      }
     }
 
     /* Very small screens */
@@ -519,11 +518,58 @@
         min-height: 50px;
       }
       
-      .btn-more {
-        font-size: 0.9rem;
-        padding: 16px 12px;
-        min-height: 58px;
-      }
+    }
+
+    /* Update Log Button */
+    .btn-update-log {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: none; /* Hidden by default, shown in desktop media query */
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .btn-update-log:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+
+    .btn-update-log i {
+      font-size: 1.1em;
+    }
+
+    /* Update list styling */
+    .update-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .update-list li {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #667eea;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .update-list li strong {
+      color: #a3b3ff;
     }
   </style>
 </head>
@@ -563,8 +609,13 @@
   </div>
 
   <footer>
-    © 2025 Ponrakit. All rights reserved. | Last update 09-06-2025 10:04:12
+    © 2025 Ponrakit. All rights reserved. | Last update 09-06-2025 9:25:54
   </footer>
+
+  <!-- Update Log Button -->
+  <button class="btn-update-log" id="updateLogBtn">
+    <i class="fas fa-history"></i> Update Log
+  </button>
 
   <!-- Enhanced Modal -->
   <div class="modal" id="modalPopup">
@@ -603,6 +654,22 @@
       </div>
       
       <button class="modal-close" id="closeModal">
+        <i class="fas fa-times"></i> ปิด
+      </button>
+    </div>
+  </div>
+
+  <!-- Update Log Modal -->
+  <div class="modal" id="updateLogModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-history"></i> ประวัติการอัปเดต</h2>
+      <ul class="update-list">
+        <li><strong>26 ก.ค. 2567:</strong> เพิ่มปุ่มและป๊อปอัปสำหรับแสดงประวัติการอัปเดต (Update Log)</li>
+        <li><strong>25 ก.ค. 2567:</strong>ปรับขนาดปุ่มทั้งหมดให้เท่ากันเพื่อความสวยงาม</li>
+        <li><strong>24 ก.ค. 2567:</strong> เพิ่มเพลงพื้นหลังพร้อมปุ่มเปิด/ปิดเสียง</li>
+        <li><strong>23 ก.ค. 2567:</strong> เปิดตัวเวอร์ชันแรกของหน้าเว็บ</li>
+      </ul>
+      <button class="modal-close" id="closeUpdateLogModal">
         <i class="fas fa-times"></i> ปิด
       </button>
     </div>
@@ -730,6 +797,42 @@
       particlesContainer.innerHTML = '';
       createParticles();
     });
+
+    // Update Log Modal functionality
+    const updateLogBtn = document.getElementById('updateLogBtn');
+    const updateLogModal = document.getElementById('updateLogModal');
+    const closeUpdateLogModal = document.getElementById('closeUpdateLogModal');
+
+    if (updateLogBtn) {
+      updateLogBtn.onclick = () => updateLogModal.classList.add('active');
+    }
+    if (closeUpdateLogModal) {
+      closeUpdateLogModal.onclick = () => updateLogModal.classList.remove('active');
+    }
+    if (updateLogModal) {
+      updateLogModal.onclick = (e) => {
+        if (e.target === updateLogModal) {
+          updateLogModal.classList.remove('active');
+        }
+      };
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        // Close project modal
+        modal.classList.remove('active');
+        pdfPreview.style.display = 'none';
+        // Close update log modal
+        if (updateLogModal) {
+          updateLogModal.classList.remove('active');
+        }
+      }
+    });
+
+    function previewPDF(pdfUrl) {
+      document.getElementById('pdfFrame').src = pdfUrl;
+      pdfPreview.style.display = 'block';
+    }
   </script>
 </body>
 </html>
