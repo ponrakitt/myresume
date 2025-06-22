@@ -179,6 +179,9 @@
     .btn-more { 
       background: linear-gradient(135deg, #ff6f61, #ff8a65);
     }
+    .btn-work-experience { 
+      background: linear-gradient(135deg, #1e90ff, #1c7ed6);
+    }
 
     .btn i {
       font-size: 1.1em;
@@ -194,6 +197,7 @@
     .btn-phone i { color: #fff; }
     .btn-email i { color: #fff; }
     .btn-more i { color: #fff; }
+    .btn-work-experience i { color: #fff; }
 
     #datetime {
       margin-top: 32px;
@@ -595,14 +599,17 @@
       <a href="Ponrakit_resume.pdf" download class="btn btn-resume">
         <i class="fas fa-file-alt"></i> Resume
       </a>
-      <a href="tel:0615144432" class="btn btn-phone">
+      <button id="phoneBtn" class="btn btn-phone">
         <i class="fas fa-phone-alt"></i> โทร
-      </a>
+      </button>
       <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">
         <i class="fas fa-envelope"></i> Email
       </a>
       <button class="btn btn-more" id="btnMore">
         <i class="fas fa-folder-open"></i> My Projects
+      </button>
+      <button class="btn btn-work-experience" id="btnWorkExperience">
+        <i class="fas fa-briefcase"></i> Work Experience
       </button>
     </div>
     <div id="datetime"></div>
@@ -616,6 +623,52 @@
   <button class="btn-update-log" id="updateLogBtn">
     <i class="fas fa-history"></i> Update Log
   </button>
+
+  <!-- Maintenance Modal -->
+  <div class="modal" id="maintenanceModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-tools"></i> ปิดปรับปรุงระบบชั่วคราว</h2>
+      <p style="font-size: 1.1rem; margin: 24px 0;">ขออภัยในความไม่สะดวก ขณะPonrakit กำลังทำงานปรับปรุงเว็บไซต์อยู่ในขณะนี้ซึ่งจะปิดตั้งแต่เวลา ตี 1 ถึงตี 4 ขออภัยในความไม่สะดวก</p>
+      <p>โปรดกลับมาอีกครั้งใน:</p>
+      <div id="countdown" style="font-size: 2rem; font-weight: bold; margin: 16px 0; color: #ffc107;"></div>
+      <div id="maintenance-actions" style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 24px; display: none;">
+        <p style="font-size: 0.9rem; margin-bottom: 16px;">คุณยังคงสามารถดำเนินการบางอย่างได้:</p>
+        <div id="cloned-buttons-container" style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <!-- Cloned buttons will be injected here by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- reCAPTCHA Modal -->
+  <div class="modal" id="recaptchaModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-shield-alt"></i> ยืนยันตัวตนเพื่อโทร</h2>
+      <p>กรุณาตอบคำถามต่อไปนี้เพื่อดำเนินการต่อ:</p>
+      <div id="recaptchaQuestion" style="font-size: 1.5rem; font-weight: bold; margin: 20px 0; letter-spacing: 2px; color: #a3b3ff;"></div>
+      <input type="text" id="recaptchaAnswer" placeholder="ใส่คำตอบของคุณที่นี่" style="width: 80%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(0,0,0,0.3); color: white; font-size: 1.2rem; text-align: center; margin-top: 10px;">
+      <p id="recaptchaError" style="color: #ff6f61; display: none; margin-top: 10px;">คำตอบไม่ถูกต้อง ลองอีกครั้ง</p>
+      <div id="recaptchaSuccess" style="display: none; margin-top: 20px;">
+        <p style="color: #28a745; font-weight: bold;">ยืนยันสำเร็จ!</p>
+        <a href="tel:0615144432" class="btn btn-phone" style="margin: 10px auto; display: inline-block;"><i class="fas fa-phone-alt"></i> โทรเลย</a>
+      </div>
+      <div style="margin-top: 24px;">
+        <button id="recaptchaSubmit" class="modal-close" style="background: linear-gradient(135deg, #28a745, #20c997); margin-right: 8px;">ยืนยัน</button>
+        <button id="recaptchaClose" class="modal-close">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming Soon Modal -->
+  <div class="modal" id="comingSoonModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-hourglass-half"></i> Coming Soon</h2>
+      <p style="font-size: 1.2rem; margin: 24px 0;">This section is under construction.</p>
+      <button class="modal-close" id="closeComingSoonModal">
+        <i class="fas fa-times"></i> ปิด
+      </button>
+    </div>
+  </div>
 
   <!-- Enhanced Modal -->
   <div class="modal" id="modalPopup">
@@ -682,6 +735,97 @@
   </button>
 
   <script>
+    let isMaintenanceActive = false;
+
+    // Maintenance Mode Functionality
+    function checkMaintenance() {
+      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ (รูปแบบ 24 ชั่วโมง) ---
+      const maintenanceStartHour = 1; // เช่น 1 สำหรับตี 1
+      const maintenanceEndHour = 4;   // เช่น 2 สำหรับตี 2
+      // ----------------------------------------------------
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      let inMaintenance = false;
+
+      // จัดการกรณีปิดปรับปรุงข้ามคืน (เช่น 22:00 ถึง 02:00)
+      if (maintenanceEndHour < maintenanceStartHour) {
+        if (currentHour >= maintenanceStartHour || currentHour < maintenanceEndHour) {
+          inMaintenance = true;
+        }
+      } else { // จัดการกรณีปิดปรับปรุงภายในวันเดียว (เช่น 09:00 ถึง 17:00)
+        if (currentHour >= maintenanceStartHour && currentHour < maintenanceEndHour) {
+          inMaintenance = true;
+        }
+      }
+      
+      if (inMaintenance) {
+        isMaintenanceActive = true;
+        const modal = document.getElementById('maintenanceModal');
+        modal.classList.add('active');
+        
+        const countdownElement = document.getElementById('countdown');
+        const maintenanceEndTime = new Date();
+        maintenanceEndTime.setHours(maintenanceEndHour, 0, 0, 0);
+
+        if (maintenanceEndHour < maintenanceStartHour && currentHour >= maintenanceStartHour) {
+          maintenanceEndTime.setDate(maintenanceEndTime.getDate() + 1);
+        }
+
+        function updateCountdown() {
+            const currentTime = new Date();
+            const timeLeft = maintenanceEndTime - currentTime;
+
+            if (timeLeft <= 0) {
+              clearInterval(countdownInterval);
+              window.location.reload();
+              return;
+            }
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            countdownElement.innerHTML = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // --- Clone buttons to be available during maintenance ---
+        const resumeLink = document.querySelector('a.btn-resume');
+        const audioToggle = document.getElementById('toggleAudio');
+        const actionsContainer = document.getElementById('maintenance-actions');
+        const buttonsContainer = document.getElementById('cloned-buttons-container');
+
+        if (resumeLink && audioToggle && buttonsContainer && actionsContainer) {
+          actionsContainer.style.display = 'block';
+
+          // 1. Clone Resume Button
+          const resumeClone = resumeLink.cloneNode(true);
+          buttonsContainer.appendChild(resumeClone);
+
+          // 2. Clone Audio Toggle Button
+          const audioToggleClone = audioToggle.cloneNode(true);
+          audioToggleClone.id = 'audioToggleClone'; // Prevent duplicate ID
+          
+          audioToggleClone.addEventListener('click', () => {
+            audioToggle.click(); // Relay click to original button
+          });
+          buttonsContainer.appendChild(audioToggleClone);
+
+          // 3. Sync icon state from original to clone
+          const originalIcon = document.getElementById('audioIcon');
+          const clonedIcon = audioToggleClone.querySelector('i');
+          if(originalIcon && clonedIcon) {
+            const observer = new MutationObserver(() => {
+              clonedIcon.className = originalIcon.className;
+            });
+            observer.observe(originalIcon, { attributes: true, attributeFilter: ['class'] });
+          }
+        }
+      }
+    }
+    checkMaintenance();
+
     // Create animated particles
     function createParticles() {
       const particlesContainer = document.getElementById('particles');
@@ -803,11 +947,22 @@
     const updateLogModal = document.getElementById('updateLogModal');
     const closeUpdateLogModal = document.getElementById('closeUpdateLogModal');
 
+    // Coming Soon Modal functionality
+    const btnWorkExperience = document.getElementById('btnWorkExperience');
+    const comingSoonModal = document.getElementById('comingSoonModal');
+    const closeComingSoonModal = document.getElementById('closeComingSoonModal');
+
     if (updateLogBtn) {
       updateLogBtn.onclick = () => updateLogModal.classList.add('active');
     }
+    if (btnWorkExperience) {
+      btnWorkExperience.onclick = () => comingSoonModal.classList.add('active');
+    }
     if (closeUpdateLogModal) {
       closeUpdateLogModal.onclick = () => updateLogModal.classList.remove('active');
+    }
+    if (closeComingSoonModal) {
+      closeComingSoonModal.onclick = () => comingSoonModal.classList.remove('active');
     }
     if (updateLogModal) {
       updateLogModal.onclick = (e) => {
@@ -816,8 +971,17 @@
         }
       };
     }
+    if (comingSoonModal) {
+      comingSoonModal.onclick = (e) => {
+        if (e.target === comingSoonModal) {
+          comingSoonModal.classList.remove('active');
+        }
+      };
+    }
 
     document.addEventListener('keydown', e => {
+      if (isMaintenanceActive) return; // Block escape key during maintenance
+
       if (e.key === 'Escape') {
         // Close project modal
         modal.classList.remove('active');
@@ -826,12 +990,94 @@
         if (updateLogModal) {
           updateLogModal.classList.remove('active');
         }
+        // Close coming soon modal
+        if (comingSoonModal) {
+          comingSoonModal.classList.remove('active');
+        }
+        // Close reCAPTCHA modal
+        if (recaptchaModal) {
+          recaptchaModal.classList.remove('active');
+        }
       }
     });
 
-    function previewPDF(pdfUrl) {
-      document.getElementById('pdfFrame').src = pdfUrl;
-      pdfPreview.style.display = 'block';
+    // reCAPTCHA functionality
+    const recaptchaProblems = [
+      { question: '15 * 4 + 10 = ?', answer: '70' },
+      { question: '144 / 12 + 38 = ?', answer: '50' },
+      { question: '9 * 8 - 22 = ?', answer: '50' },
+      { question: '(13 + 7) * 4 = ?', answer: '80' },
+      { question: '100 / 5 - 11 = ?', answer: '9' },
+      { question: '7 * 6 + 8 * 5 = ?', answer: '82' },
+      { question: '121 / 11 + 9 = ?', answer: '20' },
+      { question: '50 * 2 - 13 * 3 = ?', answer: '61' },
+      { question: '99 / 3 + 17 = ?', answer: '50' },
+      { question: '8 * 8 - 7 * 7 = ?', answer: '15' }
+    ];
+    let currentProblem = null;
+
+    const phoneBtn = document.getElementById('phoneBtn');
+    const recaptchaModal = document.getElementById('recaptchaModal');
+    const recaptchaClose = document.getElementById('recaptchaClose');
+    const recaptchaSubmit = document.getElementById('recaptchaSubmit');
+    const recaptchaQuestion = document.getElementById('recaptchaQuestion');
+    const recaptchaAnswer = document.getElementById('recaptchaAnswer');
+    const recaptchaError = document.getElementById('recaptchaError');
+    const recaptchaSuccess = document.getElementById('recaptchaSuccess');
+    
+    function resetRecaptchaModal() {
+      recaptchaError.style.display = 'none';
+      recaptchaSuccess.style.display = 'none';
+      recaptchaAnswer.value = '';
+      recaptchaQuestion.style.display = 'block';
+      recaptchaAnswer.style.display = 'block';
+      recaptchaSubmit.parentElement.style.display = 'block';
+    }
+
+    if(phoneBtn) {
+      phoneBtn.addEventListener('click', (e) => {
+        if(isMaintenanceActive) return; // Do nothing if in maintenance
+        e.preventDefault();
+        resetRecaptchaModal();
+        
+        const randomIndex = Math.floor(Math.random() * recaptchaProblems.length);
+        currentProblem = recaptchaProblems[randomIndex];
+        
+        recaptchaQuestion.innerText = currentProblem.question;
+        recaptchaModal.classList.add('active');
+        setTimeout(() => recaptchaAnswer.focus(), 300);
+      });
+    }
+
+    if(recaptchaClose) {
+      recaptchaClose.onclick = () => recaptchaModal.classList.remove('active');
+    }
+
+    if(recaptchaModal) {
+      recaptchaModal.onclick = (e) => {
+        if (e.target === recaptchaModal) {
+          recaptchaModal.classList.remove('active');
+        }
+      };
+    }
+
+    if(recaptchaSubmit) {
+      recaptchaSubmit.onclick = () => {
+        if (recaptchaAnswer.value.trim() === currentProblem.answer) {
+          recaptchaError.style.display = 'none';
+          recaptchaQuestion.style.display = 'none';
+          recaptchaAnswer.style.display = 'none';
+          recaptchaSubmit.parentElement.style.display = 'none';
+          recaptchaSuccess.style.display = 'block';
+        } else {
+          recaptchaError.style.display = 'block';
+          recaptchaAnswer.value = '';
+          recaptchaAnswer.focus();
+          if ('vibrate' in navigator) {
+              navigator.vibrate(100);
+          }
+        }
+      };
     }
   </script>
 </body>
