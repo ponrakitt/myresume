@@ -599,9 +599,9 @@
       <a href="Ponrakit_resume.pdf" download class="btn btn-resume">
         <i class="fas fa-file-alt"></i> Resume
       </a>
-      <button id="phoneBtn" class="btn btn-phone">
+      <a href="tel:0615144432" class="btn btn-phone">
         <i class="fas fa-phone-alt"></i> โทร
-      </button>
+      </a>
       <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">
         <i class="fas fa-envelope"></i> Email
       </a>
@@ -628,7 +628,7 @@
   <div class="modal" id="maintenanceModal">
     <div class="modal-content">
       <h2><i class="fas fa-tools"></i> ปิดปรับปรุงระบบชั่วคราว</h2>
-      <p style="font-size: 1.1rem; margin: 24px 0;">ขออภัยในความไม่สะดวก ขณะPonrakit กำลังทำงานปรับปรุงเว็บไซต์อยู่ในขณะนี้ซึ่งจะปิดตั้งแต่เวลา ตี 1 ถึงตี 4 ขออภัยในความไม่สะดวก</p>
+      <p style="font-size: 1.1rem; margin: 24px 0;">ขออภัยในความไม่สะดวก ขณะนี้เว็บไซต์อยู่ในช่วงปิดปรับปรุงประจำสัปดาห์ (ทุกวันอาทิตย์ เวลา 01:00 - 04:00 น.) ขออภัยในความไม่สะดวก</p>
       <p>โปรดกลับมาอีกครั้งใน:</p>
       <div id="countdown" style="font-size: 2rem; font-weight: bold; margin: 16px 0; color: #ffc107;"></div>
       <div id="maintenance-actions" style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 24px; display: none;">
@@ -636,25 +636,6 @@
         <div id="cloned-buttons-container" style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
           <!-- Cloned buttons will be injected here by JS -->
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- reCAPTCHA Modal -->
-  <div class="modal" id="recaptchaModal">
-    <div class="modal-content">
-      <h2><i class="fas fa-shield-alt"></i> ยืนยันตัวตนเพื่อโทร</h2>
-      <p>กรุณาตอบคำถามต่อไปนี้เพื่อดำเนินการต่อ:</p>
-      <div id="recaptchaQuestion" style="font-size: 1.5rem; font-weight: bold; margin: 20px 0; letter-spacing: 2px; color: #a3b3ff;"></div>
-      <input type="text" id="recaptchaAnswer" placeholder="ใส่คำตอบของคุณที่นี่" style="width: 80%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(0,0,0,0.3); color: white; font-size: 1.2rem; text-align: center; margin-top: 10px;">
-      <p id="recaptchaError" style="color: #ff6f61; display: none; margin-top: 10px;">คำตอบไม่ถูกต้อง ลองอีกครั้ง</p>
-      <div id="recaptchaSuccess" style="display: none; margin-top: 20px;">
-        <p style="color: #28a745; font-weight: bold;">ยืนยันสำเร็จ!</p>
-        <a href="tel:0615144432" class="btn btn-phone" style="margin: 10px auto; display: inline-block;"><i class="fas fa-phone-alt"></i> โทรเลย</a>
-      </div>
-      <div style="margin-top: 24px;">
-        <button id="recaptchaSubmit" class="modal-close" style="background: linear-gradient(135deg, #28a745, #20c997); margin-right: 8px;">ยืนยัน</button>
-        <button id="recaptchaClose" class="modal-close">ปิด</button>
       </div>
     </div>
   </div>
@@ -739,24 +720,20 @@
 
     // Maintenance Mode Functionality
     function checkMaintenance() {
-      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ (รูปแบบ 24 ชั่วโมง) ---
-      const maintenanceStartHour = 1; // เช่น 1 สำหรับตี 1
-      const maintenanceEndHour = 4;   // เช่น 2 สำหรับตี 2
+      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ ---
+      const maintenanceDay = 0;        // วันที่ต้องการปิดปรับปรุง (0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์)
+      const maintenanceStartHour =1;  // เวลาเริ่มต้น (ตี 1)
+      const maintenanceEndHour = 4;    // เวลาสิ้นสุด (ตี 4)
       // ----------------------------------------------------
 
       const now = new Date();
+      const currentDay = now.getDay();
       const currentHour = now.getHours();
       let inMaintenance = false;
 
-      // จัดการกรณีปิดปรับปรุงข้ามคืน (เช่น 22:00 ถึง 02:00)
-      if (maintenanceEndHour < maintenanceStartHour) {
-        if (currentHour >= maintenanceStartHour || currentHour < maintenanceEndHour) {
-          inMaintenance = true;
-        }
-      } else { // จัดการกรณีปิดปรับปรุงภายในวันเดียว (เช่น 09:00 ถึง 17:00)
-        if (currentHour >= maintenanceStartHour && currentHour < maintenanceEndHour) {
-          inMaintenance = true;
-        }
+      // ตรวจสอบว่าเป็นวันอาทิตย์ และอยู่ในช่วงเวลา ตี 1 - ตี 4 หรือไม่
+      if (currentDay === maintenanceDay && (currentHour >= maintenanceStartHour && currentHour < maintenanceEndHour)) {
+        inMaintenance = true;
       }
       
       if (inMaintenance) {
@@ -767,10 +744,6 @@
         const countdownElement = document.getElementById('countdown');
         const maintenanceEndTime = new Date();
         maintenanceEndTime.setHours(maintenanceEndHour, 0, 0, 0);
-
-        if (maintenanceEndHour < maintenanceStartHour && currentHour >= maintenanceStartHour) {
-          maintenanceEndTime.setDate(maintenanceEndTime.getDate() + 1);
-        }
 
         function updateCountdown() {
             const currentTime = new Date();
@@ -980,7 +953,7 @@
     }
 
     document.addEventListener('keydown', e => {
-      if (isMaintenanceActive) return; // Block escape key during maintenance
+      if (isMaintenanceActive) { return; } // Block escape key during maintenance
 
       if (e.key === 'Escape') {
         // Close project modal
@@ -994,90 +967,12 @@
         if (comingSoonModal) {
           comingSoonModal.classList.remove('active');
         }
-        // Close reCAPTCHA modal
-        if (recaptchaModal) {
-          recaptchaModal.classList.remove('active');
-        }
       }
     });
 
-    // reCAPTCHA functionality
-    const recaptchaProblems = [
-      { question: '15 * 4 + 10 = ?', answer: '70' },
-      { question: '144 / 12 + 38 = ?', answer: '50' },
-      { question: '9 * 8 - 22 = ?', answer: '50' },
-      { question: '(13 + 7) * 4 = ?', answer: '80' },
-      { question: '100 / 5 - 11 = ?', answer: '9' },
-      { question: '7 * 6 + 8 * 5 = ?', answer: '82' },
-      { question: '121 / 11 + 9 = ?', answer: '20' },
-      { question: '50 * 2 - 13 * 3 = ?', answer: '61' },
-      { question: '99 / 3 + 17 = ?', answer: '50' },
-      { question: '8 * 8 - 7 * 7 = ?', answer: '15' }
-    ];
-    let currentProblem = null;
-
-    const phoneBtn = document.getElementById('phoneBtn');
-    const recaptchaModal = document.getElementById('recaptchaModal');
-    const recaptchaClose = document.getElementById('recaptchaClose');
-    const recaptchaSubmit = document.getElementById('recaptchaSubmit');
-    const recaptchaQuestion = document.getElementById('recaptchaQuestion');
-    const recaptchaAnswer = document.getElementById('recaptchaAnswer');
-    const recaptchaError = document.getElementById('recaptchaError');
-    const recaptchaSuccess = document.getElementById('recaptchaSuccess');
-    
-    function resetRecaptchaModal() {
-      recaptchaError.style.display = 'none';
-      recaptchaSuccess.style.display = 'none';
-      recaptchaAnswer.value = '';
-      recaptchaQuestion.style.display = 'block';
-      recaptchaAnswer.style.display = 'block';
-      recaptchaSubmit.parentElement.style.display = 'block';
-    }
-
-    if(phoneBtn) {
-      phoneBtn.addEventListener('click', (e) => {
-        if(isMaintenanceActive) return; // Do nothing if in maintenance
-        e.preventDefault();
-        resetRecaptchaModal();
-        
-        const randomIndex = Math.floor(Math.random() * recaptchaProblems.length);
-        currentProblem = recaptchaProblems[randomIndex];
-        
-        recaptchaQuestion.innerText = currentProblem.question;
-        recaptchaModal.classList.add('active');
-        setTimeout(() => recaptchaAnswer.focus(), 300);
-      });
-    }
-
-    if(recaptchaClose) {
-      recaptchaClose.onclick = () => recaptchaModal.classList.remove('active');
-    }
-
-    if(recaptchaModal) {
-      recaptchaModal.onclick = (e) => {
-        if (e.target === recaptchaModal) {
-          recaptchaModal.classList.remove('active');
-        }
-      };
-    }
-
-    if(recaptchaSubmit) {
-      recaptchaSubmit.onclick = () => {
-        if (recaptchaAnswer.value.trim() === currentProblem.answer) {
-          recaptchaError.style.display = 'none';
-          recaptchaQuestion.style.display = 'none';
-          recaptchaAnswer.style.display = 'none';
-          recaptchaSubmit.parentElement.style.display = 'none';
-          recaptchaSuccess.style.display = 'block';
-        } else {
-          recaptchaError.style.display = 'block';
-          recaptchaAnswer.value = '';
-          recaptchaAnswer.focus();
-          if ('vibrate' in navigator) {
-              navigator.vibrate(100);
-          }
-        }
-      };
+    function previewPDF(pdfUrl) {
+      document.getElementById('pdfFrame').src = pdfUrl;
+      pdfPreview.style.display = 'block';
     }
   </script>
 </body>
