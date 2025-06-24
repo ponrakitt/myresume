@@ -974,6 +974,21 @@
       document.getElementById('pdfFrame').src = pdfUrl;
       pdfPreview.style.display = 'block';
     }
+
+    function logButtonClickToGA(buttonName) {
+      if (window.gtag) {
+        gtag('event', 'button_click', {
+          'event_category': 'Button',
+          'event_label': buttonName
+        });
+      }
+    }
+
+    document.querySelectorAll('.btn, .project-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        logButtonClickToGA(this.innerText.trim());
+      });
+    });
   </script>
 </body>
 </html>
