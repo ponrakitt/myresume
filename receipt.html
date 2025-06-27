@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>สร้างใบเสร็จรับเงิน</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        text-align: center;
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-weight: 700;
+    }
+    
+    .form-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    fieldset {
+        border: 2px solid #e3f2fd;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        background: linear-gradient(145deg, #ffffff, #f8f9ff);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    legend {
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: #1976d2;
+        padding: 0 15px;
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    label {
+        display: block;
+        margin-top: 15px;
+        font-weight: 600;
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    
+    input[type=text], input[type=number], input[type=date] {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 2px solid #e1e5e9;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    input[type=text]:focus, input[type=number]:focus, input[type=date]:focus {
+        outline: none;
+        border-color: #1976d2;
+        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    #itemsContainer {
+        margin-top: 20px;
+        border: 2px solid #e3f2fd;
+        border-radius: 15px;
+        background: linear-gradient(145deg, #fafbff, #f0f4ff);
+        padding: 20px;
+    }
+    
+    .items-header {
+        display: grid;
+        grid-template-columns: 5fr 1fr 2fr 2fr 1fr;
+        gap: 12px;
+        margin-bottom: 15px;
+        font-weight: 700;
+        color: #1976d2;
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .item-row {
+        display: grid;
+        grid-template-columns: 5fr 1fr 2fr 2fr 1fr;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .item-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    
+    .item-row input {
+        font-size: 1rem;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        transition: all 0.2s ease;
+    }
+    
+    .item-row input:focus {
+        border-color: #1976d2;
+        box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    }
+    
+    .item-total {
+        background: #f8f9fa !important;
+        font-weight: 600;
+        color: #1976d2;
+    }
+    
+    .remove-item-btn {
+        background: linear-gradient(145deg, #ff4757, #ff3742);
+        border: none;
+        color: white;
+        font-weight: 700;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+    
+    .remove-item-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(255, 71, 87, 0.4);
+    }
+    
+    #addItemBtn {
+        margin-top: 15px;
+        background: linear-gradient(145deg, #2ed573, #2cb865);
+        color: white;
+        font-weight: 700;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+        box-shadow: 0 6px 12px rgba(46, 213, 115, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    #addItemBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(46, 213, 115, 0.4);
+    }
+    
+    .button-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(145deg, #1976d2, #1565c0);
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 16px rgba(25, 118, 210, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(25, 118, 210, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(145deg, #ff6b6b, #ee5253);
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(255, 107, 107, 0.4);
+    }
+    
+    /* Receipt Styles */
+    .receipt-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 0;
+        font-family: 'Sarabun', sans-serif;
+        color: #333;
+    }
+    
+    .receipt-header {
+        text-align: center;
+        border-bottom: 3px solid #1976d2;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .receipt-header h3 {
+        font-size: 2rem;
+        color: #1976d2;
+        margin: 0 0 10px 0;
+    }
+    
+    .receipt-header p {
+        margin: 5px 0;
+        font-size: 1.1rem;
+    }
+    
+    .receipt-title {
+        background: linear-gradient(145deg, #1976d2, #1565c0);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .receipt-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9ff;
+        border-radius: 10px;
+    }
+    
+    .receipt-details p {
+        margin: 8px 0;
+        font-size: 1.1rem;
+    }
+    
+    .receipt-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .receipt-table th {
+        background: linear-gradient(145deg, #1976d2, #1565c0);
+        color: white;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-align: left;
+    }
+    
+    .receipt-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        font-size: 1rem;
+    }
+    
+    .receipt-table tr:nth-child(even) {
+        background: #f8f9ff;
+    }
+    
+    .text-right {
+        text-align: right;
+    }
+    
+    .total-row {
+        font-weight: 700;
+        font-size: 1.2rem;
+        background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
+    }
+    
+    .total-text {
+        font-weight: 700;
+        padding: 20px;
+        font-size: 1.3rem;
+        background: #e8f5e8;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #4caf50;
+    }
+    
+    .footer-note {
+        text-align: center;
+        font-size: 1.1rem;
+        color: #666;
+        border-top: 2px solid #ddd;
+        padding-top: 20px;
+        margin-top: 30px;
+        font-style: italic;
+    }
+
+    /* Styles for the signature section */
+    .signature-section {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 1px dashed #ccc;
+    }
+
+    .signature-box {
+        text-align: center;
+        width: 45%; /* Adjust width as needed */
+    }
+
+    .signature-line {
+        border-bottom: 1px solid #000;
+        width: 80%;
+        margin: 0 auto 10px auto;
+        height: 1px; /* Ensure the line has height */
+    }
+
+    .signature-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #555;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 20px;
+        }
+        
+        .item-row,
+        .items-header {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .receipt-details {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .button-container {
+            flex-direction: column;
+        }
+
+        .signature-section {
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .signature-box {
+            width: 100%;
+        }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧾 สร้างใบเสร็จรับเงิน</h1>
+
+    <div class="form-container">
+        <form id="invoiceForm">
+            <fieldset>
+                <legend>🏢 ข้อมูลบริษัท</legend>
+                <label for="companyName">ชื่อบริษัท</label>
+                <input type="text" id="companyName" required value="wanflorist.net" />
+
+                <label for="companyAddress">ที่อยู่บริษัท</label>
+                <input type="text" id="companyAddress" required value="698 ถนน บางแค แขวงบางแค บางแค กรุงเทพมหานคร 10160" />
+
+                <label for="companyPhone">เบอร์โทรศัพท์</label>
+                <input type="text" id="companyPhone" value="02-455-4747" />
+
+                <label for="companyTaxId">เลขประจำตัวผู้เสียภาษี</label>
+                <input type="text" id="companyTaxId" value="-" />
+            </fieldset>
+
+            <fieldset>
+                <legend>👤 ข้อมูลลูกค้า</legend>
+                <label for="customerName">ชื่อลูกค้า</label>
+                <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
+
+                <label for="customerAddress">ที่อยู่ลูกค้า</label>
+                <input type="text" id="customerAddress" placeholder="ที่อยู่ลูกค้า" />
+
+                <label for="customerTaxId">เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label>
+                <input type="text" id="customerTaxId" placeholder="เลขประจำตัวผู้เสียภาษี" />
+            </fieldset>
+
+            <fieldset>
+                <legend>📄 ข้อมูลใบเสร็จ</legend>
+                <label for="invoiceNumber">เลขที่ใบเสร็จ</label>
+                <input type="text" id="invoiceNumber" required placeholder="เช่น INV001" />
+
+                <label for="invoiceDate">วันที่ออกใบเสร็จ</label>
+                <input type="date" id="invoiceDate" required />
+
+                <label for="dueDate">ครบกำหนดชำระ (ถ้ามี)</label>
+                <input type="date" id="dueDate" />
+
+                <label for="payeeName">ชื่อผู้รับเงิน</label>
+                <input type="text" id="payeeName" placeholder="ชื่อผู้รับเงิน" required />
+            </fieldset>
+
+            <fieldset>
+                <legend>🛒 รายการสินค้า/บริการ</legend>
+                <div class="items-header">
+                    <div>รายละเอียด</div>
+                    <div>จำนวน</div>
+                    <div>ราคาต่อหน่วย</div>
+                    <div>รวม</div>
+                    <div>ลบ</div>
+                </div>
+                <div id="itemsContainer">
+                    <div class="item-row">
+                        <input type="text" class="item-description" placeholder="รายละเอียดสินค้า/บริการ" required />
+                        <input type="number" class="item-quantity" min="1" step="1" value="1" required />
+                        <input type="number" class="item-price" min="0" step="0.01" value="0.00" required />
+                        <input type="text" class="item-total" readonly placeholder="0.00" />
+                        <button type="button" class="remove-item-btn" title="ลบรายการ">✕</button>
+                    </div>
+                </div>
+                <button type="button" id="addItemBtn">
+                    <span>➕</span> เพิ่มรายการ
+                </button>
+            </fieldset>
+
+            <div class="button-container">
+                <button type="submit" class="btn-primary">
+                    <span>👁️</span> ดูใบเสร็จ
+                </button>
+                <button type="button" id="generatePdfBtn" class="btn-secondary">
+                    <span>📄</span> สร้าง PDF
+                </button>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <label style="font-size: 1.05rem; color: #1976d2; font-weight: 600;">
+                    <input type="checkbox" id="copyReceipt" style="transform: scale(1.2); margin-right: 8px;" /> สร้างสำเนาใบเสร็จ
+                </label>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ฟังก์ชันแปลงตัวเลขเป็นข้อความภาษาไทย (บาทถ้วน)
+function convertNumberToThaiText(amount) {
+    const txtnum = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+    const txtdigit = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+    if (typeof amount !== 'number') amount = parseFloat(amount);
+    if (isNaN(amount)) return "";
+
+    amount = amount.toFixed(2);
+    const [integerPart, decimalPart] = amount.split('.');
+    let bahtText = "";
+    let len = integerPart.length;
+
+    for (let i = 0; i < len; i++) {
+        const digit = parseInt(integerPart.charAt(i));
+        const position = len - i - 1;
+        if (digit !== 0) {
+            if (position === 0 && digit === 1 && len > 1) {
+                bahtText += "เอ็ด";
+            } else if (position === 1 && digit === 2) {
+                bahtText += "ยี่";
+            } else if (position === 1 && digit === 1) {
+                bahtText += "";
+            } else {
+                bahtText += txtnum[digit];
+            }
+            bahtText += txtdigit[position] || "";
+        }
+    }
+
+    if (bahtText === "") bahtText = txtnum[0];
+    bahtText += "บาท";
+
+    if (decimalPart === "00") {
+        bahtText += "ถ้วน";
+    } else {
+        let satangText = "";
+        const d1 = parseInt(decimalPart.charAt(0));
+        const d2 = parseInt(decimalPart.charAt(1));
+
+        if (d1 !== 0) {
+            if (d1 === 1) satangText += "สิบ";
+            else if (d1 === 2) satangText += "ยี่สิบ";
+            else satangText += txtnum[d1] + "สิบ";
+        }
+        if (d2 !== 0) {
+            if (d2 === 1 && d1 !== 0) satangText += "เอ็ด";
+            else satangText += txtnum[d2];
+        }
+        bahtText += satangText + "สตางค์";
+    }
+
+    return bahtText;
+}
+
+// ฟังก์ชันสร้าง HTML ใบเสร็จ
+function generateReceiptHTML(isCopy = false) {
+    const companyName = document.getElementById('companyName').value.trim();
+    const companyAddress = document.getElementById('companyAddress').value.trim();
+    const companyPhone = document.getElementById('companyPhone').value.trim();
+    const companyTaxId = document.getElementById('companyTaxId').value.trim();
+
+    const customerName = document.getElementById('customerName').value.trim() || '-';
+    const customerAddress = document.getElementById('customerAddress').value.trim() || '-';
+    const customerTaxId = document.getElementById('customerTaxId').value.trim() || '-';
+
+    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    const invoiceDate = document.getElementById('invoiceDate').value;
+    const dueDate = document.getElementById('dueDate').value || '-';
+    const payeeName = document.getElementById('payeeName').value.trim() || '-';
+
+    // Get current date and time in Thai format
+    const now = new Date();
+    const printDate = now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const printTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const printDateTime = `พิมพ์เมื่อ: ${printDate} ${printTime}`;
+
+    const copyMark = isCopy ? '<div style="position:absolute;top:30px;right:40px;color:#ff6b6b;font-size:1.3rem;font-weight:700;">(สำเนา)</div>' : '';
+
+    const itemRows = document.querySelectorAll('.item-row');
+    let itemsHtml = '';
+    let totalAmount = 0;
+    
+    itemRows.forEach(row => {
+        const desc = row.querySelector('.item-description').value.trim();
+        const qty = parseFloat(row.querySelector('.item-quantity').value);
+        const price = parseFloat(row.querySelector('.item-price').value);
+        const amount = qty * price;
+        totalAmount += amount;
+
+        itemsHtml += `
+            <tr>
+                <td>${desc}</td>
+                <td class="text-right">${qty}</td>
+                <td class="text-right">${price.toFixed(2)}</td>
+                <td class="text-right">${amount.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    return `
+        <!DOCTYPE html>
+        <html lang="th">
+        <head>
+            <meta charset="UTF-8" />
+            <title>ใบเสร็จรับเงิน${isCopy ? ' (สำเนา)' : ''}</title>
+            <style>
+                body {
+                    font-family: 'Sarabun', sans-serif;
+                    padding: 40px;
+                    background: white;
+                    color: #333;
+                    line-height: 1.4;
+                }
+                .receipt-container {
+                    max-width: 900px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 40px;
+                    border-radius: 0;
+                    position: relative;
+                }
+                .receipt-header {
+                    text-align: center;
+                    border-bottom: 3px solid #1976d2;
+                    padding-bottom: 20px;
+                    margin-bottom: 30px;
+                }
+                .receipt-header h3 {
+                    font-size: 2rem;
+                    color: #1976d2;
+                    margin: 0 0 10px 0;
+                }
+                .receipt-header p {
+                    margin: 5px 0;
+                    font-size: 1.1rem;
+                }
+                .receipt-title {
+                    background: linear-gradient(145deg, #1976d2, #1565c0);
+                    color: white;
+                    padding: 15px;
+                    border-radius: 10px;
+                    font-size: 1.8rem;
+                    font-weight: 700;
+                    text-align: center;
+                    margin: 20px 0;
+                }
+                .receipt-details {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                    margin-bottom: 30px;
+                    padding: 20px;
+                    background: #f8f9ff;
+                    border-radius: 10px;
+                }
+                .receipt-details p {
+                    margin: 8px 0;
+                    font-size: 1.1rem;
+                }
+                .receipt-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 30px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                }
+                .receipt-table th {
+                    background: linear-gradient(145deg, #1976d2, #1565c0);
+                    color: white;
+                    padding: 15px;
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    text-align: left;
+                }
+                .receipt-table td {
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #eee;
+                    font-size: 1rem;
+                }
+                .receipt-table tr:nth-child(even) {
+                    background: #f8f9ff;
+                }
+                .text-right {
+                    text-align: right;
+                }
+                .total-row {
+                    font-weight: 700;
+                    font-size: 1.2rem;
+                    background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
+                }
+                .total-text {
+                    font-weight: 700;
+                    padding: 20px;
+                    font-size: 1.3rem;
+                    background: #e8f5e8;
+                    border-radius: 10px;
+                    text-align: center;
+                    border: 2px solid #4caf50;
+                }
+                .footer-note {
+                    text-align: center;
+                    font-size: 1.1rem;
+                    color: #666;
+                    border-top: 2px solid #ddd;
+                    padding-top: 20px;
+                    margin-top: 30px;
+                    font-style: italic;
+                }
+                .signature-section {
+                    display: flex;
+                    justify-content: space-around;
+                    margin-top: 50px;
+                    padding-top: 20px;
+                    border-top: 1px dashed #ccc;
+                }
+                .signature-box {
+                    text-align: center;
+                    width: 45%;
+                }
+                .signature-line {
+                    border-bottom: 1px solid #000;
+                    width: 80%;
+                    margin: 0 auto 10px auto;
+                    height: 1px;
+                }
+                .signature-label {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #555;
+                }
+            </style>
+            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+        </head>
+        <body>
+            <div class="receipt-container">
+                ${copyMark}
+                <div class="receipt-header">
+                    <h3>${companyName}</h3>
+                    <p>${companyAddress}</p>
+                    <p>โทรศัพท์: ${companyPhone || '-'}</p>
+                    <p>เลขประจำตัวผู้เสียภาษี: ${companyTaxId || '-'}</p>
+                </div>
+
+                <div class="receipt-title">ใบเสร็จรับเงิน</div>
+
+                <div class="receipt-details">
+                    <div>
+                        <p><strong>ชื่อลูกค้า:</strong> ${customerName}</p>
+                        <p><strong>ที่อยู่ลูกค้า:</strong> ${customerAddress}</p>
+                        <p><strong>เลขประจำตัวผู้เสียภาษีลูกค้า:</strong> ${customerTaxId}</p>
+                    </div>
+                    <div>
+                        <p><strong>เลขที่ใบเสร็จ:</strong> ${invoiceNumber}</p>
+                        <p><strong>วันที่ออกใบเสร็จ:</strong> ${invoiceDate}</p>
+                        <p><strong>ครบกำหนดชำระ:</strong> ${dueDate}</p>
+                    </div>
+                </div>
+
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th>รายการสินค้า/บริการ</th>
+                            <th style="width: 80px; text-align:right;">จำนวน</th>
+                            <th style="width: 120px; text-align:right;">ราคาต่อหน่วย (บาท)</th>
+                            <th style="width: 140px; text-align:right;">รวม (บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                        <tr class="total-row">
+                            <td colspan="3" class="text-right">ยอดรวมทั้งสิ้น</td>
+                            <td class="text-right">${totalAmount.toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="total-text">จำนวนเงิน: ${convertNumberToThaiText(totalAmount)}</div>
+
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <p class="signature-label">(ลงชื่อผู้รับเงิน${payeeName ? ' : ' + payeeName : ''})</p>
+                        <p class="signature-label">วันที่: ${invoiceDate}</p>
+                    </div>
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <p class="signature-label">(ลงชื่อผู้จ่ายเงิน)</p>
+                        <p class="signature-label">วันที่: ..............................</p>
+                    </div>
+                </div>
+
+                <div class="footer-note">ขอบคุณที่ใช้บริการโปรดตรวจสอบรายละเอียดอีกครั้ง</div>
+                <div style="text-align: right; color: #888; font-size: 0.95rem; margin-top: 10px;">${printDateTime}พิมพ์โดย ${payeeName ? ' : ' + payeeName : ''}</div>
+                <div style="text-align: right; color: #888; font-size: 0.95rem; margin-top: 10px;">(Designed by Ponrakit)</div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsContainer = document.getElementById('itemsContainer');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+
+    // Set today's date as default
+    document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
+
+    // ฟังก์ชันอัพเดตยอดรวมในแต่ละแถว
+    function updateItemTotal(row) {
+        const qtyInput = row.querySelector('.item-quantity');
+        const priceInput = row.querySelector('.item-price');
+        const totalInput = row.querySelector('.item-total');
+
+        let qty = parseFloat(qtyInput.value);
+        let price = parseFloat(priceInput.value);
+
+        if (isNaN(qty) || qty < 0) qty = 0;
+        if (isNaN(price) || price < 0) price = 0;
+
+        const total = qty * price;
+        totalInput.value = total.toFixed(2);
+    }
+
+    // ฟังก์ชันลบแถวรายการ
+    function removeItemRow(e) {
+        const btn = e.target;
+        if (itemsContainer.children.length > 1) {
+            btn.closest('.item-row').remove();
+        } else {
+            alert("ต้องมีรายการสินค้าอย่างน้อย 1 รายการ");
+        }
+    }
+
+    // สร้างแถวรายการใหม่
+    function createItemRow() {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <input type="text" class="item-description" placeholder="รายละเอียดสินค้า/บริการ" required />
+            <input type="number" class="item-quantity" min="1" step="1" value="1" required />
+            <input type="number" class="item-price" min="0" step="0.01" value="0.00" required />
+            <input type="text" class="item-total" readonly placeholder="0.00" />
+            <button type="button" class="remove-item-btn" title="ลบรายการ">✕</button>
+        `;
+        return div;
+    }
+
+    // เพิ่มแถวรายการใหม่
+    addItemBtn.addEventListener('click', () => {
+        const newRow = createItemRow();
+        itemsContainer.appendChild(newRow);
+
+        // ตั้ง event listener สำหรับ input ในแถวใหม่
+        newRow.querySelector('.item-quantity').addEventListener('input', () => updateItemTotal(newRow));
+        newRow.querySelector('.item-price').addEventListener('input', () => updateItemTotal(newRow));
+        newRow.querySelector('.remove-item-btn').addEventListener('click', removeItemRow);
+        
+        // อัพเดตยอดรวม
+        updateItemTotal(newRow);
+    });
+
+    // ตั้ง event listener ให้กับแถวรายการเริ่มต้น
+    const firstRow = itemsContainer.querySelector('.item-row');
+    firstRow.querySelector('.item-quantity').addEventListener('input', () => updateItemTotal(firstRow));
+    firstRow.querySelector('.item-price').addEventListener('input', () => updateItemTotal(firstRow));
+    firstRow.querySelector('.remove-item-btn').addEventListener('click', removeItemRow);
+
+    // อัพเดตยอดรวมเริ่มต้น
+    updateItemTotal(firstRow);
+
+    // เมื่อ submit ฟอร์ม สร้างใบเสร็จ
+    document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // ตรวจสอบข้อมูล
+        const requiredFields = ['companyName', 'companyAddress', 'invoiceNumber', 'invoiceDate', 'payeeName'];
+        let hasError = false;
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.style.borderColor = '#ff4757';
+                hasError = true;
+            } else {
+                field.style.borderColor = '#e1e5e9';
+            }
+        });
+        
+        if (hasError) {
+            alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+            return;
+        }
+
+        const isCopyChecked = document.getElementById('copyReceipt').checked;
+        if (isCopyChecked) {
+            // เปิด 2 ใบ
+            const receiptHtml = generateReceiptHTML(false);
+            const receiptWindow = window.open('', '_blank', 'width=900,height=700');
+            receiptWindow.document.write(receiptHtml);
+            receiptWindow.document.close();
+
+            const copyHtml = generateReceiptHTML(true);
+            const copyWindow = window.open('', '_blank', 'width=900,height=700');
+            copyWindow.document.write(copyHtml);
+            copyWindow.document.close();
+        } else {
+            const receiptHtml = generateReceiptHTML(false);
+            const receiptWindow = window.open('', '_blank', 'width=900,height=700');
+            receiptWindow.document.write(receiptHtml);
+            receiptWindow.document.close();
+        }
+    });
+
+    // ฟังก์ชันสร้าง PDF
+    generatePdfBtn.addEventListener('click', async function() {
+        try {
+            // ตรวจสอบข้อมูล
+            const requiredFields = ['companyName', 'companyAddress', 'invoiceNumber', 'invoiceDate', 'payeeName'];
+            let hasError = false;
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.style.borderColor = '#ff4757';
+                    hasError = true;
+                } else {
+                    field.style.borderColor = '#e1e5e9';
+                }
+            });
+            
+            if (hasError) {
+                alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+                return;
+            }
+
+            // แสดงข้อความกำลังโหลด
+            const originalText = generatePdfBtn.innerHTML;
+            generatePdfBtn.innerHTML = '<span>⏳</span> กำลังสร้าง PDF...';
+            generatePdfBtn.disabled = true;
+
+            const isCopyChecked = document.getElementById('copyReceipt').checked;
+            const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+            const dateStr = new Date().toISOString().split('T')[0];
+
+            if (isCopyChecked) {
+                // สร้าง PDF 2 ไฟล์
+                for (const isCopy of [false, true]) {
+                    const receiptHtml = generateReceiptHTML(isCopy);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = receiptHtml;
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.style.width = '900px';
+                    document.body.appendChild(tempDiv);
+                    await document.fonts.ready;
+                    const receiptElement = tempDiv.querySelector('.receipt-container');
+                    const canvas = await html2canvas(receiptElement, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        width: 900,
+                        windowWidth: 900
+                    });
+                    document.body.removeChild(tempDiv);
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = 190;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                    const fileName = `ใบเสร็จ_${invoiceNumber}${isCopy ? '_สำเนา' : ''}_${dateStr}.pdf`;
+                    pdf.save(fileName);
+                }
+                generatePdfBtn.innerHTML = originalText;
+                generatePdfBtn.disabled = false;
+                return;
+            }
+            // เดิมสำหรับ 1 ใบ
+            const receiptHtml = generateReceiptHTML(false);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = receiptHtml;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.width = '900px';
+            document.body.appendChild(tempDiv);
+            await document.fonts.ready;
+            const receiptElement = tempDiv.querySelector('.receipt-container');
+            const canvas = await html2canvas(receiptElement, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                width: 900,
+                windowWidth: 900
+            });
+            document.body.removeChild(tempDiv);
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 190;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            const fileName = `ใบเสร็จ_${invoiceNumber}_${dateStr}.pdf`;
+            pdf.save(fileName);
+
+            // รีเซ็ตปุ่ม
+            generatePdfBtn.innerHTML = originalText;
+            generatePdfBtn.disabled = false;
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่อีกครั้ง');
+            
+            // รีเซ็ตปุ่ม
+            generatePdfBtn.innerHTML = '<span>📄</span> สร้าง PDF';
+            generatePdfBtn.disabled = false;
+        }
+    });
+});
+</script>
+
+</body>
+</html>
