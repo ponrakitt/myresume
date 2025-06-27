@@ -611,6 +611,9 @@
       <button class="btn btn-work-experience" id="btnWorkExperience">
         <i class="fas fa-briefcase"></i> Work Experience
       </button>
+      <a href="Tracking.html" target="_blank" class="btn btn-manage-apps">
+        <i class="fas fa-tasks"></i> Manage Applications
+      </a>
     </div>
     <div id="datetime"></div>
   </div>
@@ -721,9 +724,9 @@
     // Maintenance Mode Functionality
     function checkMaintenance() {
       // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ ---
-      const maintenanceDay = 0;        // วันที่ต้องการปิดปรับปรุง (0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์)
+      const maintenanceDay = 2;        // วันที่ต้องการปิดปรับปรุง (0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์)
       const maintenanceStartHour =1;  // เวลาเริ่มต้น (ตี 1)
-      const maintenanceEndHour = 4;    // เวลาสิ้นสุด (ตี 4)
+      const maintenanceEndHour = 24;    // เวลาสิ้นสุด (ตี 4)
       // ----------------------------------------------------
 
       const now = new Date();
@@ -916,20 +919,28 @@
     });
 
     // Update Log Modal functionality
-    const updateLogBtn = document.getElementById('updateLogBtn');
+    const updateLogBtnTrack = document.getElementById('updateLogBtn');
     const updateLogModal = document.getElementById('updateLogModal');
     const closeUpdateLogModal = document.getElementById('closeUpdateLogModal');
 
     // Coming Soon Modal functionality
-    const btnWorkExperience = document.getElementById('btnWorkExperience');
+    const btnWorkExperienceTrack = document.getElementById('btnWorkExperience');
     const comingSoonModal = document.getElementById('comingSoonModal');
     const closeComingSoonModal = document.getElementById('closeComingSoonModal');
 
-    if (updateLogBtn) {
-      updateLogBtn.onclick = () => updateLogModal.classList.add('active');
+    if (updateLogBtnTrack) {
+      updateLogBtnTrack.onclick = () => updateLogModal.classList.add('active');
+      // Track Update Log button
+      updateLogBtnTrack.addEventListener('click', function() {
+        trackButtonClick('Update Log');
+      });
     }
-    if (btnWorkExperience) {
-      btnWorkExperience.onclick = () => comingSoonModal.classList.add('active');
+    if (btnWorkExperienceTrack) {
+      btnWorkExperienceTrack.onclick = () => comingSoonModal.classList.add('active');
+      // Track Work Experience button
+      btnWorkExperienceTrack.addEventListener('click', function() {
+        trackButtonClick('Work Experience');
+      });
     }
     if (closeUpdateLogModal) {
       closeUpdateLogModal.onclick = () => updateLogModal.classList.remove('active');
@@ -975,18 +986,28 @@
       pdfPreview.style.display = 'block';
     }
 
-    function logButtonClickToGA(buttonName) {
-      if (window.gtag) {
-        gtag('event', 'button_click', {
-          'event_category': 'Button',
-          'event_label': buttonName
-        });
-      }
+    // === Tracking Button Clicks ===
+    function trackButtonClick(buttonName) {
+      fetch('https://your-app.onrender.com/track-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ button: buttonName, time: new Date().toISOString() })
+      }).catch(e => console.log('Track error:', e));
     }
 
-    document.querySelectorAll('.btn, .project-btn').forEach(btn => {
+    // Track .btn-grid buttons
+    document.querySelectorAll('.btn-grid .btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        logButtonClickToGA(this.innerText.trim());
+        const label = btn.innerText.trim().replace(/\s+/g, ' ');
+        trackButtonClick(label);
+      });
+    });
+
+    // Track project modal buttons
+    document.querySelectorAll('.project-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const label = btn.innerText.trim().replace(/\s+/g, ' ');
+        trackButtonClick('Project: ' + label);
       });
     });
   </script>
