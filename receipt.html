@@ -405,18 +405,19 @@
     }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <h1>🧾 สร้างใบเสร็จรับเงิน</h1>
+    <h1><i class="fa-solid fa-file-invoice"></i> สร้างใบเสร็จรับเงิน</h1>
 
     <div class="form-container">
         <form id="invoiceForm">
             <fieldset>
-                <legend>🏢 ข้อมูลบริษัท</legend>
+                <legend><i class="fa-solid fa-building"></i> ข้อมูลบริษัท</legend>
                 <label for="companyName">ชื่อบริษัท</label>
                 <input type="text" id="companyName" required value="wanflorist.net" />
 
@@ -431,7 +432,7 @@
             </fieldset>
 
             <fieldset>
-                <legend>👤 ข้อมูลลูกค้า</legend>
+                <legend><i class="fa-solid fa-user"></i> ข้อมูลลูกค้า</legend>
                 <label for="customerName">ชื่อลูกค้า</label>
                 <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
 
@@ -443,7 +444,7 @@
             </fieldset>
 
             <fieldset>
-                <legend>📄 ข้อมูลใบเสร็จ</legend>
+                <legend><i class="fa-solid fa-file-invoice"></i> ข้อมูลใบเสร็จ</legend>
                 <label for="invoiceNumber">เลขที่ใบเสร็จ</label>
                 <input type="text" id="invoiceNumber" required placeholder="เช่น INV001" />
 
@@ -458,7 +459,7 @@
             </fieldset>
 
             <fieldset>
-                <legend>🛒 รายการสินค้า/บริการ</legend>
+                <legend><i class="fa-solid fa-cart-shopping"></i> รายการสินค้า/บริการ</legend>
                 <div class="items-header">
                     <div>รายละเอียด</div>
                     <div>จำนวน</div>
@@ -472,20 +473,20 @@
                         <input type="number" class="item-quantity" min="1" step="1" value="1" required />
                         <input type="number" class="item-price" min="0" step="0.01" value="0.00" required />
                         <input type="text" class="item-total" readonly placeholder="0.00" />
-                        <button type="button" class="remove-item-btn" title="ลบรายการ">✕</button>
+                        <button type="button" class="remove-item-btn" title="ลบรายการ"><i class="fa-solid fa-times"></i></button>
                     </div>
                 </div>
                 <button type="button" id="addItemBtn">
-                    <span>➕</span> เพิ่มรายการ
+                    <i class="fa-solid fa-plus"></i> เพิ่มรายการ
                 </button>
             </fieldset>
 
             <div class="button-container">
                 <button type="submit" class="btn-primary">
-                    <span>👁️</span> ดูใบเสร็จ
+                    <i class="fa-solid fa-eye"></i> ดูใบเสร็จ
                 </button>
                 <button type="button" id="generatePdfBtn" class="btn-secondary">
-                    <span>📄</span> สร้าง PDF
+                    <i class="fa-solid fa-file-pdf"></i> สร้าง PDF
                 </button>
             </div>
             <div style="margin-top: 20px; text-align: right;">
@@ -843,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <input type="number" class="item-quantity" min="1" step="1" value="1" required />
             <input type="number" class="item-price" min="0" step="0.01" value="0.00" required />
             <input type="text" class="item-total" readonly placeholder="0.00" />
-            <button type="button" class="remove-item-btn" title="ลบรายการ">✕</button>
+            <button type="button" class="remove-item-btn" title="ลบรายการ"><i class="fa-solid fa-times"></i></button>
         `;
         return div;
     }
