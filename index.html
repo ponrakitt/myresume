@@ -575,9 +575,83 @@
     .update-list li strong {
       color: #a3b3ff;
     }
+
+    .btn-purpose {
+      position: fixed;
+      top: 30px;
+      right: 100px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 18px;
+      backdrop-filter: blur(15px);
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      z-index: 1001;
+      font-weight: 600;
+      gap: 8px;
+      padding: 0 18px 0 12px;
+      overflow: visible;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-purpose:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgba(255, 111, 97, 0.3);
+    }
+    .btn-purpose i {
+      font-size: 1.3em;
+      margin-right: 6px;
+    }
+    .btn-purpose span {
+      display: none;
+    }
+    .btn-switch-lang {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-switch-lang:hover {
+      background: linear-gradient(135deg, #764ba2, #667eea);
+      transform: scale(1.05);
+    }
+    @media (max-width: 480px) {
+      .btn-purpose {
+        top: 15px;
+        right: 10px;
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
+        padding: 0 10px 0 8px;
+      }
+      .btn-purpose span {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body oncontextmenu="return false" onkeydown="return disableKey(event)" onselectstart="return false">
+  <!-- Purpose Button (outside main container) -->
+  <button class="btn-purpose" id="btnPurpose" title="วัตถุประสงค์">
+    <i class="fas fa-bullseye"></i>
+  </button>
   <!-- Animated background particles -->
   <div class="bg-particles" id="particles"></div>
 
@@ -619,7 +693,7 @@
   </div>
 
   <footer>
-    © 2025 Ponrakit. All rights reserved. | Last update 09-06-2025 9:25:54
+    © 2025 Ponrakit. All rights reserved. | Last update 30-06-2025 9:00:39
   </footer>
 
   <!-- Update Log Button -->
@@ -717,6 +791,63 @@
   <button class="audio-toggle" id="toggleAudio">
     <i id="audioIcon" class="fas fa-volume-up"></i>
   </button>
+
+  <!-- Purpose Modal -->
+  <div class="modal" id="purposeModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-bullseye"></i> <span id="purposeTitle">วัตถุประสงค์ของเว็บไซต์</span></h2>
+      <div id="purposeTH" style="font-size:1.1rem; margin:24px 0;">
+        <ol style="text-align:left; max-width:600px; margin:0 auto;">
+          <li>เพื่อใช้เป็นพื้นที่แสดงผลงาน (Portfolio) และประวัติส่วนตัวของข้าพเจ้า</li>
+          <li>เพื่อรวบรวมและนำเสนอรายละเอียดโครงการต่าง ๆ ที่เคยดำเนินการ</li>
+          <li>เพื่อให้ผู้เยี่ยมชมสามารถดาวน์โหลดไฟล์เรซูเม่ (Resume) และเอกสารผลงานในรูปแบบ PDF ได้อย่างสะดวก</li>
+          <li>เพื่อเป็นช่องทางในการติดต่อกับข้าพเจ้าโดยตรงผ่านอีเมลหรือโซเชียลมีเดีย</li>
+          <li>เพื่ออัปเดตข่าวสารหรือการเปลี่ยนแปลงที่สำคัญเกี่ยวกับตัวข้าพเจ้าและผลงาน</li>
+          <li>เว็บไซต์นี้จัดทำขึ้นเพื่อการนำเสนอข้อมูลเท่านั้น</li>
+          <li><b>จะไม่มีการเก็บรวบรวมข้อมูลส่วนบุคคลหรือข้อมูลใด ๆ ของผู้เยี่ยมชมทั้งสิ้น</b></li>
+        </ol>
+      </div>
+      <div id="purposeEN" style="display:none; font-size:1.1rem; margin:24px 0;">
+        <ol style="text-align:left; max-width:600px; margin:0 auto;">
+          <li>To serve as a portfolio and personal profile for myself</li>
+          <li>To collect and present details of various projects I have completed</li>
+          <li>To allow visitors to conveniently download my resume and project documents in PDF format</li>
+          <li>To provide direct contact channels via email or social media</li>
+          <li>To update important news or changes related to myself and my works</li>
+          <li>This website is created solely for information presentation</li>
+          <li><b>No personal data or any visitor information will be collected or stored by this website</b></li>
+        </ol>
+      </div>
+      <div id="purposeZH" style="display:none; font-size:1.1rem; margin:24px 0;">
+        <ol style="text-align:left; max-width:600px; margin:0 auto;">
+          <li>作为我的个人作品集和个人简介</li>
+          <li>汇集并展示我完成的各类项目详情</li>
+          <li>方便访客下载我的简历和项目文档（PDF格式）</li>
+          <li>提供通过电子邮件或社交媒体直接联系的渠道</li>
+          <li>更新与我本人及作品相关的重要新闻或变更</li>
+          <li>本网站仅用于信息展示</li>
+          <li><b>本网站不会收集或存储任何访问者的个人信息或数据</b></li>
+        </ol>
+      </div>
+      <div id="purposeJP" style="display:none; font-size:1.1rem; margin:24px 0;">
+        <ol style="text-align:left; max-width:600px; margin:0 auto;">
+          <li>自身のポートフォリオおよびプロフィールとして活用するため</li>
+          <li>これまでに手掛けた様々なプロジェクトの詳細をまとめて紹介するため</li>
+          <li>訪問者が履歴書やプロジェクト資料（PDF）を便利にダウンロードできるようにするため</li>
+          <li>メールやSNSを通じて直接連絡できる手段を提供するため</li>
+          <li>自分自身や作品に関する重要なお知らせや変更を更新するため</li>
+          <li>本ウェブサイトは情報提供のみを目的としています</li>
+          <li><b>本ウェブサイトは訪問者の個人情報やデータを一切収集・保存しません</b></li>
+        </ol>
+      </div>
+      <button class="modal-close" id="closePurposeModal">
+        <i class="fas fa-times"></i> ปิด / Close
+      </button>
+      <button class="btn-switch-lang" id="switchLangBtn" style="margin-left:16px;">
+        <i class="fas fa-language"></i> <span id="switchLangLabel">English</span>
+      </button>
+    </div>
+  </div>
 
   <script>
     let isMaintenanceActive = false;
@@ -1009,6 +1140,78 @@
         const label = btn.innerText.trim().replace(/\s+/g, ' ');
         trackButtonClick('Project: ' + label);
       });
+    });
+
+    // === Purpose Modal Functionality ===
+    const btnPurpose = document.getElementById('btnPurpose');
+    const purposeModal = document.getElementById('purposeModal');
+    const closePurposeModal = document.getElementById('closePurposeModal');
+    const switchLangBtn = document.getElementById('switchLangBtn');
+    const purposeTH = document.getElementById('purposeTH');
+    const purposeEN = document.getElementById('purposeEN');
+    const purposeZH = document.getElementById('purposeZH');
+    const purposeJP = document.getElementById('purposeJP');
+    const purposeTitle = document.getElementById('purposeTitle');
+    const purposeBtnLabel = document.getElementById('purposeBtnLabel');
+    const switchLangLabel = document.getElementById('switchLangLabel');
+    let langIndex = 0;
+    const langs = [
+      {
+        code: 'TH',
+        show: [purposeTH],
+        hide: [purposeEN, purposeZH, purposeJP],
+        title: 'วัตถุประสงค์ของเว็บไซต์',
+        btn: 'วัตถุประสงค์',
+        switchLabel: 'English'
+      },
+      {
+        code: 'EN',
+        show: [purposeEN],
+        hide: [purposeTH, purposeZH, purposeJP],
+        title: 'Website Purpose',
+        btn: 'Purpose',
+        switchLabel: '中文'
+      },
+      {
+        code: 'ZH',
+        show: [purposeZH],
+        hide: [purposeTH, purposeEN, purposeJP],
+        title: '网站宗旨',
+        btn: '宗旨',
+        switchLabel: '日本語'
+      },
+      {
+        code: 'JP',
+        show: [purposeJP],
+        hide: [purposeTH, purposeEN, purposeZH],
+        title: 'ウェブサイトの目的',
+        btn: '目的',
+        switchLabel: 'ภาษาไทย'
+      }
+    ];
+    function setLang(idx) {
+      langs[idx].show.forEach(el => el.style.display = '');
+      langs[idx].hide.forEach(el => el.style.display = 'none');
+      purposeTitle.innerText = langs[idx].title;
+      switchLangLabel.innerText = langs[idx].switchLabel;
+      btnPurpose.title = langs[idx].title;
+    }
+    setLang(langIndex);
+    btnPurpose.onclick = () => purposeModal.classList.add('active');
+    closePurposeModal.onclick = () => purposeModal.classList.remove('active');
+    switchLangBtn.onclick = () => {
+      langIndex = (langIndex + 1) % langs.length;
+      setLang(langIndex);
+    };
+    purposeModal.onclick = (e) => {
+      if (e.target === purposeModal) {
+        purposeModal.classList.remove('active');
+      }
+    };
+    document.addEventListener('keydown', e => {
+      if (purposeModal.classList.contains('active') && e.key === 'Escape') {
+        purposeModal.classList.remove('active');
+      }
     });
   </script>
 </body>
