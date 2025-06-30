@@ -16,10 +16,15 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+        }
         body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             color: #333;
         }
 
@@ -27,6 +32,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            flex: 1 0 auto;
         }
 
         .header {
@@ -284,6 +290,12 @@
             <button class="btn btn-primary" id="helpBtn" style="margin-top: 15px;"><i class="fa-solid fa-circle-question"></i> คู่มือการใช้งาน</button>
         </div>
 
+        <!-- สรุปผลรวมประจำเดือน -->
+        <div class="card" id="monthlySummaryCard" style="margin-bottom: 18px;">
+            <h2 style="font-size:1.3rem; margin-bottom:10px;">สรุปผลรวมการสมัครงานในเดือนนี้</h2>
+            <div id="monthlySummaryContent" style="font-size:1.08rem; color:#444;"></div>
+        </div>
+
         <div class="card">
             <h2>เพิ่มข้อมูลการสมัครงาน</h2>
             <form id="jobForm">
@@ -366,20 +378,52 @@
 
     <!-- Modal คู่มือการใช้งาน -->
     <div id="helpModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4);">
-        <div style="background:white; max-width:500px; margin:60px auto; padding:30px 25px 20px 25px; border-radius:15px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-            <h2 style="margin-bottom:10px;">คู่มือการใช้งานระบบบันทึกการสมัครงาน</h2>
-            <ul style="margin-bottom:18px; padding-left:18px;">
-                <li><b>เพิ่มข้อมูลการสมัครงาน</b>: กรอกตำแหน่งงาน บริษัท และสถานะ แล้วกด "เพิ่มข้อมูล"</li>
-                <li><b>นำเข้าไฟล์ Excel</b>: คลิกปุ่ม "📁 นำเข้าไฟล์ Excel" เพื่ออัปโหลดข้อมูลจากไฟล์ Excel</li>
-                <li><b>ส่งออก Excel</b>: คลิกปุ่ม "📊 ส่งออก Excel" เพื่อดาวน์โหลดข้อมูลเป็นไฟล์ Excel</li>
-                <li><b>อัปเดตสถานะอัตโนมัติ</b>: คลิกปุ่ม "🔄 อัปเดตสถานะอัตโนมัติ" เพื่อเปลี่ยนสถานะใบสมัครที่รอเกิน 14 วันเป็น "อาจไม่ได้รับการตอบกลับ"</li>
-                <li><b>สรุปผลเป็น PDF</b>: <span style="color:#888;">ฟีเจอร์นี้กำลังอยู่ระหว่างการพัฒนา</span></li>
-                <li><b>แก้ไข/ลบ</b>: ใช้ปุ่ม "แก้ไข" หรือ "ลบ" ในแต่ละแถวของตารางเพื่อจัดการข้อมูล</li>
-                <li>หากมีข้อสงสัยหรือคำถามสามารถติดต่อทีมงานได้ที่อีเมล์ 
-                  <a id="contactMail" href="#">ponrakitt@outlook.co.th</a> ได้ตลอดเลยนะครับ
+        <div style="background:white; max-width:540px; margin:60px auto; padding:30px 25px 20px 25px; border-radius:15px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.2); max-height:80vh; overflow-y:auto;">
+            <h2 style="margin-bottom:10px;">คู่มือการใช้งานระบบบันทึกการสมัครงาน (ฉบับละเอียด)</h2>
+            <ol style="margin-bottom:18px; padding-left:18px; font-size:1.04rem;">
+                <li><b>การเพิ่มข้อมูลการสมัครงาน</b><br>
+                  กรอกข้อมูลในฟอร์มด้านบนสุดของหน้าเว็บ<br>
+                  - <b>ตำแหน่งงาน</b>: ระบุชื่อตำแหน่งที่สมัคร (เช่น โปรแกรมเมอร์, วิศวกร)<br>
+                  - <b>บริษัท</b>: ระบุชื่อบริษัทที่สมัคร<br>
+                  - <b>สถานะ</b>: เลือกสถานะปัจจุบันของใบสมัคร เช่น รอการตอบกลับ, นัดสัมภาษณ์, ไม่ผ่าน, ผ่าน, อาจไม่ได้รับการตอบกลับ<br>
+                  กดปุ่ม <b>เพิ่มข้อมูล</b> ข้อมูลจะถูกเพิ่มลงในตารางด้านล่างทันที
                 </li>
-                <li> ขอให้ทุกท่านโชคดีในการหางานและได้งานที่ตรงกับความต้องการของตัวเองนะครับ</li>
-            </ul>
+                <li><b>การแก้ไขข้อมูลในตาราง (Inline Edit)</b><br>
+                  กดปุ่ม <b>แก้ไข</b> ในแถวที่ต้องการ ข้อมูลจะแก้ไขได้ทันทีในตาราง<br>
+                  สามารถแก้ไข <b>วันที่สมัคร, ตำแหน่งงาน, บริษัท, สถานะ</b> ได้โดยตรง<br>
+                  หลังแก้ไขเสร็จ ให้กด <b>บันทึก</b> เพื่อยืนยัน หรือ <b>ยกเลิก</b> เพื่อกลับสู่ข้อมูลเดิม
+                </li>
+                <li><b>การลบข้อมูล</b><br>
+                  กดปุ่ม <b>ลบ</b> ในแถวที่ต้องการ ระบบจะถามยืนยันก่อนลบข้อมูล หากยืนยัน ข้อมูลจะถูกลบออกจากตาราง
+                </li>
+                <li><b>การนำเข้าข้อมูลจากไฟล์ Excel</b><br>
+                  กดปุ่ม <b>นำเข้าไฟล์ Excel</b> (ไอคอนแฟ้ม) เลือกไฟล์ Excel ที่ต้องการนำเข้า (รองรับ .xlsx, .xls)<br>
+                  ระบบจะอ่านข้อมูลจากไฟล์และเพิ่มลงในตารางโดยอัตโนมัติ<br>
+                  <span style="color:#888;">ควรตรวจสอบว่าไฟล์มีหัวข้อคอลัมน์ เช่น "ตำแหน่งงาน", "บริษัท", "สถานะ", "วันที่สมัคร"</span>
+                </li>
+                <li><b>การส่งออกข้อมูลเป็นไฟล์ Excel</b><br>
+                  กดปุ่ม <b>ส่งออก Excel</b> (ไอคอน Excel) ระบบจะดาวน์โหลดข้อมูลทั้งหมดในตารางเป็นไฟล์ Excel<br>
+                  ข้อมูลจะรวมถึงวันที่สมัคร, ตำแหน่งงาน, บริษัท, สถานะ, จำนวนวันที่ผ่านไป
+                </li>
+                <li><b>การอัปเดตสถานะอัตโนมัติ</b><br>
+                  กดปุ่ม <b>อัปเดตสถานะอัตโนมัติ</b> (ไอคอนหมุน) ระบบจะตรวจสอบใบสมัครที่สถานะเป็น "รอการตอบกลับ" และเวลาผ่านไปเกิน 14 วัน<br>
+                  ใบสมัครเหล่านั้นจะถูกเปลี่ยนสถานะเป็น "อาจไม่ได้รับการตอบกลับ" อัตโนมัติ
+                </li>
+                <li><b>การดูสรุปผลรวมประจำเดือน</b><br>
+                  ที่กล่อง "สรุปผลรวมการสมัครงานในเดือนนี้" ด้านบน จะแสดงจำนวนใบสมัครในเดือนปัจจุบันและแยกตามสถานะ
+                </li>
+                <li><b>การใช้ปุ่มลอยมุมขวาล่าง</b><br>
+                  <b>ปุ่มข้อมูลส่วนบุคคล</b> (ไอคอนรูปคน): อ่านนโยบายความเป็นส่วนตัวและข้อจำกัดความรับผิดชอบ<br>
+                  <b>ปุ่มติดต่อแอดมิน</b> (ไอคอนจดหมาย): เสนอฟีเจอร์ใหม่ หรือส่ง Feedback/ข้อเสนอแนะผ่านอีเมล เลือกหัวข้อที่ต้องการติดต่อได้จากเมนูที่ปรากฏ
+                </li>
+                <li><b>การติดต่อสอบถาม</b><br>
+                  หากมีข้อสงสัยหรือปัญหา สามารถติดต่อทีมงานได้ที่ <a id="contactMail" href="#">ponrakitt@outlook.co.th</a>
+                </li>
+                <li><b>หมายเหตุเพิ่มเติม</b><br>
+                  ข้อมูลทั้งหมดจะถูกจัดเก็บและประมวลผลเฉพาะบนอุปกรณ์ของคุณเท่านั้น ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์หรือบุคคลที่สาม<br>
+                  เมื่อปิดหน้าเว็บหรือรีเฟรช ข้อมูลจะหายไปทันที ควรส่งออกไฟล์ Excel เพื่อสำรองข้อมูลเป็นระยะ
+                </li>
+            </ol>
             <div style="display:flex; justify-content:center; margin-top:20px;">
               <button class="btn btn-danger" id="closeHelpBtn" style="font-size:18px; padding:12px 40px;">
                 <i class="fa-solid fa-xmark"></i> ปิดหน้าต่าง
@@ -438,14 +482,28 @@
       <button id="feedbackBtn" style="width:100%; border:none; background:none; padding:16px 18px; font-size:1.08rem; color:#667eea; text-align:left; cursor:pointer;"><i class="fa-solid fa-comment-dots"></i> Feedback / ข้อเสนอแนะ</button>
     </div>
 
-    <!-- Footer -->
-    <footer style="width:100vw;position:fixed;bottom:0;left:0;z-index:100000;background:rgba(0,0,0,0.08);color:#444;text-align:center;padding:10px 0;font-size:1rem;letter-spacing:0.5px;backdrop-filter:blur(2px);box-shadow:0 -2px 8px rgba(0,0,0,0.04);">
+    <!-- Popup Congratulations -->
+    <div id="congratsModal" style="display:none; position:fixed; z-index:1000000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5);">
+      <div style="background:white; max-width:400px; margin:100px auto; padding:40px 30px 30px 30px; border-radius:20px; position:relative; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <div id="confetti" style="position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none;"></div>
+        <h2 style="color:#36d1c4; font-size:2.2rem; margin-bottom:10px;"><i class="fa-solid fa-trophy"></i> ยินดีด้วย!</h2>
+        <p style="font-size:1.2rem; color:#444;">คุณได้รับการตอบรับงานแล้ว<br>ขอแสดงความยินดีอย่างยิ่ง!</p>
+        <button class="btn btn-success" id="closeCongratsBtn" style="margin-top:20px; font-size:1.1rem; padding:10px 36px;">
+          <i class="fa-solid fa-check"></i> ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+
+    <!-- แถบสงวนสิทธิ์อยู่ล่างสุดของเนื้อหาเสมอ ไม่ลอย -->
+    <footer style="width:100vw;background:rgba(0,0,0,0.08);color:#444;text-align:center;padding:10px 0;font-size:1rem;letter-spacing:0.5px;backdrop-filter:blur(2px);box-shadow:0 -2px 8px rgba(0,0,0,0.04);flex-shrink:0;">
       <span style="font-weight:500;">© 2025 ponrakit &nbsp;|&nbsp; Designed and Developed by ponrakit</span>
     </footer>
 
     <script>
         let jobApplications = [];
         let editingIndex = -1;
+        let congratsShown = false;
+        let inlineEditingIndex = -1;
 
         // โหลดข้อมูลจาก memory เมื่อหน้าเว็บโหลด
         window.onload = function() {
@@ -677,7 +735,6 @@
         function updateTable() {
             const tbody = document.getElementById('jobTableBody');
             tbody.innerHTML = '';
-            
             jobApplications.forEach((app, index) => {
                 const row = document.createElement('tr');
                 let daysPassed = '-';
@@ -686,13 +743,12 @@
                     if (app.date instanceof Date) {
                         dateObj = app.date;
                     } else if (typeof app.date === 'string' && app.date.trim()) {
-                        // รองรับรูปแบบวันที่ไทย เช่น 1/5/2567
                         let parts = app.date.split('/');
                         if (parts.length === 3) {
                             let day = parseInt(parts[0], 10);
                             let month = parseInt(parts[1], 10) - 1;
                             let year = parseInt(parts[2], 10);
-                            if (year > 2400) year -= 543; // ถ้าเป็น พ.ศ. ให้แปลงเป็น ค.ศ.
+                            if (year > 2400) year -= 543;
                             dateObj = new Date(year, month, day);
                         } else {
                             let parsed = new Date(app.date);
@@ -706,56 +762,81 @@
                 if (dateObj) {
                     daysPassed = Math.floor((new Date() - dateObj) / (1000 * 60 * 60 * 24));
                 }
-                
-                // กำหนดคลาส CSS ตามสถานะ
                 let statusClass = '';
                 switch(app.status) {
-                    case 'รอการตอบกลับ':
-                        statusClass = 'status-pending';
-                        break;
-                    case 'นัดสัมภาษณ์':
-                        statusClass = 'status-interview';
-                        break;
-                    case 'ไม่ผ่าน':
-                        statusClass = 'status-rejected';
-                        break;
-                    case 'ผ่าน':
-                        statusClass = 'status-accepted';
-                        break;
-                    case 'อาจไม่ได้รับการตอบกลับ':
-                        statusClass = 'status-no-response';
-                        break;
+                    case 'รอการตอบกลับ': statusClass = 'status-pending'; break;
+                    case 'นัดสัมภาษณ์': statusClass = 'status-interview'; break;
+                    case 'ไม่ผ่าน': statusClass = 'status-rejected'; break;
+                    case 'ผ่าน': statusClass = 'status-accepted'; break;
+                    case 'อาจไม่ได้รับการตอบกลับ': statusClass = 'status-no-response'; break;
                 }
-                
                 row.className = statusClass;
-                row.innerHTML = `
-                    <td>${app.date}</td>
-                    <td>${app.position}</td>
-                    <td>${app.company}</td>
-                    <td>${getStatusIcon(app.status)} ${app.status}</td>
-                    <td>${daysPassed} วัน</td>
-                    <td>
-                        <button class="edit-btn" onclick="editApplication(${index})">แก้ไข</button>
-                        <button class="delete-btn" onclick="deleteApplication(${index})">ลบ</button>
-                    </td>
-                `;
+                if (inlineEditingIndex === index) {
+                    row.innerHTML = `
+                        <td><input type="text" value="${app.date}" id="edit-date-${index}" style="width:110px;"></td>
+                        <td><input type="text" value="${app.position}" id="edit-position-${index}" style="width:120px;"></td>
+                        <td><input type="text" value="${app.company}" id="edit-company-${index}" style="width:120px;"></td>
+                        <td>
+                            <select id="edit-status-${index}" style="width:140px;">
+                                <option value="รอการตอบกลับ" ${app.status==='รอการตอบกลับ'?'selected':''}>รอการตอบกลับ</option>
+                                <option value="นัดสัมภาษณ์" ${app.status==='นัดสัมภาษณ์'?'selected':''}>นัดสัมภาษณ์</option>
+                                <option value="ไม่ผ่าน" ${app.status==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
+                                <option value="ผ่าน" ${app.status==='ผ่าน'?'selected':''}>ผ่าน</option>
+                                <option value="อาจไม่ได้รับการตอบกลับ" ${app.status==='อาจไม่ได้รับการตอบกลับ'?'selected':''}>อาจไม่ได้รับการตอบกลับ</option>
+                            </select>
+                        </td>
+                        <td>${daysPassed} วัน</td>
+                        <td>
+                            <button class="btn btn-success" onclick="saveInlineEdit(${index})">บันทึก</button>
+                            <button class="btn btn-danger" onclick="cancelInlineEdit()">ยกเลิก</button>
+                        </td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${app.date}</td>
+                        <td>${app.position}</td>
+                        <td>${app.company}</td>
+                        <td>${getStatusIcon(app.status)} ${app.status}</td>
+                        <td>${daysPassed} วัน</td>
+                        <td>
+                            <button class="edit-btn" onclick="startInlineEdit(${index})">แก้ไข</button>
+                            <button class="delete-btn" onclick="deleteApplication(${index})">ลบ</button>
+                        </td>
+                    `;
+                }
                 tbody.appendChild(row);
             });
+            if (!congratsShown && jobApplications.some(app => app.status === 'ผ่าน')) {
+                congratsShown = true;
+                showCongratsPopup();
+            }
+            updateMonthlySummary();
         }
 
-        // แก้ไขข้อมูลการสมัครงาน (แก้ได้เฉพาะสถานะ)
-        function editApplication(index) {
-            const app = jobApplications[index];
-            document.getElementById('position').value = app.position;
-            document.getElementById('company').value = app.company;
-            document.getElementById('status').value = app.status;
-            
-            // ปิดการแก้ไขตำแหน่งและบริษัท
-            document.getElementById('position').disabled = true;
-            document.getElementById('company').disabled = true;
-            
-            editingIndex = index;
-            document.querySelector('button[type="submit"]').textContent = 'บันทึกการแก้ไข';
+        // เพิ่มฟังก์ชันสำหรับ inline edit
+        function startInlineEdit(index) {
+            inlineEditingIndex = index;
+            updateTable();
+        }
+        function saveInlineEdit(index) {
+            const date = document.getElementById(`edit-date-${index}`).value.trim();
+            const position = document.getElementById(`edit-position-${index}`).value.trim();
+            const company = document.getElementById(`edit-company-${index}`).value.trim();
+            const status = document.getElementById(`edit-status-${index}`).value;
+            if (!position || !company) {
+                alert('กรุณากรอกตำแหน่งงานและบริษัท');
+                return;
+            }
+            jobApplications[index].date = date;
+            jobApplications[index].position = position;
+            jobApplications[index].company = company;
+            jobApplications[index].status = status;
+            inlineEditingIndex = -1;
+            updateTable();
+        }
+        function cancelInlineEdit() {
+            inlineEditingIndex = -1;
+            updateTable();
         }
 
         // ลบข้อมูลการสมัครงาน
@@ -1058,6 +1139,100 @@
           window.location.href = `mailto:ponrakitt@outlook.co.th?subject=${subject}&body=${body}`;
           contactAdminMenu.style.display = 'none';
         };
+
+        // ฟังก์ชันแสดง Popup แสดงความยินดี
+        function showCongratsPopup() {
+            const modal = document.getElementById('congratsModal');
+            modal.style.display = 'block';
+            launchConfetti();
+        }
+        // ปิด Popup
+        document.getElementById('closeCongratsBtn').onclick = function() {
+            document.getElementById('congratsModal').style.display = 'none';
+            clearConfetti();
+        };
+        document.getElementById('congratsModal').onclick = function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+                clearConfetti();
+            }
+        };
+        // Confetti effect (simple JS)
+        function launchConfetti() {
+            const confetti = document.getElementById('confetti');
+            confetti.innerHTML = '';
+            for (let i = 0; i < 80; i++) {
+                const div = document.createElement('div');
+                div.style.position = 'absolute';
+                div.style.left = Math.random() * 100 + '%';
+                div.style.top = '-20px';
+                div.style.width = '10px';
+                div.style.height = '18px';
+                div.style.background = `hsl(${Math.random()*360},80%,60%)`;
+                div.style.opacity = 0.8;
+                div.style.borderRadius = '4px';
+                div.style.transform = `rotate(${Math.random()*360}deg)`;
+                div.style.transition = 'top 2.2s cubic-bezier(.23,1.02,.64,1), opacity 2.2s';
+                confetti.appendChild(div);
+                setTimeout(() => {
+                    div.style.top = '100%';
+                    div.style.opacity = 0;
+                }, 10);
+            }
+        }
+        function clearConfetti() {
+            document.getElementById('confetti').innerHTML = '';
+        }
+
+        // ฟังก์ชันสรุปผลรวมประจำเดือน
+        function updateMonthlySummary() {
+            const now = new Date();
+            const thisMonth = now.getMonth();
+            const thisYear = now.getFullYear();
+            // กรองเฉพาะใบสมัครในเดือนนี้
+            const monthlyApps = jobApplications.filter(app => {
+                let dateObj = null;
+                if (app.date) {
+                    if (app.date instanceof Date) {
+                        dateObj = app.date;
+                    } else if (typeof app.date === 'string' && app.date.trim()) {
+                        let parts = app.date.split('/');
+                        if (parts.length === 3) {
+                            let day = parseInt(parts[0], 10);
+                            let month = parseInt(parts[1], 10) - 1;
+                            let year = parseInt(parts[2], 10);
+                            if (year > 2400) year -= 543;
+                            dateObj = new Date(year, month, day);
+                        } else {
+                            let parsed = new Date(app.date);
+                            if (!isNaN(parsed.getTime())) dateObj = parsed;
+                        }
+                    }
+                } else if (app.dateAdded) {
+                    let parsed = new Date(app.dateAdded);
+                    if (!isNaN(parsed.getTime())) dateObj = parsed;
+                }
+                return dateObj && dateObj.getMonth() === thisMonth && dateObj.getFullYear() === thisYear;
+            });
+            // สรุปจำนวนแต่ละสถานะ
+            const statusMap = {};
+            monthlyApps.forEach(app => {
+                if (!statusMap[app.status]) statusMap[app.status] = 0;
+                statusMap[app.status]++;
+            });
+            const total = monthlyApps.length;
+            let html = `<b>สมัครทั้งหมด ${total} ตำแหน่ง</b>`;
+            if (total > 0) {
+                html += '<ul style="margin:8px 0 0 18px;">';
+                Object.entries(statusMap).forEach(([status, count]) => {
+                    html += `<li>${status} <span style='color:#764ba2;'>${count}</span></li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<div style="color:#888;">(ยังไม่มีข้อมูลในเดือนนี้)</div>';
+            }
+            document.getElementById('monthlySummaryContent').innerHTML = html;
+        }
     </script>
 </body>
 </html>
