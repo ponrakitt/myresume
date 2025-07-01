@@ -465,40 +465,68 @@
         font-size: 2rem; 
         margin-bottom: 24px;
       }
-      
       .container { 
-        padding: 32px 16px; 
-        margin: 15px 8px;
+        padding: 20px 4px; 
+        margin: 8px 2px;
+        width: 98vw;
+        max-width: 100vw;
+        border-radius: 18px;
       }
-      
+      .btn-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
       .btn {
-        font-size: 0.75rem;
-        padding: 12px 8px;
-        min-height: 50px;
+        font-size: 0.85rem;
+        padding: 12px 6px;
+        min-height: 44px;
+        border-radius: 12px;
       }
-      
       .btn i {
         font-size: 1em;
       }
-      
       #datetime {
         font-size: 0.8rem;
-        padding: 10px 14px;
+        padding: 8px 8px;
       }
-      
       footer {
         font-size: 11px;
-        padding: 12px;
+        padding: 8px;
       }
-      
       .audio-toggle {
-        bottom: 15px;
-        right: 15px;
-        width: 44px;
-        height: 44px;
-        font-size: 14px;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 13px;
       }
-
+      .modal-content {
+        padding: 14px 4px;
+        border-radius: 12px;
+        font-size: 0.98rem;
+      }
+      .modal-content h2 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+      }
+      .project-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .project-btn {
+        padding: 10px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+      }
+      #pdfFrame {
+        height: 220px;
+      }
+      .modal-close, .btn-switch-lang {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        border-radius: 10px;
+      }
       .btn-update-log {
         display: none;
       }
@@ -507,21 +535,25 @@
     /* Very small screens */
     @media (max-width: 360px) {
       .container {
-        width: 98vw;
-        margin: 10px 4px;
-        padding: 24px 12px;
+        width: 99vw;
+        margin: 4px 1px;
+        padding: 10px 2px;
+        border-radius: 10px;
       }
-      
       h1 {
-        font-size: 1.8rem;
+        font-size: 1.1rem;
       }
-      
       .btn {
-        font-size: 0.75rem;
-        padding: 12px 8px;
-        min-height: 50px;
+        font-size: 0.7rem;
+        padding: 8px 2px;
+        min-height: 36px;
+        border-radius: 8px;
       }
-      
+      .modal-content {
+        padding: 6px 2px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
     }
 
     /* Update Log Button */
@@ -849,6 +881,18 @@
     </div>
   </div>
 
+  <!-- Maintenance Alert Bar -->
+  <div id="maintenanceAlertBar" style="display:none; position:fixed; top:32px; left:32px; min-width:240px; max-width:320px; background:linear-gradient(90deg,#ff9800,#ff6f00); color:#fff; text-align:left; padding:12px 20px; font-weight:500; font-size:0.95rem; z-index:20000; box-shadow:0 4px 16px rgba(0,0,0,0.18); line-height:1.4; border-radius:12px; box-sizing:border-box; transition:opacity 0.3s, transform 0.3s; opacity:0.95; display:flex; align-items:center; gap:10px;">
+    <i class="fas fa-exclamation-triangle" style="font-size:1.2em; margin-right:8px;"></i>
+    <span id="maintenanceAlertText"></span>
+  </div>
+
+  <!-- Unsupported Browser Bar -->
+  <div id="unsupportedBrowserBar" style="display:none; position:fixed; top:0; left:0; width:100vw; background:linear-gradient(90deg,#ff6f00,#ff9800); color:#fff; text-align:center; padding:14px 10px; font-weight:600; font-size:1rem; z-index:30000; box-shadow:0 4px 16px rgba(0,0,0,0.18); line-height:1.5; border-radius:0 0 12px 12px; box-sizing:border-box;">
+    <span id="unsupportedBrowserText">เว็บไซต์นี้อาจใช้งานได้ไม่เต็มที่ในเบราว์เซอร์นี้ กรุณาใช้ Google Chrome, Firefox, Safari หรือ Microsoft Edge เพื่อประสบการณ์ที่ดีที่สุด</span>
+    <button id="copySiteLinkBtn" style="margin-left:16px; background:#fff; color:#ff6f00; border:none; border-radius:8px; padding:6px 16px; font-weight:600; cursor:pointer;">Copy Link</button>
+  </div>
+
   <script>
     let isMaintenanceActive = false;
 
@@ -932,6 +976,55 @@
       }
     }
     checkMaintenance();
+
+    // Maintenance Alert Bar (แจ้งเตือนก่อนปิดปรับปรุง 30 นาที)
+    function showMaintenanceAlertBar() {
+      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ (ต้องตรงกับ checkMaintenance) ---
+      const maintenanceDay = 2;        // 0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์
+      const maintenanceStartHour = 9;  // ตี 1
+      // ----------------------------------------------------
+      const now = new Date();
+      const currentDay = now.getDay();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      // หาเวลาปิดปรับปรุงรอบถัดไป
+      let nextMaintenance = new Date(now);
+      nextMaintenance.setDate(now.getDate() + ((maintenanceDay - currentDay + 7) % 7));
+      nextMaintenance.setHours(maintenanceStartHour, 0, 0, 0);
+
+      // ถ้าวันนี้เลย maintenanceStartHour ไปแล้ว ให้เลื่อนไปอาทิตย์หน้า
+      if (
+        currentDay === maintenanceDay &&
+        (currentHour > maintenanceStartHour || (currentHour === maintenanceStartHour && currentMinute >= 0))
+      ) {
+        nextMaintenance.setDate(nextMaintenance.getDate() + 7);
+      }
+
+      function updateAlertBar() {
+        const now = new Date();
+        const timeLeft = nextMaintenance - now;
+        const bar = document.getElementById('maintenanceAlertBar');
+        const text = document.getElementById('maintenanceAlertText');
+        if (timeLeft <= 0) {
+          bar.style.display = 'none';
+          clearInterval(alertInterval);
+          return;
+        }
+        // ถ้าเหลือไม่เกิน 30 นาที (1800000 ms)
+        if (timeLeft <= 30 * 60 * 1000) {
+          bar.style.display = 'block';
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+          text.innerHTML = `เว็บไซต์จะปิดปรับปรุงในอีก <b>${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}</b> นาทีนะครับ`;
+        } else {
+          bar.style.display = 'none';
+        }
+      }
+      updateAlertBar();
+      const alertInterval = setInterval(updateAlertBar, 1000);
+    }
+    showMaintenanceAlertBar();
 
     // Create animated particles
     function createParticles() {
@@ -1211,6 +1304,30 @@
     document.addEventListener('keydown', e => {
       if (purposeModal.classList.contains('active') && e.key === 'Escape') {
         purposeModal.classList.remove('active');
+      }
+    });
+
+    // ===== Browser Compatibility Check =====
+    function isSupportedBrowser() {
+      const ua = navigator.userAgent;
+      // รองรับ Chrome, Firefox, Safari, Edge (ไม่รองรับ IE, Opera, UC, Samsung, ฯลฯ)
+      if (/Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) return true; // Chrome
+      if (/Firefox\//.test(ua)) return true; // Firefox
+      if (/Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua)) return true; // Safari
+      if (/Edg\//.test(ua)) return true; // Edge
+      return false;
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      if (!isSupportedBrowser() || !window.Promise || !window.fetch || !window.addEventListener) {
+        const bar = document.getElementById('unsupportedBrowserBar');
+        bar.style.display = 'block';
+        const copyBtn = document.getElementById('copySiteLinkBtn');
+        copyBtn.onclick = function() {
+          navigator.clipboard.writeText('https://ponrakitt.site/').then(function() {
+            copyBtn.innerText = 'คัดลอกแล้ว!';
+            setTimeout(()=>{copyBtn.innerText = 'Copy Link';}, 2000);
+          });
+        };
       }
     });
   </script>
