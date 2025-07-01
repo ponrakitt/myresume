@@ -1315,6 +1315,8 @@
       if (/Firefox\//.test(ua)) return true; // Firefox
       if (/Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua)) return true; // Safari
       if (/Edg\//.test(ua)) return true; // Edge
+      // ตรวจจับ in-app browser ของ Line, Instagram, Facebook
+      if (/Line\//i.test(ua) || /Instagram/i.test(ua) || /FBAN|FBAV|FB_IAB|FB4A|FBAN/i.test(ua)) return false;
       return false;
     }
     window.addEventListener('DOMContentLoaded', function() {
