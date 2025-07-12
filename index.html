@@ -16,14 +16,35 @@
       margin: 0; 
       padding: 0; 
       min-height: 100vh;
+      min-height: 100dvh; /* Dynamic viewport height for mobile */
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
       color: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       overflow-x: hidden;
+      position: relative;
+      /* Safe area support for iPhone */
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+      z-index: -2;
     }
 
     /* Animated background particles */
@@ -52,14 +73,16 @@
     }
     
     .container {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(25px);
-      border-radius: 32px;
-      padding: 40px 24px;
-      max-width: 800px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(35px);
+      border-radius: 40px;
+      padding: 48px 32px;
+      max-width: 900px;
       width: 95vw;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2),
-                  inset 0 0 0 1px rgba(255,255,255,0.2);
+      box-shadow: 
+        0 25px 80px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.2);
       text-align: center;
       user-select: none;
       margin: 20px 10px;
@@ -67,6 +90,7 @@
       overflow: hidden;
       transform: translateY(0);
       animation: slideUp 0.8s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     @keyframes slideUp {
@@ -80,9 +104,22 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #fff, transparent);
-      animation: shimmer 3s infinite;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ff6b9d, #4ecdc4, #45b7d1, transparent);
+      animation: shimmer 4s infinite;
+      border-radius: 40px 40px 0 0;
+    }
+
+    .container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+      border-radius: 40px;
+      pointer-events: none;
     }
 
     @keyframes shimmer {
@@ -91,15 +128,29 @@
     }
     
     h1 {
-      font-weight: 700;
-      font-size: 2.4rem;
-      margin-bottom: 32px;
-      background: linear-gradient(135deg, #fff, #e0e7ff);
+      font-weight: 800;
+      font-size: 2.8rem;
+      margin-bottom: 40px;
+      background: linear-gradient(135deg, #fff 0%, #e0e7ff 25%, #ff6b9d 50%, #4ecdc4 75%, #45b7d1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #ff6b9d, #4ecdc4, #45b7d1);
+      border-radius: 2px;
     }
     
     .btn-grid {
@@ -113,11 +164,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 16px 12px;
-      border-radius: 16px;
+      gap: 10px;
+      padding: 18px 16px;
+      border-radius: 20px;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       cursor: pointer;
       text-decoration: none;
       color: #fff;
@@ -126,9 +177,10 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      min-height: 56px;
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      min-height: 60px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
 
     .btn::before {
@@ -138,8 +190,8 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.5s;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.6s;
     }
 
     .btn:hover::before {
@@ -147,8 +199,9 @@
     }
     
     .btn:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .btn:active {
@@ -157,30 +210,43 @@
     
     .btn-instagram { 
       background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+      box-shadow: 0 8px 25px rgba(221, 42, 123, 0.3);
     }
     .btn-facebook { 
       background: linear-gradient(135deg, #1877f2, #42a5f5);
+      box-shadow: 0 8px 25px rgba(24, 119, 242, 0.3);
     }
     .btn-linkedin { 
       background: linear-gradient(135deg, #0077b5, #00a0dc);
+      box-shadow: 0 8px 25px rgba(0, 119, 181, 0.3);
     }
     .btn-github { 
       background: linear-gradient(135deg, #333333, #24292e);
+      box-shadow: 0 8px 25px rgba(51, 51, 51, 0.3);
     }
     .btn-resume { 
       background: linear-gradient(135deg, #28a745, #20c997);
+      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
     }
     .btn-phone { 
       background: linear-gradient(135deg, #17a2b8, #20c997);
+      box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
     }
     .btn-email { 
       background: linear-gradient(135deg, #ff9900, #ff6b35);
+      box-shadow: 0 8px 25px rgba(255, 153, 0, 0.3);
     }
     .btn-more { 
       background: linear-gradient(135deg, #ff6f61, #ff8a65);
+      box-shadow: 0 8px 25px rgba(255, 111, 97, 0.3);
     }
     .btn-work-experience { 
       background: linear-gradient(135deg, #1e90ff, #1c7ed6);
+      box-shadow: 0 8px 25px rgba(30, 144, 255, 0.3);
+    }
+    .btn-website { 
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
     }
 
     .btn i {
@@ -198,27 +264,52 @@
     .btn-email i { color: #fff; }
     .btn-more i { color: #fff; }
     .btn-work-experience i { color: #fff; }
+    .btn-website i { color: #fff; }
 
     #datetime {
-      margin-top: 32px;
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.8);
-      font-weight: 400;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
       display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #datetime::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.8s;
+    }
+
+    #datetime:hover::before {
+      left: 100%;
     }
 
     footer {
-      margin-top: 24px;
-      padding: 16px;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.7);
+      margin-top: 32px;
+      padding: 20px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
       text-align: center;
       width: 100%;
-      font-weight: 400;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
 
     .modal {
@@ -244,20 +335,24 @@
     }
     
     .modal-content {
-      background: linear-gradient(135deg, #1f2937, #374151);
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: #fff;
-      border-radius: 20px;
-      padding: 24px;
-      max-width: 900px;
+      border-radius: 30px;
+      padding: 32px;
+      max-width: 1000px;
       width: 100%;
       text-align: center;
       overflow-y: auto;
       max-height: 90vh;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 30px 100px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       position: relative;
       transform: scale(0.8);
       transition: transform 0.3s ease;
+      backdrop-filter: blur(20px);
     }
 
     .modal.active .modal-content {
@@ -265,13 +360,14 @@
     }
 
     .modal-content h2 {
-      font-size: 1.8rem;
-      margin-bottom: 24px;
-      background: linear-gradient(135deg, #fff, #e0e7ff);
+      font-size: 2rem;
+      margin-bottom: 32px;
+      background: linear-gradient(135deg, #fff 0%, #e0e7ff 25%, #ff6b9d 50%, #4ecdc4 75%, #45b7d1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      font-weight: 700;
+      font-weight: 800;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
     }
 
     .project-grid {
@@ -285,22 +381,25 @@
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
       border: none;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 20px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      font-size: 0.85rem;
+      transition: all 0.4s ease;
+      font-weight: 600;
+      font-size: 0.9rem;
       line-height: 1.4;
       text-align: left;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       position: relative;
       overflow: hidden;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      backdrop-filter: blur(10px);
     }
 
     .project-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .project-btn::before {
@@ -355,26 +454,30 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: rgba(255, 255, 255, 0.15);
+      bottom: max(20px, env(safe-area-inset-bottom) + 10px);
+      right: max(20px, env(safe-area-inset-right) + 10px);
+      background: rgba(255, 255, 255, 0.1);
       border: none;
       border-radius: 50%;
-      width: 48px;
-      height: 48px;
+      width: 56px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: white;
-      font-size: 16px;
-      backdrop-filter: blur(15px);
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      font-size: 18px;
+      backdrop-filter: blur(20px);
+      transition: all 0.4s ease;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
       border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 1000;
     }
 
     .audio-toggle:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+      box-shadow: 0 15px 45px rgba(0,0,0,0.4);
     }
 
     /* Desktop styles */
@@ -457,6 +560,139 @@
       .btn-update-log {
         display: flex;
       }
+
+      .work-experience-item {
+        padding: 32px;
+      }
+
+      .work-header h3 {
+        font-size: 1.6rem;
+      }
+
+      .work-details p {
+        font-size: 1rem;
+      }
+
+      .work-details li {
+        font-size: 0.95rem;
+      }
+
+      #wanfloristFrame {
+        height: 600px;
+      }
+
+      .btn-purpose {
+        top: 30px;
+        right: 100px;
+        width: 64px;
+        height: 64px;
+        font-size: 20px;
+      }
+    }
+
+    /* Tablet styles */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .container {
+        padding: 32px 20px;
+        width: 92vw;
+        border-radius: 28px;
+      }
+      
+      h1 {
+        font-size: 2.4rem;
+        margin-bottom: 36px;
+      }
+      
+      .btn-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      
+      .btn {
+        padding: 16px 14px;
+        font-size: 0.9rem;
+        gap: 10px;
+        min-height: 52px;
+      }
+      
+      #datetime {
+        font-size: 0.85rem;
+        padding: 14px 18px;
+      }
+      
+      footer {
+        margin-top: 28px;
+        padding: 16px;
+        font-size: 12px;
+      }
+      
+      .modal-content {
+        padding: 24px;
+        border-radius: 24px;
+      }
+      
+      .modal-content h2 {
+        font-size: 1.6rem;
+        margin-bottom: 24px;
+      }
+      
+      .project-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 24px 0;
+      }
+      
+      .project-btn {
+        padding: 18px;
+        font-size: 0.9rem;
+      }
+      
+      #pdfFrame {
+        height: 350px;
+      }
+      
+      .modal-close {
+        padding: 12px 24px;
+        margin-top: 24px;
+        font-size: 0.9rem;
+      }
+      
+      .audio-toggle {
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .btn-purpose {
+        top: 20px;
+        right: 80px;
+        width: 56px;
+        height: 56px;
+        font-size: 18px;
+      }
+
+      .work-experience-item {
+        padding: 24px;
+        border-radius: 20px;
+      }
+
+      .work-header h3 {
+        font-size: 1.4rem;
+      }
+
+      .work-details p {
+        font-size: 0.95rem;
+      }
+
+      .work-details li {
+        font-size: 0.9rem;
+      }
+
+      #wanfloristFrame {
+        height: 400px;
+      }
     }
 
     /* Small mobile adjustments */
@@ -466,93 +702,234 @@
         margin-bottom: 24px;
       }
       .container { 
-        padding: 20px 4px; 
-        margin: 8px 2px;
-        width: 98vw;
+        padding: 20px 12px; 
+        margin: 8px 4px;
+        width: 96vw;
         max-width: 100vw;
-        border-radius: 18px;
+        border-radius: 20px;
       }
       .btn-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 12px;
       }
       .btn {
-        font-size: 0.85rem;
-        padding: 12px 6px;
-        min-height: 44px;
-        border-radius: 12px;
+        font-size: 0.9rem;
+        padding: 16px 12px;
+        min-height: 52px;
+        border-radius: 16px;
+        gap: 8px;
       }
       .btn i {
-        font-size: 1em;
+        font-size: 1.1em;
       }
       #datetime {
-        font-size: 0.8rem;
-        padding: 8px 8px;
+        font-size: 0.85rem;
+        padding: 12px 16px;
+        margin-top: 24px;
       }
       footer {
-        font-size: 11px;
-        padding: 8px;
+        font-size: 12px;
+        padding: 12px;
+        margin-top: 20px;
       }
       .audio-toggle {
-        bottom: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
-        font-size: 13px;
+        bottom: 15px;
+        right: 15px;
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
       }
       .modal-content {
-        padding: 14px 4px;
-        border-radius: 12px;
-        font-size: 0.98rem;
+        padding: 20px 16px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        margin: 10px;
       }
       .modal-content h2 {
-        font-size: 1.2rem;
-        margin-bottom: 16px;
+        font-size: 1.4rem;
+        margin-bottom: 20px;
       }
       .project-grid {
         grid-template-columns: 1fr;
-        gap: 8px;
-        margin: 12px 0;
+        gap: 12px;
+        margin: 16px 0;
       }
       .project-btn {
-        padding: 10px;
-        font-size: 0.85rem;
-        border-radius: 10px;
+        padding: 16px;
+        font-size: 0.9rem;
+        border-radius: 14px;
       }
       #pdfFrame {
-        height: 220px;
+        height: 250px;
       }
       .modal-close, .btn-switch-lang {
-        font-size: 0.85rem;
-        padding: 8px 12px;
-        border-radius: 10px;
+        font-size: 0.9rem;
+        padding: 10px 16px;
+        border-radius: 12px;
       }
       .btn-update-log {
         display: none;
+      }
+
+      .work-experience-item {
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      .work-header {
+        gap: 10px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+      }
+
+      .work-header i {
+        font-size: 1.8rem;
+      }
+
+      .work-header h3 {
+        font-size: 1.3rem;
+      }
+
+      .work-details p {
+        font-size: 0.9rem;
+        margin: 8px 0;
+      }
+
+      .work-details ul {
+        margin: 8px 0 16px 18px;
+      }
+
+      .work-details li {
+        font-size: 0.85rem;
+        margin: 6px 0;
+        line-height: 1.4;
+      }
+
+      .work-actions .btn {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+        border-radius: 14px;
+      }
+
+      #wanfloristFrame {
+        height: 280px;
+      }
+
+      .btn-purpose {
+        top: 15px;
+        right: 15px;
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
       }
     }
 
     /* Very small screens */
     @media (max-width: 360px) {
       .container {
-        width: 99vw;
-        margin: 4px 1px;
-        padding: 10px 2px;
-        border-radius: 10px;
+        width: 98vw;
+        margin: 6px 2px;
+        padding: 16px 8px;
+        border-radius: 16px;
       }
       h1 {
-        font-size: 1.1rem;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
       }
       .btn {
-        font-size: 0.7rem;
-        padding: 8px 2px;
-        min-height: 36px;
-        border-radius: 8px;
+        font-size: 0.85rem;
+        padding: 14px 10px;
+        min-height: 48px;
+        border-radius: 14px;
+        gap: 6px;
+      }
+      .btn i {
+        font-size: 1em;
+      }
+      #datetime {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+        margin-top: 20px;
+      }
+      footer {
+        font-size: 11px;
+        padding: 10px;
+        margin-top: 16px;
+      }
+      .audio-toggle {
+        bottom: 12px;
+        right: 12px;
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
       }
       .modal-content {
-        padding: 6px 2px;
-        border-radius: 8px;
+        padding: 16px 12px;
+        border-radius: 16px;
         font-size: 0.9rem;
+        margin: 8px;
+      }
+      .modal-content h2 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+      }
+      .project-grid {
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .project-btn {
+        padding: 14px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+      }
+      #pdfFrame {
+        height: 200px;
+      }
+      .modal-close, .btn-switch-lang {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        border-radius: 10px;
+      }
+      .work-experience-item {
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .work-header {
+        gap: 8px;
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+      }
+      .work-header i {
+        font-size: 1.5rem;
+      }
+      .work-header h3 {
+        font-size: 1.1rem;
+      }
+      .work-details p {
+        font-size: 0.85rem;
+        margin: 6px 0;
+      }
+      .work-details ul {
+        margin: 6px 0 12px 16px;
+      }
+      .work-details li {
+        font-size: 0.8rem;
+        margin: 4px 0;
+      }
+      .work-actions .btn {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+      }
+      #wanfloristFrame {
+        height: 220px;
+      }
+      .btn-purpose {
+        top: 12px;
+        right: 12px;
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
       }
     }
 
@@ -608,24 +985,113 @@
       color: #a3b3ff;
     }
 
+    /* Work Experience Styling */
+    .work-experience-grid {
+      display: grid;
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    .work-experience-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .work-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .work-header i {
+      font-size: 2rem;
+      color: #ff6b6b;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .work-header h3 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0;
+      background: linear-gradient(135deg, #fff, #e0e7ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .work-details {
+      margin-bottom: 20px;
+    }
+
+    .work-details p {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+
+    .work-details strong {
+      color: #a3b3ff;
+      font-weight: 600;
+    }
+
+    .work-details ul {
+      margin: 8px 0 16px 20px;
+      padding: 0;
+    }
+
+    .work-details li {
+      margin: 6px 0;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .work-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .work-actions .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 0.9rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .work-actions .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+    }
+
     .btn-purpose {
       position: fixed;
       top: 30px;
       right: 100px;
-      background: rgba(255, 255, 255, 0.15);
+      top: max(30px, env(safe-area-inset-top) + 10px);
+      right: max(100px, env(safe-area-inset-right) + 20px);
+      background: rgba(255, 255, 255, 0.1);
       border: none;
       border-radius: 50%;
-      width: 56px;
-      height: 56px;
+      width: 64px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: white;
-      font-size: 18px;
-      backdrop-filter: blur(15px);
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      font-size: 20px;
+      backdrop-filter: blur(20px);
+      transition: all 0.4s ease;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
       z-index: 1001;
       font-weight: 600;
       gap: 8px;
@@ -634,9 +1100,9 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .btn-purpose:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: scale(1.05);
-      box-shadow: 0 12px 30px rgba(255, 111, 97, 0.3);
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+      box-shadow: 0 15px 45px rgba(255, 111, 97, 0.4);
     }
     .btn-purpose i {
       font-size: 1.3em;
@@ -659,6 +1125,103 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+    }
+
+    /* Landscape orientation adjustments */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .container {
+        padding: 20px 24px;
+        margin: 10px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+      
+      .btn-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      
+      .btn {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+        min-height: 44px;
+      }
+      
+      #datetime {
+        margin-top: 20px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+      }
+      
+      footer {
+        margin-top: 16px;
+        padding: 8px 16px;
+        font-size: 11px;
+      }
+      
+      .audio-toggle {
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+      
+      .btn-purpose {
+        top: 10px;
+        right: 60px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+    }
+
+    /* Touch-friendly improvements */
+    @media (hover: none) and (pointer: coarse) {
+      .btn {
+        min-height: 56px;
+        padding: 16px 20px;
+      }
+      
+      .btn:hover {
+        transform: none;
+      }
+      
+      .btn:active {
+        transform: scale(0.98);
+      }
+      
+      .project-btn {
+        min-height: 60px;
+        padding: 20px;
+      }
+      
+      .project-btn:hover {
+        transform: none;
+      }
+      
+      .project-btn:active {
+        transform: scale(0.98);
+      }
+      
+      .audio-toggle {
+        min-width: 56px;
+        min-height: 56px;
+      }
+      
+      .btn-purpose {
+        min-width: 56px;
+        min-height: 56px;
+      }
+      
+      .modal-close {
+        min-height: 48px;
+        padding: 12px 24px;
+      }
     }
     .btn-switch-lang:hover {
       background: linear-gradient(135deg, #764ba2, #667eea);
@@ -749,12 +1312,43 @@
     </div>
   </div>
 
-  <!-- Coming Soon Modal -->
-  <div class="modal" id="comingSoonModal">
+  <!-- Work Experience Modal -->
+  <div class="modal" id="workExperienceModal">
     <div class="modal-content">
-      <h2><i class="fas fa-hourglass-half"></i> Coming Soon</h2>
-      <p style="font-size: 1.2rem; margin: 24px 0;">This section is under construction.</p>
-      <button class="modal-close" id="closeComingSoonModal">
+      <h2><i class="fas fa-briefcase"></i> ประสบการณ์การทำงาน</h2>
+      <div class="work-experience-grid">
+        <div class="work-experience-item">
+          <div class="work-header">
+            <i class="fas fa-flower-tulip"></i>
+            <h3>ร้านดอกไม้ Wanflorist</h3>
+          </div>
+          <div class="work-details">
+            <p><strong>ตำแหน่ง:</strong> ทั่วไป</p>
+            <p><strong>ระยะเวลา:</strong> 2018 - ปัจจุบัน</p>
+            <p><strong>หน้าที่รับผิดชอบ:</strong></p>
+            <ul>
+              <li>ให้คำแนะนำและบริการลูกค้าในการเลือกดอกไม้</li>
+              <li>ดูแลการจัดแสดงสินค้าในหน้าเว็ป</li>
+              <li>จัดการระบบการสั่งซื้อ</li>
+              <li>จัดการระบบของร้าน</li>
+              <li>จัดส่งสินค้าด้วยตัวเอง</li>
+            </ul>
+            <p><strong>ทักษะที่ได้เรียนรู้:</strong></p>
+            <ul>
+              <li>การจัดการระบบร้านค้า</li>
+              <li>การบริการและการสื่อสาร</li>
+              <li>การจัดแต่งหน้าเว็ปของร้าน</li>
+              <li>การแก้ปัญหาเฉพาะหน้า</li>
+            </ul>
+          </div>
+          <div class="work-actions">
+            <button class="btn btn-website" id="btnWanfloristWebsite">
+              <i class="fas fa-external-link-alt"></i> ดูเว็บไซต์ร้าน
+            </button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" id="closeWorkExperienceModal">
         <i class="fas fa-times"></i> ปิด
       </button>
     </div>
@@ -823,6 +1417,24 @@
   <button class="audio-toggle" id="toggleAudio">
     <i id="audioIcon" class="fas fa-volume-up"></i>
   </button>
+
+  <!-- Wanflorist Website Modal -->
+  <div class="modal" id="wanfloristModal">
+    <div class="modal-content">
+      <h2><i class="fas fa-flower-tulip"></i> เว็บไซต์ร้าน Wanflorist</h2>
+      <div id="wanfloristFrame" style="width: 100%; height: 500px; border: none; border-radius: 12px; background: #fff; margin: 20px 0;">
+        <iframe src="https://www.wanflorist.net/" width="100%" height="100%" frameborder="0" style="border-radius: 12px;"></iframe>
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+        <button class="modal-close" id="closeWanfloristModal">
+          <i class="fas fa-times"></i> ปิด
+        </button>
+        <a href="https://www.wanflorist.net/" target="_blank" class="btn btn-website" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fas fa-external-link-alt"></i> เปิดในแท็บใหม่
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Purpose Modal -->
   <div class="modal" id="purposeModal">
@@ -1147,10 +1759,10 @@
     const updateLogModal = document.getElementById('updateLogModal');
     const closeUpdateLogModal = document.getElementById('closeUpdateLogModal');
 
-    // Coming Soon Modal functionality
+    // Work Experience Modal functionality
     const btnWorkExperienceTrack = document.getElementById('btnWorkExperience');
-    const comingSoonModal = document.getElementById('comingSoonModal');
-    const closeComingSoonModal = document.getElementById('closeComingSoonModal');
+    const workExperienceModal = document.getElementById('workExperienceModal');
+    const closeWorkExperienceModal = document.getElementById('closeWorkExperienceModal');
 
     if (updateLogBtnTrack) {
       updateLogBtnTrack.onclick = () => updateLogModal.classList.add('active');
@@ -1160,7 +1772,7 @@
       });
     }
     if (btnWorkExperienceTrack) {
-      btnWorkExperienceTrack.onclick = () => comingSoonModal.classList.add('active');
+      btnWorkExperienceTrack.onclick = () => workExperienceModal.classList.add('active');
       // Track Work Experience button
       btnWorkExperienceTrack.addEventListener('click', function() {
         trackButtonClick('Work Experience');
@@ -1169,8 +1781,8 @@
     if (closeUpdateLogModal) {
       closeUpdateLogModal.onclick = () => updateLogModal.classList.remove('active');
     }
-    if (closeComingSoonModal) {
-      closeComingSoonModal.onclick = () => comingSoonModal.classList.remove('active');
+    if (closeWorkExperienceModal) {
+      closeWorkExperienceModal.onclick = () => workExperienceModal.classList.remove('active');
     }
     if (updateLogModal) {
       updateLogModal.onclick = (e) => {
@@ -1179,10 +1791,10 @@
         }
       };
     }
-    if (comingSoonModal) {
-      comingSoonModal.onclick = (e) => {
-        if (e.target === comingSoonModal) {
-          comingSoonModal.classList.remove('active');
+    if (workExperienceModal) {
+      workExperienceModal.onclick = (e) => {
+        if (e.target === workExperienceModal) {
+          workExperienceModal.classList.remove('active');
         }
       };
     }
@@ -1198,9 +1810,13 @@
         if (updateLogModal) {
           updateLogModal.classList.remove('active');
         }
-        // Close coming soon modal
-        if (comingSoonModal) {
-          comingSoonModal.classList.remove('active');
+        // Close work experience modal
+        if (workExperienceModal) {
+          workExperienceModal.classList.remove('active');
+        }
+        // Close wanflorist modal
+        if (wanfloristModal) {
+          wanfloristModal.classList.remove('active');
         }
       }
     });
@@ -1234,6 +1850,29 @@
         trackButtonClick('Project: ' + label);
       });
     });
+
+    // === Wanflorist Website Modal Functionality ===
+    const btnWanfloristWebsite = document.getElementById('btnWanfloristWebsite');
+    const wanfloristModal = document.getElementById('wanfloristModal');
+    const closeWanfloristModal = document.getElementById('closeWanfloristModal');
+
+    if (btnWanfloristWebsite) {
+      btnWanfloristWebsite.onclick = () => wanfloristModal.classList.add('active');
+      // Track Wanflorist Website button
+      btnWanfloristWebsite.addEventListener('click', function() {
+        trackButtonClick('Wanflorist Website');
+      });
+    }
+    if (closeWanfloristModal) {
+      closeWanfloristModal.onclick = () => wanfloristModal.classList.remove('active');
+    }
+    if (wanfloristModal) {
+      wanfloristModal.onclick = (e) => {
+        if (e.target === wanfloristModal) {
+          wanfloristModal.classList.remove('active');
+        }
+      };
+    }
 
     // === Purpose Modal Functionality ===
     const btnPurpose = document.getElementById('btnPurpose');
