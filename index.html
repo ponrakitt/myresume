@@ -1695,8 +1695,8 @@
     // DateTime update
     function updateDateTime() {
       const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const time = now.toLocaleTimeString('th-TH');
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' };
+      const time = now.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
       const date = now.toLocaleDateString('th-TH', options);
       document.getElementById('datetime').innerText = `${date} ${time}`;
     }
