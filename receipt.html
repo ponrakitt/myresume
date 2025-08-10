@@ -5,404 +5,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>สร้างใบเสร็จรับเงิน</title>
 <style>
-    * {
-        box-sizing: border-box;
-    }
-    
+    * { box-sizing: border-box; }
     body {
         font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        margin: 0;
-        padding: 20px;
-        min-height: 100vh;
+        margin: 0; padding: 20px; min-height: 100vh;
     }
-    
-    .container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
+    .container { max-width: 1000px; margin: 0 auto; }
     h1 {
-        text-align: center;
-        color: white;
-        font-size: 2.5rem;
-        margin-bottom: 30px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        font-weight: 700;
+        text-align: center; color: white; font-size: 2.5rem; margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-weight: 700;
     }
-    
     .form-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         border: 1px solid rgba(255,255,255,0.2);
     }
-    
     fieldset {
-        border: 2px solid #e3f2fd;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 25px;
+        border: 2px solid #e3f2fd; border-radius: 15px; padding: 25px; margin-bottom: 25px;
         background: linear-gradient(145deg, #ffffff, #f8f9ff);
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
-    
     legend {
-        font-weight: 700;
-        font-size: 1.3rem;
-        color: #1976d2;
-        padding: 0 15px;
-        background: white;
-        border-radius: 25px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        font-weight: 700; font-size: 1.3rem; color: #1976d2; padding: 0 15px; background: white;
+        border-radius: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    
-    label {
-        display: block;
-        margin-top: 15px;
-        font-weight: 600;
-        color: #333;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
+    label { display:block; margin-top:15px; font-weight:600; color:#333; font-size:1.1rem; margin-bottom:8px; }
+    input[type=text], input[type=number], input[type=date]{
+        width:100%; padding:12px 16px; border-radius:12px; border:2px solid #e1e5e9;
+        font-size:1rem; transition:all .3s ease; background:white;
     }
-    
-    input[type=text], input[type=number], input[type=date] {
-        width: 100%;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 2px solid #e1e5e9;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background: white;
+    input[type=text]:focus, input[type=number]:focus, input[type=date]:focus{
+        outline:none; border-color:#1976d2; box-shadow:0 0 0 3px rgba(25,118,210,.1); transform: translateY(-2px);
     }
-    
-    input[type=text]:focus, input[type=number]:focus, input[type=date]:focus {
-        outline: none;
-        border-color: #1976d2;
-        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-        transform: translateY(-2px);
+    #itemsContainer{
+        margin-top:20px; border:2px solid #e3f2fd; border-radius:15px; background:linear-gradient(145deg,#fafbff,#f0f4ff); padding:20px;
     }
-    
-    #itemsContainer {
-        margin-top: 20px;
-        border: 2px solid #e3f2fd;
-        border-radius: 15px;
-        background: linear-gradient(145deg, #fafbff, #f0f4ff);
-        padding: 20px;
+    .items-header{
+        display:grid; grid-template-columns:5fr 1fr 2fr 2fr 1fr; gap:12px; margin-bottom:15px;
+        font-weight:700; color:#1976d2; font-size:1rem; text-align:center;
     }
-    
-    .items-header {
-        display: grid;
-        grid-template-columns: 5fr 1fr 2fr 2fr 1fr;
-        gap: 12px;
-        margin-bottom: 15px;
-        font-weight: 700;
-        color: #1976d2;
-        font-size: 1rem;
-        text-align: center;
+    .item-row{
+        display:grid; grid-template-columns:5fr 1fr 2fr 2fr 1fr; gap:12px; align-items:center; margin-bottom:15px;
+        padding:15px; background:white; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,.08);
+        transition: transform .2s ease, box-shadow .2s ease;
     }
-    
-    .item-row {
-        display: grid;
-        grid-template-columns: 5fr 1fr 2fr 2fr 1fr;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 15px;
-        padding: 15px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .item-row:hover{ transform: translateY(-2px); box-shadow:0 8px 16px rgba(0,0,0,.12); }
+    .item-row input{ font-size:1rem; padding:10px 12px; border-radius:8px; border:1px solid #ddd; transition:all .2s ease; }
+    .item-row input:focus{ border-color:#1976d2; box-shadow:0 0 0 2px rgba(25,118,210,.1); }
+    .item-total{ background:#f8f9fa !important; font-weight:600; color:#1976d2; }
+    .remove-item-btn{
+        background:linear-gradient(145deg,#ff4757,#ff3742); border:none; color:white; font-weight:700;
+        padding:10px; border-radius:50%; cursor:pointer; transition:all .3s ease; width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+        box-shadow:0 4px 8px rgba(255,71,87,.3);
     }
-    
-    .item-row:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    .remove-item-btn:hover{ transform:scale(1.1); box-shadow:0 6px 12px rgba(255,71,87,.4); }
+    #addItemBtn{
+        margin-top:15px; background:linear-gradient(145deg,#2ed573,#2cb865); color:white; font-weight:700; padding:12px 24px; border:none; border-radius:12px; cursor:pointer; transition:all .3s ease; font-size:1.1rem; box-shadow:0 6px 12px rgba(46,213,115,.3);
+        display:flex; align-items:center; gap:8px;
     }
-    
-    .item-row input {
-        font-size: 1rem;
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        transition: all 0.2s ease;
+    #addItemBtn:hover{ transform:translateY(-2px); box-shadow:0 8px 16px rgba(46,213,115,.4); }
+    .button-container{ display:flex; gap:20px; justify-content:center; margin-top:40px; }
+    .btn-primary{
+        background:linear-gradient(145deg,#1976d2,#1565c0); color:white; font-weight:700; font-size:1.2rem; padding:15px 30px; border:none; border-radius:15px; cursor:pointer; transition:all .3s ease; box-shadow:0 8px 16px rgba(25,118,210,.3);
+        display:flex; align-items:center; gap:10px;
     }
-    
-    .item-row input:focus {
-        border-color: #1976d2;
-        box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    .btn-primary:hover{ transform: translateY(-3px); box-shadow:0 12px 24px rgba(25,118,210,.4); }
+    .btn-secondary{
+        background:linear-gradient(145deg,#ff6b6b,#ee5253); color:white; font-weight:700; font-size:1.2rem; padding:15px 30px; border:none; border-radius:15px; cursor:pointer; transition:all .3s ease; box-shadow:0 8px 16px rgba(255,107,107,.3);
+        display:flex; align-items:center; gap:10px;
     }
-    
-    .item-total {
-        background: #f8f9fa !important;
-        font-weight: 600;
-        color: #1976d2;
-    }
-    
-    .remove-item-btn {
-        background: linear-gradient(145deg, #ff4757, #ff3742);
-        border: none;
-        color: white;
-        font-weight: 700;
-        padding: 10px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
-    }
-    
-    .remove-item-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 12px rgba(255, 71, 87, 0.4);
-    }
-    
-    #addItemBtn {
-        margin-top: 15px;
-        background: linear-gradient(145deg, #2ed573, #2cb865);
-        color: white;
-        font-weight: 700;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1.1rem;
-        box-shadow: 0 6px 12px rgba(46, 213, 115, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    #addItemBtn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(46, 213, 115, 0.4);
-    }
-    
-    .button-container {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin-top: 40px;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(145deg, #1976d2, #1565c0);
-        color: white;
-        font-weight: 700;
-        font-size: 1.2rem;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 16px rgba(25, 118, 210, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(25, 118, 210, 0.4);
-    }
-    
-    .btn-secondary {
-        background: linear-gradient(145deg, #ff6b6b, #ee5253);
-        color: white;
-        font-weight: 700;
-        font-size: 1.2rem;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .btn-secondary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(255, 107, 107, 0.4);
-    }
-    
+    .btn-secondary:hover{ transform: translateY(-3px); box-shadow:0 12px 24px rgba(255,107,107,.4); }
+
     /* Receipt Styles */
-    .receipt-container {
-        max-width: 900px;
-        margin: 0 auto;
-        background: white;
-        padding: 40px;
-        border-radius: 0;
-        font-family: 'Sarabun', sans-serif;
-        color: #333;
-    }
-    
-    .receipt-header {
-        text-align: center;
-        border-bottom: 3px solid #1976d2;
-        padding-bottom: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .receipt-header h3 {
-        font-size: 2rem;
-        color: #1976d2;
-        margin: 0 0 10px 0;
-    }
-    
-    .receipt-header p {
-        margin: 5px 0;
-        font-size: 1.1rem;
-    }
-    
-    .receipt-title {
-        background: linear-gradient(145deg, #1976d2, #1565c0);
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 1.8rem;
-        font-weight: 700;
-        text-align: center;
-        margin: 20px 0;
-    }
-    
-    .receipt-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-bottom: 30px;
-        padding: 20px;
-        background: #f8f9ff;
-        border-radius: 10px;
-    }
-    
-    .receipt-details p {
-        margin: 8px 0;
-        font-size: 1.1rem;
-    }
-    
-    .receipt-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .receipt-table th {
-        background: linear-gradient(145deg, #1976d2, #1565c0);
-        color: white;
-        padding: 15px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        text-align: left;
-    }
-    
-    .receipt-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
-        font-size: 1rem;
-    }
-    
-    .receipt-table tr:nth-child(even) {
-        background: #f8f9ff;
-    }
-    
-    .text-right {
-        text-align: right;
-    }
-    
-    .total-row {
-        font-weight: 700;
-        font-size: 1.2rem;
-        background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
-    }
-    
-    .total-text {
-        font-weight: 700;
-        padding: 20px;
-        font-size: 1.3rem;
-        background: #e8f5e8;
-        border-radius: 10px;
-        text-align: center;
-        border: 2px solid #4caf50;
-    }
-    
-    .footer-note {
-        text-align: center;
-        font-size: 1.1rem;
-        color: #666;
-        border-top: 2px solid #ddd;
-        padding-top: 20px;
-        margin-top: 30px;
-        font-style: italic;
+    .receipt-container{ max-width:900px; margin:0 auto; background:white; padding:40px; border-radius:0; font-family:'Sarabun',sans-serif; color:#333; }
+    .receipt-header{ text-align:center; border-bottom:3px solid #1976d2; padding-bottom:20px; margin-bottom:30px; }
+    .receipt-header h3{ font-size:2rem; color:#1976d2; margin:0 0 10px 0; }
+    .receipt-header p{ margin:5px 0; font-size:1.1rem; }
+    .receipt-title{ background:linear-gradient(145deg,#1976d2,#1565c0); color:white; padding:15px; border-radius:10px; font-size:1.8rem; font-weight:700; text-align:center; margin:20px 0; }
+    .receipt-details{ display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:30px; padding:20px; background:#f8f9ff; border-radius:10px; }
+    .receipt-details p{ margin:8px 0; font-size:1.1rem; }
+    .receipt-table{ width:100%; border-collapse:collapse; margin-bottom:30px; border-radius:10px; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,.1); }
+    .receipt-table th{ background:linear-gradient(145deg,#1976d2,#1565c0); color:white; padding:15px; font-size:1.1rem; font-weight:700; text-align:left; }
+    .receipt-table td{ padding:12px 15px; border-bottom:1px solid #eee; font-size:1rem; }
+    .receipt-table tr:nth-child(even){ background:#f8f9ff; }
+    .text-right{ text-align:right; }
+    .total-row{ font-weight:700; font-size:1.2rem; background:linear-gradient(145deg,#e3f2fd,#bbdefb)!important; }
+    .total-text{ font-weight:700; padding:20px; font-size:1.3rem; background:#e8f5e8; border-radius:10px; text-align:center; border:2px solid #4caf50; }
+    .footer-note{ text-align:center; font-size:1.1rem; color:#666; border-top:2px solid #ddd; padding-top:20px; margin-top:30px; font-style:italic; }
+
+    /* ลายเซ็น */
+    .signature-section{ display:flex; justify-content:space-around; margin-top:50px; padding-top:20px; border-top:1px dashed #ccc; }
+    .signature-box{ text-align:center; width:45%; }
+    .signature-line{ border-bottom:1px solid #000; width:80%; margin:0 auto 10px auto; height:1px; }
+    .signature-label{ font-size:1rem; font-weight:600; color:#555; }
+
+    @media (max-width: 768px){
+        .form-container{ padding:20px; }
+        .item-row, .items-header{ grid-template-columns:1fr; gap:8px; }
+        .receipt-details{ grid-template-columns:1fr; gap:15px; }
+        .button-container{ flex-direction:column; }
+        .signature-section{ flex-direction:column; gap:30px; }
+        .signature-box{ width:100%; }
     }
 
-    /* Styles for the signature section */
-    .signature-section {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 50px;
-        padding-top: 20px;
-        border-top: 1px dashed #ccc;
-    }
-
-    .signature-box {
-        text-align: center;
-        width: 45%; /* Adjust width as needed */
-    }
-
-    .signature-line {
-        border-bottom: 1px solid #000;
-        width: 80%;
-        margin: 0 auto 10px auto;
-        height: 1px; /* Ensure the line has height */
-    }
-
-    .signature-label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #555;
-    }
-    
-    @media (max-width: 768px) {
-        .form-container {
-            padding: 20px;
-        }
-        
-        .item-row,
-        .items-header {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        
-        .receipt-details {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        .button-container {
-            flex-direction: column;
-        }
-
-        .signature-section {
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .signature-box {
-            width: 100%;
-        }
-    }
+    /* ========== Modal เรียกดูใบเสร็จที่ผ่านมา (เพิ่มใหม่) ========== */
+    .modal-backdrop{ position: fixed; inset: 0; background: rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:9999; }
+    .modal{ width:min(920px,95vw); background:#fff; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,.25); overflow:hidden; }
+    .modal-header{ background: linear-gradient(145deg,#1976d2,#1565c0); color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+    .modal-header h3{ margin:0; font-size:1.2rem; }
+    .modal-body{ padding:16px 20px; max-height:70vh; overflow:auto; background:#f7f9ff; }
+    .modal-footer{ padding:12px 20px; display:flex; justify-content:flex-end; gap:8px; background:#f1f4fb; }
+    .close-btn{ background:transparent; color:#fff; border:none; font-size:1.1rem; cursor:pointer; }
+    .table{ width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .table th,.table td{ padding:12px 10px; border-bottom:1px solid #e9eff8; font-size:.95rem; }
+    .table th{ background:#e9f2ff; text-align:left; font-weight:700; color:#245fae; }
+    .row-actions{ display:flex; gap:8px; }
+    .btn-mini{ border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn-view{ background:#1976d2; color:#fff; }
+    .btn-pdf{ background:#00b894; color:#fff; }
+    .search-row{ display:flex; gap:8px; margin-bottom:12px; }
+    .search-row input{ flex:1; border:1px solid #d6deeb; border-radius:10px; padding:10px 12px; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
@@ -420,13 +143,10 @@
                 <legend><i class="fa-solid fa-building"></i> ข้อมูลบริษัท</legend>
                 <label for="companyName">ชื่อบริษัท</label>
                 <input type="text" id="companyName" required value="wanflorist.net" />
-
                 <label for="companyAddress">ที่อยู่บริษัท</label>
                 <input type="text" id="companyAddress" required value="698 ถนน บางแค แขวงบางแค บางแค กรุงเทพมหานคร 10160" />
-
                 <label for="companyPhone">เบอร์โทรศัพท์</label>
                 <input type="text" id="companyPhone" value="02-455-4747" />
-
                 <label for="companyTaxId">เลขประจำตัวผู้เสียภาษี</label>
                 <input type="text" id="companyTaxId" value="-" />
             </fieldset>
@@ -435,10 +155,8 @@
                 <legend><i class="fa-solid fa-user"></i> ข้อมูลลูกค้า</legend>
                 <label for="customerName">ชื่อลูกค้า</label>
                 <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
-
                 <label for="customerAddress">ที่อยู่ลูกค้า</label>
                 <input type="text" id="customerAddress" placeholder="ที่อยู่ลูกค้า" />
-
                 <label for="customerTaxId">เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label>
                 <input type="text" id="customerTaxId" placeholder="เลขประจำตัวผู้เสียภาษี" />
             </fieldset>
@@ -447,13 +165,10 @@
                 <legend><i class="fa-solid fa-file-invoice"></i> ข้อมูลใบเสร็จ</legend>
                 <label for="invoiceNumber">เลขที่ใบเสร็จ</label>
                 <input type="text" id="invoiceNumber" required placeholder="เช่น INV001" />
-
                 <label for="invoiceDate">วันที่ออกใบเสร็จ</label>
                 <input type="date" id="invoiceDate" required />
-
                 <label for="dueDate">ครบกำหนดชำระ (ถ้ามี)</label>
                 <input type="date" id="dueDate" />
-
                 <label for="payeeName">ชื่อผู้รับเงิน</label>
                 <input type="text" id="payeeName" placeholder="ชื่อผู้รับเงิน" required />
             </fieldset>
@@ -488,6 +203,10 @@
                 <button type="button" id="generatePdfBtn" class="btn-secondary">
                     <i class="fa-solid fa-file-pdf"></i> สร้าง PDF
                 </button>
+                <!-- ปุ่มเรียกดูประวัติ -->
+                <button type="button" id="historyBtn" class="btn-primary" style="background:linear-gradient(145deg,#0ea5e9,#0284c7);">
+                    <i class="fa-solid fa-clock-rotate-left"></i> ใบเสร็จที่ผ่านมา
+                </button>
             </div>
             <div style="margin-top: 20px; text-align: right;">
                 <label style="font-size: 1.05rem; color: #1976d2; font-weight: 600;">
@@ -498,47 +217,66 @@
     </div>
 </div>
 
-<script>
-// ฟังก์ชันแปลงตัวเลขเป็นข้อความภาษาไทย (บาทถ้วน)
-function convertNumberToThaiText(amount) {
-    const txtnum = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
-    const txtdigit = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+<!-- Modal: รายการใบเสร็จที่ผ่านมา -->
+<div id="historyModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <div class="modal-header">
+      <h3 id="historyTitle"><i class="fa-solid fa-clock-rotate-left"></i> ใบเสร็จที่เคยทำ (ภายใน 90 วัน)</h3>
+      <button class="close-btn" id="historyClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="search-row">
+        <input type="text" id="historySearch" placeholder="ค้นหาเลขที่ใบเสร็จ / ชื่อลูกค้า..." />
+      </div>
+      <table class="table" id="historyTable">
+        <thead>
+          <tr>
+            <th>เลขที่</th>
+            <th>วันที่ออก</th>
+            <th>ลูกค้า</th>
+            <th class="text-right">ยอดรวม (บาท)</th>
+            <th>การทำงาน</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-mini" id="historyClose2">ปิด</button>
+    </div>
+  </div>
+</div>
 
+<script>
+// ===== แปลงเลขเป็นข้อความไทย =====
+function convertNumberToThaiText(amount) {
+    const txtnum = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+    const txtdigit = ["","สิบ","ร้อย","พัน","หมื่น","แสน","ล้าน"];
     if (typeof amount !== 'number') amount = parseFloat(amount);
     if (isNaN(amount)) return "";
-
     amount = amount.toFixed(2);
     const [integerPart, decimalPart] = amount.split('.');
     let bahtText = "";
     let len = integerPart.length;
-
     for (let i = 0; i < len; i++) {
         const digit = parseInt(integerPart.charAt(i));
         const position = len - i - 1;
         if (digit !== 0) {
-            if (position === 0 && digit === 1 && len > 1) {
-                bahtText += "เอ็ด";
-            } else if (position === 1 && digit === 2) {
-                bahtText += "ยี่";
-            } else if (position === 1 && digit === 1) {
-                bahtText += "";
-            } else {
-                bahtText += txtnum[digit];
-            }
+            if (position === 0 && digit === 1 && len > 1) bahtText += "เอ็ด";
+            else if (position === 1 && digit === 2) bahtText += "ยี่";
+            else if (position === 1 && digit === 1) bahtText += "";
+            else bahtText += txtnum[digit];
             bahtText += txtdigit[position] || "";
         }
     }
-
     if (bahtText === "") bahtText = txtnum[0];
     bahtText += "บาท";
-
     if (decimalPart === "00") {
         bahtText += "ถ้วน";
     } else {
         let satangText = "";
         const d1 = parseInt(decimalPart.charAt(0));
         const d2 = parseInt(decimalPart.charAt(1));
-
         if (d1 !== 0) {
             if (d1 === 1) satangText += "สิบ";
             else if (d1 === 2) satangText += "ยี่สิบ";
@@ -550,11 +288,116 @@ function convertNumberToThaiText(amount) {
         }
         bahtText += satangText + "สตางค์";
     }
-
     return bahtText;
 }
 
-// ฟังก์ชันสร้าง HTML ใบเสร็จ
+/* ===== localStorage: เก็บ 90 วัน + กันเลขซ้ำถาวร ===== */
+const LS_REGISTRY_KEY = 'invoice_registry_v1';
+const LS_INVOICE_PREFIX = 'invoice_v1_';
+const KEEP_DAYS = 90;
+const MS_PER_DAY = 24*60*60*1000;
+
+function nowTs(){ return Date.now(); }
+function loadRegistry(){ try{ return JSON.parse(localStorage.getItem(LS_REGISTRY_KEY)) || { used:{} }; }catch(_){ return { used:{} }; } }
+function saveRegistry(reg){ localStorage.setItem(LS_REGISTRY_KEY, JSON.stringify(reg)); }
+function cleanupExpired(){
+  const reg = loadRegistry();
+  const keys = [];
+  for(let i=0;i<localStorage.length;i++){ keys.push(localStorage.key(i)); }
+  keys.forEach(k=>{
+    if(!k || !k.startsWith(LS_INVOICE_PREFIX)) return;
+    try{
+      const data = JSON.parse(localStorage.getItem(k));
+      if(!data || !data.createdAt) return;
+      const ageDays = (nowTs() - data.createdAt)/MS_PER_DAY;
+      if(ageDays > KEEP_DAYS){
+        if(data.invoiceNumber){
+          reg.used[data.invoiceNumber] = reg.used[data.invoiceNumber] || data.finalizedAt || data.createdAt || nowTs();
+        }
+        localStorage.removeItem(k); // ลบเฉพาะรายละเอียด
+      }
+    }catch(_){}
+  });
+  saveRegistry(reg);
+}
+function isNumberUsed(invNo){ return !!loadRegistry().used[invNo]; }
+function getInvoice(invNo){ try{ return JSON.parse(localStorage.getItem(LS_INVOICE_PREFIX + invNo)); }catch(_){ return null; } }
+function saveDraft(data){
+  if(!data.invoiceNumber) return;
+  const key = LS_INVOICE_PREFIX + data.invoiceNumber;
+  const prev = getInvoice(data.invoiceNumber);
+  const payload = { ...prev, ...data, createdAt: prev?.createdAt || nowTs(), updatedAt: nowTs(), finalizedAt: prev?.finalizedAt || null };
+  localStorage.setItem(key, JSON.stringify(payload));
+}
+function finalizeInvoice(invNo){
+  if(!invNo) return;
+  const key = LS_INVOICE_PREFIX + invNo;
+  const data = getInvoice(invNo) || { invoiceNumber: invNo, createdAt: nowTs() };
+  const finalizedAt = nowTs();
+  data.finalizedAt = finalizedAt;
+  localStorage.setItem(key, JSON.stringify(data));
+  const reg = loadRegistry(); reg.used[invNo] = reg.used[invNo] || finalizedAt; saveRegistry(reg);
+}
+function getFormData(){
+  const itemRows = document.querySelectorAll('.item-row');
+  const items = [];
+  itemRows.forEach(r=>{
+    items.push({
+      description: r.querySelector('.item-description')?.value?.trim() || '',
+      quantity: parseFloat(r.querySelector('.item-quantity')?.value || '0') || 0,
+      price: parseFloat(r.querySelector('.item-price')?.value || '0') || 0
+    });
+  });
+  return {
+    companyName: document.getElementById('companyName').value.trim(),
+    companyAddress: document.getElementById('companyAddress').value.trim(),
+    companyPhone: document.getElementById('companyPhone').value.trim(),
+    companyTaxId: document.getElementById('companyTaxId').value.trim(),
+    customerName: document.getElementById('customerName').value.trim(),
+    customerAddress: document.getElementById('customerAddress').value.trim(),
+    customerTaxId: document.getElementById('customerTaxId').value.trim(),
+    invoiceNumber: document.getElementById('invoiceNumber').value.trim(),
+    invoiceDate: document.getElementById('invoiceDate').value,
+    dueDate: document.getElementById('dueDate').value,
+    payeeName: document.getElementById('payeeName').value.trim(),
+    items
+  };
+}
+function setFormFromData(data){
+  if(!data) return;
+  document.getElementById('companyName').value = data.companyName || '';
+  document.getElementById('companyAddress').value = data.companyAddress || '';
+  document.getElementById('companyPhone').value = data.companyPhone || '';
+  document.getElementById('companyTaxId').value = data.companyTaxId || '';
+  document.getElementById('customerName').value = data.customerName || '';
+  document.getElementById('customerAddress').value = data.customerAddress || '';
+  document.getElementById('customerTaxId').value = data.customerTaxId || '';
+  document.getElementById('invoiceNumber').value = data.invoiceNumber || '';
+  document.getElementById('invoiceDate').value = data.invoiceDate || '';
+  document.getElementById('dueDate').value = data.dueDate || '';
+  document.getElementById('payeeName').value = data.payeeName || '';
+  const itemsContainer = document.getElementById('itemsContainer');
+  itemsContainer.innerHTML = '';
+  (data.items && data.items.length ? data.items : [{description:'',quantity:1,price:0}]).forEach(item=>{
+    const row = document.createElement('div'); row.className='item-row';
+    row.innerHTML = `
+      <input type="text" class="item-description" placeholder="รายละเอียดสินค้า/บริการ" required value="${item.description ?? ''}"/>
+      <input type="number" class="item-quantity" min="1" step="1" value="${item.quantity ?? 1}" required />
+      <input type="number" class="item-price" min="0" step="0.01" value="${(typeof item.price==='number'?item.price.toFixed(2):item.price||0)}" required />
+      <input type="text" class="item-total" readonly placeholder="0.00" />
+      <button type="button" class="remove-item-btn" title="ลบรายการ"><i class="fa-solid fa-times"></i></button>
+    `;
+    itemsContainer.appendChild(row);
+  });
+}
+function toggleActionButtons(disabled, reason=''){
+  const submitBtn = document.querySelector('button[type="submit"].btn-primary');
+  const pdfBtn = document.getElementById('generatePdfBtn');
+  submitBtn.disabled = !!disabled; pdfBtn.disabled = !!disabled;
+  submitBtn.title = disabled ? reason : ''; pdfBtn.title = disabled ? reason : '';
+}
+
+/* ===== สร้าง HTML ใบเสร็จจากฟอร์ม ===== */
 function generateReceiptHTML(isCopy = false) {
     const companyName = document.getElementById('companyName').value.trim();
     const companyAddress = document.getElementById('companyAddress').value.trim();
@@ -570,12 +413,9 @@ function generateReceiptHTML(isCopy = false) {
     const dueDate = document.getElementById('dueDate').value || '-';
     const payeeName = document.getElementById('payeeName').value.trim() || '-';
 
-    // Get current date and time in Thai format
     const now = new Date();
     const printDate = now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    const printTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const printDateTime = `พิมพ์เมื่อ: ${printDate}`;
-
     const copyMark = isCopy ? '<div style="position:absolute;top:30px;right:40px;color:#ff6b6b;font-size:1.3rem;font-weight:700;">(สำเนา)</div>' : '';
 
     const itemRows = document.querySelectorAll('.item-row');
@@ -584,8 +424,8 @@ function generateReceiptHTML(isCopy = false) {
     
     itemRows.forEach(row => {
         const desc = row.querySelector('.item-description').value.trim();
-        const qty = parseFloat(row.querySelector('.item-quantity').value);
-        const price = parseFloat(row.querySelector('.item-price').value);
+        const qty = parseFloat(row.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
         const amount = qty * price;
         totalAmount += amount;
 
@@ -606,131 +446,26 @@ function generateReceiptHTML(isCopy = false) {
             <meta charset="UTF-8" />
             <title>ใบเสร็จรับเงิน${isCopy ? ' (สำเนา)' : ''}</title>
             <style>
-                body {
-                    font-family: 'Sarabun', sans-serif;
-                    padding: 40px;
-                    background: white;
-                    color: #333;
-                    line-height: 1.4;
-                }
-                .receipt-container {
-                    max-width: 900px;
-                    margin: 0 auto;
-                    background: white;
-                    padding: 40px;
-                    border-radius: 0;
-                    position: relative;
-                }
-                .receipt-header {
-                    text-align: center;
-                    border-bottom: 3px solid #1976d2;
-                    padding-bottom: 20px;
-                    margin-bottom: 30px;
-                }
-                .receipt-header h3 {
-                    font-size: 2rem;
-                    color: #1976d2;
-                    margin: 0 0 10px 0;
-                }
-                .receipt-header p {
-                    margin: 5px 0;
-                    font-size: 1.1rem;
-                }
-                .receipt-title {
-                    background: linear-gradient(145deg, #1976d2, #1565c0);
-                    color: white;
-                    padding: 15px;
-                    border-radius: 10px;
-                    font-size: 1.8rem;
-                    font-weight: 700;
-                    text-align: center;
-                    margin: 20px 0;
-                }
-                .receipt-details {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 30px;
-                    margin-bottom: 30px;
-                    padding: 20px;
-                    background: #f8f9ff;
-                    border-radius: 10px;
-                }
-                .receipt-details p {
-                    margin: 8px 0;
-                    font-size: 1.1rem;
-                }
-                .receipt-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 30px;
-                    border-radius: 10px;
-                    overflow: hidden;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                }
-                .receipt-table th {
-                    background: linear-gradient(145deg, #1976d2, #1565c0);
-                    color: white;
-                    padding: 15px;
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    text-align: left;
-                }
-                .receipt-table td {
-                    padding: 12px 15px;
-                    border-bottom: 1px solid #eee;
-                    font-size: 1rem;
-                }
-                .receipt-table tr:nth-child(even) {
-                    background: #f8f9ff;
-                }
-                .text-right {
-                    text-align: right;
-                }
-                .total-row {
-                    font-weight: 700;
-                    font-size: 1.2rem;
-                    background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
-                }
-                .total-text {
-                    font-weight: 700;
-                    padding: 20px;
-                    font-size: 1.3rem;
-                    background: #e8f5e8;
-                    border-radius: 10px;
-                    text-align: center;
-                    border: 2px solid #4caf50;
-                }
-                .footer-note {
-                    text-align: center;
-                    font-size: 1.1rem;
-                    color: #666;
-                    border-top: 2px solid #ddd;
-                    padding-top: 20px;
-                    margin-top: 30px;
-                    font-style: italic;
-                }
-                .signature-section {
-                    display: flex;
-                    justify-content: space-around;
-                    margin-top: 50px;
-                    padding-top: 20px;
-                    border-top: 1px dashed #ccc;
-                }
-                .signature-box {
-                    text-align: center;
-                    width: 45%;
-                }
-                .signature-line {
-                    border-bottom: 1px solid #000;
-                    width: 80%;
-                    margin: 0 auto 10px auto;
-                    height: 1px;
-                }
-                .signature-label {
-                    font-size: 1rem;
-                    font-weight: 600;
-                    color: #555;
-                }
+                body { font-family: 'Sarabun', sans-serif; padding: 40px; background: white; color: #333; line-height: 1.4; }
+                .receipt-container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 0; position: relative; }
+                .receipt-header { text-align: center; border-bottom: 3px solid #1976d2; padding-bottom: 20px; margin-bottom: 30px; }
+                .receipt-header h3 { font-size: 2rem; color: #1976d2; margin: 0 0 10px 0; }
+                .receipt-header p { margin: 5px 0; font-size: 1.1rem; }
+                .receipt-title { background: linear-gradient(145deg, #1976d2, #1565c0); color: white; padding: 15px; border-radius: 10px; font-size: 1.8rem; font-weight: 700; text-align: center; margin: 20px 0; }
+                .receipt-details { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; padding: 20px; background: #f8f9ff; border-radius: 10px; }
+                .receipt-details p { margin: 8px 0; font-size: 1.1rem; }
+                .receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+                .receipt-table th { background: linear-gradient(145deg, #1976d2, #1565c0); color: white; padding: 15px; font-size: 1.1rem; font-weight: 700; text-align: left; }
+                .receipt-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 1rem; }
+                .receipt-table tr:nth-child(even) { background: #f8f9ff; }
+                .text-right { text-align: right; }
+                .total-row { font-weight: 700; font-size: 1.2rem; background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important; }
+                .total-text { font-weight: 700; padding: 20px; font-size: 1.3rem; background: #e8f5e8; border-radius: 10px; text-align: center; border: 2px solid #4caf50; }
+                .footer-note { text-align: center; font-size: 1.1rem; color: #666; border-top: 2px solid #ddd; padding-top: 20px; margin-top: 30px; font-style: italic; }
+                .signature-section { display: flex; justify-content: space-around; margin-top: 50px; padding-top: 20px; border-top: 1px dashed #ccc; }
+                .signature-box { text-align: center; width: 45%; }
+                .signature-line { border-bottom: 1px solid #000; width: 80%; margin: 0 auto 10px auto; height: 1px; }
+                .signature-label { font-size: 1rem; font-weight: 600; color: #555; }
             </style>
             <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
         </head>
@@ -801,41 +536,36 @@ function generateReceiptHTML(isCopy = false) {
     `;
 }
 
+/* ===== MAIN ===== */
 document.addEventListener('DOMContentLoaded', function() {
     const itemsContainer = document.getElementById('itemsContainer');
     const addItemBtn = document.getElementById('addItemBtn');
     const generatePdfBtn = document.getElementById('generatePdfBtn');
 
-    // Set today's date as default
+    // สำหรับ history modal
+    const historyBtn = document.getElementById('historyBtn');
+    const historyModal = document.getElementById('historyModal');
+    const historyClose = document.getElementById('historyClose');
+    const historyClose2 = document.getElementById('historyClose2');
+    const historyTbody = document.getElementById('historyTbody');
+    const historySearch = document.getElementById('historySearch');
+
+    cleanupExpired();
+
+    // default date today
     document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
 
-    // ฟังก์ชันอัพเดตยอดรวมในแต่ละแถว
     function updateItemTotal(row) {
-        const qtyInput = row.querySelector('.item-quantity');
-        const priceInput = row.querySelector('.item-price');
-        const totalInput = row.querySelector('.item-total');
-
-        let qty = parseFloat(qtyInput.value);
-        let price = parseFloat(priceInput.value);
-
-        if (isNaN(qty) || qty < 0) qty = 0;
-        if (isNaN(price) || price < 0) price = 0;
-
-        const total = qty * price;
-        totalInput.value = total.toFixed(2);
+        const qty = parseFloat(row.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        row.querySelector('.item-total').value = (qty * price).toFixed(2);
     }
-
-    // ฟังก์ชันลบแถวรายการ
     function removeItemRow(e) {
-        const btn = e.target;
-        if (itemsContainer.children.length > 1) {
-            btn.closest('.item-row').remove();
-        } else {
-            alert("ต้องมีรายการสินค้าอย่างน้อย 1 รายการ");
-        }
+        const btn = e.target.closest('.remove-item-btn') || e.target;
+        if (itemsContainer.children.length > 1) btn.closest('.item-row').remove();
+        else alert("ต้องมีรายการสินค้าอย่างน้อย 1 รายการ");
+        const d = getFormData(); if(d.invoiceNumber) saveDraft(d);
     }
-
-    // สร้างแถวรายการใหม่
     function createItemRow() {
         const div = document.createElement('div');
         div.className = 'item-row';
@@ -848,56 +578,76 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         return div;
     }
-
-    // เพิ่มแถวรายการใหม่
+    function attachRowListeners(row){
+        row.querySelector('.item-quantity').addEventListener('input', ()=>{
+            updateItemTotal(row);
+            const d = getFormData(); if(d.invoiceNumber) saveDraft(d);
+        });
+        row.querySelector('.item-price').addEventListener('input', ()=>{
+            updateItemTotal(row);
+            const d = getFormData(); if(d.invoiceNumber) saveDraft(d);
+        });
+        row.querySelector('.remove-item-btn').addEventListener('click', removeItemRow);
+        updateItemTotal(row);
+    }
+    itemsContainer.querySelectorAll('.item-row').forEach(attachRowListeners);
     addItemBtn.addEventListener('click', () => {
         const newRow = createItemRow();
         itemsContainer.appendChild(newRow);
-
-        // ตั้ง event listener สำหรับ input ในแถวใหม่
-        newRow.querySelector('.item-quantity').addEventListener('input', () => updateItemTotal(newRow));
-        newRow.querySelector('.item-price').addEventListener('input', () => updateItemTotal(newRow));
-        newRow.querySelector('.remove-item-btn').addEventListener('click', removeItemRow);
-        
-        // อัพเดตยอดรวม
-        updateItemTotal(newRow);
+        attachRowListeners(newRow);
+        const d = getFormData(); if(d.invoiceNumber) saveDraft(d);
     });
 
-    // ตั้ง event listener ให้กับแถวรายการเริ่มต้น
-    const firstRow = itemsContainer.querySelector('.item-row');
-    firstRow.querySelector('.item-quantity').addEventListener('input', () => updateItemTotal(firstRow));
-    firstRow.querySelector('.item-price').addEventListener('input', () => updateItemTotal(firstRow));
-    firstRow.querySelector('.remove-item-btn').addEventListener('click', removeItemRow);
+    // autosave field changes
+    [
+      '#companyName','#companyAddress','#companyPhone','#companyTaxId',
+      '#customerName','#customerAddress','#customerTaxId',
+      '#invoiceNumber','#invoiceDate','#dueDate','#payeeName'
+    ].forEach(sel=>{
+      const el = document.querySelector(sel);
+      el.addEventListener('input', ()=>{
+        const data = getFormData();
+        if(data.invoiceNumber){ saveDraft(data); }
+      });
+    });
 
-    // อัพเดตยอดรวมเริ่มต้น
-    updateItemTotal(firstRow);
+    // blur เลขใบเสร็จ: โหลดร่าง + ถ้าเคยใช้เลขแล้วให้ปิดปุ่ม (เพื่อกันใช้ซ้ำ)
+    document.getElementById('invoiceNumber').addEventListener('blur', ()=>{
+        const invNo = document.getElementById('invoiceNumber').value.trim();
+        if(!invNo){ toggleActionButtons(false); return; }
+        const stored = getInvoice(invNo);
+        if(stored){ setFormFromData(stored); }
+        if(isNumberUsed(invNo)){
+            toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+            alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+        }else{
+            toggleActionButtons(false);
+        }
+    });
 
-    // เมื่อ submit ฟอร์ม สร้างใบเสร็จ
+    // ===== กดดูใบเสร็จ (พรีวิวเท่านั้น "ไม่ finalize เลข") =====
     document.getElementById('invoiceForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        // ตรวจสอบข้อมูล
+
         const requiredFields = ['companyName', 'companyAddress', 'invoiceNumber', 'invoiceDate', 'payeeName'];
         let hasError = false;
-        
         requiredFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
-            if (!field.value.trim()) {
-                field.style.borderColor = '#ff4757';
-                hasError = true;
-            } else {
-                field.style.borderColor = '#e1e5e9';
-            }
+            if (!field.value.trim()) { field.style.borderColor = '#ff4757'; hasError = true; }
+            else { field.style.borderColor = '#e1e5e9'; }
         });
-        
-        if (hasError) {
-            alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+        if (hasError) { alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน'); return; }
+
+        // ถ้าเลขเคยใช้แล้วอยู่แล้ว ก็ไม่ให้พรีวิวเพื่อป้องกันความสับสน (คงพฤติกรรมเดิม)
+        const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+        if (isNumberUsed(invoiceNumber)) {
+            toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+            alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
             return;
         }
 
         const isCopyChecked = document.getElementById('copyReceipt').checked;
         if (isCopyChecked) {
-            // เปิด 2 ใบ
             const receiptHtml = generateReceiptHTML(false);
             const receiptWindow = window.open('', '_blank', 'width=900,height=700');
             receiptWindow.document.write(receiptHtml);
@@ -913,41 +663,40 @@ document.addEventListener('DOMContentLoaded', function() {
             receiptWindow.document.write(receiptHtml);
             receiptWindow.document.close();
         }
+
+        // ❌ ไม่ finalize เลขที่นี่ (ตามที่ขอ)
+        // finalizeInvoice(invoiceNumber);
+        // toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
     });
 
-    // ฟังก์ชันสร้าง PDF
-    generatePdfBtn.addEventListener('click', async function() {
+    // ===== สร้าง PDF -> finalize เลข (เหมือนเดิม) =====
+    document.getElementById('generatePdfBtn').addEventListener('click', async function() {
         try {
-            // ตรวจสอบข้อมูล
             const requiredFields = ['companyName', 'companyAddress', 'invoiceNumber', 'invoiceDate', 'payeeName'];
             let hasError = false;
-            
             requiredFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    field.style.borderColor = '#ff4757';
-                    hasError = true;
-                } else {
-                    field.style.borderColor = '#e1e5e9';
-                }
+                if (!field.value.trim()) { field.style.borderColor = '#ff4757'; hasError = true; }
+                else { field.style.borderColor = '#e1e5e9'; }
             });
-            
-            if (hasError) {
-                alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
-                return;
-            }
-
-            // แสดงข้อความกำลังโหลด
-            const originalText = generatePdfBtn.innerHTML;
-            generatePdfBtn.innerHTML = '<span>⏳</span> กำลังสร้าง PDF...';
-            generatePdfBtn.disabled = true;
+            if (hasError) { alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน'); return; }
 
             const isCopyChecked = document.getElementById('copyReceipt').checked;
             const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+
+            if (isNumberUsed(invoiceNumber)) {
+                toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+                alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span> กำลังสร้าง PDF...';
+            btn.disabled = true;
             const dateStr = new Date().toISOString().split('T')[0];
 
             if (isCopyChecked) {
-                // สร้าง PDF 2 ไฟล์
                 for (const isCopy of [false, true]) {
                     const receiptHtml = generateReceiptHTML(isCopy);
                     const tempDiv = document.createElement('div');
@@ -958,14 +707,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.appendChild(tempDiv);
                     await document.fonts.ready;
                     const receiptElement = tempDiv.querySelector('.receipt-container');
-                    const canvas = await html2canvas(receiptElement, {
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: true,
-                        backgroundColor: '#ffffff',
-                        width: 900,
-                        windowWidth: 900
-                    });
+                    const canvas = await html2canvas(receiptElement, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', width: 900, windowWidth: 900 });
                     document.body.removeChild(tempDiv);
                     const { jsPDF } = window.jspdf;
                     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -975,12 +717,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
                     const fileName = `ใบเสร็จ_${invoiceNumber}${isCopy ? '_สำเนา' : ''}_${dateStr}.pdf`;
                     pdf.save(fileName);
+                    finalizeInvoice(invoiceNumber); // ✅ finalize เมื่อสร้างไฟล์จริง
                 }
-                generatePdfBtn.innerHTML = originalText;
-                generatePdfBtn.disabled = false;
+                btn.innerHTML = originalText; btn.disabled = false;
+                toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
                 return;
             }
-            // เดิมสำหรับ 1 ใบ
+
             const receiptHtml = generateReceiptHTML(false);
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = receiptHtml;
@@ -990,14 +733,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(tempDiv);
             await document.fonts.ready;
             const receiptElement = tempDiv.querySelector('.receipt-container');
-            const canvas = await html2canvas(receiptElement, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                width: 900,
-                windowWidth: 900
-            });
+            const canvas = await html2canvas(receiptElement, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', width: 900, windowWidth: 900 });
             document.body.removeChild(tempDiv);
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1008,19 +744,250 @@ document.addEventListener('DOMContentLoaded', function() {
             const fileName = `ใบเสร็จ_${invoiceNumber}_${dateStr}.pdf`;
             pdf.save(fileName);
 
-            // รีเซ็ตปุ่ม
-            generatePdfBtn.innerHTML = originalText;
-            generatePdfBtn.disabled = false;
+            finalizeInvoice(invoiceNumber); // ✅ finalize ที่นี่
+            toggleActionButtons(true,'เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+
+            btn.innerHTML = originalText; btn.disabled = false;
 
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่อีกครั้ง');
-            
-            // รีเซ็ตปุ่ม
-            generatePdfBtn.innerHTML = '<span>📄</span> สร้าง PDF';
-            generatePdfBtn.disabled = false;
+            const btn = document.getElementById('generatePdfBtn');
+            btn.innerHTML = '<span>📄</span> สร้าง PDF';
+            btn.disabled = false;
         }
     });
+
+    /* ===== ระบบ "ใบเสร็จที่ผ่านมา" ===== */
+    function calcTotal(items){ return (items||[]).reduce((s,it)=> s + (Number(it.quantity)||0)*(Number(it.price)||0), 0); }
+    function loadHistoryList() {
+        cleanupExpired();
+        const keys = [];
+        for(let i=0;i<localStorage.length;i++){ keys.push(localStorage.key(i)); }
+        const rows = [];
+        keys.forEach(k=>{
+            if(!k.startsWith(LS_INVOICE_PREFIX)) return;
+            try{
+                const data = JSON.parse(localStorage.getItem(k));
+                if(!data || !data.finalizedAt) return; // ต้อง finalize แล้วเท่านั้น
+                const ageDays = (nowTs() - (data.createdAt||nowTs()))/MS_PER_DAY;
+                if(ageDays > KEEP_DAYS) return;
+                rows.push({
+                    invoiceNumber: data.invoiceNumber,
+                    invoiceDate: data.invoiceDate || '',
+                    customerName: data.customerName || '',
+                    total: calcTotal(data.items),
+                    data
+                });
+            }catch(_){}
+        });
+        rows.sort((a,b)=> (b.data.finalizedAt||0) - (a.data.finalizedAt||0));
+        return rows;
+    }
+    function renderHistoryTable(filterText=''){
+        const rows = loadHistoryList();
+        const q = (filterText||'').toLowerCase().trim();
+        historyTbody.innerHTML = '';
+        rows
+          .filter(r => !q || (r.invoiceNumber||'').toLowerCase().includes(q) || (r.customerName||'').toLowerCase().includes(q))
+          .forEach(r=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.invoiceNumber}</td>
+              <td>${r.invoiceDate||'-'}</td>
+              <td>${r.customerName||'-'}</td>
+              <td class="text-right">${r.total.toFixed(2)}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-mini btn-view" data-inv="${r.invoiceNumber}"><i class="fa-solid fa-eye"></i> เปิด</button>
+                  <button class="btn-mini btn-pdf" data-inv="${r.invoiceNumber}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                </div>
+              </td>
+            `;
+            historyTbody.appendChild(tr);
+          });
+        if(historyTbody.children.length===0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#777; padding:16px;">ไม่พบรายการใบเสร็จในช่วง 90 วัน</td>`;
+            historyTbody.appendChild(tr);
+        }
+    }
+    function openModal(){ historyModal.style.display='flex'; renderHistoryTable(historySearch.value); }
+    function closeModal(){ historyModal.style.display='none'; }
+    historyBtn.addEventListener('click', openModal);
+    historyClose.addEventListener('click', closeModal);
+    historyClose2.addEventListener('click', closeModal);
+    historyModal.addEventListener('click', (e)=>{ if(e.target===historyModal) closeModal(); });
+    historySearch.addEventListener('input', ()=> renderHistoryTable(historySearch.value));
+
+    historyTbody.addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button'); if(!btn) return;
+        const inv = btn.getAttribute('data-inv'); if(!inv) return;
+        const data = getInvoice(inv);
+        if(!data){ alert('ไม่พบข้อมูลใบเสร็จนี้ (อาจหมดอายุแล้ว)'); renderHistoryTable(historySearch.value); return; }
+
+        if(btn.classList.contains('btn-view')){
+            // เปิดดูแบบ "สำเนา"
+            let total=0;
+            const itemsHtml = (data.items||[]).map(it=>{
+                const q=Number(it.quantity)||0, p=Number(it.price)||0, a=q*p; total+=a;
+                return `<tr><td>${it.description||''}</td><td class="text-right">${q}</td><td class="text-right">${p.toFixed(2)}</td><td class="text-right">${a.toFixed(2)}</td></tr>`;
+            }).join('');
+            const html = `
+            <!DOCTYPE html><html lang="th"><head><meta charset="UTF-8" />
+            <title>ใบเสร็จรับเงิน (สำเนา)</title>
+            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+            <style>
+              body{font-family:'Sarabun',sans-serif;padding:40px;background:#fff;color:#333;line-height:1.4;}
+              .receipt-container{max-width:900px;margin:0 auto;background:#fff;padding:40px;position:relative;}
+              .receipt-header{text-align:center;border-bottom:3px solid #1976d2;padding-bottom:20px;margin-bottom:30px;}
+              .receipt-header h3{font-size:2rem;color:#1976d2;margin:0 0 10px;}
+              .receipt-title{background:linear-gradient(145deg,#1976d2,#1565c0);color:#fff;padding:15px;border-radius:10px;font-size:1.8rem;font-weight:700;text-align:center;margin:20px 0;}
+              .receipt-details{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:30px;padding:20px;background:#f8f9ff;border-radius:10px;}
+              .receipt-table{width:100%;border-collapse:collapse;margin-bottom:30px;border-radius:10px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.1);}
+              .receipt-table th{background:linear-gradient(145deg,#1976d2,#1565c0);color:#fff;padding:15px;font-size:1.1rem;text-align:left;}
+              .receipt-table td{padding:12px 15px;border-bottom:1px solid #eee;font-size:1rem;}
+              .receipt-table tr:nth-child(even){background:#f8f9ff;}
+              .text-right{text-align:right;}
+              .total-row{font-weight:700;font-size:1.2rem;background:linear-gradient(145deg,#e3f2fd,#bbdefb)!important;}
+            </style></head><body>
+            <div class="receipt-container">
+              <div style="position:absolute;top:30px;right:40px;color:#ff6b6b;font-size:1.3rem;font-weight:700;">(สำเนา)</div>
+              <div class="receipt-header">
+                <h3>${data.companyName||''}</h3>
+                <p>${data.companyAddress||''}</p>
+                <p>โทรศัพท์: ${data.companyPhone||'-'}</p>
+                <p>เลขประจำตัวผู้เสียภาษี: ${data.companyTaxId||'-'}</p>
+              </div>
+              <div class="receipt-title">ใบเสร็จรับเงิน</div>
+              <div class="receipt-details">
+                <div>
+                  <p><strong>ชื่อลูกค้า:</strong> ${data.customerName||'-'}</p>
+                  <p><strong>ที่อยู่ลูกค้า:</strong> ${data.customerAddress||'-'}</p>
+                  <p><strong>เลขประจำตัวผู้เสียภาษีลูกค้า:</strong> ${data.customerTaxId||'-'}</p>
+                </div>
+                <div>
+                  <p><strong>เลขที่ใบเสร็จ:</strong> ${data.invoiceNumber||''}</p>
+                  <p><strong>วันที่ออกใบเสร็จ:</strong> ${data.invoiceDate||''}</p>
+                  <p><strong>ครบกำหนดชำระ:</strong> ${data.dueDate||'-'}</p>
+                </div>
+              </div>
+              <table class="receipt-table"><thead>
+                <tr><th>รายการสินค้า/บริการ</th><th style="width:80px;text-align:right;">จำนวน</th><th style="width:120px;text-align:right;">ราคาต่อหน่วย (บาท)</th><th style="width:140px;text-align:right;">รวม (บาท)</th></tr>
+              </thead><tbody>
+                ${itemsHtml}
+                <tr class="total-row"><td colspan="3" class="text-right">ยอดรวมทั้งสิ้น</td><td class="text-right">${total.toFixed(2)}</td></tr>
+              </tbody></table>
+            </div></body></html>`;
+            const w = window.open('', '_blank', 'width=900,height=700');
+            w.document.write(html); w.document.close();
+        }
+
+        if(btn.classList.contains('btn-pdf')){
+            try{
+                let total=0;
+                const itemsHtml = (data.items||[]).map(it=>{
+                    const q=Number(it.quantity)||0, p=Number(it.price)||0, a=q*p; total+=a;
+                    return `<tr><td>${it.description||''}</td><td class="text-right">${q}</td><td class="text-right">${p.toFixed(2)}</td><td class="text-right">${a.toFixed(2)}</td></tr>`;
+                }).join('');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = `
+                  <div class="receipt-container" style="font-family:'Sarabun',sans-serif;padding:40px;width:900px;background:#fff;position:relative">
+                    <div style="position:absolute;top:30px;right:40px;color:#ff6b6b;font-size:1.3rem;font-weight:700;">(สำเนา)</div>
+                    <div style="text-align:center;border-bottom:3px solid #1976d2;padding-bottom:20px;margin-bottom:30px;">
+                      <h3 style="font-size:2rem;color:#1976d2;margin:0 0 10px;">${data.companyName||''}</h3>
+                      <p>${data.companyAddress||''}</p>
+                      <p>โทรศัพท์: ${data.companyPhone||'-'}</p>
+                      <p>เลขประจำตัวผู้เสียภาษี: ${data.companyTaxId||'-'}</p>
+                    </div>
+                    <div style="background:linear-gradient(145deg,#1976d2,#1565c0);color:#fff;padding:15px;border-radius:10px;font-size:1.4rem;font-weight:700;text-align:center;margin:20px 0;">ใบเสร็จรับเงิน</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:30px;padding:20px;background:#f8f9ff;border-radius:10px;">
+                      <div>
+                        <p><strong>ชื่อลูกค้า:</strong> ${data.customerName||'-'}</p>
+                        <p><strong>ที่อยู่ลูกค้า:</strong> ${data.customerAddress||'-'}</p>
+                        <p><strong>เลขประจำตัวผู้เสียภาษีลูกค้า:</strong> ${data.customerTaxId||'-'}</p>
+                      </div>
+                      <div>
+                        <p><strong>เลขที่ใบเสร็จ:</strong> ${data.invoiceNumber||''}</p>
+                        <p><strong>วันที่ออกใบเสร็จ:</strong> ${data.invoiceDate||''}</p>
+                        <p><strong>ครบกำหนดชำระ:</strong> ${data.dueDate||'-'}</p>
+                      </div>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;border-radius:10px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.1);">
+                      <thead>
+                        <tr style="background:linear-gradient(145deg,#1976d2,#1565c0);color:#fff;">
+                          <th style="padding:12px;text-align:left;">รายการสินค้า/บริการ</th>
+                          <th style="padding:12px;text-align:right;width:80px;">จำนวน</th>
+                          <th style="padding:12px;text-align:right;width:120px;">ราคาต่อหน่วย (บาท)</th>
+                          <th style="padding:12px;text-align:right;width:140px;">รวม (บาท)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${itemsHtml}
+                        <tr style="background:linear-gradient(145deg,#e3f2fd,#bbdefb);font-weight:700;">
+                          <td colspan="3" style="text-align:right;padding:12px;">ยอดรวมทั้งสิ้น</td>
+                          <td style="text-align:right;padding:12px;">${total.toFixed(2)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+                document.body.appendChild(tempDiv);
+                await document.fonts.ready;
+                const receiptEl = tempDiv.querySelector('.receipt-container');
+                const canvas = await html2canvas(receiptEl, { scale:2, useCORS:true, allowTaint:true, backgroundColor:'#ffffff', width:900, windowWidth:900 });
+                document.body.removeChild(tempDiv);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                const dateStr = new Date().toISOString().split('T')[0];
+                pdf.save(`ใบเสร็จ_${inv}_สำเนา_${dateStr}.pdf`);
+            }catch(err){
+                console.error(err);
+                alert('ไม่สามารถสร้าง PDF ได้ กรุณาลองใหม่');
+            }
+        }
+    });
+
+    // ปุ่ม/โมดัล History
+    function openModal(){ historyModal.style.display='flex'; renderHistoryTable(historySearch.value); }
+    function closeModal(){ historyModal.style.display='none'; }
+    historyBtn.addEventListener('click', openModal);
+    historyClose.addEventListener('click', closeModal);
+    historyClose2.addEventListener('click', closeModal);
+    historyModal.addEventListener('click', (e)=>{ if(e.target===historyModal) closeModal(); });
+    historySearch.addEventListener('input', ()=> renderHistoryTable(historySearch.value));
+    function renderHistoryTable(filterText=''){
+        const rows = loadHistoryList();
+        const q = (filterText||'').toLowerCase().trim();
+        historyTbody.innerHTML = '';
+        rows
+          .filter(r => !q || (r.invoiceNumber||'').toLowerCase().includes(q) || (r.customerName||'').toLowerCase().includes(q))
+          .forEach(r=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.invoiceNumber}</td>
+              <td>${r.invoiceDate||'-'}</td>
+              <td>${r.customerName||'-'}</td>
+              <td class="text-right">${r.total.toFixed(2)}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-mini btn-view" data-inv="${r.invoiceNumber}"><i class="fa-solid fa-eye"></i> เปิด</button>
+                  <button class="btn-mini btn-pdf" data-inv="${r.invoiceNumber}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                </div>
+              </td>
+            `;
+            historyTbody.appendChild(tr);
+          });
+        if(historyTbody.children.length===0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#777; padding:16px;">ไม่พบรายการใบเสร็จในช่วง 90 วัน</td>`;
+            historyTbody.appendChild(tr);
+        }
+    }
 });
 </script>
 
