@@ -90,11 +90,16 @@
     .tag.no{ background:#dc2626; color:#fff; }
     .tag.warn{ background:#d97706; color:#fff; }
 
-    /* BARCODE (แสดง Serial Number 15 หลัก) */
+    /* BARCODE (Serial Number 15 หลัก) */
     .barcode-head{ position:absolute; top:20px; right:20px; text-align:right; }
-    .barcode-head img{ display:block; height:28px; } /* เล็กลงตามที่ตั้งไว้ */
+    .barcode-head img{ display:block; height:28px; }
     .barcode-text{ font-size:.70rem; letter-spacing:.06em; color:#000; margin-top:2px; }
     .copy-mark{ color:#000; font-size:1.0rem; font-weight:700; margin-top:6px; }
+
+    /* inline field ใกล้เลขที่ใบเสร็จ */
+    .inline-field{ display:flex; gap:8px; align-items:center; }
+    .inline-field input{ flex:1; }
+    .hint{ color:#6b7280; font-size:.9rem; margin-top:6px; display:block; }
 
     @media (max-width: 768px){
         .form-container{ padding:20px; }
@@ -146,8 +151,14 @@
 
             <fieldset>
                 <legend><i class="fa-solid fa-file-invoice"></i> ข้อมูลใบเสร็จ</legend>
+
                 <label for="invoiceNumber">เลขที่ใบเสร็จ</label>
-                <input type="text" id="invoiceNumber" required placeholder="เช่น INV001" />
+                <div class="inline-field">
+                  <input type="text" id="invoiceNumber" required placeholder="เช่น INV-2025-000001" />
+                  <button type="button" id="autoGenInvoiceBtn" class="btn-mini btn-light" title="สร้างเลขอัตโนมัติ"><i class="fa-solid fa-hashtag"></i> เลขอัตโนมัติ</button>
+                </div>
+                <span class="hint">รูปแบบ: <b>INV-ปี-เลขที่</b> (เช่น <code>INV-2025-000001</code>) เลขจะไม่ซ้ำเมื่อสร้าง PDF</span>
+
                 <label for="invoiceDate">วันที่ออกใบเสร็จ</label>
                 <input type="date" id="invoiceDate" required />
                 <label for="dueDate">ครบกำหนดชำระ (ถ้ามี)</label>
@@ -291,9 +302,10 @@ function convertNumberToThaiText(amount) {
 }
 
 /* ===== localStorage keys/const ===== */
-const LS_REGISTRY_KEY='invoice_registry_v1';       // เก็บเลขที่ใบเสร็จที่ถูกใช้แล้ว
+const LS_REGISTRY_KEY='invoice_registry_v1';       // เก็บเลขที่ใบเสร็จที่ถูกใช้แล้ว (finalize)
 const LS_INVOICE_PREFIX='invoice_v1_';             // เก็บข้อมูลใบเสร็จฉบับเต็ม
 const LS_REF_INDEX_KEY='invoice_ref_index_v1';     // index รหัสอ้างอิง -> เลขที่ใบเสร็จ
+const LS_AUTONUM_KEY='invoice_autonum_v1';         // เก็บเลขลำดับล่าสุดต่อปีสำหรับเลขอัตโนมัติ
 const KEEP_DAYS=90; const MS_PER_DAY=24*60*60*1000;
 const nowTs=()=>Date.now();
 
@@ -305,10 +317,32 @@ const refIndexSave=(m)=> localStorage.setItem(LS_REF_INDEX_KEY, JSON.stringify(m
 const refIndexSet=(ref,inv)=>{ if(!ref||!inv) return; const idx=refIndexLoad(); idx[ref]=inv; refIndexSave(idx); };
 const refIndexRemove=(ref)=>{ if(!ref) return; const idx=refIndexLoad(); if(idx[ref]){ delete idx[ref]; refIndexSave(idx);} };
 
+/* ===== Auto-number helpers ===== */
+const loadAutoNum=()=>{ try{ return JSON.parse(localStorage.getItem(LS_AUTONUM_KEY))||{}; }catch(_){ return {}; } };
+const saveAutoNum=(m)=> localStorage.setItem(LS_AUTONUM_KEY, JSON.stringify(m));
+const isNumberUsed=(invNo)=> !!loadRegistry().used[invNo];
+function pad(n, w){ return String(n).padStart(w, '0'); }
+function formatInvoiceNumber(year, seq){ return `INV-${year}-${pad(seq,6)}`; }
+function getInvoiceYear(){
+  const val=document.getElementById('invoiceDate')?.value;
+  if(val){ const y=new Date(val).getFullYear(); if(!isNaN(y)) return y; }
+  return new Date().getFullYear();
+}
+function findNextFreeInvoiceNumber(){
+  const year = getInvoiceYear().toString();
+  const state = loadAutoNum();
+  let seq = Number(state[year]||0);
+  let candidate='';
+  do{
+    seq += 1;
+    candidate = formatInvoiceNumber(year, seq);
+  }while( isNumberUsed(candidate) || localStorage.getItem(LS_INVOICE_PREFIX+candidate) );
+  state[year]=seq; saveAutoNum(state);
+  return candidate;
+}
+
 /* ===== random code generators ===== */
-// รหัสอ้างอิงเอกสาร (A-Z0-9) 15 ตัว
 function genRefCode(len=15){ const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let o=''; for(let i=0;i<len;i++){ o += chars[Math.floor(Math.random()*chars.length)]; } return o; }
-// Serial Number (ตัวเลขล้วน) 15 หลัก และพยายามกันชนกันใน localStorage
 function genSerial(len=15){
   const exists=(sn)=>{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.startsWith(LS_INVOICE_PREFIX)){ try{ const d=JSON.parse(localStorage.getItem(k)); if(d && d.serial===sn) return true; }catch(_){}} } return false; };
   let s=''; do{ s=''; for(let i=0;i<len;i++){ s += Math.floor(Math.random()*10); } }while(exists(s));
@@ -346,20 +380,13 @@ function cleanupExpired(){
     const age=(nowTs()-(d.createdAt))/MS_PER_DAY; if(age>KEEP_DAYS){ if(d.invoiceNumber){ reg.used[d.invoiceNumber]=reg.used[d.invoiceNumber]||d.finalizedAt||d.createdAt||nowTs(); }
       if(d.refCode){ refIndexRemove(d.refCode); } localStorage.removeItem(k); } }catch(_){}}); saveRegistry(reg);
 }
-const isNumberUsed=(invNo)=> !!loadRegistry().used[invNo];
 
-/* ===== BARCODE (ใช้ Serial Number 15 หลัก) ===== */
+/* ===== BARCODE (Serial Number) ===== */
 function getBarcodeDataUrl(code){
   try{
     const canvas=document.getElementById('barcodeCanvas');
     if(!canvas || typeof JsBarcode === 'undefined') return '';
-    JsBarcode(canvas, (code||''), {      // ใช้ code ที่เป็นตัวเลขล้วน
-      format:'CODE128',
-      width: 1,
-      height: 28,
-      displayValue:false,
-      margin:0
-    });
+    JsBarcode(canvas, (code||''), { format:'CODE128', width: 1, height: 28, displayValue:false, margin:0 });
     return canvas.toDataURL('image/png');
   }catch(e){ console.warn('Barcode render failed', e); return ''; }
 }
@@ -413,7 +440,7 @@ function setFormFromData(d){
 function toggleActionButtons(dis, reason=''){ const submitBtn=document.querySelector('button[type="submit"].btn-primary'); const pdfBtn=document.getElementById('generatePdfBtn');
   submitBtn.disabled=!!dis; pdfBtn.disabled=!!dis; submitBtn.title=dis?reason:''; pdfBtn.title=dis?reason:''; }
 
-/* ===== HTML ใบเสร็จ + BARCODE(SERIAL) + ขอบคุณ + ref code ===== */
+/* ===== HTML ใบเสร็จ (ขาวดำ) + BARCODE(SERIAL) + ขอบคุณ + ref code ===== */
 function generateReceiptHTML(isCopy=false){
   const companyNameVal=document.getElementById('companyName').value.trim();
   const companyAddressVal=document.getElementById('companyAddress').value.trim();
@@ -428,12 +455,10 @@ function generateReceiptHTML(isCopy=false){
   const payeeNameVal=document.getElementById('payeeName').value.trim()||'-';
   const refSig=document.getElementById('payeeSignatureDataUrl').value||'';
 
-  // สร้าง/ดึง Serial และ Ref สำหรับเอกสาร
   const serialNo = invoiceNumberVal ? ensureSerialFor(invoiceNumberVal) : '';
   const refCode  = invoiceNumberVal ? ensureRefCodeFor(invoiceNumberVal)  : '';
 
   const barcodeUrl = serialNo ? getBarcodeDataUrl(serialNo) : '';
-
   const now=new Date(); const printDate=now.toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'});
 
   let itemsHtml=''; let totalAmount=0;
@@ -470,8 +495,6 @@ function generateReceiptHTML(isCopy=false){
     .copy-mark{ color:#000; font-size:1.0rem; font-weight:700; margin-top:6px; }
   </style></head><body>
   <div class="receipt-container">
-
-    <!-- BARCODE (Serial Number) มุมขวาบน -->
     <div class="barcode-head">
       ${barcodeUrl?`<img src="${barcodeUrl}" alt="barcode">`:''}
       ${serialNo?`<div class="barcode-text"> ${serialNo}</div>`:''}
@@ -523,11 +546,10 @@ function generateReceiptHTML(isCopy=false){
     <div style="text-align:right;color:#000;font-size:.95rem;margin-top:10px;">พิมพ์เมื่อ: ${printDate} • พิมพ์โดย ${payeeNameVal||'-'}</div>
     <div style="text-align:right;color:#000;font-size:.95rem;margin-top:10px;">(Designed by Ponrakit)</div>
     ${refCode?`<div class="ref-code">รหัสอ้างอิงเอกสาร: ${refCode}</div>`:''}
-
   </div></body></html>`;
 }
 
-/* ===== ตรวจสอบเอกสารด้วยเลขอ้างอิง (ยังเหมือนเดิม) ===== */
+/* ===== ตรวจสอบเอกสารด้วยเลขอ้างอิง ===== */
 const normalizeRef=(s)=> (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').trim();
 function verifyByRef(ref){
   const code=normalizeRef(ref); if(!code) return {ok:false,reason:'empty'};
@@ -601,10 +623,21 @@ document.addEventListener('DOMContentLoaded', function(){
   ['companyName','companyAddress','companyPhone','companyTaxId','customerName','customerAddress','customerTaxId','invoiceNumber','invoiceDate','dueDate','payeeName']
     .forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input',()=>{ const d=getFormData(); if(d.invoiceNumber) saveDraft(d); }); });
 
-  // เลขซ้ำเมื่อ finalize + preload draft + สร้าง serial/ref ทันทีเมื่อมีเลขใบเสร็จ
+  // ปุ่มสร้างเลขอัตโนมัติ
+  document.getElementById('autoGenInvoiceBtn').addEventListener('click', ()=>{
+    const next = findNextFreeInvoiceNumber();
+    const invoiceNumberEl=document.getElementById('invoiceNumber');
+    invoiceNumberEl.value = next;
+    toggleActionButtons(false);
+    ensureSerialFor(next); ensureRefCodeFor(next);
+    saveDraft(getFormData());
+  });
+
+  // เมื่อเปลี่ยน "วันที่ออกใบเสร็จ" แล้วเลขยังว่าง ให้เดางวดเลขปีใหม่ตอนกดปุ่มเลขอัตโนมัติ (ทำใน findNextFreeInvoiceNumber อยู่แล้ว)
+
+  // เลขซ้ำเมื่อ finalize + preload draft + ensure serial/ref เมื่อกรอกเอง
   const invoiceNumberEl=document.getElementById('invoiceNumber');
   invoiceNumberEl.addEventListener('blur',()=>{ const inv=invoiceNumberEl.value.trim(); if(!inv){ toggleActionButtons(false); return; }
-    // ensure serial/ref และโหลด draft ที่เคยมี
     ensureSerialFor(inv); ensureRefCodeFor(inv);
     const stored=getInvoice(inv); if(stored){ setFormFromData(stored); }
     if(isNumberUsed(inv)){ toggleActionButtons(true,'เลขนี้ถูกใช้แล้ว'); alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้'); } else { toggleActionButtons(false); }
@@ -632,28 +665,48 @@ document.addEventListener('DOMContentLoaded', function(){
   const usePdfPasswordEl=document.getElementById('usePdfPassword'), passwordFields=document.getElementById('passwordFields');
   usePdfPasswordEl.addEventListener('change', ()=>{ passwordFields.style.display = usePdfPasswordEl.checked ? 'block' : 'none'; });
 
-  /* ดูใบเสร็จ (ไม่ finalize) */
+  /* ดูใบเสร็จ (ไม่ finalize) — ถ้าช่องเลขว่าง จะออกเลขให้อัตโนมัติ */
   document.getElementById('invoiceForm').addEventListener('submit', function(e){
     e.preventDefault();
-    const req=['companyName','companyAddress','invoiceNumber','invoiceDate','payeeName']; let err=false; req.forEach(id=>{ const f=document.getElementById(id); if(!f.value.trim()){ f.style.borderColor='#ff4757'; err=true; } else { f.style.borderColor='#e1e5e9'; } });
+
+    // ออกเลขให้อัตโนมัติหากว่าง
+    const invEl=document.getElementById('invoiceNumber');
+    if(!invEl.value.trim()){
+      invEl.value = findNextFreeInvoiceNumber();
+      ensureSerialFor(invEl.value); ensureRefCodeFor(invEl.value);
+      saveDraft(getFormData());
+    }
+
+    const req=['companyName','companyAddress','invoiceNumber','invoiceDate','payeeName']; let err=false; 
+    req.forEach(id=>{ const f=document.getElementById(id); if(!f.value.trim()){ f.style.borderColor='#ff4757'; err=true; } else { f.style.borderColor='#e1e5e9'; } });
     if(err){ alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน'); return; }
-    const inv=document.getElementById('invoiceNumber').value.trim(); if(isNumberUsed(inv)){ toggleActionButtons(true,'เลขนี้ถูกใช้แล้ว'); alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว'); return; }
-    // ensure มี serial/ref เพื่อให้ barcode แสดงได้
-    ensureSerialFor(inv); ensureRefCodeFor(inv);
+
+    const inv=invEl.value.trim(); if(isNumberUsed(inv)){ toggleActionButtons(true,'เลขนี้ถูกใช้แล้ว'); alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว'); return; }
+
     const isCopy=isCopyOptionChecked();
     const html=generateReceiptHTML(false); const w=window.open('','_blank','width=900,height=700'); w.document.write(html); w.document.close();
     if(isCopy){ const html2=generateReceiptHTML(true); const w2=window.open('','_blank','width=900,height=700'); w2.document.write(html2); w2.document.close(); }
   });
 
-  /* สร้าง PDF (finalize) */
+  /* สร้าง PDF (finalize) — ถ้าเลขว่างจะออกให้อัตโนมัติ */
   document.getElementById('generatePdfBtn').addEventListener('click', async function(){
     try{
-      const req=['companyName','companyAddress','invoiceNumber','invoiceDate','payeeName']; let err=false; req.forEach(id=>{ const f=document.getElementById(id); if(!f.value.trim()){ f.style.borderColor='#ff4757'; err=true; } else { f.style.borderColor='#e1e5e9'; } });
+      // ออกเลขให้อัตโนมัติหากว่าง
+      const invEl=document.getElementById('invoiceNumber');
+      if(!invEl.value.trim()){
+        invEl.value = findNextFreeInvoiceNumber();
+        ensureSerialFor(invEl.value); ensureRefCodeFor(invEl.value);
+        saveDraft(getFormData());
+      }
+
+      const req=['companyName','companyAddress','invoiceNumber','invoiceDate','payeeName']; let err=false; 
+      req.forEach(id=>{ const f=document.getElementById(id); if(!f.value.trim()){ f.style.borderColor='#ff4757'; err=true; } else { f.style.borderColor='#e1e5e9'; } });
       if(err){ alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน'); return; }
-      const inv=document.getElementById('invoiceNumber').value.trim(); if(isNumberUsed(inv)){ toggleActionButtons(true,'เลขนี้ถูกใช้แล้ว'); alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว'); return; }
+
+      const inv=invEl.value.trim(); if(isNumberUsed(inv)){ toggleActionButtons(true,'เลขนี้ถูกใช้แล้ว'); alert('เลขที่ใบเสร็จนี้ถูกใช้ไปแล้ว'); return; }
 
       const pw=getPdfPasswordIfAny(); if(pw===null) return;
-      // save draft + ensure serial/ref
+
       saveDraft(getFormData()); ensureSerialFor(inv); const ref=ensureRefCodeFor(inv);
 
       const btn=this, old=btn.innerHTML; btn.innerHTML='⏳ กำลังสร้าง PDF...'; btn.disabled=true;
@@ -696,15 +749,13 @@ document.addEventListener('DOMContentLoaded', function(){
   historyBtn.addEventListener('click', openHistory); historyClose.addEventListener('click', closeHistory); historyClose2.addEventListener('click', closeHistory); historyModal.addEventListener('click',(e)=>{ if(e.target===historyModal) closeHistory(); });
   historySearch.addEventListener('input', ()=> renderHistoryTable(historySearch.value));
 
-  // กดปุ่มในตารางประวัติ (พรีวิว/สำเนา PDF) — แก้ให้ใช้ SERIAL เป็นบาร์โค้ด
+  // เปิดดู/สำเนา PDF จากประวัติ (ไม่กระทบสถานะใช้เลข)
   historyTbody.addEventListener('click', async (e)=>{
     const btn=e.target.closest('button'); if(!btn) return; const inv=btn.getAttribute('data-inv'); if(!inv) return; const data=getInvoice(inv); if(!data){ alert('ไม่พบข้อมูล (อาจหมดอายุแล้ว)'); renderHistoryTable(historySearch.value); return; }
     let total=0; const itemsHtml=(data.items||[]).map(it=>{ const q=Number(it.quantity)||0,p=Number(it.price)||0,a=q*p; total+=a; return `<tr><td>${it.description||''}</td><td class="text-right">${q}</td><td class="text-right">${p.toFixed(2)}</td><td class="text-right">${a.toFixed(2)}</td></tr>`; }).join('');
-    const serial=(data.serial||ensureSerialFor(data.invoiceNumber)||'');
-    const barcodeUrl=serial?getBarcodeDataUrl(serial):''; const printDateNow = new Date().toLocaleDateString('th-TH', {year:'numeric',month:'2-digit',day:'2-digit'});
+    const serial=(data.serial||''); const barcodeUrl=serial?getBarcodeDataUrl(serial):''; const printDateNow = new Date().toLocaleDateString('th-TH', {year:'numeric',month:'2-digit',day:'2-digit'});
     const refCode=(data.refCode||'').toUpperCase();
 
-    // เปิดดู (สำเนา)
     if(btn.classList.contains('btn-view')){
       const w=window.open('','_blank','width=900,height=700'); w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8" />
       <title>ใบเสร็จรับเงิน (สำเนา)</title><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -750,14 +801,13 @@ document.addEventListener('DOMContentLoaded', function(){
       </div></body></html>`); w.document.close();
     }
 
-    // สร้าง PDF สำเนาจากประวัติ
     if(btn.classList.contains('btn-pdf')){
       try{
         const tmp=document.createElement('div'); tmp.innerHTML=`
           <div class="receipt-container" style="font-family:'Sarabun',sans-serif;padding:40px;width:900px;background:#fff;position:relative;color:#000;">
             <div class="barcode-head" style="position:absolute;top:20px;right:20px;text-align:right;">
               ${barcodeUrl?`<img src="${barcodeUrl}" style="display:block;height:28px;" alt="barcode">`:''}
-              ${serial?`<div class="barcode-text" style="font-size:.70rem;letter-spacing:.06em;color:#000;margin-top:2px;"> ${serial}</div>`:''}
+              ${serial?`<div class="barcode-text" style="font-size:.70rem;letter-spacing:.06em;color:#000;margin-top:2px;">${serial}</div>`:''}
               <div class="copy-mark" style="color:#000;font-size:1.0rem;font-weight:700;margin-top:6px;">(สำเนา)</div>
             </div>
             <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:20px;margin-bottom:30px;">
