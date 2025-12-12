@@ -1986,69 +1986,110 @@ s0.parentNode.insertBefore(s1,s0);
 </script>
 <!--End of Tawk.to Script-->
   <style>
-    /* ดีไซน์เฉพาะส่วนนาฬิกา */
-    .timer-wrapper {
+    /* CSS: ตั้งค่าดีไซน์ */
+    #countdown-frame {
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+        /* กรอบหลัก: สีพื้นหลัง การจัดวาง และเงา */
+        background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%); /* ไล่สีฟ้า-ม่วง */
+        color: white;
+        padding: 25px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        margin: 20px auto; /* จัดกึ่งกลางหน้าจอ */
+    }
+
+    .countdown-title {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        font-weight: 300;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .timer-wrapper-fancy {
         display: flex;
-        justify-content: center; /* จัดกึ่งกลาง */
-        gap: 15px; /* ระยะห่างระหว่างกล่อง */
-        font-family: sans-serif;
+        justify-content: center;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
-    .time-slot {
-        background-color: #333; /* สีพื้นหลังกล่องตัวเลข */
-        color: #fff;            /* สีตัวหนังสือ */
-        padding: 15px;
+    .time-unit-box {
+        background: rgba(255, 255, 255, 0.15); /* พื้นหลังโปร่งใสเล็กน้อย */
+        backdrop-filter: blur(5px); /* เอฟเฟกต์เบลอ */
+        padding: 15px 10px;
         border-radius: 8px;
-        text-align: center;
-        min-width: 80px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        min-width: 65px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.2s;
     }
 
-    .time-slot .num {
-        font-size: 2em; /* ขนาดตัวเลข */
+    .time-unit-box:hover {
+        transform: translateY(-3px); /* ยกขึ้นเล็กน้อยเมื่อเมาส์ชี้ */
+    }
+
+    .time-unit-box .num-fancy {
+        font-size: 2.2em;
         font-weight: bold;
-        display: block;
-        color: #ffcc00; /* สีตัวเลข (เหลืองทอง) */
+        color: #ffdd57; /* สีตัวเลข: เหลืองทองสว่าง */
         line-height: 1;
+        display: block;
     }
 
-    .time-slot .text {
-        font-size: 0.8em; /* ขนาดตัวอักษรหน่วย */
+    .time-unit-box .text-fancy {
+        font-size: 0.75em;
+        text-transform: uppercase;
         margin-top: 5px;
         opacity: 0.8;
     }
-
-    /* ซ่อนข้อความ Happy New Year ไว้ก่อน */
-    .final-msg {
+    
+    .final-msg-fancy {
         display: none;
-        text-align: center;
-        font-size: 1.5em;
-        color: #333;
+        font-size: 2em;
+        margin-top: 20px;
+        color: #ffdd57;
         font-weight: bold;
+    }
+
+    /* ปรับขนาดสำหรับมือถือ */
+    @media (max-width: 450px) {
+        .time-unit-box {
+            min-width: 55px;
+            padding: 12px 8px;
+        }
+        .time-unit-box .num-fancy {
+            font-size: 1.8em;
+        }
+        .countdown-title {
+            font-size: 1.2em;
+        }
     }
 </style>
 
-<div id="countdown-widget">
-    <div class="timer-wrapper" id="timer-display">
-        <div class="time-slot">
-            <span id="d" class="num">0</span>
-            <span class="text">วัน</span>
+<div id="countdown-frame">
+    <div class="countdown-title">🎉 Countdown to New Year 2026 🎉</div>
+    <div class="timer-wrapper-fancy" id="timer-display-fancy">
+        <div class="time-unit-box">
+            <span id="d_fancy" class="num-fancy">00</span>
+            <span class="text-fancy">วัน</span>
         </div>
-        <div class="time-slot">
-            <span id="h" class="num">00</span>
-            <span class="text">ชั่วโมง</span>
+        <div class="time-unit-box">
+            <span id="h_fancy" class="num-fancy">00</span>
+            <span class="text-fancy">ชั่วโมง</span>
         </div>
-        <div class="time-slot">
-            <span id="m" class="num">00</span>
-            <span class="text">นาที</span>
+        <div class="time-unit-box">
+            <span id="m_fancy" class="num-fancy">00</span>
+            <span class="text-fancy">นาที</span>
         </div>
-        <div class="time-slot">
-            <span id="s" class="num">00</span>
-            <span class="text">วินาที</span>
+        <div class="time-unit-box">
+            <span id="s_fancy" class="num-fancy">00</span>
+            <span class="text-fancy">วินาที</span>
         </div>
     </div>
-    <div id="end-message" class="final-msg">🎉 Happy New Year 2026! 🎉</div>
+    <div id="end-message-fancy" class="final-msg-fancy">
+        🥳 สวัสดีปีใหม่ 2026! 🥳
+    </div>
 </div>
 
 <script>
@@ -2062,24 +2103,27 @@ s0.parentNode.insertBefore(s1,s0);
 
             if (distance < 0) {
                 clearInterval(timerInterval);
-                document.getElementById("timer-display").style.display = "none";
-                document.getElementById("end-message").style.display = "block";
+                document.getElementById("timer-display-fancy").style.display = "none";
+                document.getElementById("end-message-fancy").style.display = "block";
                 return;
             }
 
+            // คำนวณเวลาที่เหลือ
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById("d").innerText = days;
-            document.getElementById("h").innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById("m").innerText = minutes < 10 ? "0" + minutes : minutes;
-            document.getElementById("s").innerText = seconds < 10 ? "0" + seconds : seconds;
+            // แสดงผล
+            document.getElementById("d_fancy").innerText = days;
+            document.getElementById("h_fancy").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("m_fancy").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("s_fancy").innerText = seconds < 10 ? "0" + seconds : seconds;
         }, 1000);
     })();
 </script>
 </body>
 </html>
+
 
 
