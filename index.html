@@ -1985,145 +1985,177 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-  <style>
-    /* CSS: ตั้งค่าดีไซน์ */
-    #countdown-frame {
-        font-family: 'Arial', sans-serif;
+ <style>
+    /* ตั้งค่าดีไซน์หลัก */
+    #countdown-ms-frame {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         text-align: center;
-        /* กรอบหลัก: สีพื้นหลัง การจัดวาง และเงา */
-        background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%); /* ไล่สีฟ้า-ม่วง */
+        /* พื้นหลังสีเข้ม ล้ำสมัย (Deep Space) */
+        background: radial-gradient(circle at center, #2b32b2 0%, #1488cc 100%);
         color: white;
-        padding: 25px 20px;
-        border-radius: 12px;
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        max-width: 600px;
-        margin: 20px auto; /* จัดกึ่งกลางหน้าจอ */
+        padding: 30px 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        max-width: 700px;
+        margin: 20px auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .countdown-title {
-        font-size: 1.5em;
-        margin-bottom: 20px;
-        font-weight: 300;
-        letter-spacing: 1px;
+    .countdown-header {
+        font-size: 1.8em;
+        margin-bottom: 25px;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    .timer-wrapper-fancy {
+    .timer-flex {
         display: flex;
         justify-content: center;
         gap: 10px;
         flex-wrap: wrap;
     }
 
-    .time-unit-box {
-        background: rgba(255, 255, 255, 0.15); /* พื้นหลังโปร่งใสเล็กน้อย */
-        backdrop-filter: blur(5px); /* เอฟเฟกต์เบลอ */
+    /* กล่องเวลาแต่ละหน่วย */
+    .time-card {
+        background: rgba(0, 0, 0, 0.3); /* สีดำโปร่งแสง */
         padding: 15px 10px;
         border-radius: 8px;
-        min-width: 65px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: transform 0.2s;
+        min-width: 75px;
+        border-top: 2px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
 
-    .time-unit-box:hover {
-        transform: translateY(-3px); /* ยกขึ้นเล็กน้อยเมื่อเมาส์ชี้ */
+    /* เน้นกล่องมิลลิวินาทีให้ต่างออกไปนิดหน่อย */
+    .time-card.ms-card {
+        background: rgba(255, 204, 0, 0.15); /* พื้นหลังเหลืองจางๆ */
+        border-color: rgba(255, 204, 0, 0.3);
+        min-width: 90px; /* กว้างกว่านิดหน่อยเพราะเลข 3 หลัก */
     }
 
-    .time-unit-box .num-fancy {
-        font-size: 2.2em;
+    .time-card .number-display {
+        font-size: 2.5em;
         font-weight: bold;
-        color: #ffdd57; /* สีตัวเลข: เหลืองทองสว่าง */
+        color: #fff;
         line-height: 1;
-        display: block;
+        /* สำคัญ: ทำให้เลขกว้างเท่ากัน ไม่สั่น */
+        font-variant-numeric: tabular-nums; 
+        font-family: 'Courier New', Courier, monospace; /* ฟอนต์แบบ Monospace */
     }
 
-    .time-unit-box .text-fancy {
-        font-size: 0.75em;
+    .time-card.ms-card .number-display {
+        color: #ffcc00; /* สีเหลืองทองสำหรับมิลลิวินาที */
+        font-size: 2.2em; /* ลดขนาดลงนิดนึง */
+    }
+
+    .time-card .unit-label {
+        font-size: 0.7em;
         text-transform: uppercase;
-        margin-top: 5px;
+        margin-top: 8px;
         opacity: 0.8;
-    }
-    
-    .final-msg-fancy {
-        display: none;
-        font-size: 2em;
-        margin-top: 20px;
-        color: #ffdd57;
-        font-weight: bold;
+        letter-spacing: 1px;
     }
 
-    /* ปรับขนาดสำหรับมือถือ */
-    @media (max-width: 450px) {
-        .time-unit-box {
-            min-width: 55px;
-            padding: 12px 8px;
-        }
-        .time-unit-box .num-fancy {
-            font-size: 1.8em;
-        }
-        .countdown-title {
-            font-size: 1.2em;
-        }
+    .finished-message {
+        display: none;
+        font-size: 2.5em;
+        color: #ffcc00;
+        font-weight: bold;
+        margin-top: 20px;
+        animation: popIn 0.5s ease-out;
+    }
+
+    @keyframes popIn {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ปรับมือถือ */
+    @media (max-width: 600px) {
+        .time-card { min-width: 60px; padding: 10px 5px; }
+        .time-card .number-display { font-size: 1.8em; }
+        .time-card.ms-card .number-display { font-size: 1.6em; }
+        .countdown-header { font-size: 1.4em; }
     }
 </style>
 
-<div id="countdown-frame">
-    <div class="countdown-title">🎉 Countdown to New Year 2026 🎉</div>
-    <div class="timer-wrapper-fancy" id="timer-display-fancy">
-        <div class="time-unit-box">
-            <span id="d_fancy" class="num-fancy">00</span>
-            <span class="text-fancy">วัน</span>
+<div id="countdown-ms-frame">
+    <div class="countdown-header">🚀 Countdown to 2026</div>
+    
+    <div class="timer-flex" id="timer-active">
+        <div class="time-card">
+            <span id="d_ms" class="number-display">00</span>
+            <span class="unit-label">Days</span>
         </div>
-        <div class="time-unit-box">
-            <span id="h_fancy" class="num-fancy">00</span>
-            <span class="text-fancy">ชั่วโมง</span>
+        <div class="time-card">
+            <span id="h_ms" class="number-display">00</span>
+            <span class="unit-label">Hours</span>
         </div>
-        <div class="time-unit-box">
-            <span id="m_fancy" class="num-fancy">00</span>
-            <span class="text-fancy">นาที</span>
+        <div class="time-card">
+            <span id="m_ms" class="number-display">00</span>
+            <span class="unit-label">Mins</span>
         </div>
-        <div class="time-unit-box">
-            <span id="s_fancy" class="num-fancy">00</span>
-            <span class="text-fancy">วินาที</span>
+        <div class="time-card">
+            <span id="s_ms" class="number-display">00</span>
+            <span class="unit-label">Secs</span>
+        </div>
+        <div class="time-card ms-card">
+            <span id="ms_ms" class="number-display">000</span>
+            <span class="unit-label">MS</span>
         </div>
     </div>
-    <div id="end-message-fancy" class="final-msg-fancy">
-        🥳 สวัสดีปีใหม่ 2026! 🥳
+
+    <div id="msg-finished" class="finished-message">
+        🎉 HAPPY NEW YEAR 2026! 🎉
     </div>
 </div>
 
 <script>
     (function() {
-        // ตั้งเวลาเป้าหมาย: 1 มกราคม 2026
+        // วันเป้าหมาย: 1 มกราคม 2026
         const targetDate = new Date("Jan 1, 2026 00:00:00").getTime();
 
+        // อัปเดตทุกๆ 10 มิลลิวินาที เพื่อความลื่นไหล
         const timerInterval = setInterval(function() {
             const now = new Date().getTime();
             const distance = targetDate - now;
 
             if (distance < 0) {
                 clearInterval(timerInterval);
-                document.getElementById("timer-display-fancy").style.display = "none";
-                document.getElementById("end-message-fancy").style.display = "block";
+                document.getElementById("timer-active").style.display = "none";
+                document.getElementById("msg-finished").style.display = "block";
                 return;
             }
 
-            // คำนวณเวลาที่เหลือ
+            // คำนวณเวลา
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            const milliseconds = Math.floor(distance % 1000); // เอาเศษ 1000 มาเป็น ms
 
             // แสดงผล
-            document.getElementById("d_fancy").innerText = days;
-            document.getElementById("h_fancy").innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById("m_fancy").innerText = minutes < 10 ? "0" + minutes : minutes;
-            document.getElementById("s_fancy").innerText = seconds < 10 ? "0" + seconds : seconds;
-        }, 1000);
+            document.getElementById("d_ms").innerText = days;
+            document.getElementById("h_ms").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("m_ms").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("s_ms").innerText = seconds < 10 ? "0" + seconds : seconds;
+            
+            // จัดรูปแบบ Milliseconds ให้เป็น 3 หลักเสมอ (เช่น 005, 045, 120)
+            let msText = milliseconds.toString();
+            if (milliseconds < 10) { msText = "00" + msText; }
+            else if (milliseconds < 100) { msText = "0" + msText; }
+            document.getElementById("ms_ms").innerText = msText;
+
+        }, 10); // Update speed: 10ms
     })();
 </script>
 </body>
 </html>
+
 
 
 
