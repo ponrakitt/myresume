@@ -1985,176 +1985,269 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
- <style>
-    /* ตั้งค่าดีไซน์หลัก */
-    #countdown-ms-frame {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        text-align: center;
-        /* พื้นหลังสีเข้ม ล้ำสมัย (Deep Space) */
-        background: radial-gradient(circle at center, #2b32b2 0%, #1488cc 100%);
-        color: white;
-        padding: 30px 20px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        max-width: 700px;
-        margin: 20px auto;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+<style>
+    /* --- Styles เดิม --- */
+    .ny-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 99999; backdrop-filter: blur(5px);
+        opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
     }
-
-    .countdown-header {
-        font-size: 1.8em;
-        margin-bottom: 25px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .ny-popup-box {
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        color: #ffffff; padding: 30px; border-radius: 20px;
+        text-align: center; position: relative;
+        width: 90%; max-width: 500px;
+        max-height: 90vh; overflow-y: auto; /* กันตกขอบจอมือถือ */
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        border: 2px solid #ffd700; font-family: 'Sarabun', sans-serif;
+        transform: scale(0.8); transition: transform 0.3s ease;
+        box-sizing: border-box;
     }
-
-    .timer-flex {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    /* กล่องเวลาแต่ละหน่วย */
-    .time-card {
-        background: rgba(0, 0, 0, 0.3); /* สีดำโปร่งแสง */
-        padding: 15px 10px;
-        border-radius: 8px;
-        min-width: 75px;
-        border-top: 2px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
-
-    /* เน้นกล่องมิลลิวินาทีให้ต่างออกไปนิดหน่อย */
-    .time-card.ms-card {
-        background: rgba(255, 204, 0, 0.15); /* พื้นหลังเหลืองจางๆ */
-        border-color: rgba(255, 204, 0, 0.3);
-        min-width: 90px; /* กว้างกว่านิดหน่อยเพราะเลข 3 หลัก */
-    }
-
-    .time-card .number-display {
-        font-size: 2.5em;
-        font-weight: bold;
-        color: #fff;
-        line-height: 1;
-        /* สำคัญ: ทำให้เลขกว้างเท่ากัน ไม่สั่น */
-        font-variant-numeric: tabular-nums; 
-        font-family: 'Courier New', Courier, monospace; /* ฟอนต์แบบ Monospace */
-    }
-
-    .time-card.ms-card .number-display {
-        color: #ffcc00; /* สีเหลืองทองสำหรับมิลลิวินาที */
-        font-size: 2.2em; /* ลดขนาดลงนิดนึง */
-    }
-
-    .time-card .unit-label {
-        font-size: 0.7em;
-        text-transform: uppercase;
-        margin-top: 8px;
-        opacity: 0.8;
-        letter-spacing: 1px;
-    }
-
-    .finished-message {
-        display: none;
-        font-size: 2.5em;
-        color: #ffcc00;
-        font-weight: bold;
+    .ny-modal-overlay.show { opacity: 1; visibility: visible; }
+    .ny-modal-overlay.show .ny-popup-box { transform: scale(1); }
+    .ny-title { font-size: 1.8em; margin: 0 0 5px 0; color: #ffd700; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    .ny-subtitle { font-size: 1em; margin: 0 0 20px 0; color: #e0e0e0; }
+    .ny-countdown { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .ny-time-unit { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; min-width: 60px; border: 1px solid rgba(255, 215, 0, 0.3); display: flex; flex-direction: column; align-items: center; }
+    .ny-number { font-size: 1.5em; font-weight: bold; color: #ffd700; line-height: 1; }
+    .ny-label { font-size: 0.7em; color: #ccc; margin-top: 5px; }
+    .ny-close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #fff; line-height: 1; transition: color 0.3s; }
+    .ny-close-btn:hover { color: #ffd700; }
+    
+    /* --- ส่วนใหม่: Download Card --- */
+    .ny-card-section {
         margin-top: 20px;
-        animation: popIn 0.5s ease-out;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.2);
     }
+    .ny-card-title { font-size: 1.1em; color: #ffd700; margin-bottom: 15px; font-weight: bold; }
+    .ny-lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+    .ny-lang-btn {
+        background: rgba(255,255,255,0.1); border: 1px solid #ffd700;
+        color: #fff; padding: 8px; border-radius: 5px; cursor: pointer;
+        font-size: 0.9em; transition: all 0.2s;
+    }
+    .ny-lang-btn:hover { background: #ffd700; color: #000; }
+    
+    .ny-action-btn {
+        background-color: transparent; border: 1px solid #aaa; color: #aaa;
+        padding: 8px 20px; font-size: 0.9em; border-radius: 50px;
+        cursor: pointer; margin-top: 10px; transition: 0.2s;
+    }
+    .ny-action-btn:hover { color: #fff; border-color: #fff; }
 
-    @keyframes popIn {
-        0% { transform: scale(0.5); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* ปรับมือถือ */
-    @media (max-width: 600px) {
-        .time-card { min-width: 60px; padding: 10px 5px; }
-        .time-card .number-display { font-size: 1.8em; }
-        .time-card.ms-card .number-display { font-size: 1.6em; }
-        .countdown-header { font-size: 1.4em; }
-    }
+    /* ซ่อน Canvas ไว้หลังบ้าน */
+    #nyCanvas { display: none; }
 </style>
 
-<div id="countdown-ms-frame">
-    <div class="countdown-header">🚀 Countdown to 2026</div>
-    
-    <div class="timer-flex" id="timer-active">
-        <div class="time-card">
-            <span id="d_ms" class="number-display">00</span>
-            <span class="unit-label">Days</span>
+<div class="ny-modal-overlay" id="newYearPopup">
+    <div class="ny-popup-box">
+        <span class="ny-close-btn" onclick="closePopup()">&times;</span>
+        
+        <h1 class="ny-title">Happy New Year</h1>
+        <p class="ny-subtitle">นับถอยหลังสู่ปีใหม่ <span id="nextYearDisplay"></span></p>
+        
+        <div class="ny-countdown">
+            <div class="ny-time-unit"><span class="ny-number" id="ny-days">00</span><span class="ny-label">วัน</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-hours">00</span><span class="ny-label">ชม.</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-minutes">00</span><span class="ny-label">นาที</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-seconds">00</span><span class="ny-label">วินาที</span></div>
         </div>
-        <div class="time-card">
-            <span id="h_ms" class="number-display">00</span>
-            <span class="unit-label">Hours</span>
-        </div>
-        <div class="time-card">
-            <span id="m_ms" class="number-display">00</span>
-            <span class="unit-label">Mins</span>
-        </div>
-        <div class="time-card">
-            <span id="s_ms" class="number-display">00</span>
-            <span class="unit-label">Secs</span>
-        </div>
-        <div class="time-card ms-card">
-            <span id="ms_ms" class="number-display">000</span>
-            <span class="unit-label">MS</span>
-        </div>
-    </div>
 
-    <div id="msg-finished" class="finished-message">
-        🎉 HAPPY NEW YEAR 2026! 🎉
+        <div class="ny-card-section">
+            <div class="ny-card-title">🎁 รับการ์ดอวยพร (สุ่มดีไซน์)</div>
+            <p style="font-size:0.85em; color:#ccc; margin-bottom:10px;">เลือกภาษาเพื่อดาวน์โหลดรูป:</p>
+            
+            <div class="ny-lang-grid">
+                <button class="ny-lang-btn" onclick="generateCard('th')">🇹🇭 ไทย</button>
+                <button class="ny-lang-btn" onclick="generateCard('en')">🇬🇧 Eng</button>
+                <button class="ny-lang-btn" onclick="generateCard('cn')">🇨🇳 จีน</button>
+                <button class="ny-lang-btn" onclick="generateCard('jp')">🇯🇵 ญี่ปุ่น</button>
+                <button class="ny-lang-btn" onclick="generateCard('fr')">🇫🇷 ฝรั่งเศส</button>
+                <button class="ny-lang-btn" onclick="generateCard('random')">🎲 สุ่ม</button>
+            </div>
+        </div>
+
+        <button class="ny-action-btn" onclick="closePopup()">เข้าสู่เว็บไซต์</button>
     </div>
 </div>
 
+<canvas id="nyCanvas" width="1200" height="1200"></canvas>
+
 <script>
     (function() {
-        // วันเป้าหมาย: 1 มกราคม 2026
-        const targetDate = new Date("Jan 1, 2026 00:00:00").getTime();
+        // --- 1. ส่วนนับถอยหลัง ---
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
+        document.getElementById('nextYearDisplay').innerText = nextYear;
+        const countToDate = new Date(`Jan 1, ${nextYear} 00:00:00`).getTime();
 
-        // อัปเดตทุกๆ 10 มิลลิวินาที เพื่อความลื่นไหล
-        const timerInterval = setInterval(function() {
+        const updateTimer = setInterval(function() {
             const now = new Date().getTime();
-            const distance = targetDate - now;
+            const distance = countToDate - now;
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-            if (distance < 0) {
-                clearInterval(timerInterval);
-                document.getElementById("timer-active").style.display = "none";
-                document.getElementById("msg-finished").style.display = "block";
-                return;
+            if(document.getElementById("ny-days")) {
+                document.getElementById("ny-days").innerText = d;
+                document.getElementById("ny-hours").innerText = h < 10 ? '0' + h : h;
+                document.getElementById("ny-minutes").innerText = m < 10 ? '0' + m : m;
+                document.getElementById("ny-seconds").innerText = s < 10 ? '0' + s : s;
+            }
+            if (distance < 0) clearInterval(updateTimer);
+        }, 1000);
+
+        // --- 2. ส่วน Popup ---
+        window.closePopup = function() {
+            document.getElementById('newYearPopup').classList.remove('show');
+        }
+        setTimeout(() => {
+            const popup = document.getElementById('newYearPopup');
+            if(popup) popup.classList.add('show');
+        }, 500);
+
+        // --- 3. ส่วนสร้างการ์ด (Generator) ---
+        
+        // ชุดคำอวยพร 5 ภาษา
+        const wishes = {
+            'th': ["สวัสดีปีใหม่", `ขอให้มีความสุขสมหวัง\nสุขภาพแข็งแรงตลอดปี ${nextYear}`],
+            'en': ["Happy New Year", `Wishing you joy, success,\nand prosperity in ${nextYear}`],
+            'cn': ["新年快乐", `(Xīnnián kuàilè)\nขอให้มั่งคั่ง ร่ำรวย โชคดี`],
+            'jp': ["あけましておめでとう", `(Akemashite Omedetou)\nขอให้เป็นปีที่สดใส`],
+            'fr': ["Bonne Année", `ขอให้ปี ${nextYear} เป็นปีที่\nยอดเยี่ยมของคุณ`],
+            'random': ["Happy New Year", `Welcome to ${nextYear}`]
+        };
+
+        window.generateCard = function(lang) {
+            if(lang === 'random') {
+                const keys = Object.keys(wishes).filter(k => k !== 'random');
+                lang = keys[Math.floor(Math.random() * keys.length)];
             }
 
-            // คำนวณเวลา
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            const milliseconds = Math.floor(distance % 1000); // เอาเศษ 1000 มาเป็น ms
+            const canvas = document.getElementById('nyCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
 
-            // แสดงผล
-            document.getElementById("d_ms").innerText = days;
-            document.getElementById("h_ms").innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById("m_ms").innerText = minutes < 10 ? "0" + minutes : minutes;
-            document.getElementById("s_ms").innerText = seconds < 10 ? "0" + seconds : seconds;
+            // สุ่ม Style พื้นหลัง (1-5)
+            const styleIdx = Math.floor(Math.random() * 5) + 1;
+            drawBackground(ctx, w, h, styleIdx);
+
+            // วาดข้อความ
+            ctx.textAlign = 'center';
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+
+            // หัวข้อ (Header)
+            ctx.font = "bold 100px sans-serif";
+            ctx.fillStyle = "#FFFFFF";
+            if(styleIdx === 2 || styleIdx === 3) ctx.fillStyle = "#FFD700"; // พื้นแดง/ขาว ใช้ตัวทอง
+            ctx.fillText(wishes[lang][0], w/2, h/2 - 50);
+
+            // คำอวยพร (Body)
+            ctx.font = "50px sans-serif";
+            ctx.fillStyle = "#EEEEEE";
+            if(styleIdx === 2) ctx.fillStyle = "#FFF"; 
             
-            // จัดรูปแบบ Milliseconds ให้เป็น 3 หลักเสมอ (เช่น 005, 045, 120)
-            let msText = milliseconds.toString();
-            if (milliseconds < 10) { msText = "00" + msText; }
-            else if (milliseconds < 100) { msText = "0" + msText; }
-            document.getElementById("ms_ms").innerText = msText;
+            const lines = wishes[lang][1].split('\n');
+            let lineHeight = 70;
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], w/2, h/2 + 60 + (i * lineHeight));
+            }
 
-        }, 10); // Update speed: 10ms
+            // Footer
+            ctx.font = "italic 30px sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.fillText(`Created by ${window.location.hostname}`, w/2, h - 50);
+
+            // ดาวน์โหลดไฟล์
+            const link = document.createElement('a');
+            link.download = `HNY-${nextYear}-${lang}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // ฟังก์ชันวาดพื้นหลัง 5 แบบ
+        function drawBackground(ctx, w, h, style) {
+            let grd;
+            ctx.clearRect(0, 0, w, h);
+            
+            // Style 1: Deep Blue Night
+            if(style === 1) {
+                grd = ctx.createLinearGradient(0, 0, 0, h);
+                grd.addColorStop(0, "#0f2027");
+                grd.addColorStop(1, "#2c5364");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0,0,w,h);
+                drawStars(ctx, w, h, 100);
+            }
+            // Style 2: Red Prosperity (จีน)
+            else if (style === 2) {
+                grd = ctx.createLinearGradient(0, 0, w, h);
+                grd.addColorStop(0, "#a00000");
+                grd.addColorStop(1, "#500000");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0,0,w,h);
+                drawCircles(ctx, w, h, "#ffcc00");
+            }
+            // Style 3: Golden Luxury
+            else if (style === 3) {
+                grd = ctx.createRadialGradient(w/2, h/2, 100, w/2, h/2, w);
+                grd.addColorStop(0, "#b8860b");
+                grd.addColorStop(1, "#000000");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0,0,w,h);
+                drawStars(ctx, w, h, 50);
+            }
+            // Style 4: Modern Purple
+            else if (style === 4) {
+                grd = ctx.createLinearGradient(0, 0, w, h);
+                grd.addColorStop(0, "#8E2DE2");
+                grd.addColorStop(1, "#4A00E0");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0,0,w,h);
+            }
+            // Style 5: Elegant Silver/Black
+            else {
+                ctx.fillStyle = "#111";
+                ctx.fillRect(0,0,w,h);
+                ctx.strokeStyle = "#444";
+                ctx.lineWidth = 20;
+                ctx.strokeRect(50,50,w-100,h-100); // กรอบ
+            }
+        }
+
+        function drawStars(ctx, w, h, count) {
+            ctx.fillStyle = "#FFF";
+            ctx.shadowBlur = 0; // ปิดเงาสำหรับดาว
+            for(let i=0; i<count; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random()*w, Math.random()*h, Math.random()*3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+        function drawCircles(ctx, w, h, color) {
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = 0.2;
+            for(let i=0; i<10; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random()*w, Math.random()*h, Math.random()*100 + 50, 0, Math.PI*2);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
     })();
 </script>
 </body>
 </html>
+
 
 
 
