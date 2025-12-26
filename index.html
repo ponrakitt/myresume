@@ -1986,59 +1986,66 @@ s0.parentNode.insertBefore(s1,s0);
 </script>
 <!--End of Tawk.to Script-->
 <style>
-    /* --- Styles เดิม --- */
+    /* --- Styles โครงสร้าง Popup (เหมือนเดิม) --- */
     .ny-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background-color: rgba(0, 0, 0, 0.85);
         display: flex; justify-content: center; align-items: center;
-        z-index: 99999; backdrop-filter: blur(5px);
-        opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
+        z-index: 99999; backdrop-filter: blur(8px);
+        opacity: 0; visibility: hidden; transition: opacity 0.4s ease;
     }
     .ny-popup-box {
         background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-        color: #ffffff; padding: 30px; border-radius: 20px;
+        color: #ffffff; padding: 35px; border-radius: 20px;
         text-align: center; position: relative;
         width: 90%; max-width: 500px;
-        max-height: 90vh; overflow-y: auto; /* กันตกขอบจอมือถือ */
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        border: 2px solid #ffd700; font-family: 'Sarabun', sans-serif;
-        transform: scale(0.8); transition: transform 0.3s ease;
-        box-sizing: border-box;
+        max-height: 90vh; overflow-y: auto;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        border: 1px solid rgba(255, 215, 0, 0.5); 
+        font-family: 'Sarabun', sans-serif;
+        transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .ny-modal-overlay.show { opacity: 1; visibility: visible; }
     .ny-modal-overlay.show .ny-popup-box { transform: scale(1); }
-    .ny-title { font-size: 1.8em; margin: 0 0 5px 0; color: #ffd700; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    .ny-subtitle { font-size: 1em; margin: 0 0 20px 0; color: #e0e0e0; }
-    .ny-countdown { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .ny-time-unit { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; min-width: 60px; border: 1px solid rgba(255, 215, 0, 0.3); display: flex; flex-direction: column; align-items: center; }
-    .ny-number { font-size: 1.5em; font-weight: bold; color: #ffd700; line-height: 1; }
-    .ny-label { font-size: 0.7em; color: #ccc; margin-top: 5px; }
-    .ny-close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #fff; line-height: 1; transition: color 0.3s; }
-    .ny-close-btn:hover { color: #ffd700; }
     
-    /* --- ส่วนใหม่: Download Card --- */
-    .ny-card-section {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255,255,255,0.2);
+    .ny-title { font-size: 2em; margin: 0 0 10px 0; color: #ffd700; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .ny-subtitle { font-size: 1.1em; margin-bottom: 25px; color: #cfcfcf; }
+    
+    /* Countdown Design */
+    .ny-countdown { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+    .ny-time-unit { 
+        background: rgba(255, 255, 255, 0.05); padding: 10px 15px; 
+        border-radius: 12px; min-width: 65px; 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
-    .ny-card-title { font-size: 1.1em; color: #ffd700; margin-bottom: 15px; font-weight: bold; }
-    .ny-lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+    .ny-number { font-size: 1.8em; font-weight: 700; color: #ffd700; line-height: 1.1; display: block; }
+    .ny-label { font-size: 0.75em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .ny-close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; transition: 0.3s; }
+    .ny-close-btn:hover { color: #fff; transform: rotate(90deg); }
+    
+    /* Card Generator Section */
+    .ny-card-section {
+        margin-top: 25px; padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .ny-card-header { font-size: 1.1em; color: #fff; margin-bottom: 15px; font-weight: 600; }
+    .ny-lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
     .ny-lang-btn {
-        background: rgba(255,255,255,0.1); border: 1px solid #ffd700;
-        color: #fff; padding: 8px; border-radius: 5px; cursor: pointer;
+        background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); 
+        border: 1px solid #444; color: #ccc; 
+        padding: 10px; border-radius: 8px; cursor: pointer;
         font-size: 0.9em; transition: all 0.2s;
     }
-    .ny-lang-btn:hover { background: #ffd700; color: #000; }
+    .ny-lang-btn:hover { background: #ffd700; color: #000; border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     
-    .ny-action-btn {
-        background-color: transparent; border: 1px solid #aaa; color: #aaa;
-        padding: 8px 20px; font-size: 0.9em; border-radius: 50px;
-        cursor: pointer; margin-top: 10px; transition: 0.2s;
+    .ny-site-btn {
+        background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7);
+        padding: 10px 30px; font-size: 1em; border-radius: 50px; cursor: pointer; transition: 0.3s;
     }
-    .ny-action-btn:hover { color: #fff; border-color: #fff; }
+    .ny-site-btn:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
 
-    /* ซ่อน Canvas ไว้หลังบ้าน */
     #nyCanvas { display: none; }
 </style>
 
@@ -2047,46 +2054,44 @@ s0.parentNode.insertBefore(s1,s0);
         <span class="ny-close-btn" onclick="closePopup()">&times;</span>
         
         <h1 class="ny-title">Happy New Year</h1>
-        <p class="ny-subtitle">นับถอยหลังสู่ปีใหม่ <span id="nextYearDisplay"></span></p>
+        <p class="ny-subtitle">นับถอยหลังสู่การเริ่มต้นใหม่ <span id="nextYearDisplay"></span></p>
         
         <div class="ny-countdown">
-            <div class="ny-time-unit"><span class="ny-number" id="ny-days">00</span><span class="ny-label">วัน</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-hours">00</span><span class="ny-label">ชม.</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-minutes">00</span><span class="ny-label">นาที</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-seconds">00</span><span class="ny-label">วินาที</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-days">00</span><span class="ny-label">Days</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-hours">00</span><span class="ny-label">Hrs</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-minutes">00</span><span class="ny-label">Min</span></div>
+            <div class="ny-time-unit"><span class="ny-number" id="ny-seconds">00</span><span class="ny-label">Sec</span></div>
         </div>
 
         <div class="ny-card-section">
-            <div class="ny-card-title">🎁 รับการ์ดอวยพร (สุ่มดีไซน์)</div>
-            <p style="font-size:0.85em; color:#ccc; margin-bottom:10px;">เลือกภาษาเพื่อดาวน์โหลดรูป:</p>
-            
+            <div class="ny-card-header">🎁 ดาวน์โหลดการ์ดอวยพร (สุ่มดีไซน์)</div>
             <div class="ny-lang-grid">
-                <button class="ny-lang-btn" onclick="generateCard('th')">🇹🇭 ไทย</button>
-                <button class="ny-lang-btn" onclick="generateCard('en')">🇬🇧 Eng</button>
-                <button class="ny-lang-btn" onclick="generateCard('cn')">🇨🇳 จีน</button>
-                <button class="ny-lang-btn" onclick="generateCard('jp')">🇯🇵 ญี่ปุ่น</button>
-                <button class="ny-lang-btn" onclick="generateCard('fr')">🇫🇷 ฝรั่งเศส</button>
-                <button class="ny-lang-btn" onclick="generateCard('random')">🎲 สุ่ม</button>
+                <button class="ny-lang-btn" onclick="generateProCard('th')">🇹🇭 ไทย</button>
+                <button class="ny-lang-btn" onclick="generateProCard('en')">🇬🇧 Eng</button>
+                <button class="ny-lang-btn" onclick="generateProCard('cn')">🇨🇳 จีน</button>
+                <button class="ny-lang-btn" onclick="generateProCard('jp')">🇯🇵 ญี่ปุ่น</button>
+                <button class="ny-lang-btn" onclick="generateProCard('fr')">🇫🇷 ฝรั่งเศส</button>
+                <button class="ny-lang-btn" onclick="generateProCard('random')">🎲 สุ่มเลย</button>
             </div>
         </div>
 
-        <button class="ny-action-btn" onclick="closePopup()">เข้าสู่เว็บไซต์</button>
+        <button class="ny-site-btn" onclick="closePopup()">เข้าสู่เว็บไซต์</button>
     </div>
 </div>
 
-<canvas id="nyCanvas" width="1200" height="1200"></canvas>
+<canvas id="nyCanvas" width="1080" height="1080"></canvas>
 
 <script>
     (function() {
-        // --- 1. ส่วนนับถอยหลัง ---
-        const currentYear = new Date().getFullYear();
-        const nextYear = currentYear + 1;
+        const nextYear = new Date().getFullYear() + 1;
         document.getElementById('nextYearDisplay').innerText = nextYear;
-        const countToDate = new Date(`Jan 1, ${nextYear} 00:00:00`).getTime();
 
-        const updateTimer = setInterval(function() {
+        // --- 1. Countdown Logic ---
+        const countToDate = new Date(`Jan 1, ${nextYear} 00:00:00`).getTime();
+        const updateTimer = setInterval(() => {
             const now = new Date().getTime();
             const distance = countToDate - now;
+            
             const d = Math.floor(distance / (1000 * 60 * 60 * 24));
             const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -2101,154 +2106,217 @@ s0.parentNode.insertBefore(s1,s0);
             if (distance < 0) clearInterval(updateTimer);
         }, 1000);
 
-        // --- 2. ส่วน Popup ---
-        window.closePopup = function() {
-            document.getElementById('newYearPopup').classList.remove('show');
-        }
-        setTimeout(() => {
-            const popup = document.getElementById('newYearPopup');
-            if(popup) popup.classList.add('show');
-        }, 500);
+        // --- 2. Popup Control ---
+        window.closePopup = () => document.getElementById('newYearPopup').classList.remove('show');
+        setTimeout(() => document.getElementById('newYearPopup').classList.add('show'), 500);
 
-        // --- 3. ส่วนสร้างการ์ด (Generator) ---
+        // --- 3. Pro Card Generator ---
         
-        // ชุดคำอวยพร 5 ภาษา
-        const wishes = {
-            'th': ["สวัสดีปีใหม่", `ขอให้มีความสุขสมหวัง\nสุขภาพแข็งแรงตลอดปี ${nextYear}`],
-            'en': ["Happy New Year", `Wishing you joy, success,\nand prosperity in ${nextYear}`],
-            'cn': ["新年快乐", `(Xīnnián kuàilè)\nขอให้มั่งคั่ง ร่ำรวย โชคดี`],
-            'jp': ["あけましておめでとう", `(Akemashite Omedetou)\nขอให้เป็นปีที่สดใส`],
-            'fr': ["Bonne Année", `ขอให้ปี ${nextYear} เป็นปีที่\nยอดเยี่ยมของคุณ`],
-            'random': ["Happy New Year", `Welcome to ${nextYear}`]
+        // คลังคำอวยพร 5 แบบ ต่อ 1 ภาษา
+        const wishDB = {
+            'th': [
+                ["สวัสดีปีใหม่", "ขอสิ่งศักดิ์สิทธิ์คุ้มครอง\nให้แคล้วคลาดปลอดภัย"],
+                ["Happy New Year", "ขอให้ปีนี้เป็นปีทองของคุณ\nร่ำรวย เงินไหลกอง ทองไหลมา"],
+                ["สวัสดีปีใหม่ครับ", "สุขภาพแข็งแรง\nโรคภัยไม่เบียดเบียน\nอายุยืนหมื่นปี"],
+                ["สุขสันต์วันปีใหม่", "ขอให้มีความสุขมากๆ\nคิดสิ่งใดสมความปรารถนาทุกประการ"],
+                ["เริ่มต้นปีใหม่", "ทิ้งเรื่องร้ายไว้ปีเก่า\nเปิดรับสิ่งดีๆ เข้ามาในชีวิต"]
+            ],
+            'en': [
+                ["Happy New Year", "Wishing you a year fully loaded\nwith happiness and success."],
+                ["Cheers to " + nextYear, "New adventures are around the corner.\nHappy New Year!"],
+                ["Season's Greetings", "May your year be filled with\njoy, love, and laughter."],
+                ["Happy New Year!", "Wishing you prosperity\nand good health in the coming year."],
+                ["New Year, New You", "May all your dreams\nturn into reality this year."]
+            ],
+            'cn': [ // จีน
+                ["新年快乐", "ขอให้มีความสุขในวันปีใหม่\n(Xīnnián kuàilè)"],
+                ["恭喜发财", "ขอให้ร่ำรวย มั่งคั่ง\n(Gōngxǐ fācái)"],
+                ["万事如意", "ขอให้สมปรารถนาในทุกสิ่ง\n(Wànshì rúyì)"],
+                ["身体健康", "ขอให้สุขภาพร่างกายแข็งแรง\n(Shēntǐ jiànkāng)"],
+                ["年年有余", "ขอให้มีเงินมีทองเหลือใช้ทุกปี\n(Niánnián yǒuyú)"]
+            ],
+            'jp': [ // ญี่ปุ่น
+                ["あけましておめでとう", "สวัสดีปีใหม่ ขอฝากเนื้อฝากตัวด้วยนะ"],
+                ["Happy New Year", "ขอให้เป็นปีที่เต็มไปด้วยรอยยิ้ม"],
+                ["謹賀新年", "ขอให้ปีใหม่นำพาแต่ความสุขมาให้"],
+                ["良いお年を", "ขอให้สุขภาพแข็งแรงตลอดปี"],
+                ["新年おめでとう", "ขอให้ความฝันเป็นจริงในปีนี้"]
+            ],
+            'fr': [ // ฝรั่งเศส
+                ["Bonne Année", "สวัสดีปีใหม่ ขอให้มีความสุข"],
+                ["Meilleurs Vœux", "ด้วยความปรารถนาดีสำหรับปีใหม่"],
+                ["Santé et Bonheur", "ขอให้มีสุขภาพดีและความสุข"],
+                ["Joyeuses Fêtes", "ขอให้สนุกสนานในเทศกาลนี้"],
+                ["Bonne Année " + nextYear, "ขอให้เป็นปีที่ยอดเยี่ยมของคุณ"]
+            ]
         };
 
-        window.generateCard = function(lang) {
+        window.generateProCard = function(lang) {
+            // สุ่มภาษาถ้าเลือก random
             if(lang === 'random') {
-                const keys = Object.keys(wishes).filter(k => k !== 'random');
+                const keys = Object.keys(wishDB);
                 lang = keys[Math.floor(Math.random() * keys.length)];
             }
+            
+            // สุ่มคำอวยพร (0-4)
+            const wishSet = wishDB[lang][Math.floor(Math.random() * wishDB[lang].length)];
+            const headText = wishSet[0];
+            const bodyText = wishSet[1];
 
-            const canvas = document.getElementById('nyCanvas');
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width;
-            const h = canvas.height;
+            // เตรียม Canvas
+            const cvs = document.getElementById('nyCanvas');
+            const ctx = cvs.getContext('2d');
+            const w = cvs.width;
+            const h = cvs.height;
 
-            // สุ่ม Style พื้นหลัง (1-5)
-            const styleIdx = Math.floor(Math.random() * 5) + 1;
-            drawBackground(ctx, w, h, styleIdx);
+            // สุ่ม Theme พื้นหลัง (1-5)
+            const themeId = Math.floor(Math.random() * 5) + 1;
+            drawTheme(ctx, w, h, themeId);
 
             // วาดข้อความ
-            ctx.textAlign = 'center';
-            ctx.shadowColor = "rgba(0,0,0,0.5)";
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 4;
-            ctx.shadowOffsetY = 4;
+            drawText(ctx, w, h, headText, bodyText, themeId);
 
-            // หัวข้อ (Header)
-            ctx.font = "bold 100px sans-serif";
-            ctx.fillStyle = "#FFFFFF";
-            if(styleIdx === 2 || styleIdx === 3) ctx.fillStyle = "#FFD700"; // พื้นแดง/ขาว ใช้ตัวทอง
-            ctx.fillText(wishes[lang][0], w/2, h/2 - 50);
+            // วาด Footer เครดิต
+            ctx.font = "30px sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.textAlign = "center";
+            ctx.shadowBlur = 0;
+            ctx.fillText(window.location.hostname + " © " + nextYear, w/2, h - 40);
 
-            // คำอวยพร (Body)
-            ctx.font = "50px sans-serif";
-            ctx.fillStyle = "#EEEEEE";
-            if(styleIdx === 2) ctx.fillStyle = "#FFF"; 
-            
-            const lines = wishes[lang][1].split('\n');
-            let lineHeight = 70;
-            for (let i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], w/2, h/2 + 60 + (i * lineHeight));
-            }
-
-            // Footer
-            ctx.font = "italic 30px sans-serif";
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.fillText(`Created by ${window.location.hostname}`, w/2, h - 50);
-
-            // ดาวน์โหลดไฟล์
+            // ดาวน์โหลด
             const link = document.createElement('a');
-            link.download = `HNY-${nextYear}-${lang}.png`;
-            link.href = canvas.toDataURL();
+            link.download = `HNY-${nextYear}-${lang}-${Date.now()}.jpg`;
+            link.href = cvs.toDataURL("image/jpeg", 0.9);
             link.click();
         }
 
-        // ฟังก์ชันวาดพื้นหลัง 5 แบบ
-        function drawBackground(ctx, w, h, style) {
-            let grd;
-            ctx.clearRect(0, 0, w, h);
+        // --- Theme Engine ---
+        function drawTheme(ctx, w, h, id) {
+            // Clear
+            ctx.clearRect(0,0,w,h);
             
-            // Style 1: Deep Blue Night
-            if(style === 1) {
-                grd = ctx.createLinearGradient(0, 0, 0, h);
-                grd.addColorStop(0, "#0f2027");
-                grd.addColorStop(1, "#2c5364");
-                ctx.fillStyle = grd;
-                ctx.fillRect(0,0,w,h);
-                drawStars(ctx, w, h, 100);
-            }
-            // Style 2: Red Prosperity (จีน)
-            else if (style === 2) {
-                grd = ctx.createLinearGradient(0, 0, w, h);
-                grd.addColorStop(0, "#a00000");
-                grd.addColorStop(1, "#500000");
-                ctx.fillStyle = grd;
-                ctx.fillRect(0,0,w,h);
-                drawCircles(ctx, w, h, "#ffcc00");
-            }
-            // Style 3: Golden Luxury
-            else if (style === 3) {
-                grd = ctx.createRadialGradient(w/2, h/2, 100, w/2, h/2, w);
-                grd.addColorStop(0, "#b8860b");
+            if (id === 1) { // Luxury Gold
+                let grd = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
+                grd.addColorStop(0, "#2c2c2c");
                 grd.addColorStop(1, "#000000");
-                ctx.fillStyle = grd;
-                ctx.fillRect(0,0,w,h);
-                drawStars(ctx, w, h, 50);
+                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+                
+                // Gold Particles
+                for(let i=0; i<150; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*3, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255, 215, 0, ${Math.random()})`;
+                    ctx.fill();
+                }
+                // Gold Border
+                ctx.strokeStyle = "#ffd700"; ctx.lineWidth = 10;
+                ctx.strokeRect(40,40,w-80,h-80);
+            } 
+            else if (id === 2) { // Midnight Fireworks
+                let grd = ctx.createLinearGradient(0,0,0,h);
+                grd.addColorStop(0, "#021B79");
+                grd.addColorStop(1, "#000000");
+                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+                
+                // Draw Fireworks (Simple Lines)
+                drawFirework(ctx, w*0.2, h*0.3, "#FF5733");
+                drawFirework(ctx, w*0.8, h*0.2, "#33FF57");
+                drawFirework(ctx, w*0.5, h*0.5, "#3357FF");
             }
-            // Style 4: Modern Purple
-            else if (style === 4) {
-                grd = ctx.createLinearGradient(0, 0, w, h);
+            else if (id === 3) { // Oriental Red (มงคล)
+                let grd = ctx.createLinearGradient(0,0,w,h);
+                grd.addColorStop(0, "#D31027");
+                grd.addColorStop(1, "#EA384D");
+                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+                
+                // Pattern
+                ctx.strokeStyle = "rgba(255, 215, 0, 0.2)"; ctx.lineWidth = 2;
+                for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
+                
+                // Gold Inner Frame
+                ctx.strokeStyle = "#FFD700"; ctx.lineWidth = 20;
+                ctx.strokeRect(60,60,w-120,h-120);
+            }
+            else if (id === 4) { // Modern Bokeh
+                let grd = ctx.createLinearGradient(0,0,w,h);
                 grd.addColorStop(0, "#8E2DE2");
                 grd.addColorStop(1, "#4A00E0");
-                ctx.fillStyle = grd;
-                ctx.fillRect(0,0,w,h);
+                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+                
+                // Bokeh
+                for(let i=0; i<20; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*100+50, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random()*0.1})`;
+                    ctx.fill();
+                }
             }
-            // Style 5: Elegant Silver/Black
-            else {
-                ctx.fillStyle = "#111";
-                ctx.fillRect(0,0,w,h);
-                ctx.strokeStyle = "#444";
-                ctx.lineWidth = 20;
-                ctx.strokeRect(50,50,w-100,h-100); // กรอบ
+            else { // Silver Frost
+                let grd = ctx.createLinearGradient(0,0,0,h);
+                grd.addColorStop(0, "#E0EAFC");
+                grd.addColorStop(1, "#CFDEF3");
+                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+                
+                // Snowflakes
+                ctx.fillStyle = "#FFF";
+                for(let i=0; i<100; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*4, 0, Math.PI*2);
+                    ctx.fill();
+                }
             }
         }
 
-        function drawStars(ctx, w, h, count) {
-            ctx.fillStyle = "#FFF";
-            ctx.shadowBlur = 0; // ปิดเงาสำหรับดาว
-            for(let i=0; i<count; i++) {
-                ctx.beginPath();
-                ctx.arc(Math.random()*w, Math.random()*h, Math.random()*3, 0, Math.PI*2);
-                ctx.fill();
+        function drawText(ctx, w, h, head, body, themeId) {
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            // Determine Text Color based on theme
+            let titleColor = "#FFD700"; // Gold Default
+            let bodyColor = "#FFFFFF";
+            let shadow = "rgba(0,0,0,0.8)";
+            
+            if (themeId === 5) { // Silver needs dark text
+                titleColor = "#2c3e50";
+                bodyColor = "#34495e";
+                shadow = "rgba(255,255,255,0.5)";
+            }
+
+            // Title
+            ctx.font = "bold 120px sans-serif";
+            ctx.fillStyle = titleColor;
+            ctx.shadowColor = shadow;
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5;
+            ctx.fillText(head, w/2, h/2 - 80);
+
+            // Body (Multi-line)
+            ctx.font = "60px sans-serif";
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 10;
+            
+            const lines = body.split('\n');
+            const lineHeight = 80;
+            const startY = h/2 + 60;
+            
+            for(let i=0; i<lines.length; i++) {
+                ctx.fillText(lines[i], w/2, startY + (i*lineHeight));
             }
         }
-        function drawCircles(ctx, w, h, color) {
+
+        function drawFirework(ctx, x, y, color) {
             ctx.strokeStyle = color;
-            ctx.globalAlpha = 0.2;
-            for(let i=0; i<10; i++) {
+            ctx.lineWidth = 3;
+            for(let i=0; i<8; i++) {
                 ctx.beginPath();
-                ctx.arc(Math.random()*w, Math.random()*h, Math.random()*100 + 50, 0, Math.PI*2);
+                ctx.moveTo(x, y);
+                const angle = (Math.PI*2 * i) / 8;
+                ctx.lineTo(x + Math.cos(angle)*100, y + Math.sin(angle)*100);
                 ctx.stroke();
             }
-            ctx.globalAlpha = 1.0;
         }
 
     })();
 </script>
 </body>
 </html>
-
-
-
-
-
