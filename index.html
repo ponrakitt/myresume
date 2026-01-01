@@ -1985,338 +1985,137 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-<style>
-    /* --- Styles โครงสร้าง Popup (เหมือนเดิม) --- */
-    .ny-modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        display: flex; justify-content: center; align-items: center;
-        z-index: 99999; backdrop-filter: blur(8px);
-        opacity: 0; visibility: hidden; transition: opacity 0.4s ease;
-    }
-    .ny-popup-box {
-        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-        color: #ffffff; padding: 35px; border-radius: 20px;
-        text-align: center; position: relative;
-        width: 90%; max-width: 500px;
-        max-height: 90vh; overflow-y: auto;
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-        border: 1px solid rgba(255, 215, 0, 0.5); 
-        font-family: 'Sarabun', sans-serif;
-        transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .ny-modal-overlay.show { opacity: 1; visibility: visible; }
-    .ny-modal-overlay.show .ny-popup-box { transform: scale(1); }
-    
-    .ny-title { font-size: 2em; margin: 0 0 10px 0; color: #ffd700; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .ny-subtitle { font-size: 1.1em; margin-bottom: 25px; color: #cfcfcf; }
-    
-    /* Countdown Design */
-    .ny-countdown { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-    .ny-time-unit { 
-        background: rgba(255, 255, 255, 0.05); padding: 10px 15px; 
-        border-radius: 12px; min-width: 65px; 
-        border: 1px solid rgba(255, 255, 255, 0.1); 
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-    }
-    .ny-number { font-size: 1.8em; font-weight: 700; color: #ffd700; line-height: 1.1; display: block; }
-    .ny-label { font-size: 0.75em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .ny-close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; transition: 0.3s; }
-    .ny-close-btn:hover { color: #fff; transform: rotate(90deg); }
-    
-    /* Card Generator Section */
-    .ny-card-section {
-        margin-top: 25px; padding-top: 20px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    .ny-card-header { font-size: 1.1em; color: #fff; margin-bottom: 15px; font-weight: 600; }
-    .ny-lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .ny-lang-btn {
-        background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); 
-        border: 1px solid #444; color: #ccc; 
-        padding: 10px; border-radius: 8px; cursor: pointer;
-        font-size: 0.9em; transition: all 0.2s;
-    }
-    .ny-lang-btn:hover { background: #ffd700; color: #000; border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    
-    .ny-site-btn {
-        background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7);
-        padding: 10px 30px; font-size: 1em; border-radius: 50px; cursor: pointer; transition: 0.3s;
-    }
-    .ny-site-btn:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
-
-    #nyCanvas { display: none; }
-</style>
-
-<div class="ny-modal-overlay" id="newYearPopup">
-    <div class="ny-popup-box">
-        <span class="ny-close-btn" onclick="closePopup()">&times;</span>
+<div id="valentines-popup-widget" style="display: none;">
+    <div class="v-popup-content">
+        <button class="v-close-btn" onclick="document.getElementById('valentines-popup-widget').style.display='none'">&times;</button>
         
-        <h1 class="ny-title">Happy New Year</h1>
-        <p class="ny-subtitle">นับถอยหลังสู่การเริ่มต้นใหม่ <span id="nextYearDisplay"></span></p>
-        
-        <div class="ny-countdown">
-            <div class="ny-time-unit"><span class="ny-number" id="ny-days">00</span><span class="ny-label">Days</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-hours">00</span><span class="ny-label">Hrs</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-minutes">00</span><span class="ny-label">Min</span></div>
-            <div class="ny-time-unit"><span class="ny-number" id="ny-seconds">00</span><span class="ny-label">Sec</span></div>
+        <div class="v-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span>Time until Valentine's</span>
         </div>
 
-        <div class="ny-card-section">
-            <div class="ny-card-header">🎁 ดาวน์โหลดการ์ดอวยพร (สุ่มดีไซน์)</div>
-            <div class="ny-lang-grid">
-                <button class="ny-lang-btn" onclick="generateProCard('th')">🇹🇭 ไทย</button>
-                <button class="ny-lang-btn" onclick="generateProCard('en')">🇬🇧 Eng</button>
-                <button class="ny-lang-btn" onclick="generateProCard('cn')">🇨🇳 จีน</button>
-                <button class="ny-lang-btn" onclick="generateProCard('jp')">🇯🇵 ญี่ปุ่น</button>
-                <button class="ny-lang-btn" onclick="generateProCard('fr')">🇫🇷 ฝรั่งเศส</button>
-                <button class="ny-lang-btn" onclick="generateProCard('random')">🎲 สุ่มเลย</button>
-            </div>
+        <div class="v-timer">
+            <div class="v-box"><span id="v-days">00</span><small>Days</small></div>
+            <div class="v-box"><span id="v-hours">00</span><small>Hrs</small></div>
+            <div class="v-box"><span id="v-mins">00</span><small>Min</small></div>
+            <div class="v-box"><span id="v-secs">00</span><small>Sec</small></div>
         </div>
-
-        <button class="ny-site-btn" onclick="closePopup()">เข้าสู่เว็บไซต์</button>
     </div>
+
+    <style>
+        /* CSS สำหรับ Pop-up */
+        #valentines-popup-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            animation: v-slideUp 0.5s ease-out;
+            display: block; /* เริ่มต้นแสดงผล */
+        }
+        .v-popup-content {
+            background: white;
+            border: 2px solid #ff4757;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            min-width: 260px;
+            position: relative;
+        }
+        .v-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ff4757;
+            font-weight: bold;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .v-header svg {
+            animation: v-beat 1.2s infinite;
+        }
+        .v-timer {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .v-box {
+            background: #ff4757;
+            color: white;
+            padding: 5px;
+            border-radius: 6px;
+            min-width: 45px;
+        }
+        .v-box span {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .v-box small {
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .v-close-btn {
+            position: absolute;
+            top: 2px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .v-close-btn:hover { color: #333; }
+
+        @keyframes v-slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes v-beat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+    </style>
+
+    <script>
+        (function() {
+            function updateValentineTimer() {
+                const now = new Date();
+                let year = now.getFullYear();
+                let vDay = new Date(year, 1, 14); // เดือน 1 คือกุมภาพันธ์ (0-indexed)
+
+                if (now > vDay) vDay = new Date(year + 1, 1, 14); // ถ้าเลยแล้ว ให้นับปีหน้า
+
+                const diff = vDay - now;
+
+                if (diff <= 0) {
+                    document.querySelector('.v-header span').innerText = "Happy Valentine's Day!";
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('v-days').innerText = d < 10 ? '0'+d : d;
+                document.getElementById('v-hours').innerText = h < 10 ? '0'+h : h;
+                document.getElementById('v-mins').innerText = m < 10 ? '0'+m : m;
+                document.getElementById('v-secs').innerText = s < 10 ? '0'+s : s;
+            }
+
+            document.getElementById('valentines-popup-widget').style.display = 'block';
+            setInterval(updateValentineTimer, 1000);
+            updateValentineTimer();
+        })();
+    </script>
 </div>
-
-<canvas id="nyCanvas" width="1080" height="1080"></canvas>
-
-<script>
-    (function() {
-        const nextYear = new Date().getFullYear() + 1;
-        document.getElementById('nextYearDisplay').innerText = nextYear;
-
-        // --- 1. Countdown Logic ---
-        const countToDate = new Date(`Jan 1, ${nextYear} 00:00:00`).getTime();
-        const updateTimer = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = countToDate - now;
-            
-            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-            if(document.getElementById("ny-days")) {
-                document.getElementById("ny-days").innerText = d;
-                document.getElementById("ny-hours").innerText = h < 10 ? '0' + h : h;
-                document.getElementById("ny-minutes").innerText = m < 10 ? '0' + m : m;
-                document.getElementById("ny-seconds").innerText = s < 10 ? '0' + s : s;
-            }
-            if (distance < 0) clearInterval(updateTimer);
-        }, 1000);
-
-        // --- 2. Popup Control ---
-        window.closePopup = () => document.getElementById('newYearPopup').classList.remove('show');
-        setTimeout(() => document.getElementById('newYearPopup').classList.add('show'), 500);
-
-        // --- 3. Pro Card Generator ---
-        
-        // คลังคำอวยพร 5 แบบ ต่อ 1 ภาษา
-        const wishDB = {
-            'th': [
-                ["สวัสดีปีใหม่", "ขอสิ่งศักดิ์สิทธิ์คุ้มครอง\nให้แคล้วคลาดปลอดภัย"],
-                ["Happy New Year", "ขอให้ปีนี้เป็นปีทองของคุณ\nร่ำรวย เงินไหลกอง ทองไหลมา"],
-                ["สวัสดีปีใหม่ครับ", "สุขภาพแข็งแรง\nโรคภัยไม่เบียดเบียน\nอายุยืนหมื่นปี"],
-                ["สุขสันต์วันปีใหม่", "ขอให้มีความสุขมากๆ\nคิดสิ่งใดสมความปรารถนาทุกประการ"],
-                ["เริ่มต้นปีใหม่", "ทิ้งเรื่องร้ายไว้ปีเก่า\nเปิดรับสิ่งดีๆ เข้ามาในชีวิต"]
-            ],
-            'en': [
-                ["Happy New Year", "Wishing you a year fully loaded\nwith happiness and success."],
-                ["Cheers to " + nextYear, "New adventures are around the corner.\nHappy New Year!"],
-                ["Season's Greetings", "May your year be filled with\njoy, love, and laughter."],
-                ["Happy New Year!", "Wishing you prosperity\nand good health in the coming year."],
-                ["New Year, New You", "May all your dreams\nturn into reality this year."]
-            ],
-            'cn': [ // จีน
-                ["新年快乐", "ขอให้มีความสุขในวันปีใหม่\n(Xīnnián kuàilè)"],
-                ["恭喜发财", "ขอให้ร่ำรวย มั่งคั่ง\n(Gōngxǐ fācái)"],
-                ["万事如意", "ขอให้สมปรารถนาในทุกสิ่ง\n(Wànshì rúyì)"],
-                ["身体健康", "ขอให้สุขภาพร่างกายแข็งแรง\n(Shēntǐ jiànkāng)"],
-                ["年年有余", "ขอให้มีเงินมีทองเหลือใช้ทุกปี\n(Niánnián yǒuyú)"]
-            ],
-            'jp': [ // ญี่ปุ่น
-                ["あけましておめでとう", "สวัสดีปีใหม่ ขอฝากเนื้อฝากตัวด้วยนะ"],
-                ["Happy New Year", "ขอให้เป็นปีที่เต็มไปด้วยรอยยิ้ม"],
-                ["謹賀新年", "ขอให้ปีใหม่นำพาแต่ความสุขมาให้"],
-                ["良いお年を", "ขอให้สุขภาพแข็งแรงตลอดปี"],
-                ["新年おめでとう", "ขอให้ความฝันเป็นจริงในปีนี้"]
-            ],
-            'fr': [ // ฝรั่งเศส
-                ["Bonne Année", "สวัสดีปีใหม่ ขอให้มีความสุข"],
-                ["Meilleurs Vœux", "ด้วยความปรารถนาดีสำหรับปีใหม่"],
-                ["Santé et Bonheur", "ขอให้มีสุขภาพดีและความสุข"],
-                ["Joyeuses Fêtes", "ขอให้สนุกสนานในเทศกาลนี้"],
-                ["Bonne Année " + nextYear, "ขอให้เป็นปีที่ยอดเยี่ยมของคุณ"]
-            ]
-        };
-
-        window.generateProCard = function(lang) {
-            // สุ่มภาษาถ้าเลือก random
-            if(lang === 'random') {
-                const keys = Object.keys(wishDB);
-                lang = keys[Math.floor(Math.random() * keys.length)];
-            }
-            
-            // สุ่มคำอวยพร (0-4)
-            const wishSet = wishDB[lang][Math.floor(Math.random() * wishDB[lang].length)];
-            const headText = wishSet[0];
-            const bodyText = wishSet[1];
-
-            // เตรียม Canvas
-            const cvs = document.getElementById('nyCanvas');
-            const ctx = cvs.getContext('2d');
-            const w = cvs.width;
-            const h = cvs.height;
-
-            // สุ่ม Theme พื้นหลัง (1-5)
-            const themeId = Math.floor(Math.random() * 5) + 1;
-            drawTheme(ctx, w, h, themeId);
-
-            // วาดข้อความ
-            drawText(ctx, w, h, headText, bodyText, themeId);
-
-            // วาด Footer เครดิต
-            ctx.font = "30px sans-serif";
-            ctx.fillStyle = "rgba(255,255,255,0.6)";
-            ctx.textAlign = "center";
-            ctx.shadowBlur = 0;
-            ctx.fillText(window.location.hostname + " © " + nextYear, w/2, h - 40);
-
-            // ดาวน์โหลด
-            const link = document.createElement('a');
-            link.download = `HNY-${nextYear}-${lang}-${Date.now()}.jpg`;
-            link.href = cvs.toDataURL("image/jpeg", 0.9);
-            link.click();
-        }
-
-        // --- Theme Engine ---
-        function drawTheme(ctx, w, h, id) {
-            // Clear
-            ctx.clearRect(0,0,w,h);
-            
-            if (id === 1) { // Luxury Gold
-                let grd = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
-                grd.addColorStop(0, "#2c2c2c");
-                grd.addColorStop(1, "#000000");
-                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-                
-                // Gold Particles
-                for(let i=0; i<150; i++) {
-                    ctx.beginPath();
-                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*3, 0, Math.PI*2);
-                    ctx.fillStyle = `rgba(255, 215, 0, ${Math.random()})`;
-                    ctx.fill();
-                }
-                // Gold Border
-                ctx.strokeStyle = "#ffd700"; ctx.lineWidth = 10;
-                ctx.strokeRect(40,40,w-80,h-80);
-            } 
-            else if (id === 2) { // Midnight Fireworks
-                let grd = ctx.createLinearGradient(0,0,0,h);
-                grd.addColorStop(0, "#021B79");
-                grd.addColorStop(1, "#000000");
-                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-                
-                // Draw Fireworks (Simple Lines)
-                drawFirework(ctx, w*0.2, h*0.3, "#FF5733");
-                drawFirework(ctx, w*0.8, h*0.2, "#33FF57");
-                drawFirework(ctx, w*0.5, h*0.5, "#3357FF");
-            }
-            else if (id === 3) { // Oriental Red (มงคล)
-                let grd = ctx.createLinearGradient(0,0,w,h);
-                grd.addColorStop(0, "#D31027");
-                grd.addColorStop(1, "#EA384D");
-                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-                
-                // Pattern
-                ctx.strokeStyle = "rgba(255, 215, 0, 0.2)"; ctx.lineWidth = 2;
-                for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
-                
-                // Gold Inner Frame
-                ctx.strokeStyle = "#FFD700"; ctx.lineWidth = 20;
-                ctx.strokeRect(60,60,w-120,h-120);
-            }
-            else if (id === 4) { // Modern Bokeh
-                let grd = ctx.createLinearGradient(0,0,w,h);
-                grd.addColorStop(0, "#8E2DE2");
-                grd.addColorStop(1, "#4A00E0");
-                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-                
-                // Bokeh
-                for(let i=0; i<20; i++) {
-                    ctx.beginPath();
-                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*100+50, 0, Math.PI*2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random()*0.1})`;
-                    ctx.fill();
-                }
-            }
-            else { // Silver Frost
-                let grd = ctx.createLinearGradient(0,0,0,h);
-                grd.addColorStop(0, "#E0EAFC");
-                grd.addColorStop(1, "#CFDEF3");
-                ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-                
-                // Snowflakes
-                ctx.fillStyle = "#FFF";
-                for(let i=0; i<100; i++) {
-                    ctx.beginPath();
-                    ctx.arc(Math.random()*w, Math.random()*h, Math.random()*4, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-        }
-
-        function drawText(ctx, w, h, head, body, themeId) {
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            
-            // Determine Text Color based on theme
-            let titleColor = "#FFD700"; // Gold Default
-            let bodyColor = "#FFFFFF";
-            let shadow = "rgba(0,0,0,0.8)";
-            
-            if (themeId === 5) { // Silver needs dark text
-                titleColor = "#2c3e50";
-                bodyColor = "#34495e";
-                shadow = "rgba(255,255,255,0.5)";
-            }
-
-            // Title
-            ctx.font = "bold 120px sans-serif";
-            ctx.fillStyle = titleColor;
-            ctx.shadowColor = shadow;
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5;
-            ctx.fillText(head, w/2, h/2 - 80);
-
-            // Body (Multi-line)
-            ctx.font = "60px sans-serif";
-            ctx.fillStyle = bodyColor;
-            ctx.shadowBlur = 10;
-            
-            const lines = body.split('\n');
-            const lineHeight = 80;
-            const startY = h/2 + 60;
-            
-            for(let i=0; i<lines.length; i++) {
-                ctx.fillText(lines[i], w/2, startY + (i*lineHeight));
-            }
-        }
-
-        function drawFirework(ctx, x, y, color) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
-            for(let i=0; i<8; i++) {
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                const angle = (Math.PI*2 * i) / 8;
-                ctx.lineTo(x + Math.cos(angle)*100, y + Math.sin(angle)*100);
-                ctx.stroke();
-            }
-        }
-
-    })();
-</script>
 </body>
 </html>
