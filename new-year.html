@@ -20,7 +20,7 @@
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* ลบสีไฮไลท์เวลากดบนมือถือ */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -28,8 +28,7 @@
             background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
             font-family: 'Sarabun', sans-serif;
             overflow: hidden;
-            height: 100vh; /* Fallback */
-            height: 100dvh; /* Dynamic Viewport Height สำหรับมือถือ */
+            height: 100dvh; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -51,7 +50,7 @@
         /* --- Bird & Mailbox --- */
         .mailbox-container {
             position: absolute; 
-            bottom: 30%; /* ขยับขึ้นให้นิ้วกดง่าย */
+            bottom: 30%; 
             left: 50%;
             transform: translateX(-50%); 
             z-index: 5; 
@@ -59,7 +58,7 @@
             width: 100%;
         }
         .bird-wrapper {
-            font-size: 80px; /* ปรับขนาดให้พอดีมือถือ */
+            font-size: 80px; 
             color: #fff;
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
             transition: transform 0.3s; 
@@ -67,7 +66,7 @@
             position: relative;
             display: inline-block;
         }
-        .bird-wrapper:active { transform: scale(0.95); } /* Effect เวลากด */
+        .bird-wrapper:active { transform: scale(0.95); }
         
         .bird-fly { animation: flyIn 2s ease-out forwards, hoverBird 3s ease-in-out infinite 2s; }
         .bird-stand { animation: hoverBird 4s ease-in-out infinite; }
@@ -116,24 +115,25 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             z-index: 100; display: none; justify-content: center; align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
 
-        /* --- Siamsi Paper --- */
+        /* --- Siamsi Paper Layout --- */
         .siamsi-scroll-container {
-            max-height: 80vh; 
+            max-height: 85vh; 
             overflow-y: auto; 
             width: 100%; 
             display: flex; 
             justify-content: center; 
             perspective: 1000px;
-            padding-bottom: 20px; /* เผื่อพื้นที่ให้ scroll ไม่ติดขอบ */
+            padding-bottom: 80px; 
         }
+        
         .siamsi-paper {
             background: var(--paper); 
             width: 100%; 
-            max-width: 400px; /* จำกัดความกว้างไม่ให้ใหญ่เกินบน iPad/Desktop */
-            padding: 25px 20px; 
+            max-width: 400px; 
+            padding: 20px 15px; 
             margin: 10px 0; 
             border-radius: 4px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
@@ -166,34 +166,27 @@
 
         /* Typography */
         .siamsi-header { text-align: center; border-bottom: 2px double #d35400; padding-bottom: 10px; margin-bottom: 15px; }
-        .siamsi-no { font-family: 'Charm', cursive; font-size: 2.5rem; color: #d35400; font-weight: bold; line-height: 1; }
-        .siamsi-title { font-family: 'Kanit'; color: #555; font-size: 1rem; }
-        .section-title { font-family: 'Kanit'; font-weight: bold; color: #8e44ad; font-size: 1rem; margin-bottom: 3px; border-left: 3px solid #8e44ad; padding-left: 6px; }
-        .section-text { font-size: 0.9rem; line-height: 1.5; color: #333; text-align: justify; margin-bottom: 15px; }
-        .luck-stat { text-align: center; margin-top: 20px; padding: 10px; background: rgba(255,235,59,0.2); border-radius: 10px; border: 1px dashed #f1c40f; }
+        .siamsi-no { font-family: 'Charm', cursive; font-size: 2.2rem; color: #d35400; font-weight: bold; line-height: 1; }
+        .siamsi-title { font-family: 'Kanit'; color: #555; font-size: 0.9rem; }
+        .section-title { font-family: 'Kanit'; font-weight: bold; color: #8e44ad; font-size: 0.95rem; margin-bottom: 2px; border-left: 3px solid #8e44ad; padding-left: 6px; }
+        .section-text { font-size: 0.85rem; line-height: 1.5; color: #333; text-align: justify; margin-bottom: 12px; }
+        .luck-stat { text-align: center; margin-top: 15px; padding: 10px; background: rgba(255,235,59,0.2); border-radius: 10px; border: 1px dashed #f1c40f; }
         .luck-percent { font-size: 1.8rem; color: #d35400; font-weight: bold; font-family: 'Kanit'; }
 
-        /* Footer Buttons (Mobile Optimized) */
+        /* Footer Buttons */
         .modal-footer {
             position: fixed; bottom: 20px; width: 100%; 
             display: flex; justify-content: center; gap: 8px; z-index: 200; pointer-events: none;
-            padding: 0 10px;
+            padding: 0 15px;
         }
-        .modal-footer button { 
-            pointer-events: auto; 
-            padding: 10px 15px;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        
+        .modal-footer button { pointer-events: auto; padding: 10px 15px; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0; }
         .btn-burn { background: #c0392b; color: white; }
         .btn-keep { background: #27ae60; color: white; }
         .btn-download { background: #2980b9; color: white; }
 
         /* Toast Notification */
         .status-toast {
-            position: fixed; top: 15px; left: 15px; right: 15px; /* เต็มความกว้างบนมือถือ */
-            max-width: 300px; margin: 0 auto; /* จำกัดความกว้างบนจอใหญ่ */
+            position: fixed; top: 15px; left: 15px; right: 15px; max-width: 300px; margin: 0 auto; 
             background: rgba(0, 0, 0, 0.9); color: white; padding: 12px 20px;
             border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px;
             z-index: 2000; transform: translateY(-150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -202,26 +195,20 @@
         .status-toast.show { transform: translateY(0); }
 
         /* Collection Grid */
-        .collection-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ในมือถือ */
-            gap: 8px; 
-            margin-top: 20px; 
-            max-height: 60vh; 
-            overflow-y: auto; 
-            padding-right: 2px; 
-        }
+        .collection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
         .col-item { background: white; padding: 8px; border-radius: 6px; text-align: center; cursor: pointer; border: 1px solid #eee; position: relative; }
         .col-no { font-size: 1.2rem; font-weight: bold; color: #d35400; font-family: 'Charm'; }
         .col-date { font-size: 0.65rem; color: #999; margin-top: 2px; }
 
-        /* Media Query for larger screens (Tablets/Desktops) */
         @media (min-width: 768px) {
             .bird-wrapper { font-size: 100px; }
             .collection-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .status-toast { left: 20px; right: auto; transform: translateX(-200%); }
             .status-toast.show { transform: translateX(0); }
             .action-btn { font-size: 1rem; padding: 12px 25px; }
+            .siamsi-paper { padding: 30px; }
+            .siamsi-no { font-size: 3rem; }
+            .section-text { font-size: 1rem; }
         }
     </style>
 </head>
@@ -249,6 +236,30 @@
         <button class="action-btn btn-collection" onclick="openCollection()">
             <i class="fa-solid fa-book-bookmark"></i> กระเป๋า
         </button>
+    </div>
+
+    <div class="modal-overlay" id="browserWarningModal" style="z-index: 9999;">
+        <div class="siamsi-paper" style="text-align: center; max-width: 350px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #f1c40f; margin-bottom: 15px;"></i>
+            <h3 style="font-family: 'Kanit'; margin: 0 0 10px 0;">แนะนำให้เปิดใน Browser หลัก</h3>
+            <p style="font-size: 0.9rem; color: #555; line-height: 1.5;">
+                เพื่อประสบการณ์ที่ดีที่สุด โปรดเปิดผ่าน<br>
+                <i class="fa-brands fa-chrome" style="color:#4285F4"></i> Chrome, 
+                <i class="fa-brands fa-firefox" style="color:#FF7139"></i> Firefox หรือ 
+                <i class="fa-brands fa-safari" style="color:#00ACED"></i> Safari
+            </p>
+            
+            <div style="background: #eee; padding: 10px; border-radius: 8px; margin: 15px 0; word-break: break-all; font-family: monospace; font-size: 0.85rem; user-select: all; border: 1px dashed #ccc;">
+                https://ponrakitt.site/new-year
+            </div>
+
+            <button class="action-btn" onclick="copyLink()" style="width: 100%; justify-content: center; background: #2c3e50; color: white; margin-bottom: 8px;">
+                <i class="fa-solid fa-copy"></i> คัดลอกลิ้งก์
+            </button>
+            <button class="action-btn" onclick="closeModal('browserWarningModal')" style="width: 100%; justify-content: center; background: transparent; color: #999; border: 1px solid #ddd; box-shadow: none;">
+                ปิดคำเตือน
+            </button>
+        </div>
     </div>
 
     <div class="modal-overlay" id="letterModal">
@@ -286,7 +297,6 @@
                 <div id="siamsiContent"></div>
             </div>
         </div>
-        
         <div class="modal-footer" id="resultButtons"></div>
     </div>
 
@@ -309,6 +319,56 @@
         const LETTER_CONTENT_KEY = `ponrakit_letter_content_${CURRENT_YEAR}`;
         const COLLECTION_KEY = `ponrakit_siamsi_collection_${CURRENT_YEAR}`;
         const EXPIRY_DAYS = 90; 
+
+        // --- Browser Detection & Copy Link ---
+        function checkBrowser() {
+            const ua = navigator.userAgent;
+            const isChrome = ua.indexOf("Chrome") > -1;
+            const isFirefox = ua.indexOf("Firefox") > -1;
+            const isSafari = ua.indexOf("Safari") > -1 && ua.indexOf("Chrome") === -1;
+            
+            // Detect In-App Browsers (Line, FB, IG)
+            const isLine = ua.indexOf("Line") > -1;
+            const isFB = ua.indexOf("FB") > -1 || ua.indexOf("Instagram") > -1;
+
+            // Logic: ถ้าเป็น Line/FB หรือ ไม่ใช่ Chrome/Firefox/Safari ให้เตือน
+            // (Note: Edge/Opera มักจะมี Chrome ติดมาใน UA ทำให้ผ่านเงื่อนไข Chrome ซึ่ง OK)
+            if (isLine || isFB || (!isChrome && !isFirefox && !isSafari)) {
+                document.getElementById('browserWarningModal').style.display = 'flex';
+            }
+        }
+
+        function copyLink() {
+            const url = "https://ponrakitt.site/new-year";
+            
+            // Modern API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast("คัดลอกลิ้งก์แล้ว", "success");
+                    hideToast(2000);
+                }).catch(err => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("คัดลอกลิ้งก์แล้ว", "success");
+                hideToast(2000);
+            } catch (err) {
+                showToast("ไม่สามารถคัดลอกได้", "error");
+                hideToast(2000);
+            }
+            document.body.removeChild(textArea);
+        }
 
         // --- Data Banks ---
         const phrases = {
@@ -395,6 +455,7 @@
         }
 
         function checkDateAndState() {
+            checkBrowser(); // Run Browser Check First
             cleanupCollection();
             const today = new Date();
             // const isPromo = (today.getMonth() === 0 && today.getDate() >= 1 && today.getDate() <= 5);
@@ -504,17 +565,13 @@
 
         function downloadImageOnly(isSaving = false) {
             const card = document.getElementById('siamsiCard');
-            // ซ่อน overlay ไฟก่อนแคปรูป
             card.querySelector('.fire-overlay').style.display = 'none';
-            
             showToast('กำลังสร้างรูป...', 'loading');
-
             html2canvas(card, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `Siamsi_Ponrakit_No${currentSiamsi.id}.jpg`;
                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
-                
                 if(isSaving) {
                     showToast('บันทึกเรียบร้อย!', 'success');
                     setTimeout(() => { closeModal('resultModal'); hideToast(); }, 1500);
@@ -523,7 +580,6 @@
                     hideToast(2000);
                 }
                 card.querySelector('.fire-overlay').style.display = 'block';
-                
             }).catch(err => {
                 showToast('เกิดข้อผิดพลาด', 'error');
                 hideToast(3000);
