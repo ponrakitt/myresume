@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy New Year from Ponrakit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Kanit:wght@300;400;600&family=Sarabun:wght@300;400;500&family=Charm:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF9A9E;
+            --secondary: #FECFEF;
+            --accent: #a18cd1;
+            --paper: #fffdf0;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            font-family: 'Sarabun', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            position: relative;
+        }
+
+        /* --- Scenery --- */
+        .scenery { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .cloud {
+            position: absolute; background: white; border-radius: 50px; opacity: 0.6;
+            animation: floatCloud 25s linear infinite;
+        }
+        .c1 { width: 120px; height: 50px; top: 10%; left: -20%; }
+        .c2 { width: 180px; height: 70px; top: 20%; left: -20%; animation-duration: 30s; animation-delay: 5s; }
+        @keyframes floatCloud { 100% { left: 110%; } }
+
+        /* --- Status Toast --- */
+        .status-toast {
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.85); color: white; padding: 12px 25px;
+            border-radius: 50px; display: flex; align-items: center; gap: 12px;
+            z-index: 1000; transform: translateX(-200%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Kanit', sans-serif; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-size: 0.9rem;
+        }
+        .status-toast.show { transform: translateX(0); }
+        .status-toast i { font-size: 1.2rem; }
+        .status-toast i.fa-circle-notch { color: #3498db; }
+        .status-toast i.fa-circle-check { color: #2ecc71; }
+        .status-toast i.fa-circle-exclamation { color: #e74c3c; }
+
+        /* --- Bird --- */
+        .mailbox-container {
+            position: absolute; bottom: 25%; left: 50%;
+            transform: translateX(-50%); z-index: 5; text-align: center;
+        }
+        .bird-wrapper {
+            font-size: 90px; color: #fff;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            transition: transform 0.3s; cursor: pointer;
+            position: relative;
+        }
+        .bird-wrapper:hover { transform: scale(1.05); }
+        .bird-fly { animation: flyIn 2s ease-out forwards, hoverBird 3s ease-in-out infinite 2s; }
+        .bird-stand { animation: hoverBird 4s ease-in-out infinite; }
+        .bird-sleep { transform: rotate(5deg) scale(0.9); color: #ddd; }
+        
+        .letter-icon {
+            position: absolute; font-size: 35px; color: #ff6b6b;
+            bottom: 5px; right: -5px; background: white;
+            border-radius: 8px; padding: 5px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes flyIn { 0% { transform: translate(-100vw, -20vh) scale(0.5); } 100% { transform: translate(0, 0) scale(1); } }
+        @keyframes hoverBird { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* --- Buttons --- */
+        .menu-bar {
+            position: absolute; bottom: 30px; width: 100%;
+            display: flex; justify-content: center; gap: 15px; z-index: 10;
+        }
+        .action-btn {
+            padding: 12px 25px; border: none; border-radius: 50px;
+            background: rgba(255,255,255,0.95); color: #555;
+            font-family: 'Kanit', sans-serif; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .btn-siamsi { color: #d35400; font-weight: bold; }
+        .btn-collection { color: #2980b9; }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 100; display: none; justify-content: center; align-items: center;
+        }
+
+        /* --- Siamsi Paper & Burning Effect --- */
+        .siamsi-scroll-container {
+            max-height: 85vh; overflow-y: auto; width: 100%; display: flex; justify-content: center; perspective: 1000px;
+        }
+        .siamsi-paper {
+            background: var(--paper); width: 90%; max-width: 450px;
+            padding: 30px; margin: 20px 0; border-radius: 2px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            position: relative; border: 1px solid #e0d0b0;
+            transition: opacity 1s, filter 1s;
+            overflow: hidden; /* สำคัญสำหรับเอฟเฟกต์ไฟ */
+        }
+        .siamsi-paper::before, .siamsi-paper::after {
+            content: ''; position: absolute; left: 10px; right: 10px; height: 2px;
+            background: #d35400; opacity: 0.3;
+        }
+        .siamsi-paper::before { top: 10px; } .siamsi-paper::after { bottom: 10px; }
+
+        /* NEW Burning Animation */
+        .fire-overlay {
+            position: absolute;
+            top: 100%; left: 0; width: 100%; height: 120%;
+            background: linear-gradient(to top, rgba(255,69,0,0.8) 0%, rgba(255,165,0,0.6) 40%, transparent 80%);
+            mix-blend-mode: hard-light; /* ทำให้ไฟดูเหมือนเผาอยู่บนกระดาษ */
+            pointer-events: none; z-index: 10;
+            opacity: 0;
+        }
+
+        @keyframes consumeFire {
+             0% { top: 100%; opacity: 1; }
+             100% { top: -120%; opacity: 0; }
+        }
+        @keyframes turnToAsh {
+            0% { filter: brightness(1); transform: scale(1); }
+            30% { filter: brightness(1.2) sepia(0.5) contrast(1.2); background-color: #ffecb3; } /* เริ่มไหม้ */
+            60% { filter: brightness(0.7) sepia(1) contrast(2) hue-rotate(-20deg); background-color: #5d4037; color: #ccc; } /* ไหม้เกรียม */
+            100% { filter: brightness(0) grayscale(1); transform: scale(0.9) translateY(-50px); opacity: 0; } /* เป็นเถ้า */
+        }
+
+        .burning .fire-overlay { animation: consumeFire 1.8s forwards ease-in-out; }
+        .burning { animation: turnToAsh 1.8s forwards ease-in-out; pointer-events: none; }
+
+
+        .siamsi-header { text-align: center; border-bottom: 2px double #d35400; padding-bottom: 15px; margin-bottom: 20px; }
+        .siamsi-no { font-family: 'Charm', cursive; font-size: 3rem; color: #d35400; font-weight: bold; line-height: 1; }
+        .siamsi-title { font-family: 'Kanit'; color: #555; font-size: 1.1rem; }
+
+        .siamsi-section { margin-bottom: 20px; }
+        .section-title { font-family: 'Kanit'; font-weight: bold; color: #8e44ad; font-size: 1.1rem; margin-bottom: 5px; border-left: 4px solid #8e44ad; padding-left: 8px; }
+        .section-text { font-size: 0.95rem; line-height: 1.6; color: #333; text-align: justify; }
+
+        .luck-stat { text-align: center; margin-top: 25px; padding: 15px; background: rgba(255,235,59,0.2); border-radius: 10px; border: 1px dashed #f1c40f; }
+        .luck-percent { font-size: 2rem; color: #d35400; font-weight: bold; font-family: 'Kanit'; }
+        
+        /* Buttons in Modal */
+        .modal-footer {
+            position: fixed; bottom: 20px; width: 100%; 
+            display: flex; justify-content: center; gap: 15px; z-index: 200; pointer-events: none;
+        }
+        .modal-footer button { pointer-events: auto; }
+        
+        .btn-burn { background: #c0392b; color: white; }
+        .btn-keep { background: #27ae60; color: white; }
+        .btn-download { background: #2980b9; color: white; }
+
+        /* --- Letter Modal --- */
+        .letter-content { font-size: 1.1rem; line-height: 1.7; color: #444; white-space: pre-line; text-align: left; }
+        .signature { margin-top: 30px; text-align: right; font-family: 'Dancing Script', cursive; font-size: 1.8em; color: #2c3e50; }
+
+        /* --- Collection Modal --- */
+        .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 20px; max-height: 60vh; overflow-y: auto; padding-right:5px; }
+        .col-item { background: white; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #eee; transition: 0.2s; position: relative; }
+        .col-item:hover { background: #fef9e7; transform: translateY(-2px); border-color: #f1c40f; }
+        .col-no { font-size: 1.5rem; font-weight: bold; color: #d35400; font-family: 'Charm'; }
+        .col-date { font-size: 0.75rem; color: #999; margin-top: 5px; }
+        .empty-msg { text-align: center; color: #777; margin-top: 50px; grid-column: 1/-1; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="status-toast" id="statusToast">
+        <i id="statusIcon" class="fa-solid fa-circle-notch fa-spin"></i>
+        <span id="statusText">กำลังโหลด...</span>
+    </div>
+
+    <div class="scenery">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+    </div>
+
+    <div class="mailbox-container">
+        <div class="bird-wrapper" id="bird" onclick="handleBirdClick()">
+            </div>
+    </div>
+
+    <div class="menu-bar">
+        <button class="action-btn btn-siamsi" onclick="openShakeModal()">
+            <i class="fa-solid fa-dice-d20"></i> เสี่ยงเซียมซี
+        </button>
+        <button class="action-btn btn-collection" onclick="openCollection()">
+            <i class="fa-solid fa-book-bookmark"></i> กระเป๋าเก็บเซียมซี
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="letterModal">
+        <div class="siamsi-paper" style="max-width: 500px;">
+            <div style="text-align: center; margin-bottom: 20px; color:#ff6b6b; font-size: 2rem;">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h2 style="text-align: center; font-family: 'Kanit'; color: #333;">สวัสดีปีใหม่ 2569</h2>
+            <div class="letter-content" id="letterText"></div>
+            <div class="signature">จาก Ponrakit</div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="action-btn" onclick="closeModal('letterModal')" style="background:#555; color:white;">เก็บใส่กระเป๋า</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="shakeModal">
+        <div style="background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 300px;">
+            <h2 style="font-family: 'Kanit'; margin-top:0;">ตั้งจิตอธิษฐาน</h2>
+            <div id="shakeIcon" style="font-size: 80px; color: #d35400; margin: 20px 0;">
+                <i class="fa-solid fa-prescription-bottle"></i>
+            </div>
+            <p style="color:#666;">เขย่าเพื่อดูคำทำนายประจำปีนี้</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="action-btn" onclick="shakeSiamsi()" style="background:#d35400; color:white;">เขย่าเซียมซี</button>
+                <button class="action-btn" onclick="closeModal('shakeModal')">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resultModal">
+        <div class="siamsi-scroll-container">
+            <div class="siamsi-paper" id="siamsiCard">
+                <div class="fire-overlay"></div>
+                <div id="siamsiContent"></div>
+            </div>
+        </div>
+        
+        <div class="modal-footer" id="resultButtons">
+            </div>
+    </div>
+
+    <div class="modal-overlay" id="collectionModal">
+        <div class="siamsi-paper" style="max-width: 500px; height: 70vh; display: flex; flex-direction: column;">
+            <h2 style="font-family: 'Kanit'; text-align: center; margin-top:0;">กระเป๋าเก็บเซียมซี</h2>
+            <div style="text-align:center; font-size:0.8rem; color:#999; margin-bottom:10px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> ใบเซียมซีจะหายไปเองเมื่อครบ 90 วัน
+            </div>
+            <div id="collectionList" class="collection-grid"></div>
+            <div style="margin-top: auto; text-align: center; padding-top: 20px;">
+                <button class="action-btn" onclick="closeModal('collectionModal')">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configurations ---
+        const CURRENT_YEAR = new Date().getFullYear(); 
+        const LETTER_CONTENT_KEY = `ponrakit_letter_content_${CURRENT_YEAR}`;
+        const COLLECTION_KEY = `ponrakit_siamsi_collection_${CURRENT_YEAR}`;
+        const EXPIRY_DAYS = 90; 
+
+        // --- Data Banks (ตัวอย่างบางส่วน) ---
+        const phrases = {
+            work: [
+                ["การงานในปีนี้เปรียบเสมือนเรือที่แล่นตามกระแสน้ำ", "อุปสรรคที่เคยมีจะค่อยๆ คลี่คลายลงอย่างน่าอัศจรรย์", "ผู้ใหญ่จะให้ความเมตตาเอ็นดูเป็นพิเศษ", "แต่ต้องระวังเรื่องเอกสารสัญญาให้รอบคอบอย่าประมาท"],
+                ["ช่วงต้นปีอาจต้องเหนื่อยหน่อยเพราะงานถาโถม", "แต่ขอให้อดทนเพราะผลลัพธ์ปลายปีจะหอมหวานมาก", "มีเกณฑ์ได้เลื่อนขั้นหรือได้รับโปรเจกต์ใหญ่ที่ท้าทาย", "เพื่อนร่วมงานจะเข้ามาช่วยแบ่งเบาภาระได้ดี"],
+                ["ปีนี้เป็นปีแห่งการเปลี่ยนแปลงและการเริ่มต้นใหม่", "ใครที่คิดจะย้ายงานหรือทำธุรกิจส่วนตัวถือเป็นฤกษ์ดี", "แต่ต้องระวังการขัดแย้งทางความคิดกับหุ้นส่วน", "ให้ใช้สติและเหตุผลในการเจรจาแล้วทุกอย่างจะราบรื่น"],
+                ["งานเก่ายังคงดำเนินไปได้อย่างมั่นคง", "แต่อย่าเพิ่งชะล่าใจเพราะคู่แข่งกำลังจ้องมองอยู่", "ปีนี้ต้องขยันพัฒนาทักษะใหม่ๆ เพิ่มเติม", "ความละเอียดรอบคอบจะเป็นกุญแจสำคัญสู่ความสำเร็จ"],
+                ["ภาระหน้าที่อาจดูหนักหนาเกินตัวในช่วงแรก", "ขอให้จัดลำดับความสำคัญให้ดีแล้วจะผ่านไปได้", "มีโอกาสได้เดินทางไกลเพราะเรื่องงาน", "การเจรจาต่อรองจะประสบความสำเร็จเกินคาดหมาย"]
+            ],
+            finance: [
+                ["การเงินหมุนเวียนคล่องตัวดีมาก", "มีเกณฑ์ได้รับโชคลาภลอยมาแบบไม่ทันตั้งตัว", "แต่ระวังเรื่องการใช้จ่ายตามใจปากตามใจตา", "ควรแบ่งเก็บออมไว้บ้างเพื่อความอุ่นใจในอนาคต"],
+                ["รายรับเข้ามาเรื่อยๆ ไม่ขาดสาย", "แต่รายจ่ายก็มีมารออยู่เป็นเงาตามตัวเช่นกัน", "งดให้คนยืมเงินเด็ดขาดเพราะมีเกณฑ์จะไม่ได้คืน", "การลงทุนมีความเสี่ยงควรศึกษาข้อมูลให้แน่นก่อนตัดสินใจ"],
+                ["ปีนี้มีเกณฑ์เสียเงินก้อนใหญ่เพื่อซื้อทรัพย์สิน", "ถือว่าเป็นการเสียเงินเพื่อสร้างความมั่นคงในระยะยาว", "โชคลาภมักจะมาจากเลขใกล้ตัวหรือคนในครอบครัว", "ระวังของมีค่าสูญหาย ควรตรวจสอบให้ดีก่อนออกจากบ้าน"],
+                ["สภาพคล่องทางการเงินดีขึ้นกว่าปีก่อนมาก", "หนี้สินที่มีอยู่จะสามารถเคลียร์ได้บางส่วนหรือทั้งหมด", "มีช่องทางทำรายได้เสริมใหม่ๆ เข้ามา", "เป็นปีที่เหมาะแก่การเก็บออมเพื่อสร้างเนื้อสร้างตัว"],
+                ["ระวังเรื่องการใช้จ่ายฟุ่มเฟือยเกินความจำเป็น", "อาจมีรายจ่ายฉุกเฉินเกี่ยวกับยานพาหนะหรือที่อยู่อาศัย", "แต่โดยรวมยังประคองตัวได้ดีไม่มีติดขัด", "การเสี่ยงโชคพอมีบ้างเล็กน้อยแต่อย่าทุ่มจนหมดตัว"]
+            ],
+            love: [
+                ["คนโสดมีเกณฑ์จะได้พบรักกับคนที่อายุน้อยกว่า", "ความสัมพันธ์จะเริ่มต้นจากความเป็นเพื่อนแล้วค่อยๆ พัฒนา", "คนมีคู่ต้องระวังเรื่องความหึงหวงเกินเหตุ", "ขอให้เชื่อใจกันและกัน แล้วรักจะยืนยาวมั่นคง"],
+                ["ความรักปีนี้สดใสเหมือนดอกไม้บานยามเช้า", "คนโสดจะได้เจอคนที่ถูกใจในงานสังคมหรือการเดินทาง", "คนมีคู่มีเกณฑ์วางแผนอนาคตหรือแต่งงานกันในปีนี้", "หมั่นเติมความหวานให้กันบ่อยๆ อย่าให้ขาด"],
+                ["อาจมีเรื่องพ่อแง่แม่งอนกันบ้างตามประสาลิ้นกับฟัน", "แต่สุดท้ายก็จะปรับความเข้าใจกันได้ด้วยดี", "คนโสดช่วงนี้ให้รักตัวเองไปก่อน อย่าเพิ่งรีบร้อน", "เนื้อคู่ยังเดินทางมาไม่ถึง ให้รอจังหวะเวลาที่เหมาะสม"],
+                ["เสน่ห์แรงมากในปีนี้ มีคนเข้ามาขายขนมจีบเยอะ", "แต่ต้องดูให้ดีๆ ว่าใครจริงใจหรือแค่ผ่านมา", "คนมีคู่ระวังมือที่สามเข้ามาแทรกแซง", "ให้หนักแน่นในความรักแล้วทุกอย่างจะผ่านพ้นไปได้"],
+                ["ความรักราบรื่นดี มีความเข้าอกเข้าใจกันสูง", "คู่รักจะเป็นคู่คิดที่ช่วยส่งเสริมเรื่องงานและเงิน", "คนโสดมีโอกาสพบรักกับชาวต่างชาติหรือคนต่างถิ่น", "เป็นปีที่ความรักจะนำพาความสุขมาให้"]
+            ],
+            health: [
+                ["สุขภาพโดยรวมแข็งแรงดีไม่มีน่าห่วง", "แต่ต้องระวังเรื่องการพักผ่อนไม่เพียงพอ", "อาจมีอาการปวดเมื่อยตามร่างกายจากการทำงานหนัก", "ควรหาเวลาไปออกกำลังกายบ้างเพื่อเสริมสร้างภูมิคุ้มกัน"],
+                ["ระวังโรคภูมิแพ้หรือโรคทางเดินหายใจกำเริบ", "ช่วงนี้อากาศเปลี่ยนแปลงบ่อยต้องดูแลตัวเองดีๆ", "หลีกเลี่ยงสถานที่แออัดและฝุ่นควัน", "ทานอาหารที่มีประโยชน์และดื่มน้ำมากๆ จะช่วยได้"],
+                ["ปีนี้ต้องระวังอุบัติเหตุเล็กๆ น้อยๆ จากความซุ่มซ่าม", "การขับขี่ยวดยานพาหนะต้องไม่ประมาท", "สุขภาพจิตแจ่มใสดี เพราะรู้จักปล่อยวาง", "การทำสมาธิจะช่วยให้จิตใจสงบและสุขภาพกายดีขึ้น"],
+                ["ระวังเรื่องน้ำหนักตัวที่อาจเพิ่มขึ้นอย่างรวดเร็ว", "ควรควบคุมอาหารการกิน ลดหวาน มัน เค็ม", "ตรวจสุขภาพประจำปีบ้างเพื่อความไม่ประมาท", "โดยรวมยังถือว่าสุขภาพแข็งแรงดีอยู่"],
+                ["อาจมีความเครียดสะสมส่งผลให้นอนไม่หลับ", "ควรหากิจกรรมผ่อนคลายทำก่อนนอน", "ระวังเรื่องสายตาจากการจ้องจอคอมนานๆ", "การไปพักผ่อนตากอากาศจะช่วยชาร์จพลังชีวิตได้ดี"]
+            ],
+            study: [
+                ["การเรียนอยู่ในเกณฑ์ดีมาก หัวสมองแล่นไว", "จะสามารถจดจำและเข้าใจเนื้อหาได้ง่ายขึ้น", "มีเกณฑ์สอบผ่านหรือได้รับคัดเลือกในโครงการสำคัญ", "แต่ต้องขยันทบทวนบทเรียนอย่างสม่ำเสมอ"],
+                ["อาจมีความกดดันจากการเรียนหรือการสอบบ้าง", "แต่ขอให้ตั้งสติและพยายามให้เต็มที่", "ผลลัพธ์ที่ได้จะคุ้มค่ากับความเหนื่อยแน่นอน", "เพื่อนฝูงจะคอยช่วยเหลือติวเข้มให้ผ่านไปได้"],
+                ["เป็นปีที่เหมาะแก่การเรียนรู้ภาษาหรือทักษะใหม่ๆ", "การไปศึกษาดูงานหรือแลกเปลี่ยนจะได้รับประสบการณ์ดี", "ระวังความขี้เกียจจะทำให้งานค้างสะสม", "ต้องจัดตารางเวลาอ่านหนังสือให้ดี"],
+                ["ผลการเรียนเป็นที่น่าพอใจ ผู้ใหญ่ชื่นชม", "มีโอกาสได้รับทุนการศึกษาหรือรางวัลเกียรติยศ", "แต่ระวังอย่าหลงระเริงกับความสำเร็จจนประมาท", "ให้รักษามาตรฐานความขยันเอาไว้เสมอ"],
+                ["การเรียนอาจมีอุปสรรคบ้างในช่วงแรก", "แต่ด้วยความมุมานะจะทำให้ผ่านพ้นไปได้", "การทำงานกลุ่มต้องระวังความขัดแย้งทางความคิด", "ให้รับฟังความเห็นผู้อื่นแล้วงานจะสำเร็จราบรื่น"]
+            ]
+        };
+
+        const letterGreetings = [
+             "สวัสดีปีใหม่! ขอให้ปีนี้ใจดีกับคุณมากๆ \nขอให้โลกเหวี่ยงแต่คนดีๆ เข้ามาหาคุณ \nการงานก้าวหน้า การเงินมั่งคั่ง \nและขอให้คุณยิ้มได้กว้างๆ ในทุกๆ วัน",
+            "Happy New Year! เริ่มต้นปีใหม่อย่างสดใส \nทิ้งความทุกข์ไว้ปีเก่า \nขอให้สุขภาพแข็งแรงทั้งกายและใจ \nร่ำรวยความสุขและเงินทองตลอดปี",
+            "ขอให้ปีนี้เป็นปีทองของคุณ \nหยิบจับอะไรก็เป็นเงินเป็นทอง \nความรักหวานชื่น ครอบครัวอบอุ่น \nคิดหวังสิ่งใดขอให้สมความปรารถนาทุกประการ",
+            "แด่คนเก่ง... ปีนี้ขอให้คุณเก่งและแกร่งกว่าเดิม \nอุปสรรคใดๆ ก็ทำอะไรคุณไม่ได้ \nขอให้ประสบความสำเร็จในสิ่งที่ตั้งใจไว้ \nเหนื่อยก็พัก แล้วลุยต่อนะ!",
+            "สุขสันต์วันปีใหม่! \nขอให้มีอิสระทางการเงิน \nได้ไปเที่ยวในที่ที่อยากไป \nได้กินของอร่อยๆ \nและมีความสุขกับเรื่องเรียบง่ายรอบตัว",
+            "ปีใหม่นี้ ขอให้คุณค้นพบเวอร์ชันที่ดีที่สุดของตัวเอง \nมีความมั่นใจ มีสติ และมีปัญญา \nขอให้ทุกการตัดสินใจนำไปสู่สิ่งดีๆ \nเป็นกำลังใจให้เสมอครับ",
+            "ขอสิ่งศักดิ์สิทธิ์คุ้มครองคุณ \nแคล้วคลาดปลอดภัยจากภยันตรายทั้งปวง \nโรคภัยไข้เจ็บอย่าได้แผ้วพาน \nขอให้ชีวิตราบรื่นดั่งสายน้ำเย็น",
+            "ขอให้ปีนี้เป็นปีแห่งโอกาส \nโอกาสในการเติบโต โอกาสในการรัก \nและโอกาสในการสร้างสรรค์สิ่งใหม่ๆ \nขอให้คุณคว้ามันไว้ได้ทั้งหมดเลยนะ",
+            "ยิ้มรับปีใหม่ด้วยใจเบิกบาน \nขอให้หนี้สินลดลง เงินเก็บเพิ่มพูน \nเจอแต่มิตรแท้ เพื่อนร่วมงานที่ดี \nหัวหน้าเมตตา ลูกน้องเคารพรัก",
+            "ส่งท้ายปีเก่า ต้อนรับสิ่งดีๆ \nขอให้ความฝันของคุณเป็นจริงในปีนี้ \nไม่ว่าจะเป็นบ้าน รถ หรือความสำเร็จ \nขอให้คุณทำได้ สู้ๆ นะครับ!"
+        ];
+
+        let currentSiamsi = null;
+        let viewingIndex = -1;
+
+        // --- Toast System ---
+        function showToast(message, type = 'loading') {
+            const toast = document.getElementById('statusToast');
+            const text = document.getElementById('statusText');
+            const icon = document.getElementById('statusIcon');
+            text.innerText = message;
+            icon.className = "fa-solid";
+            if(type === 'loading') icon.classList.add('fa-circle-notch', 'fa-spin');
+            else if (type === 'success') icon.classList.add('fa-circle-check');
+            else if (type === 'error') icon.classList.add('fa-circle-exclamation');
+            toast.classList.add('show');
+        }
+        function hideToast(delay = 0) {
+            setTimeout(() => { document.getElementById('statusToast').classList.remove('show'); }, delay);
+        }
+
+        // --- Core Functions ---
+        function generateFullSiamsi() {
+            const id = Math.floor(Math.random() * 50) + 1;
+            const luck = Math.floor(Math.random() * 41) + 60; 
+            const luckyNum = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            const w = phrases.work[Math.floor(Math.random() * 5)].join(" ");
+            const f = phrases.finance[Math.floor(Math.random() * 5)].join(" ");
+            const l = phrases.love[Math.floor(Math.random() * 5)].join(" ");
+            const h = phrases.health[Math.floor(Math.random() * 5)].join(" ");
+            const s = phrases.study[Math.floor(Math.random() * 5)].join(" ");
+            return { id: id, luckPercent: luck, luckyNum: luckyNum, work: w, finance: f, love: l, health: h, study: s, timestamp: new Date().toLocaleDateString('th-TH'), createdAt: Date.now() };
+        }
+
+        function checkDateAndState() {
+            cleanupCollection();
+            const today = new Date();
+            // const isPromo = (today.getMonth() === 0 && today.getDate() >= 1 && today.getDate() <= 5);
+            const isPromo = true; // Debug mode
+
+            const bird = document.getElementById('bird');
+            const savedContent = localStorage.getItem(LETTER_CONTENT_KEY);
+
+            if (isPromo) {
+                if (savedContent) {
+                    bird.innerHTML = `<i class="fa-solid fa-dove"></i>`;
+                    bird.className = 'bird-wrapper bird-stand';
+                } else {
+                    bird.innerHTML = `<i class="fa-solid fa-dove"></i><div class="letter-icon"><i class="fa-solid fa-envelope"></i></div>`;
+                    bird.className = 'bird-wrapper bird-fly';
+                }
+                bird.onclick = openLetter;
+            } else {
+                bird.innerHTML = `<i class="fa-solid fa-crow bird-sleep"></i><div style="position:absolute; top:-20px; right:-20px; font-size:20px;">Zzz..</div>`;
+                bird.className = 'bird-wrapper';
+                bird.onclick = () => alert(`ขออภัย จดหมายหมดแล้วจ้า\nจะส่งอีกครั้ง 1 ม.ค. ${CURRENT_YEAR + 1}`);
+            }
+        }
+
+        function cleanupCollection() {
+            const raw = localStorage.getItem(COLLECTION_KEY);
+            if(!raw) return;
+            let collection = JSON.parse(raw);
+            const now = Date.now();
+            const expiryTime = EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+            const validCollection = collection.filter(item => {
+                if(!item.createdAt) return true; 
+                return (now - item.createdAt) < expiryTime;
+            });
+            if(collection.length !== validCollection.length) {
+                localStorage.setItem(COLLECTION_KEY, JSON.stringify(validCollection));
+            }
+        }
+
+        // --- Interaction Logic ---
+        function openLetter() {
+            const modal = document.getElementById('letterModal');
+            const textEl = document.getElementById('letterText');
+            let content = localStorage.getItem(LETTER_CONTENT_KEY);
+            if (!content) {
+                content = letterGreetings[Math.floor(Math.random() * letterGreetings.length)];
+                localStorage.setItem(LETTER_CONTENT_KEY, content);
+                checkDateAndState();
+            }
+            textEl.innerText = content;
+            modal.style.display = 'flex';
+        }
+
+        function openShakeModal() { document.getElementById('shakeModal').style.display = 'flex'; }
+
+        function shakeSiamsi() {
+            const icon = document.getElementById('shakeIcon');
+            icon.style.animation = 'hoverBird 0.5s ease-in-out infinite';
+            setTimeout(() => {
+                icon.style.animation = '';
+                closeModal('shakeModal');
+                showResult(null, -1); 
+            }, 1500);
+        }
+
+        function showResult(savedData = null, index = -1) {
+            viewingIndex = index;
+            currentSiamsi = savedData || generateFullSiamsi();
+            const content = document.getElementById('siamsiContent');
+            content.innerHTML = `
+                <div class="siamsi-header"><div class="siamsi-title">ใบเซียมซีที่</div><div class="siamsi-no">${currentSiamsi.id}</div></div>
+                <div class="siamsi-section"><div class="section-title">การงาน</div><div class="section-text">${currentSiamsi.work}</div></div>
+                <div class="siamsi-section"><div class="section-title">การเงิน</div><div class="section-text">${currentSiamsi.finance}</div></div>
+                <div class="siamsi-section"><div class="section-title">ความรัก</div><div class="section-text">${currentSiamsi.love}</div></div>
+                <div class="siamsi-section"><div class="section-title">สุขภาพ</div><div class="section-text">${currentSiamsi.health}</div></div>
+                <div class="siamsi-section"><div class="section-title">การเรียน</div><div class="section-text">${currentSiamsi.study}</div></div>
+                <div class="luck-stat"><div>ความโชคดีโดยรวม</div><div class="luck-percent">${currentSiamsi.luckPercent}%</div><div style="font-size:0.9rem; color:#666; margin-top:5px;">เลขนำโชค: <strong>${currentSiamsi.luckyNum}</strong></div></div>
+                <div style="text-align:center; margin-top:15px; font-size:0.8rem; color:#aaa;">คำทำนายจาก Ponrakit | ${currentSiamsi.timestamp}</div>
+            `;
+            const card = document.getElementById('siamsiCard');
+            card.classList.remove('burning');
+            
+            const btnContainer = document.getElementById('resultButtons');
+            if (viewingIndex >= 0) {
+                btnContainer.innerHTML = `
+                    <button class="action-btn btn-download" onclick="downloadImageOnly()"><i class="fa-solid fa-download"></i> ดาวน์โหลดรูป</button>
+                    <button class="action-btn btn-burn" onclick="deleteFromCollection(${viewingIndex})"><i class="fa-solid fa-trash"></i> ลบทิ้ง</button>
+                    <button class="action-btn" onclick="closeModal('resultModal')" style="width: 50px; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            } else {
+                btnContainer.innerHTML = `
+                    <button class="action-btn btn-keep" onclick="saveAndDownload()"><i class="fa-solid fa-download"></i> รับใบนี้</button>
+                    <button class="action-btn btn-burn" onclick="burnSiamsi()"><i class="fa-solid fa-fire"></i> เผาทิ้ง</button>
+                    <button class="action-btn" onclick="closeModal('resultModal')" style="width: 50px; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            }
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        // --- Actions ---
+        function saveAndDownload() {
+            let collection = JSON.parse(localStorage.getItem(COLLECTION_KEY) || "[]");
+            collection.unshift(currentSiamsi); 
+            localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
+            downloadImageOnly(true);
+        }
+
+        function downloadImageOnly(isSaving = false) {
+            const card = document.getElementById('siamsiCard');
+            // ซ่อน overlay ไฟก่อนแคปรูป
+            card.querySelector('.fire-overlay').style.display = 'none';
+            
+            showToast('กำลังสร้างรูปภาพ...', 'loading');
+
+            html2canvas(card, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Siamsi_Ponrakit_No${currentSiamsi.id}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                
+                if(isSaving) {
+                    showToast('บันทึกใส่กระเป๋าเรียบร้อย!', 'success');
+                    setTimeout(() => { closeModal('resultModal'); hideToast(); }, 1500);
+                } else {
+                    showToast('ดาวน์โหลดเสร็จสิ้น', 'success');
+                    hideToast(2000);
+                }
+                // แสดง overlay ไฟกลับมา (เผื่อไม่ได้ปิด modal)
+                card.querySelector('.fire-overlay').style.display = 'block';
+                
+            }).catch(err => {
+                showToast('เกิดข้อผิดพลาดในการโหลด', 'error');
+                hideToast(3000);
+                card.querySelector('.fire-overlay').style.display = 'block';
+            });
+        }
+
+        function deleteFromCollection(index) {
+            if(!confirm("ต้องการลบใบเซียมซีนี้ออกจากกระเป๋าใช่ไหม?")) return;
+            let collection = JSON.parse(localStorage.getItem(COLLECTION_KEY) || "[]");
+            collection.splice(index, 1);
+            localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
+            closeModal('resultModal');
+            openCollection();
+        }
+
+        function burnSiamsi() {
+            const card = document.getElementById('siamsiCard');
+            card.classList.add('burning');
+            setTimeout(() => { closeModal('resultModal'); }, 1800); 
+        }
+
+        // --- Collection View ---
+        function openCollection() {
+            cleanupCollection();
+            const list = document.getElementById('collectionList');
+            const collection = JSON.parse(localStorage.getItem(COLLECTION_KEY) || "[]");
+            list.innerHTML = '';
+            if (collection.length === 0) {
+                list.innerHTML = `<div class="empty-msg">ยังไม่มีใบเซียมซีในกระเป๋า</div>`;
+            } else {
+                collection.forEach((item, index) => {
+                    const el = document.createElement('div');
+                    el.className = 'col-item';
+                    const daysOld = Math.floor((Date.now() - (item.createdAt || Date.now())) / (1000 * 60 * 60 * 24));
+                    const daysLeft = EXPIRY_DAYS - daysOld;
+                    el.innerHTML = `
+                        <div class="col-no">${item.id}</div>
+                        <div class="col-date">${item.timestamp}</div>
+                        <div style="font-size:0.75rem; color:${item.luckPercent >= 80 ? 'green' : 'orange'};">โชค ${item.luckPercent}%</div>
+                        <div style="font-size:0.6rem; color:#ccc; margin-top:2px;">เหลือ ${daysLeft} วัน</div>
+                    `;
+                    el.onclick = () => { closeModal('collectionModal'); showResult(item, index); };
+                    list.appendChild(el);
+                });
+            }
+            document.getElementById('collectionModal').style.display = 'flex';
+        }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function handleBirdClick() { /* Handled in checkState */ }
+
+        window.onload = checkDateAndState;
+
+    </script>
+</body>
+</html>
