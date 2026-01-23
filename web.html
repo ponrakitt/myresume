@@ -35,20 +35,55 @@
         .subtitle { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 300; margin-top: 10px; background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; }
         .last-updated { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; margin-top: 12px; font-weight: 300; }
 
-        .search-container { width: 100%; max-width: 500px; display: flex; gap: 10px; margin-bottom: 40px; position: relative; z-index: 10; }
+        /* ----- ช่องค้นหาและระบบ Dropdown ----- */
+        .search-wrapper { width: 100%; max-width: 500px; margin-bottom: 40px; position: relative; z-index: 100; }
+        
+        .search-container { display: flex; gap: 10px; }
         .search-input { flex: 1; padding: 15px 20px; font-size: 1.1rem; font-family: 'Kanit', sans-serif; background: var(--dark-glass); backdrop-filter: blur(12px); border: 1px solid var(--border-glass); border-radius: 30px; color: #fff; outline: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .search-input::placeholder { color: rgba(255,255,255,0.4); }
         .search-input:focus { border-color: #00c6ff; box-shadow: 0 4px 20px rgba(0, 198, 255, 0.2); }
         .search-btn { padding: 0 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: 600; font-family: 'Kanit', sans-serif; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4); }
         .search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
-        .search-btn:active { transform: translateY(0); }
 
-        .status-box { background: var(--dark-glass); backdrop-filter: blur(12px); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glass); text-align: center; width: 100%; max-width: 500px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); display: none; }
+        /* กล่องรายชื่อแนะนำ (Auto-complete) */
+        .suggestions-box {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: calc(100% - 100px); /* ความกว้างให้พอดีช่องกรอก */
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: 220px;
+            overflow-y: auto;
+            display: none; /* ซ่อนไว้ก่อน */
+            z-index: 999;
+        }
+
+        /* ตกแต่ง Scrollbar ของกล่องรายชื่อ */
+        .suggestions-box::-webkit-scrollbar { width: 6px; }
+        .suggestions-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: rgba(0, 198, 255, 0.15); color: #00c6ff; }
+
+        /* ----- ส่วนของการ์ดและสถานะ ----- */
+        .status-box { background: var(--dark-glass); backdrop-filter: blur(12px); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glass); text-align: center; width: 100%; max-width: 500px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); display: none; margin: 0 auto;}
         .status-text { font-size: 1.3rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
         .status-subtext { color: rgba(255, 255, 255, 0.6); font-size: 1rem; }
         .error-text { color: #ffeb3b; }
 
-        #result-container { width: 100%; max-width: 500px; display: none; animation: fadeIn 0.5s ease; }
+        #result-container { width: 100%; max-width: 500px; display: none; animation: fadeIn 0.5s ease; margin: 0 auto;}
         .result-card { background: var(--dark-glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .rank-badge { font-size: 1rem; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);}
@@ -75,9 +110,12 @@
         <div id="last-updated" class="last-updated">อัปเดตล่าสุด: กำลังโหลด...</div>
     </div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="กรอกชื่อของคุณ...">
-        <button id="searchButton" class="search-btn">ค้นหา</button>
+    <div class="search-wrapper">
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อของคุณ...">
+            <button id="searchButton" class="search-btn">ค้นหา</button>
+        </div>
+        <div id="suggestionsBox" class="suggestions-box"></div>
     </div>
 
     <div id="status-box" class="status-box">
@@ -103,25 +141,27 @@
         const SHEET_ID = '1p9i2fqZbNdAIxD4zf_h2eB0oHW7gIrWL4DuCxs3DYYM';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-        // ตัวแปรเก็บข้อมูล
         let allPlayersData = []; 
         let currentSearchName = ""; 
         let isDataLoaded = false;
 
-        // ฟังก์ชันแปลงคะแนนเกิน 300 ล้าน
+        // UI Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const suggestionsBox = document.getElementById('suggestionsBox');
+
+        // ฟังก์ชันแปลงคะแนน
         function formatScore(num) {
             if (Math.abs(num) >= 300000000) return (num / 1000000).toFixed(1) + 'M';
             return num.toLocaleString();
         }
 
-        // ฟังก์ชันอัปเดตเวลาไทย
         function updateTimestamp() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             document.getElementById('last-updated').innerText = `อัปเดตล่าสุด: ${now.toLocaleDateString('th-TH', options)} น.`;
         }
 
-        // ฟังก์ชันแสดงข้อความแจ้งเตือน
         function showStatus(title, msg, isError = false) {
             document.getElementById('result-container').style.display = 'none';
             const statusBox = document.getElementById('status-box');
@@ -132,7 +172,6 @@
             else document.getElementById('status-title').classList.remove('error-text');
         }
 
-        // อนิเมชั่นตัวเลข
         function animateValue(obj, start, end, duration) {
             let startTimestamp = null;
             const step = (timestamp) => {
@@ -145,7 +184,6 @@
             window.requestAnimationFrame(step);
         }
 
-        // ฟังก์ชันดึงข้อมูลจาก Sheet (ทำงานเบื้องหลัง)
         async function fetchAllData() {
             Papa.parse(URL, {
                 download: true,
@@ -153,11 +191,10 @@
                 dynamicTyping: true,
                 complete: function(results) {
                     if (!results.data || results.data.length === 0 || !results.data[0].Name) {
-                        showStatus("⚠️ ระบบมีปัญหา", "ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่ภายหลัง", true);
+                        showStatus("⚠️ ระบบมีปัญหา", "ไม่สามารถดึงข้อมูลได้", true);
                         return;
                     }
 
-                    // ประมวลผลข้อมูล
                     let players = results.data.filter(p => p.Name);
                     players.forEach(p => {
                         p.TodayScore = Number(p.TodayScore) || 0;
@@ -166,7 +203,6 @@
                         p.isDNF = p.TodayScore < 700000;
                     });
 
-                    // เรียงอันดับ
                     players.sort((a, b) => b.TodayScore - a.TodayScore);
                     players.forEach((p, index) => { p.Rank = index + 1; });
 
@@ -174,26 +210,20 @@
                     isDataLoaded = true;
                     updateTimestamp();
 
-                    // เช็กว่าค้นหาค้างไว้หรือเปล่า
-                    if(currentSearchName !== "") {
-                        updateUserCard(currentSearchName);
-                    } else if (document.getElementById('status-box').style.display !== 'none' && document.getElementById('status-title').innerText !== "กรุณากรอกชื่อเพื่อค้นหา") {
-                        // ปล่อยให้โชว์ข้อความเดิม
-                    } else {
-                        showStatus("พร้อมค้นหาข้อมูล", "กรุณากรอกชื่อของคุณในช่องด้านบน");
-                    }
+                    if(currentSearchName !== "") updateUserCard(currentSearchName);
+                    else if (document.getElementById('status-box').style.display !== 'none' && document.getElementById('status-title').innerText !== "กรุณากรอกชื่อเพื่อค้นหา") {} 
+                    else showStatus("พร้อมค้นหาข้อมูล", "กรุณากรอกชื่อของคุณในช่องด้านบน");
                 },
                 error: function() { showStatus("⚠️ ระบบมีปัญหา", "เชื่อมต่อฐานข้อมูลไม่ได้", true); }
             });
         }
 
-        // ฟังก์ชันอัปเดตหน้าจอเมื่อเจอชื่อ
         function updateUserCard(name) {
             if (!isDataLoaded) return;
-            const player = allPlayersData.find(p => p.Name === name);
+            const player = allPlayersData.find(p => p.Name.toLowerCase() === name.toLowerCase());
 
             if (!player) {
-                showStatus("ไม่พบรายชื่อนี้", `ไม่มีชื่อ "${name}" ในระบบ กรุณาตรวจสอบการสะกดคำอีกครั้ง`, true);
+                showStatus("ไม่พบรายชื่อนี้", `ไม่มีชื่อ "${name}" ในระบบ`, true);
                 document.getElementById('result-container').style.display = 'none';
                 return;
             }
@@ -201,7 +231,6 @@
             document.getElementById('status-box').style.display = 'none';
             document.getElementById('result-container').style.display = 'block';
 
-            // จัดการอันดับ
             const rankEl = document.getElementById('user-rank');
             rankEl.innerText = `อันดับที่ ${player.Rank}`;
             rankEl.className = 'rank-badge'; 
@@ -209,11 +238,9 @@
             else if (player.Rank === 2) rankEl.classList.add('rank-silver');
             else if (player.Rank === 3) rankEl.classList.add('rank-bronze');
 
-            // จัดการชื่อ & DNF
             document.getElementById('user-name').innerText = player.Name;
             document.getElementById('user-dnf').innerHTML = player.isDNF ? `<span class="dnf-badge">DNF</span>` : '';
 
-            // จัดการคะแนน + อนิเมชั่น
             const scoreEl = document.getElementById('user-score');
             const currentVal = Number(scoreEl.getAttribute('data-val'));
             if (currentVal !== player.TodayScore) {
@@ -221,35 +248,73 @@
                 scoreEl.setAttribute('data-val', player.TodayScore);
             }
 
-            // จัดการส่วนต่าง
             const changeEl = document.getElementById('user-change');
             if (player.Change > 0) changeEl.innerHTML = `<div class="change-badge up">▲ +${formatScore(player.Change)}</div>`;
             else if (player.Change < 0) changeEl.innerHTML = `<div class="change-badge down">▼ ${formatScore(Math.abs(player.Change))}</div>`;
             else changeEl.innerHTML = `<div class="change-badge no-change">- ไม่เปลี่ยนแปลง -</div>`;
         }
 
-        // ฟังก์ชันเริ่มค้นหา
         function triggerSearch() {
-            const inputVal = document.getElementById('searchInput').value.trim();
+            const inputVal = searchInput.value.trim();
             if(!inputVal) {
                 showStatus("กรุณากรอกชื่อเพื่อค้นหา", "ข้อมูลคะแนนของคุณจะปรากฏที่นี่");
                 return;
             }
             currentSearchName = inputVal;
+            suggestionsBox.style.display = 'none'; // ซ่อนรายการเดาคำ
             updateUserCard(currentSearchName);
         }
 
-        // ✅ จุดสำคัญ: เชื่อมปุ่มกดและช่องข้อความเข้ากับ Javascript
-        document.getElementById('searchButton').addEventListener('click', triggerSearch);
-        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        // ✅ 1. Event ตอนพิมพ์ข้อความ (แสดงรายชื่อแนะนำ)
+        searchInput.addEventListener('input', function() {
+            if (!isDataLoaded) return;
+            const val = this.value.trim().toLowerCase();
+            suggestionsBox.innerHTML = ''; // ล้างค่าเก่า
+
+            if (!val) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // ค้นหาชื่อที่ "มีส่วนประกอบ" ของตัวอักษรที่พิมพ์ (จำกัด 6 ชื่อ)
+            const matches = allPlayersData.filter(p => p.Name.toLowerCase().includes(val)).slice(0, 6);
+
+            if (matches.length > 0) {
+                suggestionsBox.style.display = 'block';
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = match.Name;
+                    
+                    // ✅ 2. Event เมื่อคลิกเลือกชื่อ
+                    div.addEventListener('click', function() {
+                        searchInput.value = match.Name;
+                        suggestionsBox.style.display = 'none';
+                        triggerSearch(); // ค้นหาทันทีที่คลิก
+                    });
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // ✅ 3. ซ่อนรายชื่อเมื่อคลิกพื้นที่อื่นบนหน้าเว็บ
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-wrapper')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Event กดปุ่มค้นหา และกด Enter
+        searchButton.addEventListener('click', triggerSearch);
+        searchInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') triggerSearch();
         });
 
-        // เริ่มโหลดข้อมูลทันทีที่เปิดเว็บ
+        // โหลดข้อมูลเริ่มต้น
         showStatus("กำลังดึงข้อมูล...", "กรุณารอสักครู่");
         fetchAllData();
-
-        // สั่งให้โหลดข้อมูลใหม่ซ้ำๆ ทุก 5 วินาที
         setInterval(fetchAllData, 5000); 
 
     </script>
