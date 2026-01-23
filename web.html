@@ -100,7 +100,6 @@
             font-size: 1rem;
         }
 
-        /* ซ่อนเนื้อหาหลักไว้ก่อนตอนที่กำลังโหลด */
         #main-content {
             display: none;
             width: 100%;
@@ -175,11 +174,13 @@
             align-items: flex-end;
         }
 
+        /* ล็อกความกว้างตัวเลขไม่ให้สั่นเวลาอนิเมชั่นวิ่ง */
         .score { 
             font-size: 1.5rem; 
             font-weight: 800; 
             color: #fff;
             text-shadow: 0 0 10px rgba(255,255,255,0.2);
+            font-variant-numeric: tabular-nums; 
         }
 
         .badge {
@@ -229,152 +230,4 @@
 
         .refresh-btn:hover { 
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
-        }
-
-        .refresh-btn:active { transform: translateY(0); }
-
-    </style>
-</head>
-<body>
-
-    <div class="header-container">
-        <h1>Leaderboard</h1>
-        <div class="subtitle">คะแนนจะอัปเดททุกๆ 7 วัน</div>
-    </div>
-
-    <div id="loading-screen">
-        <div class="spinner" id="loading-spinner"></div>
-        <div class="loading-text" id="loading-title">กำลังดึงข้อมูล...</div>
-        <div class="loading-subtext" id="loading-msg">กรุณารอสักครู่ ระบบกำลังคำนวณคะแนนล่าสุด</div>
-    </div>
-
-    <div id="main-content" style="display: none;">
-        <div class="board" id="leaderboard">
-            </div>
-        
-        <button class="refresh-btn" onclick="fetchData()">
-            โหลดข้อมูลใหม่
-        </button>
-    </div>
-
-    <script>
-        // 1. ใส่ ID ของ Google Sheets ที่นี่
-        const SHEET_ID = '1p9i2fqZbNdAIxD4zf_h2eB0oHW7gIrWL4DuCxs3DYYM'; // <--- อัปเดต ID ของคุณแล้วครับ!
-        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-
-        const ROW_HEIGHT = 95; 
-
-        // ฟังก์ชันสำหรับแสดงหน้า "อยู่ในช่วงปรับปรุง"
-        function showMaintenance() {
-            document.getElementById('loading-screen').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('loading-spinner').style.display = 'none'; // ซ่อนตัวหมุน
-            
-            document.getElementById('loading-title').innerText = "อยู่ในช่วงปรับปรุงคะแนน";
-            document.getElementById('loading-title').style.color = "#FFD700"; // สีทองเตือน
-            document.getElementById('loading-msg').innerText = "ขออภัย ระบบไม่สามารถดึงข้อมูลได้ในขณะนี้ กรุณากลับมาใหม่ภายหลัง";
-        }
-
-        // ฟังก์ชันสำหรับรีเซ็ตหน้าจอเป็นโหมดโหลดปกติ
-        function showLoading() {
-            document.getElementById('loading-screen').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('loading-spinner').style.display = 'block';
-            document.getElementById('loading-title').innerText = "กำลังดึงข้อมูล...";
-            document.getElementById('loading-title').style.color = "#fff";
-            document.getElementById('loading-msg').innerText = "กรุณารอสักครู่ ระบบกำลังคำนวณคะแนนล่าสุด";
-        }
-
-        async function fetchData() {
-            showLoading(); // แสดงหน้าโหลดก่อน
-
-            Papa.parse(URL, {
-                download: true,
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    // เช็คว่ามีข้อมูลหรือไม่
-                    if (!results.data || results.data.length === 0 || !results.data[0].Name) {
-                        showMaintenance();
-                        return;
-                    }
-
-                    // ดึงข้อมูลสำเร็จ ปิดหน้าโหลด แสดงตาราง
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'flex';
-                    processData(results.data);
-                },
-                error: function(err) {
-                    showMaintenance();
-                }
-            });
-        }
-
-        function processData(data) {
-            let players = data.filter(p => p.Name);
-
-            players.forEach(p => {
-                p.TodayScore = Number(p.TodayScore) || 0;
-                p.PreviousScore = Number(p.PreviousScore) || 0;
-                p.Change = p.TodayScore - p.PreviousScore;
-                p.isDNF = p.TodayScore < 700000;
-            });
-
-            players.sort((a, b) => b.TodayScore - a.TodayScore);
-            renderBoard(players);
-        }
-
-        function renderBoard(players) {
-            const board = document.getElementById('leaderboard');
-            board.style.height = (players.length * ROW_HEIGHT) + 'px'; 
-
-            players.forEach((player, index) => {
-                let row = document.getElementById(`player-${player.Name}`);
-
-                if (!row) {
-                    row = document.createElement('div');
-                    row.className = 'row';
-                    row.id = `player-${player.Name}`;
-                    board.appendChild(row);
-                }
-
-                row.style.top = (index * ROW_HEIGHT) + 'px';
-
-                let rankClass = 'rank';
-                if (index === 0) rankClass += ' rank-1';
-                else if (index === 1) rankClass += ' rank-2';
-                else if (index === 2) rankClass += ' rank-3';
-
-                const dnfTag = player.isDNF ? `<span class="dnf-badge">DNF</span>` : '';
-
-                // ใช้ลูกศรสามเหลี่ยมที่เป็นสัญลักษณ์ข้อความปกติ ไม่ใช่ Emoji
-                let changeTag = '';
-                if (player.Change > 0) {
-                    changeTag = `<div class="badge up">▲ +${player.Change.toLocaleString()}</div>`;
-                } else if (player.Change < 0) {
-                    changeTag = `<div class="badge down">▼ ${player.Change.toLocaleString()}</div>`;
-                } else {
-                    changeTag = `<div class="no-change">- ไม่เปลี่ยนแปลง -</div>`;
-                }
-
-                row.innerHTML = `
-                    <div class="${rankClass}">${index + 1}</div>
-                    <div class="name-container">
-                        <div class="name">${player.Name}</div>
-                        ${dnfTag}
-                    </div>
-                    <div class="score-info">
-                        <div class="score">${player.TodayScore.toLocaleString()}</div>
-                        ${changeTag}
-                    </div>
-                `;
-            });
-        }
-
-        // โหลดข้อมูลครั้งแรกเมื่อเปิดเว็บ
-        fetchData();
-        
-    </script>
-</body>
-</html>
+            box-shadow: 0 6px 20px rgba(0, 114, 2
