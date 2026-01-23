@@ -30,127 +30,169 @@
             overflow-x: hidden;
         }
 
+        /* ----- ปุ่ม Admin Mode มุมขวาบน ----- */
+        .admin-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .admin-toggle:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .admin-active { background: #e94560 !important; color: #fff !important; }
+
         .header-container { text-align: center; margin-bottom: 30px; }
         h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
         .subtitle { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 300; margin-top: 10px; background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; }
         .last-updated { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; margin-top: 12px; font-weight: 300; }
 
-        /* ----- ช่องค้นหาและระบบ Dropdown ----- */
+        /* ----- โหมดค้นหา (User View) ----- */
+        #user-view { width: 100%; display: flex; flex-direction: column; align-items: center; }
+
         .search-wrapper { width: 100%; max-width: 500px; margin-bottom: 40px; position: relative; z-index: 100; }
-        
         .search-container { display: flex; gap: 10px; }
-        .search-input { flex: 1; padding: 15px 20px; font-size: 1.1rem; font-family: 'Kanit', sans-serif; background: var(--dark-glass); backdrop-filter: blur(12px); border: 1px solid var(--border-glass); border-radius: 30px; color: #fff; outline: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .search-input { flex: 1; padding: 15px 20px; font-size: 1.1rem; font-family: 'Kanit', sans-serif; background: var(--dark-glass); backdrop-filter: blur(12px); border: 1px solid var(--border-glass); border-radius: 30px; color: #fff; outline: none; transition: 0.3s; }
         .search-input::placeholder { color: rgba(255,255,255,0.4); }
         .search-input:focus { border-color: #00c6ff; box-shadow: 0 4px 20px rgba(0, 198, 255, 0.2); }
-        .search-btn { padding: 0 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: 600; font-family: 'Kanit', sans-serif; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4); }
+        .search-btn { padding: 0 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: 600; font-family: 'Kanit', sans-serif; transition: 0.3s; }
         .search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
 
-        /* กล่องรายชื่อแนะนำ (Auto-complete) */
-        .suggestions-box {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            width: calc(100% - 100px); /* ความกว้างให้พอดีช่องกรอก */
-            background: rgba(30, 30, 50, 0.95);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--border-glass);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            max-height: 220px;
-            overflow-y: auto;
-            display: none; /* ซ่อนไว้ก่อน */
-            z-index: 999;
-        }
-
-        /* ตกแต่ง Scrollbar ของกล่องรายชื่อ */
-        .suggestions-box::-webkit-scrollbar { width: 6px; }
-        .suggestions-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-
-        .suggestion-item {
-            padding: 12px 20px;
-            font-size: 1.1rem;
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .suggestion-item:last-child { border-bottom: none; }
+        .suggestions-box { position: absolute; top: 60px; left: 0; width: calc(100% - 100px); background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(15px); border: 1px solid var(--border-glass); border-radius: 15px; max-height: 220px; overflow-y: auto; display: none; z-index: 999; }
+        .suggestion-item { padding: 12px 20px; font-size: 1.1rem; color: #fff; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .suggestion-item:hover { background: rgba(0, 198, 255, 0.15); color: #00c6ff; }
 
-        /* ----- ส่วนของการ์ดและสถานะ ----- */
-        .status-box { background: var(--dark-glass); backdrop-filter: blur(12px); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glass); text-align: center; width: 100%; max-width: 500px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); display: none; margin: 0 auto;}
+        .status-box { background: var(--dark-glass); backdrop-filter: blur(12px); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glass); text-align: center; width: 100%; max-width: 500px; display: none; }
         .status-text { font-size: 1.3rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
         .status-subtext { color: rgba(255, 255, 255, 0.6); font-size: 1rem; }
         .error-text { color: #ffeb3b; }
 
-        #result-container { width: 100%; max-width: 500px; display: none; animation: fadeIn 0.5s ease; margin: 0 auto;}
-        .result-card { background: var(--dark-glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        #result-container { width: 100%; max-width: 500px; display: none; animation: fadeIn 0.5s ease; }
+        .result-card { background: var(--dark-glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-align: center; }
+        
         .rank-badge { font-size: 1rem; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);}
+        .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); border-color: var(--gold); }
         .rank-silver { background: rgba(192, 192, 192, 0.15); color: var(--silver); border-color: var(--silver); }
         .rank-bronze { background: rgba(205, 127, 50, 0.15); color: var(--bronze); border-color: var(--bronze); }
-        .user-name { font-size: 2rem; font-weight: 800; margin-bottom: 5px; letter-spacing: 0.5px; }
-        .score-box { margin-top: 20px; }
-        .score-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
-        .score-value { font-size: 3.5rem; font-weight: 800; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); font-variant-numeric: tabular-nums; margin: 5px 0; line-height: 1; }
+        
+        .user-name { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .score-value { font-size: 3.5rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; margin: 5px 0; }
         .change-badge { font-size: 1rem; font-weight: 600; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
         .up { background: rgba(46, 213, 115, 0.15); color: var(--success); }
         .down { background: rgba(255, 71, 87, 0.15); color: var(--danger); }
         .no-change { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 10px;}
-        .dnf-badge { background: rgba(255, 71, 87, 0.2); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.5); font-size: 0.9rem; font-weight: bold; padding: 4px 10px; border-radius: 6px; margin-left: 10px; vertical-align: middle; }
+        .dnf-badge { background: rgba(255, 71, 87, 0.2); color: var(--danger); font-weight: bold; padding: 4px 10px; border-radius: 6px; margin-left: 10px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* ----- โหมด Admin (Leaderboard View) ----- */
+        #admin-view { width: 100%; max-width: 650px; display: none; animation: fadeIn 0.5s ease; }
+        .board { width: 100%; position: relative; }
+        .row { display: flex; align-items: center; justify-content: space-between; background: var(--dark-glass); backdrop-filter: blur(12px); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--border-glass); position: absolute; width: calc(100% - 50px); left: 0; transition: top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); height: 50px; }
+        .rank-circle { font-size: 1.4rem; font-weight: 800; color: #fff; background: rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .rc-gold { background: var(--gold); color: #000; }
+        .rc-silver { background: var(--silver); color: #000; }
+        .rc-bronze { background: var(--bronze); color: #fff; }
+        .row-name { flex: 1; margin-left: 20px; font-size: 1.3rem; font-weight: 600; }
+        .row-score { text-align: right; }
+        .rs-score { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
+    <button id="adminBtn" class="admin-toggle">🔒 เข้าสู่ระบบ Admin</button>
+
     <div class="header-container">
-        <h1>ระบบเช็คคะแนนส่วนบุคคล</h1>
+        <h1 id="main-title">ระบบเช็คคะแนนส่วนบุคคล</h1>
         <div class="subtitle">อัปเดตคะแนนอัตโนมัติทุก 5 วินาที</div>
         <div id="last-updated" class="last-updated">อัปเดตล่าสุด: กำลังโหลด...</div>
     </div>
 
-    <div class="search-wrapper">
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อของคุณ...">
-            <button id="searchButton" class="search-btn">ค้นหา</button>
+    <div id="user-view">
+        <div class="search-wrapper">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อของคุณ...">
+                <button id="searchButton" class="search-btn">ค้นหา</button>
+            </div>
+            <div id="suggestionsBox" class="suggestions-box"></div>
         </div>
-        <div id="suggestionsBox" class="suggestions-box"></div>
-    </div>
 
-    <div id="status-box" class="status-box">
-        <div class="status-text" id="status-title">กำลังโหลดข้อมูล...</div>
-        <div class="status-subtext" id="status-msg">กรุณารอสักครู่</div>
-    </div>
+        <div id="status-box" class="status-box">
+            <div class="status-text" id="status-title">กำลังโหลดข้อมูล...</div>
+            <div class="status-subtext" id="status-msg">กรุณารอสักครู่</div>
+        </div>
 
-    <div id="result-container">
-        <div class="result-card">
-            <div id="user-rank" class="rank-badge">อันดับที่ -</div>
-            <div class="user-name"><span id="user-name">ชื่อผู้เล่น</span> <span id="user-dnf"></span></div>
-            
-            <div class="score-box">
-                <div class="score-label">คะแนนปัจจุบัน</div>
-                <div id="user-score" class="score-value" data-val="0">0</div>
-                <div id="user-change" class="change-tag"></div>
+        <div id="result-container">
+            <div class="result-card">
+                <div id="user-rank" class="rank-badge">อันดับที่ -</div>
+                <div class="user-name"><span id="user-name">ชื่อผู้เล่น</span> <span id="user-dnf"></span></div>
+                <div class="score-box">
+                    <div class="score-label">คะแนนปัจจุบัน</div>
+                    <div id="user-score" class="score-value" data-val="0">0</div>
+                    <div id="user-change" class="change-tag"></div>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="admin-view">
+        <div class="board" id="leaderboard"></div>
+    </div>
+
     <script>
-        // ตั้งค่า Google Sheet ID
         const SHEET_ID = '1p9i2fqZbNdAIxD4zf_h2eB0oHW7gIrWL4DuCxs3DYYM';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
         let allPlayersData = []; 
         let currentSearchName = ""; 
         let isDataLoaded = false;
+        let isAdmin = false; // ตัวแปรเช็กสถานะ Admin
+        const ROW_HEIGHT = 95; // ระยะห่างแต่ละแถวของตาราง Admin
 
         // UI Elements
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const suggestionsBox = document.getElementById('suggestionsBox');
+        const adminBtn = document.getElementById('adminBtn');
+        const userView = document.getElementById('user-view');
+        const adminView = document.getElementById('admin-view');
+        const mainTitle = document.getElementById('main-title');
 
-        // ฟังก์ชันแปลงคะแนน
+        // ฟังก์ชันระบบ Admin
+        adminBtn.addEventListener('click', function() {
+            if (isAdmin) {
+                // ออกจากระบบ
+                isAdmin = false;
+                adminBtn.innerText = "🔒 เข้าสู่ระบบ Admin";
+                adminBtn.classList.remove('admin-active');
+                mainTitle.innerText = "ระบบเช็คคะแนนส่วนบุคคล";
+                userView.style.display = 'flex';
+                adminView.style.display = 'none';
+                if(currentSearchName !== "") updateUserCard(currentSearchName);
+            } else {
+                // ถามรหัสผ่าน
+                const pass = prompt("กรุณากรอกรหัสผ่านเพื่อเข้าสู่โหมด Admin:");
+                if (pass === "admin339") {
+                    isAdmin = true;
+                    adminBtn.innerText = "🔓 ออกจากระบบ Admin";
+                    adminBtn.classList.add('admin-active');
+                    mainTitle.innerText = "🏆 ตารางคะแนนรวม (Admin)";
+                    userView.style.display = 'none';
+                    adminView.style.display = 'block';
+                    renderFullBoard(allPlayersData); // เรนเดอร์ตารางรวมทันที
+                } else if (pass !== null) {
+                    alert("❌ รหัสผ่านไม่ถูกต้อง!");
+                }
+            }
+        });
+
         function formatScore(num) {
             if (Math.abs(num) >= 300000000) return (num / 1000000).toFixed(1) + 'M';
             return num.toLocaleString();
@@ -184,6 +226,7 @@
             window.requestAnimationFrame(step);
         }
 
+        // ดึงข้อมูลหลัก
         async function fetchAllData() {
             Papa.parse(URL, {
                 download: true,
@@ -191,7 +234,7 @@
                 dynamicTyping: true,
                 complete: function(results) {
                     if (!results.data || results.data.length === 0 || !results.data[0].Name) {
-                        showStatus("⚠️ ระบบมีปัญหา", "ไม่สามารถดึงข้อมูลได้", true);
+                        if(!isAdmin) showStatus("⚠️ ระบบมีปัญหา", "ไม่สามารถดึงข้อมูลได้", true);
                         return;
                     }
 
@@ -210,14 +253,20 @@
                     isDataLoaded = true;
                     updateTimestamp();
 
-                    if(currentSearchName !== "") updateUserCard(currentSearchName);
-                    else if (document.getElementById('status-box').style.display !== 'none' && document.getElementById('status-title').innerText !== "กรุณากรอกชื่อเพื่อค้นหา") {} 
-                    else showStatus("พร้อมค้นหาข้อมูล", "กรุณากรอกชื่อของคุณในช่องด้านบน");
+                    // แยกการอัปเดตตามโหมดที่เปิดอยู่
+                    if (isAdmin) {
+                        renderFullBoard(allPlayersData);
+                    } else {
+                        if(currentSearchName !== "") updateUserCard(currentSearchName);
+                        else if (document.getElementById('status-box').style.display !== 'none' && document.getElementById('status-title').innerText !== "กรุณากรอกชื่อเพื่อค้นหา") {} 
+                        else showStatus("พร้อมค้นหาข้อมูล", "กรุณากรอกชื่อของคุณในช่องด้านบน");
+                    }
                 },
-                error: function() { showStatus("⚠️ ระบบมีปัญหา", "เชื่อมต่อฐานข้อมูลไม่ได้", true); }
+                error: function() { if(!isAdmin) showStatus("⚠️ ระบบมีปัญหา", "เชื่อมต่อฐานข้อมูลไม่ได้", true); }
             });
         }
 
+        // อัปเดตการ์ดผู้เล่นคนเดียว (User Mode)
         function updateUserCard(name) {
             if (!isDataLoaded) return;
             const player = allPlayersData.find(p => p.Name.toLowerCase() === name.toLowerCase());
@@ -254,6 +303,59 @@
             else changeEl.innerHTML = `<div class="change-badge no-change">- ไม่เปลี่ยนแปลง -</div>`;
         }
 
+        // เรนเดอร์ตารางรวม (Admin Mode)
+        function renderFullBoard(players) {
+            const board = document.getElementById('leaderboard');
+            board.style.height = (players.length * ROW_HEIGHT) + 'px'; 
+
+            players.forEach((player, index) => {
+                const safeId = `admin-row-${player.Name.replace(/\s+/g, '-')}`;
+                let row = document.getElementById(safeId);
+
+                if (!row) {
+                    row = document.createElement('div');
+                    row.className = 'row';
+                    row.id = safeId;
+                    row.innerHTML = `
+                        <div class="rank-circle"></div>
+                        <div class="row-name">${player.Name} <span class="dnf-container"></span></div>
+                        <div class="row-score">
+                            <div class="rs-score" data-val="0">0</div>
+                            <div class="change-tag"></div>
+                        </div>
+                    `;
+                    board.appendChild(row);
+                }
+
+                row.style.top = (index * ROW_HEIGHT) + 'px';
+
+                // จัดการอันดับ
+                const rankEl = row.querySelector('.rank-circle');
+                rankEl.innerText = index + 1;
+                rankEl.className = 'rank-circle'; 
+                if (index === 0) rankEl.classList.add('rc-gold');
+                else if (index === 1) rankEl.classList.add('rc-silver');
+                else if (index === 2) rankEl.classList.add('rc-bronze');
+
+                // DNF
+                row.querySelector('.dnf-container').innerHTML = player.isDNF ? `<span class="dnf-badge">DNF</span>` : '';
+
+                // คะแนนวิ่ง
+                const scoreEl = row.querySelector('.rs-score');
+                const currentVal = Number(scoreEl.getAttribute('data-val'));
+                if (currentVal !== player.TodayScore) {
+                    animateValue(scoreEl, currentVal, player.TodayScore, 1000);
+                    scoreEl.setAttribute('data-val', player.TodayScore);
+                }
+
+                // ส่วนต่าง
+                const changeTagEl = row.querySelector('.change-tag');
+                if (player.Change > 0) changeTagEl.innerHTML = `<div class="badge up">▲ +${formatScore(player.Change)}</div>`;
+                else if (player.Change < 0) changeTagEl.innerHTML = `<div class="badge down">▼ ${formatScore(Math.abs(player.Change))}</div>`;
+                else changeTagEl.innerHTML = `<div class="no-change">- ไม่เปลี่ยนแปลง -</div>`;
+            });
+        }
+
         function triggerSearch() {
             const inputVal = searchInput.value.trim();
             if(!inputVal) {
@@ -261,22 +363,18 @@
                 return;
             }
             currentSearchName = inputVal;
-            suggestionsBox.style.display = 'none'; // ซ่อนรายการเดาคำ
+            suggestionsBox.style.display = 'none'; 
             updateUserCard(currentSearchName);
         }
 
-        // ✅ 1. Event ตอนพิมพ์ข้อความ (แสดงรายชื่อแนะนำ)
+        // ระบบ Auto-complete
         searchInput.addEventListener('input', function() {
-            if (!isDataLoaded) return;
+            if (!isDataLoaded || isAdmin) return;
             const val = this.value.trim().toLowerCase();
-            suggestionsBox.innerHTML = ''; // ล้างค่าเก่า
+            suggestionsBox.innerHTML = ''; 
 
-            if (!val) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
+            if (!val) { suggestionsBox.style.display = 'none'; return; }
 
-            // ค้นหาชื่อที่ "มีส่วนประกอบ" ของตัวอักษรที่พิมพ์ (จำกัด 6 ชื่อ)
             const matches = allPlayersData.filter(p => p.Name.toLowerCase().includes(val)).slice(0, 6);
 
             if (matches.length > 0) {
@@ -285,34 +383,23 @@
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
                     div.innerText = match.Name;
-                    
-                    // ✅ 2. Event เมื่อคลิกเลือกชื่อ
                     div.addEventListener('click', function() {
                         searchInput.value = match.Name;
                         suggestionsBox.style.display = 'none';
-                        triggerSearch(); // ค้นหาทันทีที่คลิก
+                        triggerSearch(); 
                     });
                     suggestionsBox.appendChild(div);
                 });
-            } else {
-                suggestionsBox.style.display = 'none';
-            }
+            } else { suggestionsBox.style.display = 'none'; }
         });
 
-        // ✅ 3. ซ่อนรายชื่อเมื่อคลิกพื้นที่อื่นบนหน้าเว็บ
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-wrapper')) {
-                suggestionsBox.style.display = 'none';
-            }
+            if (!e.target.closest('.search-wrapper')) suggestionsBox.style.display = 'none';
         });
 
-        // Event กดปุ่มค้นหา และกด Enter
         searchButton.addEventListener('click', triggerSearch);
-        searchInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') triggerSearch();
-        });
+        searchInput.addEventListener('keypress', function(event) { if (event.key === 'Enter') triggerSearch(); });
 
-        // โหลดข้อมูลเริ่มต้น
         showStatus("กำลังดึงข้อมูล...", "กรุณารอสักครู่");
         fetchAllData();
         setInterval(fetchAllData, 5000); 
