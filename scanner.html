@@ -7,34 +7,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; background: #000; font-family: 'Inter', 'Sarabun', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        
-        /* Camera Area */
         #cam-wrap { position: relative; flex: 1; background: #000; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         
-        /* Overlay UI */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        /* Debug Canvas (สำหรับดูว่าคอมเห็นอะไร) */
+        #debugCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 5; display: none; }
         
-        /* Guide Box & Laser */
-        .box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 100px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; overflow: hidden; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 100px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; overflow: hidden; }
         .laser { width: 100%; height: 2px; background: #ff4757; position: absolute; top: 50%; box-shadow: 0 0 8px #ff4757; }
-        .hint { position: absolute; top: 65%; width: 100%; text-align: center; color: white; font-size: 0.9rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); letter-spacing: 0.5px; }
+        .hint { position: absolute; top: 65%; width: 100%; text-align: center; color: white; font-size: 0.9rem; letter-spacing: 0.5px; }
 
-        /* Top Bar */
         .top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
-        .brand { color: white; font-weight: 800; font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); letter-spacing: 1px; }
-        .btn-help { background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; pointer-events: auto; font-weight: 600; text-transform: uppercase; }
+        .brand { color: white; font-weight: 800; font-size: 1.1rem; }
+        
+        /* ปุ่ม Debug */
+        .btn-debug { background: rgba(0,0,0,0.5); border: 1px solid #fff; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; pointer-events: auto; font-weight: 600; }
+        .btn-debug.active { background: #ff4757; border-color: #ff4757; }
 
-        /* Result Popup */
         .res-modal { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 30px; box-sizing: border-box; transform: translateY(100%); transition: 0.3s; z-index: 50; text-align: center; }
         .res-modal.show { transform: translateY(0); }
         .res-text { font-size: 2rem; font-weight: 800; color: #2d3436; margin: 10px 0; letter-spacing: 2px; }
-        .btn-scan { background: #2d3436; color: white; border: none; padding: 14px 30px; border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer; letter-spacing: 1px; }
-
-        /* Info Modal */
-        .info-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 60; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .info-modal.open { display: flex; }
-        .info-box { background: #fff; padding: 30px; border-radius: 12px; width: 85%; max-width: 400px; color: #333; }
+        .btn-scan { background: #2d3436; color: white; border: none; padding: 14px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; }
         
         canvas { display: none; }
     </style>
@@ -43,71 +37,81 @@
 
     <div id="cam-wrap">
         <video id="video" playsinline></video>
+        <canvas id="debugCanvas"></canvas> 
         
         <div class="top-bar">
             <div class="brand">PULSE SCAN</div>
-            <button class="btn-help" onclick="toggleInfo(true)">Help</button>
+            <button class="btn-debug" id="debugBtn" onclick="toggleDebug()">Debug Mode: OFF</button>
         </div>
 
         <div class="overlay">
             <div class="box">
                 <div class="laser"></div>
             </div>
-            <div class="hint">Align the red line with the code</div>
+            <div class="hint">Move closer or further to fit the box</div>
         </div>
     </div>
 
     <div class="res-modal" id="resModal">
-        <div style="color:#aaa; font-size:0.8rem; text-transform:uppercase; font-weight: 600;">Decoded Message</div>
+        <div style="color:#aaa; font-size:0.8rem; font-weight: 600;">Decoded Message</div>
         <div class="res-text" id="resContent">...</div>
         <button class="btn-scan" onclick="resetScan()">SCAN AGAIN</button>
-    </div>
-
-    <div class="info-modal" id="infoModal" onclick="if(event.target===this) toggleInfo(false)">
-        <div class="info-box">
-            <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Scanning Logic</h3>
-            <p>ระบบใช้เทคโนโลยี <b>Computer Vision</b> ในการวัดความหนาของวัตถุแบบเรียลไทม์:</p>
-            <ol style="padding-left:20px; line-height:1.6; color: #444;">
-                <li>กล้องจับภาพและแปลงเป็นขาวดำ</li>
-                <li>ระบบวัดจำนวนพิกเซลสีดำในแนวตั้ง</li>
-                <li>คำนวณเปรียบเทียบ:
-                    <br><b>- Thick (หนา)</b> = 1
-                    <br><b>- Thin (บาง)</b> = 0
-                </li>
-            </ol>
-            <p style="font-size:0.9rem; color:#666; background:#f8f9fa; padding:12px; border-radius:6px; border: 1px solid #eee;">
-                <b>Tip:</b> ถือกล้องให้นิ่งและขนานกับวัตถุ แสงสว่างที่เพียงพอจะช่วยให้อ่านค่าได้แม่นยำขึ้น
-            </p>
-            <button onclick="toggleInfo(false)" style="width:100%; padding:12px; background:#2d3436; color:white; border:none; border-radius:6px; margin-top:15px; font-weight: bold;">Close</button>
-        </div>
     </div>
 
     <canvas id="proc"></canvas>
 
 <script>
     const video = document.getElementById('video');
-    const canvas = document.getElementById('proc');
-    const ctx = canvas.getContext('2d');
+    const procCanvas = document.getElementById('proc');
+    const debugCanvas = document.getElementById('debugCanvas');
+    const ctx = procCanvas.getContext('2d');
+    const debugCtx = debugCanvas.getContext('2d');
+    
     let isScanning = true;
+    let isDebug = false;
 
     async function init() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream; video.play();
-            loop();
-        } catch(e) { alert("Camera Error: HTTPS required"); }
+            requestAnimationFrame(loop);
+        } catch(e) { alert("Camera Error: Please use HTTPS."); }
+    }
+
+    function toggleDebug() {
+        isDebug = !isDebug;
+        const btn = document.getElementById('debugBtn');
+        btn.innerText = "Debug Mode: " + (isDebug ? "ON" : "OFF");
+        btn.classList.toggle('active', isDebug);
+        debugCanvas.style.display = isDebug ? "block" : "none";
     }
 
     function loop() {
         if(!isScanning) return;
         if(video.readyState === 4) {
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            procCanvas.width = debugCanvas.width = video.videoWidth;
+            procCanvas.height = debugCanvas.height = video.videoHeight;
+            
             ctx.drawImage(video, 0, 0);
+
+            // ถ้าเปิด Debug ให้วาดภาพขาวดำโชว์ผู้ใช้
+            if (isDebug) {
+                let imgData = ctx.getImageData(0, 0, procCanvas.width, procCanvas.height);
+                let d = imgData.data;
+                for(let i=0; i<d.length; i+=4) {
+                    let luma = (d[i]*0.3 + d[i+1]*0.59 + d[i+2]*0.11);
+                    // ตัดสินใจว่า ขาว หรือ ดำ (Threshold = 100)
+                    let color = luma < 100 ? 0 : 255; 
+                    d[i] = d[i+1] = d[i+2] = color;
+                }
+                debugCtx.putImageData(imgData, 0, 0);
+            }
             
             // Scan Logic
-            const w = canvas.width, cy = canvas.height/2;
+            const w = procCanvas.width, cy = procCanvas.height/2;
             let profile = [];
-            for(let x=0; x<w; x+=4) profile.push(getThick(x, cy));
+            // สแกนแถวกลาง
+            for(let x=0; x<w; x+=3) profile.push(getThick(x, cy));
             
             const code = parse(profile);
             if(code) showRes(code);
@@ -116,31 +120,38 @@
     }
 
     function getThick(x, cy) {
+        // วัดความหนาพิกเซลสีดำ +/- 60px จากจุดกึ่งกลาง
         let d = ctx.getImageData(x, cy-60, 1, 120).data, c=0;
         for(let i=0; i<d.length; i+=4) if((d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11) < 100) c++;
         return c;
     }
 
     function parse(arr) {
+        // กรอง Noise
         let clean = arr.map(v=>v>5?v:0), max=Math.max(...clean);
-        if(max<15) return null;
+        if(max<15) return null; // ไม่เจอเส้น
         
         let bin="", reading=false, thr=max*0.6, step=0;
+        
+        // ถอดรหัส (ปรับให้จับบิตได้ยืดหยุ่นขึ้น)
         for(let i=0; i<clean.length; i++) {
-            if(!reading && clean[i]>thr) { reading=true; i+=5; continue; }
+            if(!reading && clean[i]>thr) { reading=true; i+=3; continue; } // เริ่มอ่าน
             if(reading) {
-                if(clean[i]===0 && clean[i+1]===0 && clean[i+2]===0) break;
-                if(step%5===0) bin += (clean[i]>thr)?"1":"0";
+                if(clean[i]===0 && clean[i+1]===0 && clean[i+2]===0) break; // จบ
+                
+                // อ่านค่าทุกๆ 6 step (ปรับค่านี้เพื่อจูนระยะกล้อง)
+                if(step%6===0) bin += (clean[i]>thr)?"1":"0";
                 step++;
             }
         }
         
+        // แปลงเป็น Text
         let txt="";
         for(let i=0; i<bin.length; i+=8) {
             let b = parseInt(bin.substr(i,8), 2);
-            if(b>=32 && b<=126) txt += String.fromCharCode(b);
+            if(b>=65 && b<=90 || b>=48 && b<=57) txt += String.fromCharCode(b); // กรองเฉพาะ A-Z, 0-9
         }
-        return (txt.length>1 && txt.match(/[A-Z0-9]/)) ? txt : null;
+        return (txt.length>1) ? txt : null;
     }
 
     function showRes(txt) {
@@ -152,11 +163,7 @@
 
     function resetScan() {
         document.getElementById('resModal').classList.remove('show');
-        setTimeout(()=> { isScanning=true; loop(); }, 500);
-    }
-    
-    function toggleInfo(show) {
-        document.getElementById('infoModal').classList.toggle('open', show);
+        setTimeout(()=> { isScanning=true; requestAnimationFrame(loop); }, 500);
     }
 
     init();
