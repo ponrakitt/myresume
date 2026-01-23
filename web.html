@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Leaderboard</title>
+    <title>ระบบเช็คคะแนนส่วนบุคคล</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -36,20 +36,20 @@
         }
 
         h1 { 
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 800;
             background: linear-gradient(to right, #00c6ff, #0072ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-shadow: 0px 4px 15px rgba(0, 198, 255, 0.3);
         }
 
         .subtitle {
             color: rgba(255,255,255,0.7);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 300;
             margin-top: 10px;
             background: rgba(0, 0, 0, 0.2);
@@ -63,166 +63,45 @@
             font-size: 0.9rem;
             margin-top: 12px;
             font-weight: 300;
-            letter-spacing: 0.5px;
         }
 
-        /* ----- ส่วนของ Loading Screen และข้อความปรับปรุง ----- */
-        #loading-screen {
-            background: var(--dark-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid var(--border-glass);
-            text-align: center;
+        /* ----- ส่วนของช่องค้นหา ----- */
+        .search-container {
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-top: 5px solid #00c6ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        .loading-subtext {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1rem;
-        }
-
-        #main-content {
-            display: none;
-            width: 100%;
-            max-width: 650px;
+            max-width: 500px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* ----- ส่วนของ Leaderboard ----- */
-        .board {
-            width: 100%;
+            gap: 10px;
+            margin-bottom: 40px;
             position: relative;
-        }
-
-        .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--dark-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 15px 25px;
-            border-radius: 16px;
-            border: 1px solid var(--border-glass);
-            position: absolute; 
-            width: calc(100% - 50px);
-            left: 0;
-            transition: top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            height: 50px;
-        }
-
-        .row:hover {
-            transform: scale(1.02);
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 10;
         }
 
-        .rank {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
-        }
-
-        .rank-1 { background: var(--gold); color: #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-        .rank-2 { background: var(--silver); color: #000; box-shadow: 0 0 15px rgba(192, 192, 192, 0.4); }
-        .rank-3 { background: var(--bronze); color: #fff; box-shadow: 0 0 15px rgba(205, 127, 50, 0.4); }
-
-        .name-container {
+        .search-input {
             flex: 1;
-            margin-left: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .name { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.5px; }
-
-        .score-info { 
-            text-align: right; 
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .score { 
-            font-size: 1.5rem; 
-            font-weight: 800; 
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-family: 'Kanit', sans-serif;
+            background: var(--dark-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 30px;
             color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.2);
-            font-variant-numeric: tabular-nums; 
+            outline: none;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .badge {
-            font-size: 0.85rem;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 20px;
-            margin-top: 5px;
-            animation: fadeInScale 0.4s ease;
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.4);
         }
 
-        .up { background: rgba(46, 213, 115, 0.15); color: var(--success); }
-        .down { background: rgba(255, 71, 87, 0.15); color: var(--danger); }
-        .no-change { color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-top: 5px;}
-        
-        .dnf-badge {
-            background: rgba(255, 71, 87, 0.2);
-            color: var(--danger);
-            border: 1px solid rgba(255, 71, 87, 0.5);
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+        .search-input:focus {
+            border-color: #00c6ff;
+            box-shadow: 0 4px 20px rgba(0, 198, 255, 0.2);
         }
 
-        @keyframes fadeInScale {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .refresh-btn {
-            margin-top: 50px;
-            padding: 12px 30px;
+        .search-btn {
+            padding: 0 30px;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: white;
             border: none;
@@ -235,198 +114,157 @@
             box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
         }
 
-        .refresh-btn:hover { 
+        .search-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
         }
 
-        .refresh-btn:active { transform: translateY(0); }
+        .search-btn:active { transform: translateY(0); }
+
+        /* ----- ส่วนของ Loading Screen และข้อความสถานะ ----- */
+        .status-box {
+            background: var(--dark-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            display: none; /* ซ่อนไว้ก่อน */
+        }
+
+        .status-text { font-size: 1.3rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
+        .status-subtext { color: rgba(255, 255, 255, 0.6); font-size: 1rem; }
+        .error-text { color: #ffeb3b; }
+
+        /* ----- ส่วนของการ์ดแสดงผลลัพธ์ ----- */
+        #result-container {
+            width: 100%;
+            max-width: 500px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-card {
+            background: var(--dark-glass);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .rank-badge {
+            font-size: 1rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* สีสำหรับ Top 3 */
+        .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);}
+        .rank-silver { background: rgba(192, 192, 192, 0.15); color: var(--silver); border-color: var(--silver); }
+        .rank-bronze { background: rgba(205, 127, 50, 0.15); color: var(--bronze); border-color: var(--bronze); }
+
+        .user-name {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .score-box {
+            margin-top: 20px;
+        }
+
+        .score-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            font-variant-numeric: tabular-nums; 
+            margin: 5px 0;
+            line-height: 1;
+        }
+
+        .change-badge {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .up { background: rgba(46, 213, 115, 0.15); color: var(--success); }
+        .down { background: rgba(255, 71, 87, 0.15); color: var(--danger); }
+        .no-change { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 10px;}
+
+        .dnf-badge {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(255, 71, 87, 0.5);
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-left: 10px;
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+            vertical-align: middle;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
     </style>
 </head>
 <body>
 
     <div class="header-container">
-        <h1>Leaderboard</h1>
+        <h1>ระบบเช็คคะแนนส่วนบุคคล</h1>
         <div class="subtitle">อัปเดตคะแนนอัตโนมัติทุก 5 วินาที</div>
         <div id="last-updated" class="last-updated">อัปเดตล่าสุด: กำลังโหลด...</div>
     </div>
 
-    <div id="loading-screen">
-        <div class="spinner" id="loading-spinner"></div>
-        <div class="loading-text" id="loading-title">กำลังดึงข้อมูล...</div>
-        <div class="loading-subtext" id="loading-msg">กรุณารอสักครู่ ระบบกำลังคำนวณคะแนนล่าสุด</div>
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="กรอกชื่อของคุณ..." onkeypress="handleKeyPress(event)">
+        <button class="search-btn" onclick="triggerSearch()">ค้นหา</button>
     </div>
 
-    <div id="main-content" style="display: none;">
-        <div class="board" id="leaderboard"></div>
-        <button class="refresh-btn" onclick="fetchData()">โหลดข้อมูลใหม่</button>
+    <div id="status-box" class="status-box">
+        <div class="status-text" id="status-title">กรุณากรอกชื่อเพื่อค้นหา</div>
+        <div class="status-subtext" id="status-msg">ข้อมูลคะแนนของคุณจะปรากฏที่นี่</div>
+    </div>
+
+    <div id="result-container">
+        <div class="result-card">
+            <div id="user-rank" class="rank-badge">อันดับที่ -</div>
+            <div class="user-name"><span id="user-name">ชื่อผู้เล่น</span> <span id="user-dnf"></span></div>
+            
+            <div class="score-box">
+                <div class="score-label">คะแนนปัจจุบัน</div>
+                <div id="user-score" class="score-value" data-val="0">0</div>
+                <div id="user-change" class="change-tag"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         const SHEET_ID = '1p9i2fqZbNdAIxD4zf_h2eB0oHW7gIrWL4DuCxs3DYYM';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-        const ROW_HEIGHT = 95; 
-        let isFirstLoad = true;
-
-        // ✅ ฟังก์ชันใหม่: แปลงคะแนนเกิน 300M ให้เป็นตัวย่อ
-        function formatScore(num) {
-            // เช็กค่าสัมบูรณ์ (เผื่อกรณีติดลบ)
-            if (Math.abs(num) >= 300000000) {
-                // หาร 1,000,000 ใส่ทศนิยม 1 ตำแหน่ง แล้วเติม M
-                return (num / 1000000).toFixed(1) + 'M';
-            }
-            return num.toLocaleString();
-        }
-
-        function updateTimestamp() {
-            const now = new Date();
-            const options = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit',
-                hour12: false 
-            };
-            const timeString = now.toLocaleDateString('th-TH', options);
-            document.getElementById('last-updated').innerText = `อัปเดตล่าสุด: ${timeString} น.`;
-        }
-
-        function showMaintenance() {
-            document.getElementById('loading-screen').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('loading-spinner').style.display = 'none'; 
-            document.getElementById('loading-title').innerText = "อยู่ในช่วงปรับปรุงคะแนน";
-            document.getElementById('loading-title').style.color = "#FFD700";
-            document.getElementById('loading-msg').innerText = "ขออภัย ระบบไม่สามารถดึงข้อมูลได้ในขณะนี้ กรุณากลับมาใหม่ภายหลัง";
-            document.getElementById('last-updated').style.display = 'none'; 
-        }
-
-        // ✅ อัปเดตฟังก์ชันอนิเมชั่นให้รองรับตัวย่อ M
-        function animateValue(obj, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const currentVal = Math.floor(progress * (end - start) + start);
-                // ใช้ฟังก์ชัน formatScore แทน toLocaleString
-                obj.innerText = formatScore(currentVal);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        async function fetchData() {
-            Papa.parse(URL, {
-                download: true,
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    if (!results.data || results.data.length === 0 || !results.data[0].Name) {
-                        showMaintenance();
-                        return;
-                    }
-
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'flex';
-                    document.getElementById('last-updated').style.display = 'block';
-
-                    updateTimestamp();
-                    processData(results.data);
-                },
-                error: function(err) {
-                    showMaintenance();
-                }
-            });
-        }
-
-        function processData(data) {
-            let players = data.filter(p => p.Name);
-
-            players.forEach(p => {
-                p.TodayScore = Number(p.TodayScore) || 0;
-                p.PreviousScore = Number(p.PreviousScore) || 0;
-                p.Change = p.TodayScore - p.PreviousScore;
-                p.isDNF = p.TodayScore < 700000;
-            });
-
-            players.sort((a, b) => b.TodayScore - a.TodayScore);
-            renderBoard(players);
-            isFirstLoad = false;
-        }
-
-        function renderBoard(players) {
-            const board = document.getElementById('leaderboard');
-            board.style.height = (players.length * ROW_HEIGHT) + 'px'; 
-
-            players.forEach((player, index) => {
-                const safeId = `player-${player.Name.replace(/\s+/g, '-')}`;
-                let row = document.getElementById(safeId);
-                let scoreElement;
-
-                if (!row) {
-                    row = document.createElement('div');
-                    row.className = 'row';
-                    row.id = safeId;
-                    
-                    row.innerHTML = `
-                        <div class="rank"></div>
-                        <div class="name-container">
-                            <div class="name">${player.Name}</div>
-                            <span class="dnf-container"></span>
-                        </div>
-                        <div class="score-info">
-                            <div class="score" data-val="0">0</div>
-                            <div class="change-tag"></div>
-                        </div>
-                    `;
-                    board.appendChild(row);
-                }
-
-                row.style.top = (index * ROW_HEIGHT) + 'px';
-
-                const rankEl = row.querySelector('.rank');
-                rankEl.innerText = index + 1;
-                rankEl.className = 'rank'; 
-                if (index === 0) rankEl.classList.add('rank-1');
-                else if (index === 1) rankEl.classList.add('rank-2');
-                else if (index === 2) rankEl.classList.add('rank-3');
-
-                const dnfContainer = row.querySelector('.dnf-container');
-                dnfContainer.innerHTML = player.isDNF ? `<span class="dnf-badge">DNF</span>` : '';
-
-                scoreElement = row.querySelector('.score');
-                const currentVal = Number(scoreElement.getAttribute('data-val'));
-                const targetVal = player.TodayScore;
-
-                if (currentVal !== targetVal) {
-                    animateValue(scoreElement, currentVal, targetVal, 1000);
-                    scoreElement.setAttribute('data-val', targetVal);
-                }
-
-                // ✅ อัปเดตป้ายแสดงส่วนต่าง ให้รองรับตัวย่อ M
-                const changeTagEl = row.querySelector('.change-tag');
-                if (player.Change > 0) {
-                    changeTagEl.innerHTML = `<div class="badge up">▲ +${formatScore(player.Change)}</div>`;
-                } else if (player.Change < 0) {
-                    // ใช้ Math.abs() เพื่อไม่ให้มีเครื่องหมายลบซ้อนกับสัญลักษณ์ ▼
-                    changeTagEl.innerHTML = `<div class="badge down">▼ ${formatScore(Math.abs(player.Change))}</div>`;
-                } else {
-                    changeTagEl.innerHTML = `<div class="no-change">- ไม่เปลี่ยนแปลง -</div>`;
-                }
-            });
-        }
-
-        // โหลดข้อมูลครั้งแรก
-        fetchData();
-
-        // รีเฟรชอัตโนมัติทุก 5 วินาที
-        setInterval(fetchData, 5000); 
-    </script>
-</body>
-</html>
+        let allPlayersData = []; // เก็บข้อมูลทุกคนไว้
