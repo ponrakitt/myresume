@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #f4f6f8; --panel: #fff; --text: #1a1a1a; --accent: #2d3436; --blue: #0984e3; }
+        body { font-family: 'Inter', 'Sarabun', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        
+        .layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; width: 100%; max-width: 1100px; background: var(--panel); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        
+        /* Header & Button */
+        .header { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 10px; }
+        
+        /* ปุ่มแบบไม่มี Emoji ใช้ icon จาก CSS หรือ Text ล้วน */
+        .btn-info { 
+            background: #fff; border: 1px solid #ccc; padding: 8px 16px; 
+            border-radius: 6px; cursor: pointer; font-weight: 600; color: #555; 
+            font-size: 0.9rem; transition: 0.2s; 
+        }
+        .btn-info:hover { background: #f8f9fa; border-color: #aaa; color: #000; }
+
+        /* Controls */
+        .controls input[type="text"] { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; font-weight: bold; box-sizing: border-box; }
+        .controls label { display: block; font-size: 0.75rem; font-weight: 700; color: #888; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .row { display: flex; gap: 10px; align-items: center; }
+        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; border-radius: 50%; padding: 0; overflow: hidden; border: 1px solid #ddd; }
+        
+        /* Preview */
+        .preview { background: var(--bg); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; border: 1px dashed #ccc; }
+        canvas { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-dl { position: absolute; bottom: 20px; right: 20px; background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;}
+        .btn-dl:hover { transform: translateY(-2px); }
+
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; }
+        .modal.open { display: flex; opacity: 1; }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; animation: popUp 0.3s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        @keyframes popUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .code-block { background: #f1f3f5; padding: 15px; border-radius: 6px; font-family: monospace; margin-top: 15px; font-size: 0.9em; color: #333; border: 1px solid #e9ecef; }
+        
+        @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="header">
+        <div>
+            <h1 style="margin:0; font-size:1.4rem;">Pulse Generator</h1>
+            <span style="font-size:0.8rem; color:#888;">Create your visual code</span>
+        </div>
+        <button class="btn-info" onclick="toggleModal(true)">Concept & Logic</button>
+    </div>
+
+    <div class="controls">
+        <label>Message</label>
+        <input type="text" id="inpText" value="LOVE" oninput="gen()">
+        
+        <label>Colors</label>
+        <div class="row">
+            <input type="color" id="colLine" value="#1a1a1a" oninput="gen()"> <span style="font-size:0.9rem">Line</span>
+            <input type="color" id="colBg" value="#ffffff" oninput="gen()"> <span style="font-size:0.9rem">Background</span>
+        </div>
+
+        <label>Line Thickness</label>
+        <input type="range" id="inpThick" min="40" max="120" value="80" style="width:100%" oninput="gen()">
+        
+        <label>Style</label>
+        <select id="inpStyle" onchange="gen()" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;">
+            <option value="rounded">Rounded Capsule (ขอบมน)</option>
+            <option value="sharp">Sharp Block (ขอบเหลี่ยม)</option>
+        </select>
+    </div>
+
+    <div class="preview">
+        <canvas id="canvas" width="800" height="250"></canvas>
+        <button class="btn-dl" onclick="dl()">Download PNG</button>
+    </div>
+</div>
+
+<div class="modal" id="infoModal" onclick="if(event.target===this) toggleModal(false)">
+    <div class="modal-box">
+        <h2 style="margin-top:0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Encoding Logic</h2>
+        <p>ระบบแปลงข้อความของคุณให้เป็น <b>"Binary Art"</b> โดยใช้ความหนาของเส้นแทนรหัสคอมพิวเตอร์:</p>
+        <ul style="line-height: 1.6;">
+            <li><b>Thick Line (เส้นหนา):</b> แทนเลข 1</li>
+            <li><b>Thin Line (เส้นบาง):</b> แทนเลข 0</li>
+        </ul>
+        <p>ทำให้ข้อมูลถูกซ่อนอยู่อย่างแนบเนียนในเส้นสายที่ดูเหมือนกราฟิก</p>
+        
+        <div class="code-block">
+            <strong>Example: "A"</strong><br>
+            Binary: 01000001<br>
+            Pattern: [Thin]-[Thick]-[Thin]-[Thin]-[Thin]-[Thin]-[Thin]-[Thick]
+        </div>
+        
+        <button onclick="toggleModal(false)" style="margin-top:20px; width:100%; padding:12px; background:#2d3436; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Close</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function gen() {
+        const text = document.getElementById('inpText').value.toUpperCase();
+        const thick = parseInt(document.getElementById('inpThick').value);
+        const thin = Math.max(5, thick * 0.15);
+        const style = document.getElementById('inpStyle').value;
+        const color = document.getElementById('colLine').value;
+        const bg = document.getElementById('colBg').value;
+        
+        // Encode
+        let bin = "";
+        for(let c of text) bin += "00000000".substr(c.charCodeAt(0).toString(2).length) + c.charCodeAt(0).toString(2);
+        
+        // Setup
+        ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = color;
+        
+        const len = 35;
+        let cx = (canvas.width - (bin.length * len))/2;
+        const cy = canvas.height/2;
+
+        // Draw
+        for(let b of bin) {
+            let h = (b==='1') ? thick : thin;
+            if(style==='rounded') {
+                ctx.beginPath(); ctx.roundRect(cx-1, cy-h/2, len+2, h, h/2); ctx.fill();
+            } else {
+                ctx.fillRect(cx, cy-h/2, len, h);
+            }
+            cx += len;
+        }
+    }
+    
+    function dl() {
+        const a = document.createElement('a');
+        a.download = 'pulse-code.png'; a.href = canvas.toDataURL(); a.click();
+    }
+    
+    function toggleModal(show) {
+        document.getElementById('infoModal').classList.toggle('open', show);
+    }
+    
+    window.onload = gen;
+</script>
+</body>
+</html>
