@@ -58,7 +58,6 @@
             display: inline-block;
         }
 
-        /* ----- สไตล์สำหรับแสดงเวลาอัปเดตล่าสุด ----- */
         .last-updated {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
@@ -271,7 +270,16 @@
         const ROW_HEIGHT = 95; 
         let isFirstLoad = true;
 
-        // ฟังก์ชันอัปเดตเวลาปัจจุบันภาษาไทย
+        // ✅ ฟังก์ชันใหม่: แปลงคะแนนเกิน 300M ให้เป็นตัวย่อ
+        function formatScore(num) {
+            // เช็กค่าสัมบูรณ์ (เผื่อกรณีติดลบ)
+            if (Math.abs(num) >= 300000000) {
+                // หาร 1,000,000 ใส่ทศนิยม 1 ตำแหน่ง แล้วเติม M
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            return num.toLocaleString();
+        }
+
         function updateTimestamp() {
             const now = new Date();
             const options = { 
@@ -294,16 +302,18 @@
             document.getElementById('loading-title').innerText = "อยู่ในช่วงปรับปรุงคะแนน";
             document.getElementById('loading-title').style.color = "#FFD700";
             document.getElementById('loading-msg').innerText = "ขออภัย ระบบไม่สามารถดึงข้อมูลได้ในขณะนี้ กรุณากลับมาใหม่ภายหลัง";
-            document.getElementById('last-updated').style.display = 'none'; // ซ่อนเวลาเมื่อโหลดไม่ติด
+            document.getElementById('last-updated').style.display = 'none'; 
         }
 
+        // ✅ อัปเดตฟังก์ชันอนิเมชั่นให้รองรับตัวย่อ M
         function animateValue(obj, start, end, duration) {
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 const currentVal = Math.floor(progress * (end - start) + start);
-                obj.innerText = currentVal.toLocaleString();
+                // ใช้ฟังก์ชัน formatScore แทน toLocaleString
+                obj.innerText = formatScore(currentVal);
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
                 }
@@ -326,7 +336,6 @@
                     document.getElementById('main-content').style.display = 'flex';
                     document.getElementById('last-updated').style.display = 'block';
 
-                    // เรียกใช้ฟังก์ชันอัปเดตเวลาเมื่อดึงข้อมูลสำเร็จ
                     updateTimestamp();
                     processData(results.data);
                 },
@@ -400,11 +409,13 @@
                     scoreElement.setAttribute('data-val', targetVal);
                 }
 
+                // ✅ อัปเดตป้ายแสดงส่วนต่าง ให้รองรับตัวย่อ M
                 const changeTagEl = row.querySelector('.change-tag');
                 if (player.Change > 0) {
-                    changeTagEl.innerHTML = `<div class="badge up">▲ +${player.Change.toLocaleString()}</div>`;
+                    changeTagEl.innerHTML = `<div class="badge up">▲ +${formatScore(player.Change)}</div>`;
                 } else if (player.Change < 0) {
-                    changeTagEl.innerHTML = `<div class="badge down">▼ ${player.Change.toLocaleString()}</div>`;
+                    // ใช้ Math.abs() เพื่อไม่ให้มีเครื่องหมายลบซ้อนกับสัญลักษณ์ ▼
+                    changeTagEl.innerHTML = `<div class="badge down">▼ ${formatScore(Math.abs(player.Change))}</div>`;
                 } else {
                     changeTagEl.innerHTML = `<div class="no-change">- ไม่เปลี่ยนแปลง -</div>`;
                 }
