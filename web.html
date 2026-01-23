@@ -30,206 +30,38 @@
             overflow-x: hidden;
         }
 
-        .header-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .header-container { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .subtitle { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 300; margin-top: 10px; background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; }
+        .last-updated { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; margin-top: 12px; font-weight: 300; }
 
-        h1 { 
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #00c6ff, #0072ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0px 4px 15px rgba(0, 198, 255, 0.3);
-        }
+        .search-container { width: 100%; max-width: 500px; display: flex; gap: 10px; margin-bottom: 40px; }
+        .search-input { flex: 1; padding: 15px 20px; font-size: 1.1rem; font-family: 'Kanit', sans-serif; background: var(--dark-glass); backdrop-filter: blur(12px); border: 1px solid var(--border-glass); border-radius: 30px; color: #fff; outline: none; }
+        .search-input::placeholder { color: rgba(255,255,255,0.4); }
+        .search-btn { padding: 0 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: 600; font-family: 'Kanit', sans-serif; }
 
-        .subtitle {
-            color: rgba(255,255,255,0.7);
-            font-size: 1rem;
-            font-weight: 300;
-            margin-top: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .last-updated {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            margin-top: 12px;
-            font-weight: 300;
-        }
-
-        /* ----- ส่วนของช่องค้นหา ----- */
-        .search-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 40px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 15px 20px;
-            font-size: 1.1rem;
-            font-family: 'Kanit', sans-serif;
-            background: var(--dark-glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glass);
-            border-radius: 30px;
-            color: #fff;
-            outline: none;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .search-input::placeholder {
-            color: rgba(255,255,255,0.4);
-        }
-
-        .search-input:focus {
-            border-color: #00c6ff;
-            box-shadow: 0 4px 20px rgba(0, 198, 255, 0.2);
-        }
-
-        .search-btn {
-            padding: 0 30px;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            font-family: 'Kanit', sans-serif;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
-        }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
-        }
-
-        .search-btn:active { transform: translateY(0); }
-
-        /* ----- ส่วนของ Loading Screen และข้อความสถานะ ----- */
-        .status-box {
-            background: var(--dark-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid var(--border-glass);
-            text-align: center;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            display: none; /* ซ่อนไว้ก่อน */
-        }
-
+        .status-box { background: var(--dark-glass); backdrop-filter: blur(12px); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glass); text-align: center; width: 100%; max-width: 500px; display: none; }
         .status-text { font-size: 1.3rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
         .status-subtext { color: rgba(255, 255, 255, 0.6); font-size: 1rem; }
         .error-text { color: #ffeb3b; }
 
-        /* ----- ส่วนของการ์ดแสดงผลลัพธ์ ----- */
-        #result-container {
-            width: 100%;
-            max-width: 500px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .result-card {
-            background: var(--dark-glass);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.15);
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .rank-badge {
-            font-size: 1rem;
-            font-weight: 600;
-            background: rgba(255,255,255,0.1);
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* สีสำหรับ Top 3 */
-        .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);}
-        .rank-silver { background: rgba(192, 192, 192, 0.15); color: var(--silver); border-color: var(--silver); }
-        .rank-bronze { background: rgba(205, 127, 50, 0.15); color: var(--bronze); border-color: var(--bronze); }
-
-        .user-name {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
-        }
-
-        .score-box {
-            margin-top: 20px;
-        }
-
+        #result-container { width: 100%; max-width: 500px; display: none; animation: fadeIn 0.5s ease; }
+        .result-card { background: var(--dark-glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-align: center; }
+        .rank-badge { font-size: 1rem; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 15px; }
+        .rank-gold { background: rgba(255, 215, 0, 0.15); color: var(--gold); }
+        .rank-silver { background: rgba(192, 192, 192, 0.15); color: var(--silver); }
+        .rank-bronze { background: rgba(205, 127, 50, 0.15); color: var(--bronze); }
+        .user-name { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .score-box { margin-top: 20px; }
         .score-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
-
-        .score-value {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.2);
-            font-variant-numeric: tabular-nums; 
-            margin: 5px 0;
-            line-height: 1;
-        }
-
-        .change-badge {
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
+        .score-value { font-size: 3.5rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; margin: 5px 0; line-height: 1; }
+        .change-badge { font-size: 1rem; font-weight: 600; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
         .up { background: rgba(46, 213, 115, 0.15); color: var(--success); }
         .down { background: rgba(255, 71, 87, 0.15); color: var(--danger); }
-        .no-change { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 10px;}
+        .no-change { color: rgba(255,255,255,0.4); }
+        .dnf-badge { background: rgba(255, 71, 87, 0.2); color: var(--danger); font-weight: bold; padding: 4px 10px; border-radius: 6px; margin-left: 10px; }
 
-        .dnf-badge {
-            background: rgba(255, 71, 87, 0.2);
-            color: var(--danger);
-            border: 1px solid rgba(255, 71, 87, 0.5);
-            font-size: 0.9rem;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 6px;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
-            vertical-align: middle;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -241,13 +73,13 @@
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="กรอกชื่อของคุณ..." onkeypress="handleKeyPress(event)">
-        <button class="search-btn" onclick="triggerSearch()">ค้นหา</button>
+        <input type="text" id="searchInput" class="search-input" placeholder="กรอกชื่อของคุณ...">
+        <button id="searchButton" class="search-btn">ค้นหา</button>
     </div>
 
     <div id="status-box" class="status-box">
-        <div class="status-text" id="status-title">กรุณากรอกชื่อเพื่อค้นหา</div>
-        <div class="status-subtext" id="status-msg">ข้อมูลคะแนนของคุณจะปรากฏที่นี่</div>
+        <div class="status-text" id="status-title">กำลังโหลด...</div>
+        <div class="status-subtext" id="status-msg"></div>
     </div>
 
     <div id="result-container">
@@ -267,4 +99,136 @@
         const SHEET_ID = '1p9i2fqZbNdAIxD4zf_h2eB0oHW7gIrWL4DuCxs3DYYM';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-        let allPlayersData = []; // เก็บข้อมูลทุกคนไว้
+        let allPlayersData = []; 
+        let currentSearchName = ""; 
+        let isDataLoaded = false;
+
+        function formatScore(num) {
+            if (Math.abs(num) >= 300000000) return (num / 1000000).toFixed(1) + 'M';
+            return num.toLocaleString();
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('last-updated').innerText = `อัปเดตล่าสุด: ${now.toLocaleDateString('th-TH', options)} น.`;
+        }
+
+        function showStatus(title, msg, isError = false) {
+            document.getElementById('result-container').style.display = 'none';
+            const statusBox = document.getElementById('status-box');
+            statusBox.style.display = 'block';
+            document.getElementById('status-title').innerText = title;
+            document.getElementById('status-msg').innerText = msg;
+            if(isError) document.getElementById('status-title').classList.add('error-text');
+            else document.getElementById('status-title').classList.remove('error-text');
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentVal = Math.floor(progress * (end - start) + start);
+                obj.innerText = formatScore(currentVal);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        async function fetchAllData() {
+            Papa.parse(URL, {
+                download: true,
+                header: true,
+                dynamicTyping: true,
+                complete: function(results) {
+                    if (!results.data || results.data.length === 0 || !results.data[0].Name) {
+                        showStatus("⚠️ ระบบมีปัญหา", "ไม่สามารถดึงข้อมูลได้", true);
+                        return;
+                    }
+
+                    let players = results.data.filter(p => p.Name);
+                    players.forEach(p => {
+                        p.TodayScore = Number(p.TodayScore) || 0;
+                        p.PreviousScore = Number(p.PreviousScore) || 0;
+                        p.Change = p.TodayScore - p.PreviousScore;
+                        p.isDNF = p.TodayScore < 700000;
+                    });
+
+                    players.sort((a, b) => b.TodayScore - a.TodayScore);
+                    players.forEach((p, index) => { p.Rank = index + 1; });
+
+                    allPlayersData = players;
+                    isDataLoaded = true;
+                    updateTimestamp();
+
+                    if(currentSearchName !== "") updateUserCard(currentSearchName);
+                    else if (document.getElementById('status-box').style.display !== 'none' && document.getElementById('status-title').innerText !== "กรุณากรอกชื่อเพื่อค้นหา") { }
+                    else showStatus("พร้อมค้นหาข้อมูล", "กรุณากรอกชื่อของคุณในช่องด้านบน");
+                },
+                error: function() { showStatus("⚠️ ระบบมีปัญหา", "เชื่อมต่อฐานข้อมูลไม่ได้", true); }
+            });
+        }
+
+        function triggerSearch() {
+            const inputVal = document.getElementById('searchInput').value.trim();
+            if(!inputVal) {
+                showStatus("กรุณากรอกชื่อเพื่อค้นหา", "ข้อมูลคะแนนของคุณจะปรากฏที่นี่");
+                return;
+            }
+            currentSearchName = inputVal;
+            updateUserCard(currentSearchName);
+        }
+
+        function updateUserCard(name) {
+            if (!isDataLoaded) return;
+            const player = allPlayersData.find(p => p.Name === name);
+
+            if (!player) {
+                showStatus("ไม่พบรายชื่อนี้", `ไม่มีชื่อ "${name}" ในระบบ กรุณาตรวจสอบการสะกดคำอีกครั้ง`, true);
+                document.getElementById('result-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('status-box').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+
+            const rankEl = document.getElementById('user-rank');
+            rankEl.innerText = `อันดับที่ ${player.Rank}`;
+            rankEl.className = 'rank-badge'; 
+            if (player.Rank === 1) rankEl.classList.add('rank-gold');
+            else if (player.Rank === 2) rankEl.classList.add('rank-silver');
+            else if (player.Rank === 3) rankEl.classList.add('rank-bronze');
+
+            document.getElementById('user-name').innerText = player.Name;
+            document.getElementById('user-dnf').innerHTML = player.isDNF ? `<span class="dnf-badge">DNF</span>` : '';
+
+            const scoreEl = document.getElementById('user-score');
+            const currentVal = Number(scoreEl.getAttribute('data-val'));
+            if (currentVal !== player.TodayScore) {
+                animateValue(scoreEl, currentVal, player.TodayScore, 800);
+                scoreEl.setAttribute('data-val', player.TodayScore);
+            }
+
+            const changeEl = document.getElementById('user-change');
+            if (player.Change > 0) changeEl.innerHTML = `<div class="change-badge up">▲ +${formatScore(player.Change)}</div>`;
+            else if (player.Change < 0) changeEl.innerHTML = `<div class="change-badge down">▼ ${formatScore(Math.abs(player.Change))}</div>`;
+            else changeEl.innerHTML = `<div class="change-badge no-change">- ไม่เปลี่ยนแปลง -</div>`;
+        }
+
+        // ✅ เพิ่ม Event Listener ใน Javascript แทนการใส่ใน HTML
+        document.getElementById('searchButton').addEventListener('click', triggerSearch);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') triggerSearch();
+        });
+
+        // โหลดข้อมูลครั้งแรก
+        showStatus("กำลังดึงข้อมูล...", "กรุณารอสักครู่");
+        fetchAllData();
+
+        // รีเฟรชอัตโนมัติทุก 5 วินาที
+        setInterval(fetchAllData, 5000); 
+
+    </script>
+</body>
+</html>
