@@ -3,228 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Real Scanner</title>
+    <title>Nexus Prime Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; }
+        :root {
+            --accent: #38bdf8;
+            --success: #10b981;
+            --overlay: rgba(15, 23, 42, 0.9);
+        }
+        
+        body { margin: 0; background: #000; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
         
         /* Camera Layer */
         video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        canvas { display: none; } /* Internal Processing */
         
-        /* Debug Overlay Layer (วาดเส้นทับ) */
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+        /* Debug Overlay (Optional: Set opacity to 0 in production) */
+        #debugView { position: absolute; top: 10px; left: 10px; border: 1px solid var(--accent); width: 80px; height: 80px; background: #000; z-index: 5; opacity: 0.5; }
 
-        /* UI */
-        .hud { position: absolute; top: 10px; left: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #0f0; font-size: 12px; pointer-events: none; }
+        /* HUD Layer */
+        .hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         
-        .result-box {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; color: #000;
-            padding: 30px; text-align: center; border-radius: 20px 20px 0 0;
-            transform: translateY(110%); transition: 0.3s;
+        /* Reticle (Target) */
+        .reticle-box {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 240px; height: 240px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); /* Focus effect */
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .result-box.show { transform: translateY(0); }
-        h1 { margin: 0; word-break: break-all; color: #6366f1; }
+        
+        .reticle-corner { position: absolute; width: 20px; height: 20px; border: 3px solid #fff; transition: 0.3s; }
+        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+
+        .scan-line {
+            position: absolute; width: 100%; height: 2px; top: 50%;
+            background: var(--accent); box-shadow: 0 0 15px var(--accent);
+            animation: scan 2s infinite ease-in-out; opacity: 0;
+        }
+
+        /* Status Pill */
+        .status {
+            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+            padding: 10px 24px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; font-weight: 600; letter-spacing: 1px; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px; white-space: nowrap;
+        }
+        .status-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
+
+        /* Locked State */
+        .hud.locked .reticle-box { width: 200px; height: 200px; border-color: var(--success); }
+        .hud.locked .reticle-corner { border-color: var(--success); }
+        .hud.locked .status-dot { background: var(--success); animation: none; }
+        .hud.searching .scan-line { opacity: 1; }
+
+        /* Result Bottom Sheet */
+        .sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--overlay); backdrop-filter: blur(20px);
+            border-radius: 30px 30px 0 0; padding: 40px 30px; box-sizing: border-box;
+            transform: translateY(110%); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 50; text-align: center; color: white; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .sheet.show { transform: translateY(0); }
+        .sheet::before {
+            content: ''; position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px;
+        }
+
+        .icon-area {
+            width: 72px; height: 72px; background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;
+        }
+        .icon-area svg { width: 32px; height: 32px; fill: var(--accent); }
+
+        .data-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .data-value { font-size: 1.25rem; font-weight: 700; margin: 8px 0 30px 0; word-break: break-all; line-height: 1.4; }
+
+        .btn {
+            width: 100%; padding: 18px; border: none; border-radius: 16px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #0f172a; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-ghost { background: transparent; color: #94a3b8; margin-top: 10px; }
+
+        @keyframes scan { 0%, 100% { top: 10%; opacity: 0; } 50% { top: 90%; opacity: 1; } }
+        @keyframes blink { 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
     <video id="video" playsinline></video>
-    <canvas id="overlay"></canvas>
+    <canvas id="debugView"></canvas>
 
-    <div class="hud" id="debugInfo">
-        SYSTEM: INIT<br>
-        THRESHOLD: AUTO<br>
-        ANCHOR: SEARCHING...
+    <div class="hud searching" id="hud">
+        <div class="reticle-box">
+            <div class="reticle-corner tl"></div><div class="reticle-corner tr"></div>
+            <div class="reticle-corner bl"></div><div class="reticle-corner br"></div>
+            <div class="scan-line"></div>
+        </div>
+        
+        <div class="status">
+            <div class="status-dot"></div>
+            <span id="statusText">ACQUIRING SIGNAL...</span>
+        </div>
     </div>
 
-    <div class="result-box" id="resBox">
-        <h3 style="margin:0; color:#888;">DECODED DATA</h3>
-        <h1 id="resText">...</h1>
-        <button onclick="resetScan()" style="margin-top:20px; padding:10px 30px; background:#000; color:#fff; border:none; border-radius:5px; font-weight:bold;">SCAN AGAIN</button>
+    <div class="sheet" id="resultSheet">
+        <div class="icon-area" id="resIcon">
+            </div>
+        <div class="data-label" id="resLabel">DETECTED DATA</div>
+        <div class="data-value" id="resContent">...</div>
+        
+        <button class="btn btn-primary" id="btnAction" onclick="performAction()">OPEN</button>
+        <button class="btn btn-ghost" onclick="reset()">SCAN AGAIN</button>
     </div>
 
 <script>
     const video = document.getElementById('video');
-    const cvs = document.getElementById('overlay');
-    const ctx = cvs.getContext('2d');
-    const debug = document.getElementById('debugInfo');
-    
-    let isScanning = true;
+    const debugCanvas = document.getElementById('debugView');
+    const dCtx = debugCanvas.getContext('2d');
+    const hud = document.getElementById('hud');
+    const statusText = document.getElementById('statusText');
 
-    // Config
-    const SCAN_W = 300; // ความละเอียดในการประมวลผล (ยิ่งน้อยยิ่งเร็ว)
-    const SCAN_H = 300;
+    let isScanning = true;
+    let foundPayload = "";
+
+    // Config for processing
+    const PROC_SIZE = 200; // Smaller size = faster processing
 
     async function init() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" } 
-            });
-            video.srcObject = stream;
-            video.play();
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream; video.play();
             requestAnimationFrame(processFrame);
-        } catch(e) { alert("Camera Error: HTTPS Required"); }
+        } catch(e) { console.error("Camera access denied"); }
     }
 
     function processFrame() {
         if(!isScanning) return;
 
-        // 1. Setup Canvas ให้ตรงกับหน้าจอ
-        cvs.width = window.innerWidth;
-        cvs.height = window.innerHeight;
-
-        // สร้าง Virtual Canvas เล็กๆ เพื่อดึงข้อมูล pixel (Performance Optimization)
-        const vCvs = document.createElement('canvas');
-        vCvs.width = SCAN_W; vCvs.height = SCAN_H;
-        const vCtx = vCvs.getContext('2d');
-        
-        // วาด Video ลง Virtual Canvas
-        vCtx.drawImage(video, 0, 0, SCAN_W, SCAN_H);
-        const frame = vCtx.getImageData(0, 0, SCAN_W, SCAN_H);
-        const data = frame.data;
-
-        // 2. Thresholding & Centroid (หาจุด Anchor สีดำ)
-        let sumX = 0, sumY = 0, count = 0;
-        
-        for(let i=0; i<data.length; i+=4) {
-            // Luma (ความสว่าง)
-            const luma = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+        if(video.readyState === 4) {
+            // 1. Image Capture & Resize
+            debugCanvas.width = PROC_SIZE; debugCanvas.height = PROC_SIZE;
             
-            // ถ้ามืดกว่า 80 (จุดดำ)
-            if(luma < 80) {
-                const px = (i/4) % SCAN_W;
-                const py = Math.floor((i/4) / SCAN_W);
-                sumX += px; sumY += py; count++;
-            }
-        }
-
-        // 3. Logic: ถ้าเจอกลุ่มก้อนสีดำขนาดใหญ่พอสมควร
-        if(count > 200 && count < 3000) {
-            const cx = sumX / count;
-            const cy = sumY / count;
-
-            // แปลงพิกัดกลับมาหน้าจอจริง
-            const scaleX = cvs.width / SCAN_W;
-            const scaleY = cvs.height / SCAN_H;
-            const screenCx = cx * scaleX;
-            const screenCy = cy * scaleY;
-
-            // วาดเป้าสีเขียวทับจุด Anchor ที่เจอ
-            ctx.strokeStyle = "#0f0"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(screenCx, screenCy, 20, 0, Math.PI*2); ctx.stroke();
-
-            // 4. Find Orientation (North Star)
-            // สแกนวงกลมรอบ Anchor รัศมีประมาณ 30% ของจอ (ปรับจูนตามระยะจริง)
-            // ในที่นี้เราจะสแกนหาจุดดำที่ระยะห่างออกไป
+            // Center crop strategy
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const minDim = Math.min(vw, vh);
+            const sx = (vw - minDim) / 2;
+            const sy = (vh - minDim) / 2;
             
-            const scanRadius = 45; // ในหน่วย Virtual 300px (เทียบเท่า 90px ใน Generator 600px)
-            let bestAngle = 0;
-            let minLuma = 255;
-            let foundNorth = false;
+            dCtx.drawImage(video, sx, sy, minDim, minDim, 0, 0, PROC_SIZE, PROC_SIZE);
+            const frame = dCtx.getImageData(0, 0, PROC_SIZE, PROC_SIZE);
+            const data = frame.data;
 
-            // กวาดเรดาร์รอบตัว 360 องศา
-            for(let a=0; a < Math.PI*2; a+=0.1) {
-                const tx = cx + scanRadius * Math.cos(a);
-                const ty = cy + scanRadius * Math.sin(a);
+            // 2. Anchor Detection (Find Big Black Dot)
+            // Note: Assuming white background code for best contrast
+            let darkPixelCount = 0;
+            let sumX = 0, sumY = 0;
+
+            for(let i=0; i<data.length; i+=4) {
+                const r = data[i];
+                const g = data[i+1];
+                const b = data[i+2];
+                const luma = 0.299*r + 0.587*g + 0.114*b;
                 
-                // อ่านค่าสีที่จุดนั้น
-                const idx = (Math.floor(ty) * SCAN_W + Math.floor(tx)) * 4;
-                if(idx >= 0 && idx < data.length) {
-                    const l = 0.299*data[idx] + 0.587*data[idx+1] + 0.114*data[idx+2];
-                    if(l < minLuma) {
-                        minLuma = l;
-                        bestAngle = a;
+                // Thresholding: Dark < 100
+                if(luma < 100) {
+                    const idx = i/4;
+                    const x = idx % PROC_SIZE;
+                    const y = Math.floor(idx / PROC_SIZE);
+                    
+                    // Simple logic: We look for a cluster in the center
+                    const distFromCenter = Math.sqrt((x - PROC_SIZE/2)**2 + (y - PROC_SIZE/2)**2);
+                    
+                    if(distFromCenter < 40) { // Look within center area
+                        darkPixelCount++;
+                        sumX += x;
+                        sumY += y;
                     }
                 }
             }
 
-            // ถ้าเจอจุดที่มืดมากๆ ในวงโคจร (North Star)
-            if(minLuma < 80) {
-                foundNorth = true;
+            // 3. Logic: If detected dense dark area in center (Anchor)
+            const density = darkPixelCount / (Math.PI * 30 * 30); // Approx
+            
+            if(darkPixelCount > 200) {
+                const cx = sumX / darkPixelCount;
+                const cy = sumY / darkPixelCount;
                 
-                // วาดเส้นชี้ทิศเหนือ
-                const northX = (cx + scanRadius * Math.cos(bestAngle)) * scaleX;
-                const northY = (cy + scanRadius * Math.sin(bestAngle)) * scaleY;
-                
-                ctx.beginPath(); ctx.moveTo(screenCx, screenCy); ctx.lineTo(northX, northY);
-                ctx.strokeStyle = "red"; ctx.lineWidth = 3; ctx.stroke();
+                // Visual Feedback
+                hud.classList.remove('searching');
+                hud.classList.add('locked');
+                statusText.innerText = "ANCHOR LOCKED";
 
-                // 5. READ DATA (Core Logic)
-                // เมื่อรู้ Center และ Angle Offset แล้ว เราก็อ่าน Data Rings ได้เลย
-                decodeData(vCtx, cx, cy, bestAngle);
+                // 4. Orientation Detection (North Star)
+                // We scan a ring around the center to find the "North Star" dot
+                const scanRadius = 33; // ~100px relative to 600px canvas -> scaled to 200px
+                let minLuma = 255;
+                let northAngle = 0;
+
+                for(let a=0; a<Math.PI*2; a+=0.1) {
+                    const tx = Math.floor(cx + scanRadius * Math.cos(a));
+                    const ty = Math.floor(cy + scanRadius * Math.sin(a));
+                    
+                    const idx = (ty * PROC_SIZE + tx) * 4;
+                    if(idx >= 0 && idx < data.length) {
+                        const l = 0.299*data[idx] + 0.587*data[idx+1] + 0.114*data[idx+2];
+                        if(l < minLuma) {
+                            minLuma = l;
+                            northAngle = a;
+                        }
+                    }
+                }
+
+                if(minLuma < 100) {
+                    // Found North Star -> We have Orientation!
+                    statusText.innerText = "DECODING STREAM...";
+                    decodeData(dCtx, cx, cy, northAngle);
+                }
+            } else {
+                hud.classList.remove('locked');
+                hud.classList.add('searching');
+                statusText.innerText = "ALIGN CENTER DOT";
             }
-
-            debug.innerHTML = `ANCHOR: LOCKED (${Math.floor(cx)},${Math.floor(cy)})<br>ORIENTATION: ${foundNorth ? (bestAngle*180/Math.PI).toFixed(0)+'°' : 'SEARCHING...'}`;
-
-        } else {
-            debug.innerHTML = "ANCHOR: LOST (Try getting closer/White background)";
         }
-
         requestAnimationFrame(processFrame);
     }
 
-    function decodeData(vCtx, cx, cy, offsetAngle) {
-        // Config ต้องตรงกับ Generator
-        let radius = 70; // 140/2 (เพราะเราย่อภาพครึ่งนึง 600->300)
-        let angle = 0; // เริ่มที่ 0 สัมพัทธ์กับ Offset
-        const angleStep = (Math.PI * 2) / 30;
+    function decodeData(ctx, cx, cy, offsetAngle) {
+        // This is the core reader logic matching the generator
+        // Scale factors: Generator 600px -> Scanner 200px (Ratio ~3)
+        // Generator Ring 1 Start: 150px -> Scanner ~50px
         
-        let binaryString = "";
+        let radius = 50; 
+        let angle = 0;
+        let bits = "";
         
-        // ลองอ่านสัก 80 บิต (หรือ 10 ตัวอักษร)
-        const frame = vCtx.getImageData(0,0,SCAN_W,SCAN_H).data;
+        // Retrieve pixel data again to be safe
+        const frame = ctx.getImageData(0,0,PROC_SIZE,PROC_SIZE).data;
 
-        for(let i=0; i<80; i++) {
-             if(angle >= Math.PI * 2 - 0.1) {
-                angle = 0;
-                radius += 15; // 30/2
-            }
+        // Try reading 100 bits
+        for(let i=0; i<100; i++) {
+             // Calculate sampling position
+             const readAngle = angle + offsetAngle;
+             const tx = Math.floor(cx + radius * Math.cos(readAngle));
+             const ty = Math.floor(cy + radius * Math.sin(readAngle));
 
-            // คำนวณพิกัดที่จะเจาะอ่าน (หมุนตาม offsetAngle)
-            // x = cx + r * cos(a + offset)
-            const readAngle = angle + offsetAngle;
-            const tx = Math.floor(cx + radius * Math.cos(readAngle));
-            const ty = Math.floor(cy + radius * Math.sin(readAngle));
+             // Read Luma
+             const idx = (ty * PROC_SIZE + tx) * 4;
+             let val = '0';
+             if(idx >= 0 && idx < frame.length) {
+                 const l = 0.299*frame[idx] + 0.587*frame[idx+1] + 0.114*frame[idx+2];
+                 if(l < 120) val = '1'; // Dark dot = 1
+             }
+             bits += val;
 
-            // อ่านค่าสี
-            const idx = (ty * SCAN_W + tx) * 4;
-            let bit = '0';
-            
-            if(idx >= 0 && idx < frame.length) {
-                const l = 0.299*frame[idx] + 0.587*frame[idx+1] + 0.114*frame[idx+2];
-                // ถ้าตรงพิกัดนั้นมืด = มีจุด = 1
-                if(l < 100) bit = '1';
-            }
-            binaryString += bit;
-
-            angle += angleStep;
+             // Increment Step (Matching generator)
+             // Generator: 36 bits per ring
+             const angleStep = (Math.PI * 2) / 36;
+             angle += angleStep;
+             
+             if(angle >= Math.PI*2 - 0.1) {
+                 angle = 0;
+                 radius += 11.6; // (35px / 3)
+             }
         }
 
-        // Convert Binary to Text
+        // Binary to Text
         let text = "";
-        for(let i=0; i<binaryString.length; i+=8) {
-            const byte = binaryString.substr(i, 8);
-            const charCode = parseInt(byte, 2);
-            if(charCode > 0 && charCode < 127) {
-                text += String.fromCharCode(charCode);
-            }
+        for(let i=0; i<bits.length; i+=8) {
+            const b = bits.substr(i,8);
+            const c = parseInt(b, 2);
+            if(c > 32 && c < 127) text += String.fromCharCode(c);
         }
 
-        // Check Valid Text (กรองขยะ)
-        if(text.length > 2 && /^[a-zA-Z0-9\s]+$/.test(text.substring(0,3))) {
-            showResult(text);
+        // Basic Validation (Check for protocols)
+        if(text.includes("http") || text.includes("WIFI") || text.includes("MECARD") || text.length > 5) {
+            // Found valid data!
+            displayResult(text);
         }
     }
 
-    function showResult(text) {
+    // Icons SVG
+    const ICONS = {
+        wifi: '<svg viewBox="0 0 24 24"><path d="M12.01 21.49L23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"/></svg>',
+        link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
+        user: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+        text: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>'
+    };
+
+    function displayResult(payload) {
+        if(!isScanning) return;
         isScanning = false;
-        if(navigator.vibrate) navigator.vibrate(200);
-        document.getElementById('resText').innerText = text;
-        document.getElementById('resBox').classList.add('show');
+        foundPayload = payload;
+        
+        if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+
+        const iconEl = document.getElementById('resIcon');
+        const labelEl = document.getElementById('resLabel');
+        const contentEl = document.getElementById('resContent');
+        const btn = document.getElementById('btnAction');
+
+        // Parser
+        if(payload.startsWith("WIFI:")) {
+            iconEl.innerHTML = ICONS.wifi;
+            labelEl.innerText = "Wi-Fi Network";
+            contentEl.innerText = payload.match(/S:(.*?);/)[1];
+            btn.innerText = "Connect";
+        } else if (payload.startsWith("http")) {
+            iconEl.innerHTML = ICONS.link;
+            labelEl.innerText = "Website";
+            contentEl.innerText = payload;
+            btn.innerText = "Open Link";
+        } else if (payload.startsWith("MECARD:")) {
+            iconEl.innerHTML = ICONS.user;
+            labelEl.innerText = "Contact Card";
+            const name = payload.match(/N:(.*?);/)[1];
+            contentEl.innerText = name;
+            btn.innerText = "Save Contact";
+        } else {
+            iconEl.innerHTML = ICONS.text;
+            labelEl.innerText = "Raw Data";
+            contentEl.innerText = payload;
+            btn.innerText = "Copy Text";
+        }
+
+        document.getElementById('resultSheet').classList.add('show');
     }
 
-    function resetScan() {
-        document.getElementById('resBox').classList.remove('show');
+    function performAction() {
+        if(foundPayload.startsWith("http")) window.open(foundPayload, '_blank');
+        else if(foundPayload.startsWith("tel:")) window.location.href = foundPayload;
+        else {
+            navigator.clipboard.writeText(foundPayload);
+            alert("Copied to clipboard");
+        }
+    }
+
+    function reset() {
+        document.getElementById('resultSheet').classList.remove('show');
         isScanning = true;
+        statusText.innerText = "ACQUIRING SIGNAL...";
+        hud.classList.remove('locked');
+        hud.classList.add('searching');
         requestAnimationFrame(processFrame);
     }
 
