@@ -2,362 +2,295 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Prime Scanner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบตรวจสอบเอกสารใบเสร็จ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    
     <style>
         :root {
-            --accent: #38bdf8;
-            --success: #10b981;
-            --overlay: rgba(15, 23, 42, 0.9);
-        }
-        
-        body { margin: 0; background: #000; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
-        
-        /* Camera Layer */
-        video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        canvas { display: none; } /* Internal Processing */
-        
-        /* Debug Overlay (Optional: Set opacity to 0 in production) */
-        #debugView { position: absolute; top: 10px; left: 10px; border: 1px solid var(--accent); width: 80px; height: 80px; background: #000; z-index: 5; opacity: 0.5; }
-
-        /* HUD Layer */
-        .hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        
-        /* Reticle (Target) */
-        .reticle-box {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 240px; height: 240px; border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); /* Focus effect */
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .reticle-corner { position: absolute; width: 20px; height: 20px; border: 3px solid #fff; transition: 0.3s; }
-        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
-        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
-        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
-        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
-
-        .scan-line {
-            position: absolute; width: 100%; height: 2px; top: 50%;
-            background: var(--accent); box-shadow: 0 0 15px var(--accent);
-            animation: scan 2s infinite ease-in-out; opacity: 0;
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-color: #2563eb;
+            --border-color: #e2e8f0;
+            --success-color: #059669;
         }
 
-        /* Status Pill */
-        .status {
-            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
-            padding: 10px 24px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; font-weight: 600; letter-spacing: 1px; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 10px; white-space: nowrap;
-        }
-        .status-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
+        * { box-sizing: border-box; }
 
-        /* Locked State */
-        .hud.locked .reticle-box { width: 200px; height: 200px; border-color: var(--success); }
-        .hud.locked .reticle-corner { border-color: var(--success); }
-        .hud.locked .status-dot { background: var(--success); animation: none; }
-        .hud.searching .scan-line { opacity: 1; }
-
-        /* Result Bottom Sheet */
-        .sheet {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--overlay); backdrop-filter: blur(20px);
-            border-radius: 30px 30px 0 0; padding: 40px 30px; box-sizing: border-box;
-            transform: translateY(110%); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 50; text-align: center; color: white; border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .sheet.show { transform: translateY(0); }
-        .sheet::before {
-            content: ''; position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 50px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px;
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        .icon-area {
-            width: 72px; height: 72px; background: rgba(56, 189, 248, 0.1);
-            border: 1px solid var(--accent); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
         }
-        .icon-area svg { width: 32px; height: 32px; fill: var(--accent); }
 
-        .data-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .data-value { font-size: 1.25rem; font-weight: 700; margin: 8px 0 30px 0; word-break: break-all; line-height: 1.4; }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
 
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Scanner Area */
+        #scanner-viewport {
+            width: 100%;
+            height: 200px;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+        /* Scanner Line - ปรับให้ดูซอฟต์ลง */
+        .scan-guide {
+            position: absolute;
+            top: 50%; left: 10%; width: 80%; height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            animation: moveLine 3s infinite ease-in-out;
+        }
+
+        @keyframes moveLine {
+            0%, 100% { transform: translateY(-60px); }
+            50% { transform: translateY(60px); }
+        }
+
+        /* Input Section */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background-color: #fcfcfc;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #fff;
+        }
+
+        /* Buttons */
         .btn {
-            width: 100%; padding: 18px; border: none; border-radius: 16px;
-            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn-primary { background: var(--accent); color: #0f172a; }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-ghost { background: transparent; color: #94a3b8; margin-top: 10px; }
 
-        @keyframes scan { 0%, 100% { top: 10%; opacity: 0; } 50% { top: 90%; opacity: 1; } }
-        @keyframes blink { 50% { opacity: 0.4; } }
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .btn-success { background: var(--success-color); color: white; display: none; margin-top: 16px; }
+
+        /* Result Area */
+        .result-panel {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .data-label { color: var(--text-muted); }
+
+        .checkbox-group {
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.875rem;
+        }
+
+        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
     </style>
 </head>
 <body>
 
-    <video id="video" playsinline></video>
-    <canvas id="debugView"></canvas>
-
-    <div class="hud searching" id="hud">
-        <div class="reticle-box">
-            <div class="reticle-corner tl"></div><div class="reticle-corner tr"></div>
-            <div class="reticle-corner bl"></div><div class="reticle-corner br"></div>
-            <div class="scan-line"></div>
-        </div>
-        
-        <div class="status">
-            <div class="status-dot"></div>
-            <span id="statusText">ACQUIRING SIGNAL...</span>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>ตรวจสอบใบเสร็จ</h1>
+        <p class="subtitle">สแกนบาร์โค้ดเพื่อยืนยันความถูกต้อง</p>
     </div>
 
-    <div class="sheet" id="resultSheet">
-        <div class="icon-area" id="resIcon">
-            </div>
-        <div class="data-label" id="resLabel">DETECTED DATA</div>
-        <div class="data-value" id="resContent">...</div>
-        
-        <button class="btn btn-primary" id="btnAction" onclick="performAction()">OPEN</button>
-        <button class="btn btn-ghost" onclick="reset()">SCAN AGAIN</button>
+    <div id="scanner-viewport">
+        <div class="scan-guide"></div>
+        <video id="video"></video>
     </div>
+
+    <div class="form-group">
+        <label>Serial Number (15 หลัก)</label>
+        <input type="text" id="serialInput" placeholder="กรอกเลขหรือใช้เครื่องสแกน" autofocus>
+    </div>
+
+    <button class="btn btn-primary" onclick="checkData()">
+        <i class="fa-solid fa-magnifying-glass"></i> ตรวจสอบ
+    </button>
+
+    <div id="resultArea" class="result-panel">
+        <div class="data-row">
+            <span class="data-label">ผู้ออก:</span>
+            <span id="res_payee" style="font-weight:600;"></span>
+        </div>
+        <div class="data-row" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+            <span class="data-label">วันที่:</span>
+            <span id="res_date" style="font-weight:600;"></span>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="acceptCheck">
+            <label for="acceptCheck" style="margin-bottom:0; font-weight:400; cursor:pointer;">ข้อมูลถูกต้องและออกโดยทางร้านจริง</label>
+        </div>
+
+        <button id="finalBtn" class="btn btn-success" onclick="uploadToSheets()">
+            <i class="fa-solid fa-check"></i> บันทึกลงฐานข้อมูลกลาง
+        </button>
+    </div>
+</div>
 
 <script>
-    const video = document.getElementById('video');
-    const debugCanvas = document.getElementById('debugView');
-    const dCtx = debugCanvas.getContext('2d');
-    const hud = document.getElementById('hud');
-    const statusText = document.getElementById('statusText');
+    const PREFIX = 'invoice_v1_';
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxwRaH5vKBfilViioecImsMP4uWxLbBL3BqoUckZGwJ4YlKJ3r814iWtR1K4zH54_m4Cw/exec'; // เปลี่ยน URL ที่นี่
+    let invoiceInfo = null;
 
-    let isScanning = true;
-    let foundPayload = "";
+    // รองรับเครื่องสแกนภายนอก (เมื่อกด Enter)
+    document.getElementById('serialInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            checkData();
+        }
+    });
 
-    // Config for processing
-    const PROC_SIZE = 200; // Smaller size = faster processing
+    // กล้องสแกน
+    const reader = new ZXing.BrowserMultiFormatReader();
+    reader.decodeFromVideoDevice(null, 'video', (res, err) => {
+        if (res) {
+            document.getElementById('serialInput').value = res.text;
+            checkData();
+        }
+    });
 
-    async function init() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            video.srcObject = stream; video.play();
-            requestAnimationFrame(processFrame);
-        } catch(e) { console.error("Camera access denied"); }
-    }
-
-    function processFrame() {
-        if(!isScanning) return;
-
-        if(video.readyState === 4) {
-            // 1. Image Capture & Resize
-            debugCanvas.width = PROC_SIZE; debugCanvas.height = PROC_SIZE;
-            
-            // Center crop strategy
-            const vw = video.videoWidth;
-            const vh = video.videoHeight;
-            const minDim = Math.min(vw, vh);
-            const sx = (vw - minDim) / 2;
-            const sy = (vh - minDim) / 2;
-            
-            dCtx.drawImage(video, sx, sy, minDim, minDim, 0, 0, PROC_SIZE, PROC_SIZE);
-            const frame = dCtx.getImageData(0, 0, PROC_SIZE, PROC_SIZE);
-            const data = frame.data;
-
-            // 2. Anchor Detection (Find Big Black Dot)
-            // Note: Assuming white background code for best contrast
-            let darkPixelCount = 0;
-            let sumX = 0, sumY = 0;
-
-            for(let i=0; i<data.length; i+=4) {
-                const r = data[i];
-                const g = data[i+1];
-                const b = data[i+2];
-                const luma = 0.299*r + 0.587*g + 0.114*b;
-                
-                // Thresholding: Dark < 100
-                if(luma < 100) {
-                    const idx = i/4;
-                    const x = idx % PROC_SIZE;
-                    const y = Math.floor(idx / PROC_SIZE);
-                    
-                    // Simple logic: We look for a cluster in the center
-                    const distFromCenter = Math.sqrt((x - PROC_SIZE/2)**2 + (y - PROC_SIZE/2)**2);
-                    
-                    if(distFromCenter < 40) { // Look within center area
-                        darkPixelCount++;
-                        sumX += x;
-                        sumY += y;
-                    }
-                }
-            }
-
-            // 3. Logic: If detected dense dark area in center (Anchor)
-            const density = darkPixelCount / (Math.PI * 30 * 30); // Approx
-            
-            if(darkPixelCount > 200) {
-                const cx = sumX / darkPixelCount;
-                const cy = sumY / darkPixelCount;
-                
-                // Visual Feedback
-                hud.classList.remove('searching');
-                hud.classList.add('locked');
-                statusText.innerText = "ANCHOR LOCKED";
-
-                // 4. Orientation Detection (North Star)
-                // We scan a ring around the center to find the "North Star" dot
-                const scanRadius = 33; // ~100px relative to 600px canvas -> scaled to 200px
-                let minLuma = 255;
-                let northAngle = 0;
-
-                for(let a=0; a<Math.PI*2; a+=0.1) {
-                    const tx = Math.floor(cx + scanRadius * Math.cos(a));
-                    const ty = Math.floor(cy + scanRadius * Math.sin(a));
-                    
-                    const idx = (ty * PROC_SIZE + tx) * 4;
-                    if(idx >= 0 && idx < data.length) {
-                        const l = 0.299*data[idx] + 0.587*data[idx+1] + 0.114*data[idx+2];
-                        if(l < minLuma) {
-                            minLuma = l;
-                            northAngle = a;
-                        }
-                    }
-                }
-
-                if(minLuma < 100) {
-                    // Found North Star -> We have Orientation!
-                    statusText.innerText = "DECODING STREAM...";
-                    decodeData(dCtx, cx, cy, northAngle);
-                }
-            } else {
-                hud.classList.remove('locked');
-                hud.classList.add('searching');
-                statusText.innerText = "ALIGN CENTER DOT";
+    function checkData() {
+        const serial = document.getElementById('serialInput').value.trim();
+        const area = document.getElementById('resultArea');
+        const btn = document.getElementById('finalBtn');
+        
+        let match = null;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith(PREFIX)) {
+                const d = JSON.parse(localStorage.getItem(key));
+                if (d.serial === serial) { match = d; break; }
             }
         }
-        requestAnimationFrame(processFrame);
-    }
 
-    function decodeData(ctx, cx, cy, offsetAngle) {
-        // This is the core reader logic matching the generator
-        // Scale factors: Generator 600px -> Scanner 200px (Ratio ~3)
-        // Generator Ring 1 Start: 150px -> Scanner ~50px
-        
-        let radius = 50; 
-        let angle = 0;
-        let bits = "";
-        
-        // Retrieve pixel data again to be safe
-        const frame = ctx.getImageData(0,0,PROC_SIZE,PROC_SIZE).data;
-
-        // Try reading 100 bits
-        for(let i=0; i<100; i++) {
-             // Calculate sampling position
-             const readAngle = angle + offsetAngle;
-             const tx = Math.floor(cx + radius * Math.cos(readAngle));
-             const ty = Math.floor(cy + radius * Math.sin(readAngle));
-
-             // Read Luma
-             const idx = (ty * PROC_SIZE + tx) * 4;
-             let val = '0';
-             if(idx >= 0 && idx < frame.length) {
-                 const l = 0.299*frame[idx] + 0.587*frame[idx+1] + 0.114*frame[idx+2];
-                 if(l < 120) val = '1'; // Dark dot = 1
-             }
-             bits += val;
-
-             // Increment Step (Matching generator)
-             // Generator: 36 bits per ring
-             const angleStep = (Math.PI * 2) / 36;
-             angle += angleStep;
-             
-             if(angle >= Math.PI*2 - 0.1) {
-                 angle = 0;
-                 radius += 11.6; // (35px / 3)
-             }
-        }
-
-        // Binary to Text
-        let text = "";
-        for(let i=0; i<bits.length; i+=8) {
-            const b = bits.substr(i,8);
-            const c = parseInt(b, 2);
-            if(c > 32 && c < 127) text += String.fromCharCode(c);
-        }
-
-        // Basic Validation (Check for protocols)
-        if(text.includes("http") || text.includes("WIFI") || text.includes("MECARD") || text.length > 5) {
-            // Found valid data!
-            displayResult(text);
-        }
-    }
-
-    // Icons SVG
-    const ICONS = {
-        wifi: '<svg viewBox="0 0 24 24"><path d="M12.01 21.49L23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"/></svg>',
-        link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
-        user: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
-        text: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>'
-    };
-
-    function displayResult(payload) {
-        if(!isScanning) return;
-        isScanning = false;
-        foundPayload = payload;
-        
-        if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
-
-        const iconEl = document.getElementById('resIcon');
-        const labelEl = document.getElementById('resLabel');
-        const contentEl = document.getElementById('resContent');
-        const btn = document.getElementById('btnAction');
-
-        // Parser
-        if(payload.startsWith("WIFI:")) {
-            iconEl.innerHTML = ICONS.wifi;
-            labelEl.innerText = "Wi-Fi Network";
-            contentEl.innerText = payload.match(/S:(.*?);/)[1];
-            btn.innerText = "Connect";
-        } else if (payload.startsWith("http")) {
-            iconEl.innerHTML = ICONS.link;
-            labelEl.innerText = "Website";
-            contentEl.innerText = payload;
-            btn.innerText = "Open Link";
-        } else if (payload.startsWith("MECARD:")) {
-            iconEl.innerHTML = ICONS.user;
-            labelEl.innerText = "Contact Card";
-            const name = payload.match(/N:(.*?);/)[1];
-            contentEl.innerText = name;
-            btn.innerText = "Save Contact";
+        if (match) {
+            invoiceInfo = match;
+            document.getElementById('res_payee').innerText = match.payeeName;
+            document.getElementById('res_date').innerText = match.invoiceDate;
+            area.style.display = 'block';
+            btn.style.display = 'flex';
         } else {
-            iconEl.innerHTML = ICONS.text;
-            labelEl.innerText = "Raw Data";
-            contentEl.innerText = payload;
-            btn.innerText = "Copy Text";
-        }
-
-        document.getElementById('resultSheet').classList.add('show');
-    }
-
-    function performAction() {
-        if(foundPayload.startsWith("http")) window.open(foundPayload, '_blank');
-        else if(foundPayload.startsWith("tel:")) window.location.href = foundPayload;
-        else {
-            navigator.clipboard.writeText(foundPayload);
-            alert("Copied to clipboard");
+            alert('ไม่พบข้อมูลในระบบ');
+            area.style.display = 'none';
         }
     }
 
-    function reset() {
-        document.getElementById('resultSheet').classList.remove('show');
-        isScanning = true;
-        statusText.innerText = "ACQUIRING SIGNAL...";
-        hud.classList.remove('locked');
-        hud.classList.add('searching');
-        requestAnimationFrame(processFrame);
-    }
+    async function uploadToSheets() {
+        if (!document.getElementById('acceptCheck').checked) {
+            alert('กรุณายืนยันความถูกต้องก่อนบันทึก');
+            return;
+        }
 
-    init();
+        const b = document.getElementById('finalBtn');
+        b.disabled = true;
+        b.innerText = 'กำลังบันทึก...';
+
+        const data = {
+            serial: invoiceInfo.serial,
+            invoiceNumber: invoiceInfo.invoiceNumber,
+            payeeName: invoiceInfo.payeeName,
+            invoiceDate: invoiceInfo.invoiceDate,
+            verifiedStatus: 'VERIFIED',
+            verifiedAt: new Date().toLocaleString('th-TH')
+        };
+
+        try {
+            await fetch(SHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            alert('บันทึกสำเร็จ');
+            location.reload();
+        } catch (e) {
+            alert('เกิดข้อผิดพลาด');
+            b.disabled = false;
+        }
+    }
 </script>
+
 </body>
 </html>
