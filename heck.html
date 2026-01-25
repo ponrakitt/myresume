@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตรวจสอบใบเสร็จ | Direct Sheet Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --success: #059669; --border: #e2e8f0; }
+        body { font-family: 'Sarabun', sans-serif; background: #f8fafc; color: var(--primary); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
+        .container { width: 100%; max-width: 480px; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; border: 1px solid var(--border); }
+        h1 { font-size: 1.4rem; margin-bottom: 25px; font-weight: 700; }
+        .input-group { margin-bottom: 20px; }
+        input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 1rem; text-align: center; background: #fff; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .btn-check { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 700; cursor: pointer; font-size: 1rem; }
+        
+        .result-box { margin-top: 25px; padding: 20px; border-radius: 12px; background: #f1f5f9; border: 1px solid var(--border); display: none; text-align: left; }
+        .data-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        .label { color: #64748b; }
+        .val { font-weight: 600; }
+        .badge { display: inline-block; padding: 4px 12px; background: var(--success); color: white; border-radius: 20px; font-size: 0.75rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <i class="fa-solid fa-clipboard-check" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+    <h1>ตรวจสอบสถานะใบเสร็จ</h1>
+    
+    <div class="input-group">
+        <input type="text" id="searchInput" placeholder="กรอกเลข Serial หรือ เลขที่ใบเสร็จ">
+    </div>
+    
+    <button class="btn-check" id="btnSearch" onclick="verifyFromSheet()">
+        <i class="fa-solid fa-magnifying-glass"></i> ตรวจสอบ
+    </button>
+
+    <div id="resultBox" class="result-box">
+        <div style="text-align:center;"><span class="badge"><i class="fa-solid fa-check"></i> ข้อมูลถูกต้อง</span></div>
+        <div class="data-item"><span class="label">เลขที่ใบเสร็จ:</span> <span class="val" id="d-inv"></span></div>
+        <div class="data-item"><span class="label">ชื่อลูกค้า:</span> <span class="val" id="d-cust"></span></div>
+        <div class="data-item"><span class="label">ยอดเงิน:</span> <span class="val" id="d-amt"></span></div>
+        <div class="data-item"><span class="label">วันที่บันทึก:</span> <span class="val" id="d-date"></span></div>
+        <div class="data-item" style="border:none;"><span class="label">สถานะ:</span> <span class="val" id="d-status"></span></div>
+    </div>
+</div>
+
+<script>
+    // 1. ตั้งค่าข้อมูล Sheet ของคุณที่นี่
+    const SHEET_ID = '10um5JEv0R0DVvWn_NBn7ebfhzMe4fXUMtzpGiXph9T0'; // *** เปลี่ยนเป็น ID ของคุณ ***
+    const SHEET_NAME = 'ใบเสร็จที่ออกแล้ว'; // *** เปลี่ยนชื่อ Tab ให้ตรง ***
+
+    // ลิงก์สำหรับดึงข้อมูลเป็น CSV
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/10um5JEv0R0DVvWn_NBn7ebfhzMe4fXUMtzpGiXph9T0/edit?gid=0#gid=0`;
+
+    async function verifyFromSheet() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (!query) return alert("กรุณาระบุข้อมูลเพื่อค้นหา");
+
+        const btn = document.getElementById('btnSearch');
+        const box = document.getElementById('resultBox');
+        
+        btn.disabled = true;
+        btn.innerHTML = "กำลังค้นหา...";
+        box.style.display = "none";
+
+        try {
+            const response = await fetch(CSV_URL);
+            const csvText = await response.text();
+            
+            // แปลง CSV เป็น Array (รองรับการจัดการฟันหนูใน CSV เบื้องต้น)
+            const rows = csvText.split('\n').map(row => 
+                row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, ''))
+            );
+
+            // เริ่มค้นหา (ข้ามแถวที่ 0 ซึ่งเป็น Header)
+            let found = null;
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                // ค้นหาในคอลัมน์ A (Serial - index 0) หรือ B (Inv No - index 1) หรือ D (Name - index 3)
+                if (row[0].toLowerCase() === query || row[1].toLowerCase() === query || row[3].toLowerCase().includes(query)) {
+                    found = row;
+                    break;
+                }
+            }
+
+            if (found) {
+                document.getElementById('d-inv').innerText = found[1];
+                document.getElementById('d-cust').innerText = found[3];
+                document.getElementById('d-amt').innerText = found[4] + " บาท";
+                document.getElementById('d-date').innerText = found[6];
+                document.getElementById('d-status').innerText = found[5];
+                box.style.display = "block";
+            } else {
+                alert("❌ ไม่พบข้อมูลในฐานข้อมูล");
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("ไม่สามารถเข้าถึงข้อมูลได้ (ตรวจสอบสิทธิ์การแชร์ Sheet)");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ตรวจสอบ';
+        }
+    }
+</script>
+
+</body>
+</html>
