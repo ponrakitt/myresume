@@ -3,88 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบลงทะเบียนใบเสร็จ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>ระบบลงทะเบียนข้อมูลใบเสร็จ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://unpkg.com/@zxing/library@latest"></script>
+    
     <style>
-        :root { --primary: #334155; --accent: #2563eb; --bg: #f8fafc; --border: #e2e8f0; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .card { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .step-label { font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        h1 { font-size: 1.4rem; margin: 0 0 20px 0; }
-        
-        /* สแกนเนอร์ */
-        #scanner-area { width: 100%; height: 200px; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 20px; }
-        video { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
-        
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
-        input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
-        input[readonly] { background: #f1f5f9; color: #64748b; }
-        
-        .btn { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; }
-        .btn-blue { background: var(--accent); color: white; }
-        .btn-green { background: #059669; color: white; display: none; }
-        
-        .form-section { border-top: 2px dashed var(--border); margin-top: 25px; padding-top: 20px; display: none; }
-        .check-row { display: flex; align-items: center; gap: 10px; margin: 20px 0; font-size: 0.9rem; cursor: pointer; }
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-color: #2563eb;
+            --border-color: #e2e8f0;
+            --success-color: #059669;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
+        .subtitle { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Scanner Area */
+        #scanner-viewport {
+            width: 100%;
+            height: 180px;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .scan-guide {
+            position: absolute;
+            top: 50%; left: 10%; width: 80%; height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            animation: moveLine 3s infinite ease-in-out;
+        }
+        @keyframes moveLine {
+            0%, 100% { transform: translateY(-50px); }
+            50% { transform: translateY(50px); }
+        }
+
+        /* Form Group */
+        .form-group { margin-bottom: 16px; text-align: left; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #fcfcfc;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 20px 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="step1-ui">
-        <span class="step-label">Step 1: Scan</span>
-        <h1>สแกนบาร์โค้ดใบเสร็จ</h1>
-        <div id="scanner-area"><video id="video"></video></div>
-        <div class="input-group">
-            <label>เลข Serial (15 หลัก)</label>
-            <input type="text" id="serialInput" placeholder="สแกนหรือกรอกที่นี่..." autofocus>
-        </div>
-        <button class="btn btn-blue" onclick="processScan()">เริ่มกรอกข้อมูล <i class="fa-solid fa-arrow-right"></i></button>
+<div class="container">
+    <div class="header">
+        <h1>ลงทะเบียนใบเสร็จ</h1>
+        <p class="subtitle">สแกนบาร์โค้ดและกรอกข้อมูลเพื่อบันทึกเข้า Google Sheets</p>
     </div>
 
-    <div id="formSection" class="form-section">
-        <span class="step-label">Step 2 & 3: Fill & Confirm</span>
-        <h1>ข้อมูลใบเสร็จ</h1>
-        
-        <div class="input-group">
-            <label>เลขที่ใบเสร็จ</label>
-            <input type="text" id="invNo" readonly>
+    <div id="scanner-viewport">
+        <div class="scan-guide"></div>
+        <video id="video"></video>
+    </div>
+
+    <form id="verifyForm">
+        <div class="form-group">
+            <label><i class="fa-solid fa-barcode"></i> Serial Number</label>
+            <input type="text" id="serialInput" placeholder="สแกนบาร์โค้ดหรือกรอกเลข 15 หลัก" required autofocus>
         </div>
-        <div class="input-group">
-            <label>ชื่อลูกค้า</label>
+
+        <div class="form-group">
+            <label><i class="fa-solid fa-file-invoice"></i> เลขที่ใบเสร็จ (Invoice No.)</label>
+            <input type="text" id="invNo" placeholder="ระบุเลขที่ใบเสร็จ" required>
+        </div>
+
+        <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> ชื่อลูกค้า</label>
             <input type="text" id="custName" placeholder="ระบุชื่อลูกค้า">
         </div>
-        <div class="input-group">
-            <label>ยอดรวมทั้งสิ้น (บาท)</label>
-            <input type="number" id="totalAmt" step="0.01">
+
+        <div class="form-group">
+            <label><i class="fa-solid fa-baht-sign"></i> ยอดรวมทั้งสิ้น</label>
+            <input type="number" id="totalAmt" step="0.01" placeholder="0.00" required>
         </div>
-        <div class="input-group">
-            <label>ผู้ตรวจสอบ</label>
-            <input type="text" id="payee" readonly>
+
+        <div class="form-group">
+            <label><i class="fa-solid fa-user-check"></i> ผู้ตรวจสอบ/ผู้ออกใบเสร็จ</label>
+            <input type="text" id="payee" placeholder="ระบุชื่อผู้บันทึก" required>
         </div>
 
         <label class="check-row">
-            <input type="checkbox" id="confirmCheck">
-            <span>ยืนยันข้อมูลถูกต้องและออกโดยร้านจริง</span>
+            <input type="checkbox" id="confirmCheck" required>
+            <span>ยืนยันข้อมูลถูกต้องและต้องการบันทึกลงระบบจริง</span>
         </label>
 
-        <button class="btn btn-green" id="submitBtn" onclick="submitToSheet()">
-            <i class="fa-solid fa-check-circle"></i> ยืนยันและบันทึกลง Sheets
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกลง Google Sheets
         </button>
-    </div>
+    </form>
 </div>
 
 <script>
-    const PREFIX = 'invoice_v1_';
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHfoUbsa0rZfBu0W0HXKU9PXj7L6NG4vY2NvWVn_7mfQICwz-b2z_UOFH0UCAS1Li9Pw/exec'; // *** เปลี่ยนตรงนี้ ***
-    let currentReceipt = null;
+    // URL ที่คุณให้มา
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbHfoUbsa0rZfBu0W0HXKU9PXj7L6NG4vY2NvWVn_7mfQICwz-b2z_UOFH0UCAS1Li9Pw/exec';
 
-    // รองรับการสแกนด้วยเครื่อง (กด Enter อัตโนมัติ)
-    document.getElementById('serialInput').addEventListener('keypress', e => {
-        if (e.key === 'Enter') processScan();
+    // รองรับเครื่องสแกนบาร์โค้ดแบบต่อแยก
+    document.getElementById('serialInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('invNo').focus(); // สแกนเสร็จข้ามไปช่องถัดไป
+        }
     });
 
     // กล้องสแกน
@@ -92,76 +190,48 @@
     codeReader.decodeFromVideoDevice(null, 'video', (res) => {
         if (res) {
             document.getElementById('serialInput').value = res.text;
-            processScan();
+            document.getElementById('invNo').focus();
+            if (navigator.vibrate) navigator.vibrate(50);
         }
     });
 
-    // ขั้นตอนที่ 1 & 2: สแกนแล้วดึงข้อมูลมาให้กรอก
-    function processScan() {
-        const serial = document.getElementById('serialInput').value.trim();
-        let data = null;
-
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith(PREFIX)) {
-                const item = JSON.parse(localStorage.getItem(key));
-                if (item.serial === serial) { data = item; break; }
-            }
-        }
-
-        if (data) {
-            currentReceipt = data;
-            document.getElementById('invNo').value = data.invoiceNumber;
-            document.getElementById('custName').value = data.customerName || '';
-            document.getElementById('payee').value = data.payeeName || '';
-            
-            // คำนวณยอดรวม
-            const total = (data.items || []).reduce((s, it) => s + (it.quantity * it.price), 0);
-            document.getElementById('totalAmt').value = total.toFixed(2);
-
-            document.getElementById('formSection').style.display = 'block';
-            document.getElementById('submitBtn').style.display = 'flex';
-            document.getElementById('step1-ui').style.opacity = '0.5';
-            document.getElementById('serialInput').disabled = true;
-        } else {
-            alert('ไม่พบข้อมูล Serial นี้ในระบบ');
-        }
-    }
-
-    // ขั้นตอนที่ 3: ยืนยันและบันทึก
-    async function submitToSheet() {
-        if (!document.getElementById('confirmCheck').checked) {
-            alert('กรุณาติ๊กยืนยันข้อมูลก่อน');
-            return;
-        }
-
+    // บันทึกข้อมูล
+    document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
 
-        const finalData = {
-            serial: currentReceipt.serial,
-            invoiceNumber: document.getElementById('invNo').value,
-            payeeName: document.getElementById('payee').value,
-            customerName: document.getElementById('custName').value,
+        const payload = {
+            serial: document.getElementById('serialInput').value.trim(),
+            invoiceNumber: document.getElementById('invNo').value.trim(),
+            customerName: document.getElementById('custName').value.trim() || '-',
             totalAmount: document.getElementById('totalAmt').value,
-            verifiedStatus: 'VERIFIED',
+            payeeName: document.getElementById('payee').value.trim(),
+            verifiedStatus: 'REGISTERED',
             verifiedAt: new Date().toLocaleString('th-TH')
         };
 
         try {
+            // ส่งข้อมูลไปยัง Google Sheets
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify(finalData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            alert('บันทึกข้อมูลเรียบร้อยแล้ว');
-            location.reload();
-        } catch (e) {
-            alert('เชื่อมต่อล้มเหลว');
+            
+            alert('✅ บันทึกข้อมูลเข้า Google Sheets เรียบร้อยแล้ว!');
+            document.getElementById('verifyForm').reset();
+            document.getElementById('serialInput').focus();
+        } catch (error) {
+            alert('❌ เกิดข้อผิดพลาดในการบันทึก กรุณาตรวจสอบการเชื่อมต่อ');
+        } finally {
             btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> บันทึกลง Google Sheets';
         }
-    }
+    });
 </script>
 </body>
 </html>
