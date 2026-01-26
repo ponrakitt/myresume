@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <title>งือออ... หลงทางเหรอออ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;700&family=Mali:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #a855f7;
-            --bg: #0f172a;
+            --primary-pink: #FFB7B2;
+            --soft-white: #FFF9F9;
+            --heart-red: #FF6B6B;
+            --text-gray: #707070;
+            --pastel-yellow: #FFFFD1;
         }
 
         * {
@@ -19,106 +21,120 @@
         }
 
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 20% 35%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 65%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            background-color: var(--soft-white);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Sarabun', sans-serif;
-            color: white;
+            font-family: 'Mali', cursive;
+            color: var(--text-gray);
             overflow: hidden;
+            background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
         .container {
             text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50px;
+            box-shadow: 0 20px 50px rgba(255, 183, 178, 0.3);
+            max-width: 500px;
+            border: 8px solid #FFE4E1;
             position: relative;
-            z-index: 1;
         }
 
-        .error-code {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(8rem, 20vw, 15rem);
-            font-weight: 900;
+        .error-num {
+            font-size: 8rem;
+            font-weight: 700;
+            color: var(--primary-pink);
             line-height: 1;
-            background: linear-gradient(to bottom, #fff 30%, rgba(255,255,255,0.1));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: -20px;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            background: var(--primary);
-            filter: blur(120px);
-            opacity: 0.3;
-            z-index: -1;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: bounceIn 1s ease-out;
         }
 
         h1 {
             font-size: 1.8rem;
-            margin-bottom: 1rem;
-            letter-spacing: 1px;
+            color: var(--heart-red);
+            margin-bottom: 15px;
         }
 
-        p {
-            color: #94a3b8;
-            margin-bottom: 2.5rem;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
+        .description {
+            font-size: 1.1rem;
             line-height: 1.6;
+            margin-bottom: 25px;
+            font-family: 'Sarabun', sans-serif;
+            color: #888;
         }
 
-        .btn-home {
-            position: relative;
+        .chat-box {
+            background-color: var(--pastel-yellow);
+            padding: 18px;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            border: 2px dashed #FFD1DC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-1deg);
+        }
+
+        .btn-back {
             display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            padding: 15px 45px;
+            background: linear-gradient(to right, #FFB7B2, #FF9AA2);
             color: white;
             text-decoration: none;
-            border-radius: 12px;
+            border-radius: 35px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s transform;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 0px #FF858F;
         }
 
-        .btn-home:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+        .btn-back:hover {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0px #FF858F;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            h1 { font-size: 1.4rem; }
-            p { padding: 0 20px; }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="glow"></div>
-        <div class="error-code">404</div>
-        <h1>โอ๊ะ! หลงทางหรือเปล่าครับ?</h1>
-        <p>หน้าที่คุณกำลังตามหาอาจจะถูกย้ายไปที่อื่น หรือไม่มีอยู่จริงในจักรวาลนี้ ลองกลับไปตั้งหลักที่หน้าแรกดูนะครับ</p>
-        <a href="/" class="btn-home">กลับหน้าหลัก</a>
-    </div>
+        <div class="error-num">404</div>
+        <h1>โอ๊ะโอ... หลงทางเหรอออ</h1>
+        
+        <p class="description">
+            หน้านี้สงสัยจะโดนลักพาตัวไปแล้วงับ <br>
+            หาเท่าไหร่ก็ไม่เจอเลยยย งืออออ
+        </p>
 
+        <div class="chat-box">
+            <span>งั้นถ้ามีปัญหา ลองคุยกับแชททางซ้ายมั้ยยย อีกแป๊บเดียวเดี๋ยวน้องก็ขึ้นมาแล้วนะ!</span>
+        </div>
+
+        <a href="/" class="btn-back">กลับหน้าแรกกันเถอะ!</a>
+    </div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6927a795f7575c1961e05edd/1jb1ed81p';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 </html>
