@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 20% 35%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 65%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sarabun', sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .error-code {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(8rem, 20vw, 15rem);
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(to bottom, #fff 30%, rgba(255,255,255,0.1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: -20px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(120px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 2.5rem;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .btn-home {
+            position: relative;
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s transform;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.4rem; }
+            p { padding: 0 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="glow"></div>
+        <div class="error-code">404</div>
+        <h1>โอ๊ะ! หลงทางหรือเปล่าครับ?</h1>
+        <p>หน้าที่คุณกำลังตามหาอาจจะถูกย้ายไปที่อื่น หรือไม่มีอยู่จริงในจักรวาลนี้ ลองกลับไปตั้งหลักที่หน้าแรกดูนะครับ</p>
+        <a href="/" class="btn-home">กลับหน้าหลัก</a>
+    </div>
+
+</body>
+</html>
