@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE REFUND TERMINAL | INTEGRATED SYSTEM</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body { font-family: 'Space Grotesk', 'Inter', sans-serif; background: #020408; color: #cbd5e1; min-height: 100vh; }
+        .terminal-container { background: rgba(13, 17, 23, 0.95); border: 1px solid #30363d; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .input-std { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #fff; padding: 12px; width: 100%; transition: 0.2s; font-size: 14px; }
+        .input-std:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+        .section-header { border-left: 3px solid #3b82f6; padding-left: 12px; margin-bottom: 20px; }
+        .section-title { font-size: 12px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.1em; }
+        .status-badge { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 8px; border-radius: 4px; }
+        .legal-box { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(51, 65, 85, 0.5); padding: 16px; border-radius: 8px; font-size: 11px; color: #94a3b8; line-height: 1.6; }
+        .hidden { display: none; }
+        .btn-primary { background: #1d4ed8; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; }
+        .btn-primary:hover { background: #1e40af; }
+        .btn-primary:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center py-10 px-4">
+
+    <div class="max-w-3xl w-full terminal-container p-8 md:p-12 relative">
+        
+        <div class="flex justify-between items-start mb-10 border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-tight uppercase">Refund Operations Terminal</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Authorized Access Only | Secure Node: TH-BKK-09</p>
+            </div>
+            <div class="text-right">
+                <div class="inline-block px-3 py-1 border border-green-900 bg-green-900/20 text-green-500 text-[10px] font-bold rounded tracking-wider">
+                    SYSTEM ONLINE
+                </div>
+            </div>
+        </div>
+
+        <div id="view-form" class="space-y-8 animate-fade-in">
+            <form id="refundForm" class="space-y-8">
+                
+                <div>
+                    <div class="section-header">
+                        <p class="section-title">I. Identity Verification Protocol</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="relative">
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">National ID (13 Digits)</label>
+                            <input type="text" id="citizenId" maxlength="13" class="input-std font-mono tracking-wider" placeholder="XXXXXXXXXXXXX" oninput="validateID(this.value)">
+                            <span id="idStatus" class="absolute right-3 top-8 text-[10px] font-bold text-slate-600">REQUIRED</span>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">Full Legal Name</label>
+                            <input type="text" id="fullName" class="input-std" placeholder="AS PER ID CARD">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-header">
+                        <p class="section-title">II. Settlement Coordinates</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">Target Bank</label>
+                            <select id="bank" class="input-std">
+                                <option>KBANK (Kasikorn)</option>
+                                <option>SCB (Siam Commercial)</option>
+                                <option>BBL (Bangkok Bank)</option>
+                                <option>KTB (Krungthai)</option>
+                                <option>TTB (TMBThanachart)</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">Account Number</label>
+                            <input type="text" id="accNumber" class="input-std font-mono" placeholder="NO DASHES">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-header">
+                        <p class="section-title">III. Transaction Specifics</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">Order Reference</label>
+                            <input type="text" id="orderId" class="input-std" placeholder="ORD-XXXX-XXXX">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase mb-1">Claim Amount (THB)</label>
+                            <input type="number" id="amount" class="input-std font-bold text-blue-400" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase mb-1">Detailed Reason for Claim</label>
+                        <textarea id="reason" rows="3" class="input-std" placeholder="Provide comprehensive details..."></textarea>
+                    </div>
+                </div>
+
+                <div class="legal-box">
+                    <strong class="text-white block mb-2 uppercase tracking-wide">Terms of Discretionary Settlement</strong>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li>The merchant retains absolute and sole discretion regarding the final refund amount.</li>
+                        <li>Processing fees, administrative costs, and technical audit charges may be deducted from the principal amount without prior notice.</li>
+                        <li>Identification data will be masked (Redacted) for storage security compliance.</li>
+                        <li>By submitting, you waive the right to dispute the final settlement calculation.</li>
+                    </ul>
+                    <div class="mt-4 flex items-center gap-3">
+                        <input type="checkbox" id="agree" class="w-4 h-4 rounded bg-slate-800 border-slate-600" onchange="checkForm()">
+                        <span class="text-xs text-slate-300">I ACKNOWLEDGE AND ACCEPT THESE TERMS.</span>
+                    </div>
+                </div>
+
+                <button type="button" id="submitBtn" onclick="processRefund()" disabled class="w-full btn-primary py-4 rounded text-sm">
+                    AWAITING VALIDATION
+                </button>
+            </form>
+            
+            <div class="text-center mt-6 border-t border-slate-800 pt-6">
+                <button onclick="switchView('track')" class="text-xs text-slate-500 hover:text-white uppercase tracking-widest border-b border-transparent hover:border-white pb-1 transition">
+                    Already have a Ref ID? Track Status
+                </button>
+            </div>
+        </div>
+
+        <div id="view-success" class="hidden text-center py-10">
+            <h2 class="text-2xl font-bold text-white mb-2 uppercase">Submission Logged</h2>
+            <p class="text-slate-500 text-xs mb-8">Data encrypted and transmitted to central node.</p>
+
+            <div class="bg-slate-900 border border-slate-700 p-6 rounded-lg mb-8 text-left">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">Transaction Reference</p>
+                <p id="successRef" class="text-xl font-mono text-blue-500 font-bold mb-4"></p>
+                
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">Direct Tracking Link</p>
+                <div class="flex gap-2">
+                    <input type="text" id="smartLink" readonly class="input-std text-xs text-slate-400">
+                    <button onclick="copyLink()" class="px-4 bg-slate-800 text-white text-xs font-bold rounded border border-slate-600 hover:bg-slate-700">COPY</button>
+                </div>
+            </div>
+
+            <div class="flex gap-4 justify-center">
+                <button onclick="generatePDF()" class="px-6 py-3 bg-white text-black font-bold text-xs uppercase rounded hover:bg-gray-200">Download Receipt (PDF)</button>
+                <button onclick="location.reload()" class="px-6 py-3 bg-transparent border border-slate-600 text-slate-400 font-bold text-xs uppercase rounded hover:text-white">Close Terminal</button>
+            </div>
+        </div>
+
+        <div id="view-track" class="hidden">
+            <div class="mb-8">
+                <label class="block text-[10px] text-slate-500 uppercase mb-2">Enter Reference ID</label>
+                <div class="flex gap-2">
+                    <input type="text" id="trackInput" class="input-std font-mono text-center uppercase text-lg" placeholder="REF-XXXXXXXX">
+                    <button onclick="trackStatus()" class="px-6 bg-blue-700 text-white font-bold rounded hover:bg-blue-600">SEARCH</button>
+                </div>
+            </div>
+
+            <div id="trackResult" class="hidden bg-slate-900 border border-slate-800 p-8 rounded-lg text-center">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-4">Current Status</p>
+                <h3 id="statusDisplay" class="text-2xl font-bold text-white mb-8 tracking-wide"></h3>
+                
+                <div class="border-t border-slate-800 pt-8 mt-8">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">Final Settlement Amount</p>
+                    <p id="amountDisplay" class="text-4xl font-bold text-blue-500 tracking-tight">THB 0.00</p>
+                    <p class="text-[9px] text-slate-600 uppercase mt-2 italic">Calculated after discretionary fees</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <button onclick="switchView('form')" class="text-xs text-slate-500 hover:text-white uppercase underline">Return to Submission Form</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ---------------- CONFIGURATION ----------------
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-2nNd5Jh2dYEok-ZMK4g63csjE8BS6RkSqNtUJL7WgiRvvcdbJspWV9hHeOHButgQSw/exec'; 
+        // ----------------------------------------------
+
+        let isIdValid = false;
+
+        // Auto-Track Logic
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            if (ref) {
+                switchView('track');
+                document.getElementById('trackInput').value = ref;
+                trackStatus();
+            }
+        };
+
+        function switchView(viewName) {
+            document.getElementById('view-form').classList.add('hidden');
+            document.getElementById('view-success').classList.add('hidden');
+            document.getElementById('view-track').classList.add('hidden');
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+        }
+
+        // ID Checksum Validator
+        function validateID(id) {
+            const status = document.getElementById('idStatus');
+            if (id.length !== 13 || isNaN(id)) {
+                status.innerText = "INVALID FORMAT";
+                status.className = "absolute right-3 top-8 text-[10px] font-bold text-red-500";
+                isIdValid = false;
+                checkForm();
+                return;
+            }
+            let sum = 0;
+            for (let i = 0; i < 12; i++) { sum += parseFloat(id.charAt(i)) * (13 - i); }
+            let check = (11 - (sum % 11)) % 10;
+            
+            if (check === parseFloat(id.charAt(12))) {
+                status.innerText = "VERIFIED";
+                status.className = "absolute right-3 top-8 text-[10px] font-bold text-green-500";
+                isIdValid = true;
+            } else {
+                status.innerText = "CHECKSUM FAIL";
+                status.className = "absolute right-3 top-8 text-[10px] font-bold text-red-500";
+                isIdValid = false;
+            }
+            checkForm();
+        }
+
+        function checkForm() {
+            const btn = document.getElementById('submitBtn');
+            const agreed = document.getElementById('agree').checked;
+            
+            if (isIdValid && agreed) {
+                btn.disabled = false;
+                btn.innerText = "INITIATE SECURE TRANSMISSION";
+            } else {
+                btn.disabled = true;
+                btn.innerText = isIdValid ? "ACCEPT TERMS TO PROCEED" : "AWAITING ID VALIDATION";
+            }
+        }
+
+        async function processRefund() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "ENCRYPTING & UPLOADING...";
+
+            // Data Masking
+            const rawId = document.getElementById('citizenId').value;
+            const maskedId = "XXXXXXXXX" + rawId.slice(-4);
+            const refId = 'REF-' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
+
+            const payload = {
+                action: 'insert',
+                refId: refId,
+                citizenId: maskedId,
+                fullName: document.getElementById('fullName').value,
+                bank: document.getElementById('bank').value,
+                accNumber: document.getElementById('accNumber').value,
+                orderId: document.getElementById('orderId').value,
+                amount: document.getElementById('amount').value,
+                reason: document.getElementById('reason').value
+            };
+
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+
+                // Success Handling
+                document.getElementById('successRef').innerText = refId;
+                document.getElementById('smartLink').value = window.location.origin + window.location.pathname + '?ref=' + refId;
+                switchView('success');
+            } catch (error) {
+                alert("Transmission Error. Please retry.");
+                btn.disabled = false;
+                btn.innerText = "INITIATE SECURE TRANSMISSION";
+            }
+        }
+
+        async function trackStatus() {
+            const refId = document.getElementById('trackInput').value;
+            const resultDiv = document.getElementById('trackResult');
+            const statusTxt = document.getElementById('statusDisplay');
+            const amountTxt = document.getElementById('amountDisplay');
+
+            if (!refId) return;
+
+            resultDiv.classList.remove('hidden');
+            statusTxt.innerText = "CONNECTING TO NODE...";
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'track', refId: refId })
+                });
+                const data = await response.json();
+
+                statusTxt.innerText = data.status.toUpperCase();
+                
+                // Logic แสดงสีตามสถานะ
+                statusTxt.className = "text-2xl font-bold mb-8 tracking-wide " + 
+                    (data.status === 'Pending Audit' ? 'text-yellow-500' : 
+                     data.status === 'Completed' ? 'text-green-500' : 'text-white');
+
+                // แสดงยอดเงินคืนจริง (ถ้ามี)
+                if (data.amount && data.amount !== "") {
+                    amountTxt.innerText = "THB " + parseFloat(data.amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+                } else {
+                    amountTxt.innerText = "CALCULATING...";
+                }
+
+            } catch (e) {
+                statusTxt.innerText = "ERROR / NOT FOUND";
+            }
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const ref = document.getElementById('successRef').innerText;
+            const date = new Date().toLocaleString();
+            
+            // Professional Bank Header
+            doc.setFillColor(13, 17, 23); // Dark BG Header
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.text("OFFICIAL RECEIPT", 15, 25);
+            doc.setFontSize(10);
+            doc.text("SECURE REFUND TERMINAL", 15, 33);
+
+            // Details
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.text(`DATE: ${date}`, 15, 50);
+            doc.text(`REF ID: ${ref}`, 15, 55);
+            doc.line(15, 60, 195, 60);
+
+            doc.text(`ORDER ID: ${document.getElementById('orderId').value}`, 15, 70);
+            doc.text(`CLAIM AMOUNT: ${document.getElementById('amount').value} THB`, 15, 76);
+            doc.text(`ID (MASKED): XXXXXXXXX${document.getElementById('citizenId').value.slice(-4)}`, 15, 82);
+            doc.text(`BANK: ${document.getElementById('bank').value}`, 15, 88);
+
+            // Warning Box
+            doc.setDrawColor(0);
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, 100, 180, 30, 'F');
+            doc.setFontSize(8);
+            doc.text("IMPORTANT NOTICE:", 20, 110);
+            doc.text("The final refund amount is subject to merchant discretion and may include deductions", 20, 115);
+            doc.text("for processing fees. This document serves as proof of submission only.", 20, 120);
+
+            doc.save(`Receipt_${ref}.pdf`);
+        }
+
+        function copyLink() {
+            const copyText = document.getElementById("smartLink");
+            copyText.select();
+            document.execCommand("copy");
+            alert("LINK COPIED");
+        }
+    </script>
+</body>
+</html>
