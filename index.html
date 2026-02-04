@@ -2,1975 +2,894 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ponrkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ponrakit | Digital Profile</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-    
-    *, *::before, *::after { 
-      box-sizing: border-box; 
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-color: #050505;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --glass-blur: 20px;
+      --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
-    body, html {
-      margin: 0; 
-      padding: 0; 
-      min-height: 100vh;
-      min-height: 100dvh; /* Dynamic viewport height for mobile */
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background-color: var(--bg-color);
       color: #ffffff;
+      min-height: 100vh;
+      /* Support for mobile dynamic viewport */
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       overflow-x: hidden;
-      position: relative;
-      /* Safe area support for iPhone */
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-      z-index: -2;
-    }
-
-    /* Animated background particles */
-    .bg-particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .particle {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      animation: float 20s infinite linear;
-    }
-
-    @keyframes float {
-      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-    }
-    
-    .container {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(35px);
-      border-radius: 40px;
-      padding: 48px 32px;
-      max-width: 900px;
-      width: 95vw;
-      box-shadow: 
-        0 25px 80px rgba(0,0,0,0.4),
-        0 0 0 1px rgba(255,255,255,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.2);
-      text-align: center;
-      user-select: none;
-      margin: 20px 10px;
-      position: relative;
-      overflow: hidden;
-      transform: translateY(0);
-      animation: slideUp 0.8s ease-out;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, #ff6b9d, #4ecdc4, #45b7d1, transparent);
-      animation: shimmer 4s infinite;
-      border-radius: 40px 40px 0 0;
-    }
-
-    .container::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
-      border-radius: 40px;
-      pointer-events: none;
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
-    h1 {
-      font-weight: 800;
-      font-size: 2.8rem;
-      margin-bottom: 40px;
-      background: linear-gradient(135deg, #fff 0%, #e0e7ff 25%, #ff6b9d 50%, #4ecdc4 75%, #45b7d1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-      position: relative;
-    }
-
-    h1::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 3px;
-      background: linear-gradient(90deg, #ff6b9d, #4ecdc4, #45b7d1);
-      border-radius: 2px;
-    }
-    
-    .btn-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 18px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      text-decoration: none;
-      color: #fff;
-      border: none;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      min-height: 60px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition: left 0.6s;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-    
-    .btn:hover {
-      transform: translateY(-6px) scale(1.03);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .btn:active {
-      transform: translateY(-2px) scale(1.01);
-    }
-    
-    .btn-instagram { 
-      background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
-      box-shadow: 0 8px 25px rgba(221, 42, 123, 0.3);
-    }
-    .btn-facebook { 
-      background: linear-gradient(135deg, #1877f2, #42a5f5);
-      box-shadow: 0 8px 25px rgba(24, 119, 242, 0.3);
-    }
-    .btn-linkedin { 
-      background: linear-gradient(135deg, #0077b5, #00a0dc);
-      box-shadow: 0 8px 25px rgba(0, 119, 181, 0.3);
-    }
-    .btn-github { 
-      background: linear-gradient(135deg, #333333, #24292e);
-      box-shadow: 0 8px 25px rgba(51, 51, 51, 0.3);
-    }
-    .btn-resume { 
-      background: linear-gradient(135deg, #28a745, #20c997);
-      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-    }
-    .btn-phone { 
-      background: linear-gradient(135deg, #17a2b8, #20c997);
-      box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
-    }
-    .btn-email { 
-      background: linear-gradient(135deg, #ff9900, #ff6b35);
-      box-shadow: 0 8px 25px rgba(255, 153, 0, 0.3);
-    }
-    .btn-more { 
-      background: linear-gradient(135deg, #ff6f61, #ff8a65);
-      box-shadow: 0 8px 25px rgba(255, 111, 97, 0.3);
-    }
-    .btn-work-experience { 
-      background: linear-gradient(135deg, #1e90ff, #1c7ed6);
-      box-shadow: 0 8px 25px rgba(30, 144, 255, 0.3);
-    }
-    .btn-website { 
-      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-    }
-
-    .btn i {
-      font-size: 1.1em;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-      flex-shrink: 0;
-    }
-
-    .btn-instagram i { color: #fff; }
-    .btn-facebook i { color: #fff; }
-    .btn-linkedin i { color: #fff; }
-    .btn-github i { color: #fff; }
-    .btn-resume i { color: #fff; }
-    .btn-phone i { color: #fff; }
-    .btn-email i { color: #fff; }
-    .btn-more i { color: #fff; }
-    .btn-work-experience i { color: #fff; }
-    .btn-website i { color: #fff; }
-
-    #datetime {
-      margin-top: 40px;
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 500;
-      padding: 16px 24px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      backdrop-filter: blur(15px);
-      display: inline-block;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #datetime::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: left 0.8s;
-    }
-
-    #datetime:hover::before {
-      left: 100%;
-    }
-
-    footer {
-      margin-top: 32px;
       padding: 20px;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.8);
-      text-align: center;
-      width: 100%;
-      font-weight: 500;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      /* Prevent Text Selection & Native Mobile Behaviors */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .modal {
+    /* Subtle Animated Background Mesh */
+    .bg-glow {
       position: fixed;
-      top: 0; 
-      left: 0;
-      width: 100vw; 
-      height: 100vh;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      padding: 16px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1;
+      background: 
+        radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
     }
-    
-    .modal.active { 
-      display: flex; 
-      opacity: 1;
-    }
-    
-    .modal-content {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #fff;
-      border-radius: 30px;
-      padding: 32px;
-      max-width: 1000px;
+
+    .container {
       width: 100%;
+      max-width: 600px;
       text-align: center;
-      overflow-y: auto;
-      max-height: 90vh;
-      box-shadow: 
-        0 30px 100px rgba(0,0,0,0.6),
-        0 0 0 1px rgba(255,255,255,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.2);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      position: relative;
-      transform: scale(0.8);
-      transition: transform 0.3s ease;
-      backdrop-filter: blur(20px);
+      animation: fadeIn 1s ease-out;
+      /* Add padding bottom on mobile to avoid overlap with controls */
+      padding-bottom: 100px;
     }
 
-    .modal.active .modal-content {
-      transform: scale(1);
+    @media (min-width: 600px) {
+      .container { padding-bottom: 0; }
     }
 
-    .modal-content h2 {
-      font-size: 2rem;
-      margin-bottom: 32px;
-      background: linear-gradient(135deg, #fff 0%, #e0e7ff 25%, #ff6b9d 50%, #4ecdc4 75%, #45b7d1 100%);
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header { margin-bottom: 40px; }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+      background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 800;
-      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
     }
 
-    .project-grid {
+    .subtitle {
+      color: var(--text-secondary);
+      font-weight: 400;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .btn-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 12px;
-      margin: 24px 0;
+      margin-bottom: 30px;
     }
 
-    .project-btn {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border: none;
+    /* Minimal Button Style */
+    .btn {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all 0.4s ease;
-      font-weight: 600;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      text-align: left;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      backdrop-filter: blur(var(--glass-blur));
       position: relative;
       overflow: hidden;
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      backdrop-filter: blur(10px);
-    }
-
-    .project-btn:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .project-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: left 0.5s;
-    }
-
-    .project-btn:hover::before {
-      left: 100%;
-    }
-
-    #pdfPreview {
-      margin-top: 24px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      background: #000;
-    }
-
-    #pdfFrame {
-      border: none;
-      border-radius: 12px;
-      width: 100%;
-      height: 400px;
-    }
-    
-    .modal-close {
-      background: linear-gradient(135deg, #ff6f61, #ff8a65);
-      color: #fff;
-      font-weight: 600;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 20px;
-      margin-top: 24px;
+      /* Better touch target */
+      min-height: 56px; 
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
     }
 
-    .modal-close:hover {
+    .btn:hover, .btn:active {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 111, 97, 0.3);
     }
 
-    .audio-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      bottom: max(20px, env(safe-area-inset-bottom) + 10px);
-      right: max(20px, env(safe-area-inset-right) + 10px);
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
+    .btn i {
+      width: 24px;
+      font-size: 1.1rem;
+      margin-right: 15px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    .btn::after {
+      content: '\f054';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 24px;
+      font-size: 0.7rem;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: var(--transition);
+    }
+
+    .btn:hover::after, .btn:active::after {
+      opacity: 0.5;
+      transform: translateX(0);
+    }
+
+    /* Featured Buttons */
+    .btn-primary { background: #ffffff; color: #000; border: none; }
+    .btn-primary i { color: #000; }
+    .btn-primary:hover, .btn-primary:active { background: #f0f0f0; color: #000; }
+
+    .meta-info {
       display: flex;
+      flex-direction: column;
+      gap: 15px;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: white;
-      font-size: 18px;
-      backdrop-filter: blur(20px);
-      transition: all 0.4s ease;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      z-index: 1000;
-    }
-
-    .audio-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(1.1);
-      box-shadow: 0 15px 45px rgba(0,0,0,0.4);
-    }
-
-    /* Desktop styles */
-    @media (min-width: 769px) {
-      .container {
-        padding: 48px 32px;
-        width: 90vw;
-      }
-      
-      h1 {
-        font-size: 2.8rem;
-        margin-bottom: 48px;
-      }
-      
-      .btn-grid {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 20px;
-      }
-      
-      .btn {
-        padding: 18px 24px;
-        font-size: 0.95rem;
-        gap: 12px;
-      }
-      
-      .btn:hover {
-        transform: translateY(-8px) scale(1.05);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      }
-      
-      #datetime {
-        font-size: 0.9rem;
-        padding: 12px 20px;
-      }
-      
-      footer {
-        margin-top: 32px;
-        padding: 20px;
-        font-size: 14px;
-      }
-      
-      .modal-content {
-        padding: 40px;
-      }
-      
-      .modal-content h2 {
-        font-size: 2.2rem;
-        margin-bottom: 32px;
-      }
-      
-      .project-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 16px;
-        margin: 32px 0;
-      }
-      
-      .project-btn {
-        padding: 20px;
-        font-size: 0.9rem;
-      }
-      
-      #pdfFrame {
-        height: 500px;
-      }
-      
-      .modal-close {
-        padding: 14px 32px;
-        margin-top: 32px;
-        font-size: 1rem;
-      }
-      
-      .audio-toggle {
-        bottom: 30px;
-        right: 30px;
-        width: 56px;
-        height: 56px;
-        font-size: 20px;
-      }
-
-      .btn-update-log {
-        display: flex;
-      }
-
-      .work-experience-item {
-        padding: 32px;
-      }
-
-      .work-header h3 {
-        font-size: 1.6rem;
-      }
-
-      .work-details p {
-        font-size: 1rem;
-      }
-
-      .work-details li {
-        font-size: 0.95rem;
-      }
-
-      #wanfloristFrame {
-        height: 600px;
-      }
-
-      .btn-purpose {
-        top: 30px;
-        right: 100px;
-        width: 64px;
-        height: 64px;
-        font-size: 20px;
-      }
-    }
-
-    /* Tablet styles */
-    @media (min-width: 481px) and (max-width: 768px) {
-      .container {
-        padding: 32px 20px;
-        width: 92vw;
-        border-radius: 28px;
-      }
-      
-      h1 {
-        font-size: 2.4rem;
-        margin-bottom: 36px;
-      }
-      
-      .btn-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-      }
-      
-      .btn {
-        padding: 16px 14px;
-        font-size: 0.9rem;
-        gap: 10px;
-        min-height: 52px;
-      }
-      
-      #datetime {
-        font-size: 0.85rem;
-        padding: 14px 18px;
-      }
-      
-      footer {
-        margin-top: 28px;
-        padding: 16px;
-        font-size: 12px;
-      }
-      
-      .modal-content {
-        padding: 24px;
-        border-radius: 24px;
-      }
-      
-      .modal-content h2 {
-        font-size: 1.6rem;
-        margin-bottom: 24px;
-      }
-      
-      .project-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-        margin: 24px 0;
-      }
-      
-      .project-btn {
-        padding: 18px;
-        font-size: 0.9rem;
-      }
-      
-      #pdfFrame {
-        height: 350px;
-      }
-      
-      .modal-close {
-        padding: 12px 24px;
-        margin-top: 24px;
-        font-size: 0.9rem;
-      }
-      
-      .audio-toggle {
-        bottom: 20px;
-        right: 20px;
-        width: 48px;
-        height: 48px;
-        font-size: 16px;
-      }
-
-      .btn-purpose {
-        top: 20px;
-        right: 80px;
-        width: 56px;
-        height: 56px;
-        font-size: 18px;
-      }
-
-      .work-experience-item {
-        padding: 24px;
-        border-radius: 20px;
-      }
-
-      .work-header h3 {
-        font-size: 1.4rem;
-      }
-
-      .work-details p {
-        font-size: 0.95rem;
-      }
-
-      .work-details li {
-        font-size: 0.9rem;
-      }
-
-      #wanfloristFrame {
-        height: 400px;
-      }
-    }
-
-    /* Small mobile adjustments */
-    @media (max-width: 480px) {
-      h1 { 
-        font-size: 2rem; 
-        margin-bottom: 24px;
-      }
-      .container { 
-        padding: 20px 12px; 
-        margin: 8px 4px;
-        width: 96vw;
-        max-width: 100vw;
-        border-radius: 20px;
-      }
-      .btn-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-      .btn {
-        font-size: 0.9rem;
-        padding: 16px 12px;
-        min-height: 52px;
-        border-radius: 16px;
-        gap: 8px;
-      }
-      .btn i {
-        font-size: 1.1em;
-      }
-      #datetime {
-        font-size: 0.85rem;
-        padding: 12px 16px;
-        margin-top: 24px;
-      }
-      footer {
-        font-size: 12px;
-        padding: 12px;
-        margin-top: 20px;
-      }
-      .audio-toggle {
-        bottom: 15px;
-        right: 15px;
-        width: 48px;
-        height: 48px;
-        font-size: 16px;
-      }
-      .modal-content {
-        padding: 20px 16px;
-        border-radius: 20px;
-        font-size: 0.95rem;
-        margin: 10px;
-      }
-      .modal-content h2 {
-        font-size: 1.4rem;
-        margin-bottom: 20px;
-      }
-      .project-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin: 16px 0;
-      }
-      .project-btn {
-        padding: 16px;
-        font-size: 0.9rem;
-        border-radius: 14px;
-      }
-      #pdfFrame {
-        height: 250px;
-      }
-      .modal-close, .btn-switch-lang {
-        font-size: 0.9rem;
-        padding: 10px 16px;
-        border-radius: 12px;
-      }
-      .btn-update-log {
-        display: none;
-      }
-
-      .work-experience-item {
-        padding: 20px;
-        border-radius: 16px;
-      }
-
-      .work-header {
-        gap: 10px;
-        margin-bottom: 18px;
-        padding-bottom: 14px;
-      }
-
-      .work-header i {
-        font-size: 1.8rem;
-      }
-
-      .work-header h3 {
-        font-size: 1.3rem;
-      }
-
-      .work-details p {
-        font-size: 0.9rem;
-        margin: 8px 0;
-      }
-
-      .work-details ul {
-        margin: 8px 0 16px 18px;
-      }
-
-      .work-details li {
-        font-size: 0.85rem;
-        margin: 6px 0;
-        line-height: 1.4;
-      }
-
-      .work-actions .btn {
-        padding: 12px 24px;
-        font-size: 0.9rem;
-        border-radius: 14px;
-      }
-
-      #wanfloristFrame {
-        height: 280px;
-      }
-
-      .btn-purpose {
-        top: 15px;
-        right: 15px;
-        width: 48px;
-        height: 48px;
-        font-size: 16px;
-      }
-    }
-
-    /* Very small screens */
-    @media (max-width: 360px) {
-      .container {
-        width: 98vw;
-        margin: 6px 2px;
-        padding: 16px 8px;
-        border-radius: 16px;
-      }
-      h1 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-      }
-      .btn {
-        font-size: 0.85rem;
-        padding: 14px 10px;
-        min-height: 48px;
-        border-radius: 14px;
-        gap: 6px;
-      }
-      .btn i {
-        font-size: 1em;
-      }
-      #datetime {
-        font-size: 0.8rem;
-        padding: 10px 12px;
-        margin-top: 20px;
-      }
-      footer {
-        font-size: 11px;
-        padding: 10px;
-        margin-top: 16px;
-      }
-      .audio-toggle {
-        bottom: 12px;
-        right: 12px;
-        width: 44px;
-        height: 44px;
-        font-size: 14px;
-      }
-      .modal-content {
-        padding: 16px 12px;
-        border-radius: 16px;
-        font-size: 0.9rem;
-        margin: 8px;
-      }
-      .modal-content h2 {
-        font-size: 1.2rem;
-        margin-bottom: 16px;
-      }
-      .project-grid {
-        gap: 10px;
-        margin: 12px 0;
-      }
-      .project-btn {
-        padding: 14px;
-        font-size: 0.85rem;
-        border-radius: 12px;
-      }
-      #pdfFrame {
-        height: 200px;
-      }
-      .modal-close, .btn-switch-lang {
-        font-size: 0.85rem;
-        padding: 8px 12px;
-        border-radius: 10px;
-      }
-      .work-experience-item {
-        padding: 16px;
-        border-radius: 14px;
-      }
-      .work-header {
-        gap: 8px;
-        margin-bottom: 14px;
-        padding-bottom: 12px;
-      }
-      .work-header i {
-        font-size: 1.5rem;
-      }
-      .work-header h3 {
-        font-size: 1.1rem;
-      }
-      .work-details p {
-        font-size: 0.85rem;
-        margin: 6px 0;
-      }
-      .work-details ul {
-        margin: 6px 0 12px 16px;
-      }
-      .work-details li {
-        font-size: 0.8rem;
-        margin: 4px 0;
-      }
-      .work-actions .btn {
-        padding: 10px 20px;
-        font-size: 0.85rem;
-        border-radius: 12px;
-      }
-      #wanfloristFrame {
-        height: 220px;
-      }
-      .btn-purpose {
-        top: 12px;
-        right: 12px;
-        width: 44px;
-        height: 44px;
-        font-size: 14px;
-      }
-    }
-
-    /* Update Log Button */
-    .btn-update-log {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 12px 24px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: none; /* Hidden by default, shown in desktop media query */
-      align-items: center;
-      gap: 8px;
-      z-index: 1000;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-    }
-
-    .btn-update-log:hover {
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
-    }
-
-    .btn-update-log i {
-      font-size: 1.1em;
-    }
-
-    /* Update list styling */
-    .update-list {
-      list-style: none;
-      padding: 0;
-      margin: 24px 0;
-      text-align: left;
-    }
-
-    .update-list li {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      border-left: 3px solid #667eea;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .update-list li strong {
-      color: #a3b3ff;
-    }
-
-    /* Work Experience Styling */
-    .work-experience-grid {
-      display: grid;
-      gap: 24px;
-      margin: 24px 0;
-    }
-
-    .work-experience-item {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    .work-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .work-header i {
-      font-size: 2rem;
-      color: #ff6b6b;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    }
-
-    .work-header h3 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin: 0;
-      background: linear-gradient(135deg, #fff, #e0e7ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .work-details {
-      margin-bottom: 20px;
-    }
-
-    .work-details p {
-      margin: 8px 0;
-      line-height: 1.6;
-    }
-
-    .work-details strong {
-      color: #a3b3ff;
-      font-weight: 600;
-    }
-
-    .work-details ul {
-      margin: 8px 0 16px 20px;
-      padding: 0;
-    }
-
-    .work-details li {
-      margin: 6px 0;
-      line-height: 1.5;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .work-actions {
-      display: flex;
-      justify-content: center;
       margin-top: 20px;
     }
 
-    .work-actions .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      font-size: 0.9rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.3s ease;
+    #datetime {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      background: var(--card-bg);
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--card-border);
     }
 
-    .work-actions .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+    footer {
+      margin-top: 40px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.02em;
     }
 
-    .btn-purpose {
+    /* Modal Styles Refined */
+    .modal {
       position: fixed;
-      top: 30px;
-      right: 100px;
-      top: max(30px, env(safe-area-inset-top) + 10px);
-      right: max(100px, env(safe-area-inset-right) + 20px);
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 50%;
-      width: 64px;
-      height: 64px;
-      display: flex;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      display: none;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      color: white;
-      font-size: 20px;
-      backdrop-filter: blur(20px);
-      transition: all 0.4s ease;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-      z-index: 1001;
-      font-weight: 600;
-      gap: 8px;
-      padding: 0 18px 0 12px;
-      overflow: visible;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 10000;
+      padding: 15px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-    .btn-purpose:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(1.1);
-      box-shadow: 0 15px 45px rgba(255, 111, 97, 0.4);
+
+    .modal.active { display: flex; opacity: 1; }
+
+    .modal-content {
+      background: #0f0f0f;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 28px;
+      border: 1px solid var(--card-border);
+      padding: 30px 25px;
+      position: relative;
+      transform: scale(0.95);
+      transition: var(--transition);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
     }
-    .btn-purpose i {
-      font-size: 1.3em;
-      margin-right: 6px;
+
+    .modal.active .modal-content { transform: scale(1); }
+
+    .modal-content h2 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    .btn-purpose span {
-      display: none;
-    }
-    .btn-switch-lang {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
+
+    .modal-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: var(--card-bg);
       border: none;
-      border-radius: 12px;
-      padding: 10px 18px;
-      font-weight: 500;
-      font-size: 0.9rem;
+      color: #fff;
+      width: 32px; height: 32px;
+      border-radius: 50%;
       cursor: pointer;
-      margin-top: 12px;
-      transition: all 0.3s;
-      display: inline-flex;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+
+    /* Project List in Modal */
+    .project-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .project-item {
+      text-align: left;
+      padding: 15px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .project-item:active { background: rgba(255,255,255,0.06); }
+    .project-item strong { display: block; font-size: 0.95rem; margin-bottom: 4px; }
+    .project-item small { color: var(--text-secondary); font-size: 0.8rem; }
+
+    /* Scrollable Experience List Styles */
+    #experienceList {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 480px; 
+      overflow-y: auto;
+      padding-right: 8px; 
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+
+    /* Controls */
+    .floating-controls {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      gap: 12px;
+      z-index: 999;
+    }
+
+    .f-btn {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+
+    .f-btn:hover, .f-btn:active { background: #fff; color: #000; }
+
+    /* Volume Control Group Style */
+    .volume-container {
+      display: flex;
       align-items: center;
-      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 0 10px 0 15px; 
+      backdrop-filter: blur(10px);
+      height: 50px;
+      transition: var(--transition);
+      gap: 2px;
     }
 
-    /* Landscape orientation adjustments */
-    @media (max-height: 500px) and (orientation: landscape) {
-      .container {
-        padding: 20px 24px;
-        margin: 10px;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-      }
-      
-      .btn-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 20px;
-      }
-      
-      .btn {
-        padding: 12px 8px;
-        font-size: 0.8rem;
-        min-height: 44px;
-      }
-      
-      #datetime {
-        margin-top: 20px;
-        padding: 8px 16px;
-        font-size: 0.8rem;
-      }
-      
-      footer {
-        margin-top: 16px;
-        padding: 8px 16px;
-        font-size: 11px;
-      }
-      
-      .audio-toggle {
-        bottom: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
-      }
-      
-      .btn-purpose {
-        top: 10px;
-        right: 60px;
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
-      }
+    .volume-container .f-btn {
+        border: none;
+        background: transparent;
+        backdrop-filter: none;
+        width: 36px; 
+        height: 36px;
+    }
+    
+    .volume-container .f-btn:hover, .volume-container .f-btn:active {
+        background: transparent;
+        color: #fff;
+        transform: scale(1.1); 
     }
 
-    /* Touch-friendly improvements */
-    @media (hover: none) and (pointer: coarse) {
-      .btn {
-        min-height: 56px;
-        padding: 16px 20px;
-      }
-      
-      .btn:hover {
-        transform: none;
-      }
-      
-      .btn:active {
-        transform: scale(0.98);
-      }
-      
-      .project-btn {
-        min-height: 60px;
-        padding: 20px;
-      }
-      
-      .project-btn:hover {
-        transform: none;
-      }
-      
-      .project-btn:active {
-        transform: scale(0.98);
-      }
-      
-      .audio-toggle {
-        min-width: 56px;
-        min-height: 56px;
-      }
-      
-      .btn-purpose {
-        min-width: 56px;
-        min-height: 56px;
-      }
-      
-      .modal-close {
-        min-height: 48px;
-        padding: 12px 24px;
-      }
+    /* Volume Slider Customization */
+    #volumeSlider {
+        width: 50px;
+        height: 4px;
+        -webkit-appearance: none;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        outline: none;
+        margin-right: 5px;
+        cursor: pointer;
     }
-    .btn-switch-lang:hover {
-      background: linear-gradient(135deg, #764ba2, #667eea);
-      transform: scale(1.05);
+
+    #volumeSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px; /* Larger hit area for mobile */
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
     }
+
+    /* Responsive Adjustments */
+    @media (min-width: 600px) {
+      .btn-grid { grid-template-columns: repeat(2, 1fr); }
+      /* Removed .btn-full to make grid uniform */
+    }
+
     @media (max-width: 480px) {
-      .btn-purpose {
+      h1 { font-size: 2rem; }
+      .subtitle { font-size: 0.85rem; }
+      .container { padding: 20px; padding-bottom: 90px; }
+      
+      .floating-controls {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        justify-content: space-between;
+      }
+      
+      .volume-container {
+        flex-grow: 1;
+        justify-content: space-between;
+      }
+      
+      #volumeSlider { width: 100%; margin: 0 8px; }
+      
+      .modal-content { width: 95%; max-height: 80vh; padding: 25px 20px; }
+    }
+
+    /* Maintenance Style */
+    #maintenanceModal .modal-content { text-align: center; }
+    #countdown { font-size: 2rem; font-weight: 800; margin: 20px 0; color: #fff; }
+
+    /* Event Widget (Customizable) */
+    #event-widget {
+      position: fixed;
+      top: 20px; right: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 50px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      cursor: default;
+    }
+    
+    @media (max-width: 480px) {
+      #event-widget {
         top: 15px;
-        right: 10px;
-        width: 44px;
-        height: 44px;
-        font-size: 14px;
-        padding: 0 10px 0 8px;
+        right: 15px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
       }
-      .btn-purpose span {
-        display: none;
-      }
+    }
+
+    #event-icon { animation: pulse 2s infinite; }
+    @keyframes pulse { 
+      0% { transform: scale(1); opacity: 1; } 
+      50% { transform: scale(1.2); opacity: 0.8; } 
+      100% { transform: scale(1); opacity: 1; } 
     }
   </style>
 </head>
-<body oncontextmenu="return false" onkeydown="return disableKey(event)" onselectstart="return false">
-  <!-- Purpose Button (outside main container) -->
-  <button class="btn-purpose" id="btnPurpose" title="วัตถุประสงค์">
-    <i class="fas fa-bullseye"></i>
-  </button>
-  <!-- Animated background particles -->
-  <div class="bg-particles" id="particles"></div>
+<body oncontextmenu="return false" onkeydown="return disableKey(event)" onselectstart="return false" ondragstart="return false">
+
+  <div class="bg-glow"></div>
 
   <div class="container">
-    <h1>Ponrakit Leartrungvichian</h1>
+    <header>
+      <div class="subtitle">Digital Portfolio</div>
+      <h1>Ponrakit L.</h1>
+      <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 12px; font-weight: 300;">
+        If you have any problems, feel free to ask in the chat on the left. I will answer you.
+      </p>
+    </header>
+
     <div class="btn-grid">
-      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" class="btn btn-instagram">
-        <i class="fab fa-instagram"></i> Instagram
+      <!-- Removed btn-primary class -->
+      <button class="btn" id="btnMore">
+        <i class="fas fa-rocket"></i> My Projects
+      </button>
+      
+      <a href="Ponrakit_resume.pdf" download class="btn">
+        <i class="fas fa-file-pdf"></i> Resume
       </a>
-      <a href="https://www.facebook.com/Ponrakitts" target="_blank" class="btn btn-facebook">
-        <i class="fab fa-facebook-f"></i> Facebook
-      </a>
-      <a href="https://www.linkedin.com/in/ponrakitt-leartrungvichian-470712207/" target="_blank" class="btn btn-linkedin">
-        <i class="fab fa-linkedin-in"></i> LinkedIn
-      </a>
-      <a href="https://github.com/ponrakitt" target="_blank" class="btn btn-github">
+      
+      <button class="btn" id="btnWorkExperience">
+        <i class="fas fa-briefcase"></i> Experience
+      </button>
+
+      <a href="https://github.com/ponrakitt" target="_blank" class="btn">
         <i class="fab fa-github"></i> GitHub
       </a>
-      <a href="Ponrakit_resume.pdf" download class="btn btn-resume">
-        <i class="fas fa-file-alt"></i> Resume
+
+      <a href="https://www.linkedin.com/in/ponrakitt-leartrungvichian-470712207/" target="_blank" class="btn">
+        <i class="fab fa-linkedin"></i> LinkedIn
       </a>
-      <a href="tel:0615144432" class="btn btn-phone">
-        <i class="fas fa-phone-alt"></i> โทร
+
+      <a href="https://www.instagram.com/o_ak.k.k.k.k.k.k.k.k.k.k.k.k.k/" target="_blank" class="btn">
+        <i class="fab fa-instagram"></i> Instagram
       </a>
-      <a href="mailto:ponrakitt@outlook.co.th" class="btn btn-email">
+
+      <!-- Updated WeChat Button to use showPopup -->
+      <button class="btn" onclick="showPopup('WeChat Contact', 'My WeChat ID is: <strong style=\'color:#fff; font-size:1.1em;\'>myoaky</strong>', 'myoaky')">
+        <i class="fab fa-weixin"></i> WeChat
+      </button>
+
+      <a href="mailto:ponrakitt@outlook.co.th" class="btn">
         <i class="fas fa-envelope"></i> Email
       </a>
-      <button class="btn btn-more" id="btnMore">
-        <i class="fas fa-folder-open"></i> My Projects
-      </button>
-      <button class="btn btn-work-experience" id="btnWorkExperience">
-        <i class="fas fa-briefcase"></i> Work Experience
-      </button>
-      <a href="Tracking.html" target="_blank" class="btn btn-manage-apps">
-        <i class="fas fa-tasks"></i> Manage Applications
-      </a>
     </div>
-    <div id="datetime"></div>
+
+    <div class="meta-info">
+      <div id="datetime">Loading...</div>
+    </div>
+
+    <!-- Increased font size by ~60% (from 0.425rem to 0.7rem) -->
+    <footer style="font-size: 0.7rem; margin-top: 35px;">
+      <div style="margin-bottom: 8px; color: rgba(255,255,255,0.4);">
+        &copy; 2025 Ponrakit. All rights reserved.
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span>Designed and developed by <strong>ponrakit</strong></span>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+          <span>Powered by</span>
+          <!-- Scaled up Gemini Sparkle Logo (SVG) -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C13.5 8 16 10.5 22 12C16 13.5 13.5 16 12 22C10.5 16 8 13.5 2 12C8 10.5 10.5 8 12 2Z" fill="url(#geminiGradient)"/>
+            <defs>
+              <linearGradient id="geminiGradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#4E95FF"/>
+                <stop offset="100%" stop-color="#B27CFF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <!-- Gemini Text -->
+          <span style="background: linear-gradient(90deg, #4E95FF, #B27CFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">Google Gemini</span>
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <footer>
-    © 2025 Ponrakit. All rights reserved. | Last update 30-06-2025 9:00:39
-  </footer>
+  <!-- Floating Controls -->
+  <div class="floating-controls">
+    <button class="f-btn" id="btnPurpose" title="Purpose">
+      <i class="fas fa-info"></i>
+    </button>
+    
+    <!-- Volume Control Group (Enhanced) -->
+    <div class="volume-container">
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.1" title="Volume">
+      
+      <!-- Play/Pause Button -->
+      <button class="f-btn" id="playPauseBtn" title="Play/Pause">
+        <i id="playIcon" class="fas fa-play" style="font-size: 0.8rem;"></i>
+      </button>
 
-  <!-- Update Log Button -->
-  <button class="btn-update-log" id="updateLogBtn">
-    <i class="fas fa-history"></i> Update Log
-  </button>
+      <button class="f-btn" id="nextTrack" title="Next Song">
+        <i class="fas fa-step-forward" style="font-size: 0.8rem;"></i>
+      </button>
+      
+      <!-- Mute Button -->
+      <button class="f-btn" id="toggleMute" title="Mute/Unmute">
+        <i id="muteIcon" class="fas fa-volume-up"></i>
+      </button>
+    </div>
+  </div>
 
-  <!-- Maintenance Modal -->
-  <div class="modal" id="maintenanceModal">
-    <div class="modal-content">
-      <h2><i class="fas fa-tools"></i> ปิดปรับปรุงระบบชั่วคราว</h2>
-      <p style="font-size: 1.1rem; margin: 24px 0;">ขออภัยในความไม่สะดวก ขณะนี้เว็บไซต์อยู่ในช่วงปิดปรับปรุงประจำสัปดาห์ (ทุกวันอาทิตย์ เวลา 01:00 - 04:00 น.) ขออภัยในความไม่สะดวก</p>
-      <p>โปรดกลับมาอีกครั้งใน:</p>
-      <div id="countdown" style="font-size: 2rem; font-weight: bold; margin: 16px 0; color: #ffc107;"></div>
-      <div id="maintenance-actions" style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 24px; display: none;">
-        <p style="font-size: 0.9rem; margin-bottom: 16px;">คุณยังคงสามารถดำเนินการบางอย่างได้:</p>
-        <div id="cloned-buttons-container" style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
-          <!-- Cloned buttons will be injected here by JS -->
-        </div>
+  <!-- Event Widget (Customizable) -->
+  <div id="event-widget">
+    <i id="event-icon" class="fas fa-calendar-alt"></i>
+    <span id="event-timer-text">Loading...</span>
+  </div>
+
+  <!-- Generic Message Modal -->
+  <div class="modal" id="messageModal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+      <button class="modal-close" id="closeMessageModal">&times;</button>
+      <div style="margin-bottom: 15px;">
+        <i class="fas fa-info-circle" style="font-size: 3rem; color: rgba(255,255,255,0.8);"></i>
+      </div>
+      <h2 id="msgTitle" style="font-size: 1.5rem; margin-bottom: 10px;">Notification</h2>
+      <p id="msgContent" style="color: rgba(255,255,255,0.7); margin-bottom: 25px; line-height: 1.5;"></p>
+      <div id="msgActions" style="display:none;">
+        <button class="btn" id="msgActionBtn" style="width: auto; display: inline-flex; margin: 0 auto;">
+          <i class="fas fa-copy"></i> Copy
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Work Experience Modal -->
-  <div class="modal" id="workExperienceModal">
-    <div class="modal-content">
-      <h2><i class="fas fa-briefcase"></i> ประสบการณ์การทำงาน</h2>
-      <div class="work-experience-grid">
-        <div class="work-experience-item">
-          <div class="work-header">
-            <i class="fas fa-flower-tulip"></i>
-            <h3>ร้านดอกไม้ Wanflorist</h3>
-          </div>
-          <div class="work-details">
-            <p><strong>ตำแหน่ง:</strong> ทั่วไป</p>
-            <p><strong>ระยะเวลา:</strong> 2018 - ปัจจุบัน</p>
-            <p><strong>หน้าที่รับผิดชอบ:</strong></p>
-            <ul>
-              <li>ให้คำแนะนำและบริการลูกค้าในการเลือกดอกไม้</li>
-              <li>ดูแลการจัดแสดงสินค้าในหน้าเว็ป</li>
-              <li>จัดการระบบการสั่งซื้อ</li>
-              <li>จัดการระบบของร้าน</li>
-              <li>จัดส่งสินค้าด้วยตัวเอง</li>
-            </ul>
-            <p><strong>ทักษะที่ได้เรียนรู้:</strong></p>
-            <ul>
-              <li>การจัดการระบบร้านค้า</li>
-              <li>การบริการและการสื่อสาร</li>
-              <li>การจัดแต่งหน้าเว็ปของร้าน</li>
-              <li>การแก้ปัญหาเฉพาะหน้า</li>
-            </ul>
-          </div>
-          <div class="work-actions">
-            <button class="btn btn-website" id="btnWanfloristWebsite">
-              <i class="fas fa-external-link-alt"></i> ดูเว็บไซต์ร้าน
-            </button>
-          </div>
-        </div>
-      </div>
-      <button class="modal-close" id="closeWorkExperienceModal">
-        <i class="fas fa-times"></i> ปิด
-      </button>
-    </div>
-  </div>
-
-  <!-- Enhanced Modal -->
+  <!-- Project Modal -->
   <div class="modal" id="modalPopup">
     <div class="modal-content">
-      <h2><i class="fas fa-rocket"></i> My Projects</h2>
-      <div class="project-grid">
-        <button class="project-btn" onclick="previewPDF('เล่มโปรเจคจบการเตรียมแผ่นนำแสงโดยกระบวน_r 2025-05-22.pdf')">
-          <i class="fas fa-lightbulb"></i>
-          <strong>Light Guide Plate Fabrication</strong><br>
-          <small>Laser Marking & Nanoparticle Coating Processes</small>
-        </button>
-        <button class="project-btn" onclick="previewPDF('project2-ai-blockchain-integration-2025-long-title-sample.pdf')">
-          <i class="fas fa-flask"></i>
-          <strong>Chemical Detection System</strong><br>
-          <small>Nitrite & Nitrate Detection using Griess Reagent and Gold Nanoparticles</small>
-        </button>
-        <button class="project-btn" onclick="previewPDF('project3-sustainable-energy-smart-grid-research-document.pdf')">
-          <i class="fas fa-atom"></i>
-          <strong>Graphene Synthesis</strong><br>
-          <small>Laser Ablation Method for Supercapacitor Electrodes</small>
-        </button>
-        <button class="project-btn" onclick="previewPDF('project5-innovative-materials-for-sustainable-future.pdf')">
-          <i class="fas fa-microchip"></i>
-          <strong>Microfluidic Device</strong><br>
-          <small>First PDMS Device for Chemical Mixing Applications</small>
-        </button>
-        <button class="project-btn" onclick="previewPDF('project6-advanced-materials-for-sustainable-energy.pdf')">
-          <i class="fas fa-cube"></i>
-          <strong>DFT Structural Optimization</strong><br>
-          <small>Potassium Chloride Analysis via CASTEP</small>
-        </button>
+      <button class="modal-close" id="closeModal">&times;</button>
+      <h2>Projects</h2>
+      <div class="project-list">
+        <div class="project-item" onclick="window.open('path_to_pdf.pdf')">
+          <strong>Light Guide Plate Fabrication</strong>
+          <small>Laser Marking & Nanoparticle Coating</small>
+        </div>
+        <div class="project-item" onclick="window.open('path_to_pdf.pdf')">
+          <strong>Chemical Detection System</strong>
+          <small>Nitrite & Nitrate Detection via Griess Reagent</small>
+        </div>
+        <div class="project-item" onclick="window.open('path_to_pdf.pdf')">
+          <strong>Graphene Synthesis</strong>
+          <small>Laser Ablation for Supercapacitors</small>
+        </div>
       </div>
-      
-      <div id="pdfPreview" style="display: none;">
-        <iframe id="pdfFrame" src=""></iframe>
-      </div>
-      
-      <button class="modal-close" id="closeModal">
-        <i class="fas fa-times"></i> ปิด
-      </button>
     </div>
   </div>
 
-  <!-- Update Log Modal -->
-  <div class="modal" id="updateLogModal">
+  <!-- Experience Modal (Scrollable) -->
+  <div class="modal" id="experienceModal">
     <div class="modal-content">
-      <h2><i class="fas fa-history"></i> ประวัติการอัปเดต</h2>
-      <ul class="update-list">
-        <li><strong>26 ก.ค. 2567:</strong> เพิ่มปุ่มและป๊อปอัปสำหรับแสดงประวัติการอัปเดต (Update Log)</li>
-        <li><strong>25 ก.ค. 2567:</strong>ปรับขนาดปุ่มทั้งหมดให้เท่ากันเพื่อความสวยงาม</li>
-        <li><strong>24 ก.ค. 2567:</strong> เพิ่มเพลงพื้นหลังพร้อมปุ่มเปิด/ปิดเสียง</li>
-        <li><strong>23 ก.ค. 2567:</strong> เปิดตัวเวอร์ชันแรกของหน้าเว็บ</li>
-      </ul>
-      <button class="modal-close" id="closeUpdateLogModal">
-        <i class="fas fa-times"></i> ปิด
-      </button>
-    </div>
-  </div>
-
-  <!-- Audio Player & Toggle -->
-  <audio id="lofiAudio" autoplay loop></audio>
-  <button class="audio-toggle" id="toggleAudio">
-    <i id="audioIcon" class="fas fa-volume-up"></i>
-  </button>
-
-  <!-- Wanflorist Website Modal -->
-  <div class="modal" id="wanfloristModal">
-    <div class="modal-content">
-      <h2><i class="fas fa-flower-tulip"></i> เว็บไซต์ร้าน Wanflorist</h2>
-      <div id="wanfloristFrame" style="width: 100%; height: 500px; border: none; border-radius: 12px; background: #fff; margin: 20px 0;">
-        <iframe src="https://www.wanflorist.net/" width="100%" height="100%" frameborder="0" style="border-radius: 12px;"></iframe>
-      </div>
-      <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
-        <button class="modal-close" id="closeWanfloristModal">
-          <i class="fas fa-times"></i> ปิด
-        </button>
-        <a href="https://www.wanflorist.net/" target="_blank" class="btn btn-website" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-          <i class="fas fa-external-link-alt"></i> เปิดในแท็บใหม่
-        </a>
+      <button class="modal-close" id="closeExperienceModal">&times;</button>
+      <h2>Work Experience</h2>
+      <div id="experienceList">
+        <!-- Content injected by JS -->
       </div>
     </div>
   </div>
 
   <!-- Purpose Modal -->
   <div class="modal" id="purposeModal">
-    <div class="modal-content">
-      <h2><i class="fas fa-bullseye"></i> <span id="purposeTitle">วัตถุประสงค์ของเว็บไซต์</span></h2>
-      <div id="purposeTH" style="font-size:1.1rem; margin:24px 0;">
-        <ol style="text-align:left; max-width:600px; margin:0 auto;">
-          <li>เพื่อใช้เป็นพื้นที่แสดงผลงาน (Portfolio) และประวัติส่วนตัวของข้าพเจ้า</li>
-          <li>เพื่อรวบรวมและนำเสนอรายละเอียดโครงการต่าง ๆ ที่เคยดำเนินการ</li>
-          <li>เพื่อให้ผู้เยี่ยมชมสามารถดาวน์โหลดไฟล์เรซูเม่ (Resume) และเอกสารผลงานในรูปแบบ PDF ได้อย่างสะดวก</li>
-          <li>เพื่อเป็นช่องทางในการติดต่อกับข้าพเจ้าโดยตรงผ่านอีเมลหรือโซเชียลมีเดีย</li>
-          <li>เพื่ออัปเดตข่าวสารหรือการเปลี่ยนแปลงที่สำคัญเกี่ยวกับตัวข้าพเจ้าและผลงาน</li>
-          <li>เว็บไซต์นี้จัดทำขึ้นเพื่อการนำเสนอข้อมูลเท่านั้น</li>
-          <li><b>จะไม่มีการเก็บรวบรวมข้อมูลส่วนบุคคลหรือข้อมูลใด ๆ ของผู้เยี่ยมชมทั้งสิ้น</b></li>
-        </ol>
-      </div>
-      <div id="purposeEN" style="display:none; font-size:1.1rem; margin:24px 0;">
-        <ol style="text-align:left; max-width:600px; margin:0 auto;">
-          <li>To serve as a portfolio and personal profile for myself</li>
-          <li>To collect and present details of various projects I have completed</li>
-          <li>To allow visitors to conveniently download my resume and project documents in PDF format</li>
-          <li>To provide direct contact channels via email or social media</li>
-          <li>To update important news or changes related to myself and my works</li>
-          <li>This website is created solely for information presentation</li>
-          <li><b>No personal data or any visitor information will be collected or stored by this website</b></li>
-        </ol>
-      </div>
-      <div id="purposeZH" style="display:none; font-size:1.1rem; margin:24px 0;">
-        <ol style="text-align:left; max-width:600px; margin:0 auto;">
-          <li>作为我的个人作品集和个人简介</li>
-          <li>汇集并展示我完成的各类项目详情</li>
-          <li>方便访客下载我的简历和项目文档（PDF格式）</li>
-          <li>提供通过电子邮件或社交媒体直接联系的渠道</li>
-          <li>更新与我本人及作品相关的重要新闻或变更</li>
-          <li>本网站仅用于信息展示</li>
-          <li><b>本网站不会收集或存储任何访问者的个人信息或数据</b></li>
-        </ol>
-      </div>
-      <div id="purposeJP" style="display:none; font-size:1.1rem; margin:24px 0;">
-        <ol style="text-align:left; max-width:600px; margin:0 auto;">
-          <li>自身のポートフォリオおよびプロフィールとして活用するため</li>
-          <li>これまでに手掛けた様々なプロジェクトの詳細をまとめて紹介するため</li>
-          <li>訪問者が履歴書やプロジェクト資料（PDF）を便利にダウンロードできるようにするため</li>
-          <li>メールやSNSを通じて直接連絡できる手段を提供するため</li>
-          <li>自分自身や作品に関する重要なお知らせや変更を更新するため</li>
-          <li>本ウェブサイトは情報提供のみを目的としています</li>
-          <li><b>本ウェブサイトは訪問者の個人情報やデータを一切収集・保存しません</b></li>
-        </ol>
-      </div>
-      <button class="modal-close" id="closePurposeModal">
-        <i class="fas fa-times"></i> ปิด / Close
-      </button>
-      <button class="btn-switch-lang" id="switchLangBtn" style="margin-left:16px;">
-        <i class="fas fa-language"></i> <span id="switchLangLabel">English</span>
-      </button>
+    <div class="modal-content" style="text-align: left;">
+      <button class="modal-close" id="closePurposeModal">&times;</button>
+      <h2>Site Purpose</h2>
+      <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+        This space serves as a professional archive of my works in materials science and digital fabrication. <br><br>
+        1. Showcasing Research Portfolio<br>
+        2. Streamlined Resume Access<br>
+        3. Direct Communication Channel<br><br>
+        <strong>Note:</strong> We collect visitor data via tawk.to. You can read more information <a href="https://ponrakitt.site/Policy.html" target="_blank" style="color: #fff; text-decoration: underline;">here</a>.
+      </p>
     </div>
   </div>
 
-  <!-- Maintenance Alert Bar -->
-  <div id="maintenanceAlertBar" style="display:none; position:fixed; top:32px; left:32px; min-width:240px; max-width:320px; background:linear-gradient(90deg,#ff9800,#ff6f00); color:#fff; text-align:left; padding:12px 20px; font-weight:500; font-size:0.95rem; z-index:20000; box-shadow:0 4px 16px rgba(0,0,0,0.18); line-height:1.4; border-radius:12px; box-sizing:border-box; transition:opacity 0.3s, transform 0.3s; opacity:0.95; display:flex; align-items:center; gap:10px;">
-    <i class="fas fa-exclamation-triangle" style="font-size:1.2em; margin-right:8px;"></i>
-    <span id="maintenanceAlertText"></span>
+  <!-- Maintenance Modal -->
+  <div class="modal" id="maintenanceModal">
+    <div class="modal-content">
+      <h2>System Maintenance</h2>
+      <p>Weekly update in progress.</p>
+      <div id="countdown">00:00:00</div>
+      <p style="font-size: 0.8rem; opacity: 0.6;">Expected back by 04:00 AM</p>
+    </div>
   </div>
 
-  <!-- Unsupported Browser Bar -->
-  <div id="unsupportedBrowserBar" style="display:none; position:fixed; top:0; left:0; width:100vw; background:linear-gradient(90deg,#ff6f00,#ff9800); color:#fff; text-align:center; padding:14px 10px; font-weight:600; font-size:1rem; z-index:30000; box-shadow:0 4px 16px rgba(0,0,0,0.18); line-height:1.5; border-radius:0 0 12px 12px; box-sizing:border-box;">
-    <span id="unsupportedBrowserText">เว็บไซต์นี้อาจใช้งานได้ไม่เต็มที่ในเบราว์เซอร์นี้ กรุณาใช้ Google Chrome, Firefox, Safari หรือ Microsoft Edge เพื่อประสบการณ์ที่ดีที่สุด</span>
-    <button id="copySiteLinkBtn" style="margin-left:16px; background:#fff; color:#ff6f00; border:none; border-radius:8px; padding:6px 16px; font-weight:600; cursor:pointer;">Copy Link</button>
-  </div>
+  <audio id="lofiAudio" loop></audio>
 
   <script>
-    let isMaintenanceActive = false;
+    // =========================================================
+    // 🔧 CONFIGURATION: EVENT WIDGET (ตั้งค่าเทศกาล)
+    // เปลี่ยนข้อมูลด้านล่างเพื่อปรับแต่ง Widget มุมขวาบน
+    // =========================================================
+    const eventConfig = {
+      name: "Valentine's",     // ชื่อเทศกาล
+      targetDate: "02-14",     // วันที่ (เดือน-วัน)
+      icon: "fas fa-heart",    // ไอคอน (เช่น fas fa-heart, fas fa-gift)
+      color: "#ff4757"         // สีธีม (Hex Code)
+    };
 
-    // Maintenance Mode Functionality
-    function checkMaintenance() {
-      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ ---
-      const maintenanceDay = 0;        // วันที่ต้องการปิดปรับปรุง (0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์)
-      const maintenanceStartHour =1;  // เวลาเริ่มต้น (ตี 1)
-      const maintenanceEndHour = 4;    // เวลาสิ้นสุด (ตี 4)
-      // ----------------------------------------------------
+    // =========================================================
+    // 🔧 CONFIGURATION: EXPERIENCE DATA
+    // แก้ไข/เพิ่ม/ลบ ข้อมูลประสบการณ์ทำงานที่นี่
+    // =========================================================
+    const experienceData = [
+      {
+        role: "Store Manager & Digital Specialist",
+        company: "Wanflorist",
+        period: "2018 - Present",
+        details: [
+          "Managed digital storefront operations and logistics.",
+          "Implemented inventory management systems.",
+          "Enhanced customer service protocols.",
+          "Oversaw daily operations to ensure efficiency."
+        ]
+      }
+    ];
+    // =========================================================
 
-      const now = new Date();
-      const currentDay = now.getDay();
-      const currentHour = now.getHours();
-      let inMaintenance = false;
+    // --- Helpers ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'minimal-portfolio';
+    
+    // --- Generic Popup Logic ---
+    const messageModal = document.getElementById('messageModal');
+    const closeMessageModal = document.getElementById('closeMessageModal');
+    const msgTitle = document.getElementById('msgTitle');
+    const msgContent = document.getElementById('msgContent');
+    const msgActions = document.getElementById('msgActions');
+    const msgActionBtn = document.getElementById('msgActionBtn');
 
-      // ตรวจสอบว่าเป็นวันอาทิตย์ และอยู่ในช่วงเวลา ตี 1 - ตี 4 หรือไม่
-      if (currentDay === maintenanceDay && (currentHour >= maintenanceStartHour && currentHour < maintenanceEndHour)) {
-        inMaintenance = true;
+    window.showPopup = function(title, message, copyText = null) {
+      msgTitle.innerText = title;
+      msgContent.innerHTML = message; // Allow HTML
+      
+      if (copyText) {
+        msgActions.style.display = 'block';
+        msgActionBtn.onclick = () => {
+          navigator.clipboard.writeText(copyText);
+          const originalText = msgActionBtn.innerHTML;
+          msgActionBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          setTimeout(() => msgActionBtn.innerHTML = originalText, 2000);
+        };
+      } else {
+        msgActions.style.display = 'none';
       }
       
-      if (inMaintenance) {
-        isMaintenanceActive = true;
-        const modal = document.getElementById('maintenanceModal');
-        modal.classList.add('active');
-        
-        const countdownElement = document.getElementById('countdown');
-        const maintenanceEndTime = new Date();
-        maintenanceEndTime.setHours(maintenanceEndHour, 0, 0, 0);
+      messageModal.classList.add('active');
+    };
 
-        function updateCountdown() {
-            const currentTime = new Date();
-            const timeLeft = maintenanceEndTime - currentTime;
+    // Override native alert
+    window.alert = function(message) {
+      showPopup('Notification', message);
+    };
 
-            if (timeLeft <= 0) {
-              clearInterval(countdownInterval);
-              window.location.reload();
-              return;
-            }
-            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            countdownElement.innerHTML = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-        
-        const countdownInterval = setInterval(updateCountdown, 1000);
-        updateCountdown();
+    closeMessageModal.onclick = () => messageModal.classList.remove('active');
 
-        // --- Clone buttons to be available during maintenance ---
-        const resumeLink = document.querySelector('a.btn-resume');
-        const audioToggle = document.getElementById('toggleAudio');
-        const actionsContainer = document.getElementById('maintenance-actions');
-        const buttonsContainer = document.getElementById('cloned-buttons-container');
+    // Global Click Outside to Close Modals (Fixed)
+    window.onclick = (e) => {
+      if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('active');
+      }
+    };
 
-        if (resumeLink && audioToggle && buttonsContainer && actionsContainer) {
-          actionsContainer.style.display = 'block';
+    // --- Modals Setup ---
+    function setupModal(triggerId, modalId, closeId) {
+      const trigger = document.getElementById(triggerId);
+      const modal = document.getElementById(modalId);
+      const close = document.getElementById(closeId);
+      
+      if(trigger) trigger.onclick = () => modal.classList.add('active');
+      if(close) close.onclick = () => modal.classList.remove('active');
+    }
 
-          // 1. Clone Resume Button
-          const resumeClone = resumeLink.cloneNode(true);
-          buttonsContainer.appendChild(resumeClone);
+    setupModal('btnMore', 'modalPopup', 'closeModal');
+    setupModal('btnPurpose', 'purposeModal', 'closePurposeModal');
+    setupModal('btnWorkExperience', 'experienceModal', 'closeExperienceModal');
 
-          // 2. Clone Audio Toggle Button
-          const audioToggleClone = audioToggle.cloneNode(true);
-          audioToggleClone.id = 'audioToggleClone'; // Prevent duplicate ID
-          
-          audioToggleClone.addEventListener('click', () => {
-            audioToggle.click(); // Relay click to original button
-          });
-          buttonsContainer.appendChild(audioToggleClone);
+    // --- Render Experience List ---
+    function renderExperience() {
+      const container = document.getElementById('experienceList');
+      if(!container) return;
 
-          // 3. Sync icon state from original to clone
-          const originalIcon = document.getElementById('audioIcon');
-          const clonedIcon = audioToggleClone.querySelector('i');
-          if(originalIcon && clonedIcon) {
-            const observer = new MutationObserver(() => {
-              clonedIcon.className = originalIcon.className;
-            });
-            observer.observe(originalIcon, { attributes: true, attributeFilter: ['class'] });
-          }
-        }
+      container.innerHTML = experienceData.map(item => `
+        <div class="experience-card" style="text-align: left; padding: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 16px;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 5px; color: #fff; font-weight: 600;">${item.role}</h3>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span><i class="fas fa-building" style="margin-right: 6px;"></i>${item.company}</span>
+            <span style="opacity: 0.3;">|</span>
+            <span><i class="far fa-calendar" style="margin-right: 6px;"></i>${item.period}</span>
+          </div>
+          <ul style="padding-left: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8); line-height: 1.6;">
+            ${item.details.map(detail => `<li>${detail}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+    renderExperience();
+
+    // --- DateTime ---
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById('datetime').innerText = now.toLocaleDateString('en-US', {
+        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+      });
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // --- Maintenance Mode ---
+    function checkMaintenance() {
+      const now = new Date();
+      if (now.getDay() === 0 && now.getHours() >= 1 && now.getHours() < 4) {
+        document.getElementById('maintenanceModal').classList.add('active');
+        const end = new Date(); end.setHours(4,0,0,0);
+        setInterval(() => {
+          const diff = end - new Date();
+          const h = Math.floor(diff/3600000);
+          const m = Math.floor((diff%3600000)/60000);
+          const s = Math.floor((diff%60000)/1000);
+          document.getElementById('countdown').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }, 1000);
       }
     }
     checkMaintenance();
 
-    // Maintenance Alert Bar (แจ้งเตือนก่อนปิดปรับปรุง 30 นาที)
-    function showMaintenanceAlertBar() {
-      // --- ตั้งค่าเวลาปิดปรับปรุงที่นี่ (ต้องตรงกับ checkMaintenance) ---
-      const maintenanceDay = 2;        // 0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์
-      const maintenanceStartHour = 9;  // ตี 1
-      // ----------------------------------------------------
-      const now = new Date();
-      const currentDay = now.getDay();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-
-      // หาเวลาปิดปรับปรุงรอบถัดไป
-      let nextMaintenance = new Date(now);
-      nextMaintenance.setDate(now.getDate() + ((maintenanceDay - currentDay + 7) % 7));
-      nextMaintenance.setHours(maintenanceStartHour, 0, 0, 0);
-
-      // ถ้าวันนี้เลย maintenanceStartHour ไปแล้ว ให้เลื่อนไปอาทิตย์หน้า
-      if (
-        currentDay === maintenanceDay &&
-        (currentHour > maintenanceStartHour || (currentHour === maintenanceStartHour && currentMinute >= 0))
-      ) {
-        nextMaintenance.setDate(nextMaintenance.getDate() + 7);
-      }
-
-      function updateAlertBar() {
-        const now = new Date();
-        const timeLeft = nextMaintenance - now;
-        const bar = document.getElementById('maintenanceAlertBar');
-        const text = document.getElementById('maintenanceAlertText');
-        if (timeLeft <= 0) {
-          bar.style.display = 'none';
-          clearInterval(alertInterval);
-          return;
-        }
-        // ถ้าเหลือไม่เกิน 30 นาที (1800000 ms)
-        if (timeLeft <= 30 * 60 * 1000) {
-          bar.style.display = 'block';
-          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-          text.innerHTML = `เว็บไซต์จะปิดปรับปรุงในอีก <b>${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}</b> นาทีนะครับ`;
-        } else {
-          bar.style.display = 'none';
-        }
-      }
-      updateAlertBar();
-      const alertInterval = setInterval(updateAlertBar, 1000);
-    }
-    showMaintenanceAlertBar();
-
-    // Create animated particles
-    function createParticles() {
-      const particlesContainer = document.getElementById('particles');
-      const particleCount = window.innerWidth < 768 ? 30 : 50;
+    // --- Event Widget Timer (Customizable) ---
+    function updateEventWidget() {
+      const widget = document.getElementById('event-widget');
+      const icon = document.getElementById('event-icon');
+      const text = document.getElementById('event-timer-text');
       
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.width = Math.random() * 4 + 2 + 'px';
-        particle.style.height = particle.style.width;
-        particle.style.animationDelay = Math.random() * 20 + 's';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-        particlesContainer.appendChild(particle);
+      // Apply Theme
+      if(widget && icon) {
+        icon.className = eventConfig.icon;
+        icon.style.color = eventConfig.color;
+        // Subtle Border & Background based on color
+        widget.style.border = `1px solid ${eventConfig.color}40`; 
+        widget.style.background = `${eventConfig.color}10`; // Very faint background (using Hex Alpha)
+      }
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const [month, day] = eventConfig.targetDate.split('-');
+      
+      // Determine target date for this year
+      let target = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+      
+      // If passed today, set to next year
+      // (Check end of day to decide if it passed)
+      if (now.getTime() > target.getTime() + (24*60*60*1000)) {
+         target.setFullYear(currentYear + 1);
+      }
+      
+      const diff = target - now;
+      
+      // Check if it is "Today"
+      const isToday = now.getDate() == parseInt(day) && now.getMonth() == (parseInt(month)-1);
+
+      if (isToday) {
+         text.innerText = `Happy ${eventConfig.name}!`;
+      } else {
+         const d = Math.floor(diff / (1000*60*60*24));
+         const h = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+         text.innerText = `${eventConfig.name}: ${d}d ${h}h left`;
       }
     }
-    createParticles();
+    setInterval(updateEventWidget, 60000); // Update every minute
+    updateEventWidget(); // Initial call
 
-    // Modal functionality
-    const btnMore = document.getElementById('btnMore');
-    const modal = document.getElementById('modalPopup');
-    const closeModal = document.getElementById('closeModal');
-    const pdfPreview = document.getElementById('pdfPreview');
+    // --- Audio Logic (Filtered for Chill/Relaxing/Lofi only) ---
+    const audio = document.getElementById('lofiAudio');
+    const toggleMuteBtn = document.getElementById('toggleMute');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const nextTrackBtn = document.getElementById('nextTrack');
+    const muteIcon = document.getElementById('muteIcon');
+    const playIcon = document.getElementById('playIcon');
+    const volumeSlider = document.getElementById('volumeSlider');
+    
+    // Curated Royalty-free Chill/Relaxing tracks (CDN links)
+    // Filtered to remove upbeat/jazz-hop/glitch styles
+    const lofiTracks = [
+      'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3', // Chill Study
+      'https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3?filename=lofi-chill-medium-version-113364.mp3', // Relaxing
+      'https://cdn.pixabay.com/download/audio/2022/03/24/audio_07335d519a.mp3?filename=lofi-beat-chill-115383.mp3', // Ambient
+      'https://cdn.pixabay.com/download/audio/2022/11/02/audio_9b98688755.mp3?filename=midnight-forest-123473.mp3', // Forest/Nature
+      'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=lofi-rain-140984.mp3', // Rain
+      'https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8c8a73467.mp3?filename=chill-abstract-intention-12099.mp3', // Abstract Chill
+      'https://cdn.pixabay.com/download/audio/2022/04/27/audio_6527b16521.mp3?filename=the-cradle-of-your-soul-15700.mp3', // Soul/Relax
+      'https://cdn.pixabay.com/download/audio/2022/10/25/audio_54854f3956.mp3?filename=empty-mind-118973.mp3', // Meditation
+      'https://cdn.pixabay.com/download/audio/2021/11/24/audio_823c347953.mp3?filename=relaxing-music-vol1-124477.mp3', // Pure Relaxing
+      'https://cdn.pixabay.com/download/audio/2021/09/06/audio_9c08611754.mp3?filename=good-night-160166.mp3', // Sleep
+      'https://cdn.pixabay.com/download/audio/2022/09/02/audio_725916d16a.mp3?filename=lofi-chill-119183.mp3', // Standard Lofi
+      'https://cdn.pixabay.com/download/audio/2022/06/23/audio_731475e386.mp3?filename=lofi-relax-12097.mp3', // Relax
+      'https://cdn.pixabay.com/download/audio/2020/05/26/audio_f53d5162b7.mp3?filename=chill-lofi-song-8444.mp3', // Classic Chill
+      'https://cdn.pixabay.com/download/audio/2022/01/21/audio_31743c58bd.mp3?filename=spirit-blossom-15285.mp3', // Soft
+      'https://cdn.pixabay.com/download/audio/2021/11/25/audio_91b7d55981.mp3?filename=ambiant-relax-daily-beet-10116.mp3', // Ambient Daily
+      'https://cdn.pixabay.com/download/audio/2022/01/20/audio_e69123652c.mp3?filename=dreamy-lofi-13838.mp3' // Dreamy
+    ];
 
-    btnMore.onclick = () => modal.classList.add('active');
-    closeModal.onclick = () => {
-      modal.classList.remove('active');
-      pdfPreview.style.display = 'none';
-    };
-    modal.onclick = (e) => { 
-      if (e.target === modal) {
-        modal.classList.remove('active');
-        pdfPreview.style.display = 'none';
-      }
-    };
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        modal.classList.remove('active');
-        pdfPreview.style.display = 'none';
-      }
+    // Initialize with a random track, then play sequentially
+    let currentTrackIndex = Math.floor(Math.random() * lofiTracks.length);
+    
+    // --- Set Initial Volume to 10% ---
+    audio.volume = 0.1;
+    volumeSlider.value = 0.1;
+
+    // --- Helper to load and play current track ---
+    function loadAndPlayCurrentTrack() {
+        audio.src = lofiTracks[currentTrackIndex];
+        audio.load(); // Just load, wait for play promise
+        audio.play().then(() => {
+            updatePlayIcon();
+        }).catch(e => {
+            console.log("Playback prevented or error:", e);
+            // If autoplay is blocked, icon remains 'play'. User has to click play.
+            updatePlayIcon();
+        });
+    }
+
+    // Initial load
+    audio.src = lofiTracks[currentTrackIndex];
+
+    // --- Volume Slider Listener ---
+    volumeSlider.addEventListener('input', (e) => {
+        audio.volume = e.target.value;
+        audio.muted = false; // Unmute if slider is moved
+        updateMuteIcon();
     });
 
-    function previewPDF(pdfUrl) {
-      document.getElementById('pdfFrame').src = pdfUrl;
-      pdfPreview.style.display = 'block';
+    // Play next random track when finished (Sequential)
+    audio.onended = () => {
+       playNextTrack();
+    };
+    
+    // Error Handling: If track fails, skip to next immediately
+    audio.onerror = () => {
+        console.log("Track failed to load, skipping to next...");
+        playNextTrack();
+    };
+    
+    // Manual Skip (Next Button)
+    nextTrackBtn.onclick = () => {
+       playNextTrack();
+    };
+
+    function playNextTrack() {
+       // Increment index and loop back to 0 if at end
+       currentTrackIndex = (currentTrackIndex + 1) % lofiTracks.length;
+       loadAndPlayCurrentTrack();
+    }
+
+    // Play/Pause Button Logic
+    playPauseBtn.onclick = () => {
+      if(audio.paused) {
+        audio.play().catch(e => console.log("Audio play failed (browser policy):", e));
+      } else {
+        audio.pause();
+      }
+      updatePlayIcon();
+    };
+
+    function updatePlayIcon() {
+      if(audio.paused) {
+        playIcon.className = 'fas fa-play';
+      } else {
+        playIcon.className = 'fas fa-pause';
+      }
+    }
+
+    // Listen to play/pause events in case other things trigger them
+    audio.onplay = updatePlayIcon;
+    audio.onpause = updatePlayIcon;
+
+    // Mute Button Logic
+    toggleMuteBtn.onclick = () => {
+      audio.muted = !audio.muted;
+      updateMuteIcon();
+    };
+
+    function updateMuteIcon() {
+      if(audio.muted || audio.volume === 0) {
+        muteIcon.className = 'fas fa-volume-mute';
+      } else {
+        muteIcon.className = 'fas fa-volume-up';
+      }
     }
 
     function disableKey(e) {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-        e.preventDefault();
-        return false;
-      }
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) return false;
     }
-
-    // DateTime update
-    function updateDateTime() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' };
-      const time = now.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
-      const date = now.toLocaleDateString('th-TH', options);
-      document.getElementById('datetime').innerText = `${date} ${time}`;
-    }
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-
-    // Audio functionality
-    const audio = document.getElementById('lofiAudio');
-    const toggleBtn = document.getElementById('toggleAudio');
-    const audioIcon = document.getElementById('audioIcon');
-    const playlist = [
-      'forest-guitar-lofi-161108.mp3',
-      'summer-rain-lofi-vibes-216043.mp3',
-      'summer-sunset-lofi-slow-mix-154447.mp3',
-      'good-night-lofi-cozy-chill-music-160166.mp3',
-    ];
-    let currentSong = Math.floor(Math.random() * playlist.length);
-    
-    function loadSong(index) {
-      audio.src = playlist[index];
-      audio.play().catch(e => console.log('Audio autoplay prevented'));
-    }
-    loadSong(currentSong);
-
-    toggleBtn.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-        audioIcon.classList.replace('fa-volume-mute', 'fa-volume-up');
-      } else {
-        audio.pause();
-        audioIcon.classList.replace('fa-volume-up', 'fa-volume-mute');
-      }
-    });
-
-    // Prevent right-click
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-    });
-
-    // Prevent right-click on PDF iframe
-    const iframe = document.getElementById('pdfFrame');
-    iframe.addEventListener('load', () => {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      if (iframeDoc) {
-        iframeDoc.addEventListener('contextmenu', function (e) {
-          e.preventDefault();
-        });
-      }
-    });
-
-    // Handle window resize for particles
-    window.addEventListener('resize', () => {
-      const particlesContainer = document.getElementById('particles');
-      particlesContainer.innerHTML = '';
-      createParticles();
-    });
-
-    // Update Log Modal functionality
-    const updateLogBtnTrack = document.getElementById('updateLogBtn');
-    const updateLogModal = document.getElementById('updateLogModal');
-    const closeUpdateLogModal = document.getElementById('closeUpdateLogModal');
-
-    // Work Experience Modal functionality
-    const btnWorkExperienceTrack = document.getElementById('btnWorkExperience');
-    const workExperienceModal = document.getElementById('workExperienceModal');
-    const closeWorkExperienceModal = document.getElementById('closeWorkExperienceModal');
-
-    if (updateLogBtnTrack) {
-      updateLogBtnTrack.onclick = () => updateLogModal.classList.add('active');
-      // Track Update Log button
-      updateLogBtnTrack.addEventListener('click', function() {
-        trackButtonClick('Update Log');
-      });
-    }
-    if (btnWorkExperienceTrack) {
-      btnWorkExperienceTrack.onclick = () => workExperienceModal.classList.add('active');
-      // Track Work Experience button
-      btnWorkExperienceTrack.addEventListener('click', function() {
-        trackButtonClick('Work Experience');
-      });
-    }
-    if (closeUpdateLogModal) {
-      closeUpdateLogModal.onclick = () => updateLogModal.classList.remove('active');
-    }
-    if (closeWorkExperienceModal) {
-      closeWorkExperienceModal.onclick = () => workExperienceModal.classList.remove('active');
-    }
-    if (updateLogModal) {
-      updateLogModal.onclick = (e) => {
-        if (e.target === updateLogModal) {
-          updateLogModal.classList.remove('active');
-        }
-      };
-    }
-    if (workExperienceModal) {
-      workExperienceModal.onclick = (e) => {
-        if (e.target === workExperienceModal) {
-          workExperienceModal.classList.remove('active');
-        }
-      };
-    }
-
-    document.addEventListener('keydown', e => {
-      if (isMaintenanceActive) { return; } // Block escape key during maintenance
-
-      if (e.key === 'Escape') {
-        // Close project modal
-        modal.classList.remove('active');
-        pdfPreview.style.display = 'none';
-        // Close update log modal
-        if (updateLogModal) {
-          updateLogModal.classList.remove('active');
-        }
-        // Close work experience modal
-        if (workExperienceModal) {
-          workExperienceModal.classList.remove('active');
-        }
-        // Close wanflorist modal
-        if (wanfloristModal) {
-          wanfloristModal.classList.remove('active');
-        }
-      }
-    });
-
-    function previewPDF(pdfUrl) {
-      document.getElementById('pdfFrame').src = pdfUrl;
-      pdfPreview.style.display = 'block';
-    }
-
-    // === Tracking Button Clicks ===
-    function trackButtonClick(buttonName) {
-      fetch('https://your-app.onrender.com/track-click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ button: buttonName, time: new Date().toISOString() })
-      }).catch(e => console.log('Track error:', e));
-    }
-
-    // Track .btn-grid buttons
-    document.querySelectorAll('.btn-grid .btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const label = btn.innerText.trim().replace(/\s+/g, ' ');
-        trackButtonClick(label);
-      });
-    });
-
-    // Track project modal buttons
-    document.querySelectorAll('.project-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const label = btn.innerText.trim().replace(/\s+/g, ' ');
-        trackButtonClick('Project: ' + label);
-      });
-    });
-
-    // === Wanflorist Website Modal Functionality ===
-    const btnWanfloristWebsite = document.getElementById('btnWanfloristWebsite');
-    const wanfloristModal = document.getElementById('wanfloristModal');
-    const closeWanfloristModal = document.getElementById('closeWanfloristModal');
-
-    if (btnWanfloristWebsite) {
-      btnWanfloristWebsite.onclick = () => wanfloristModal.classList.add('active');
-      // Track Wanflorist Website button
-      btnWanfloristWebsite.addEventListener('click', function() {
-        trackButtonClick('Wanflorist Website');
-      });
-    }
-    if (closeWanfloristModal) {
-      closeWanfloristModal.onclick = () => wanfloristModal.classList.remove('active');
-    }
-    if (wanfloristModal) {
-      wanfloristModal.onclick = (e) => {
-        if (e.target === wanfloristModal) {
-          wanfloristModal.classList.remove('active');
-        }
-      };
-    }
-
-    // === Purpose Modal Functionality ===
-    const btnPurpose = document.getElementById('btnPurpose');
-    const purposeModal = document.getElementById('purposeModal');
-    const closePurposeModal = document.getElementById('closePurposeModal');
-    const switchLangBtn = document.getElementById('switchLangBtn');
-    const purposeTH = document.getElementById('purposeTH');
-    const purposeEN = document.getElementById('purposeEN');
-    const purposeZH = document.getElementById('purposeZH');
-    const purposeJP = document.getElementById('purposeJP');
-    const purposeTitle = document.getElementById('purposeTitle');
-    const purposeBtnLabel = document.getElementById('purposeBtnLabel');
-    const switchLangLabel = document.getElementById('switchLangLabel');
-    let langIndex = 0;
-    const langs = [
-      {
-        code: 'TH',
-        show: [purposeTH],
-        hide: [purposeEN, purposeZH, purposeJP],
-        title: 'วัตถุประสงค์ของเว็บไซต์',
-        btn: 'วัตถุประสงค์',
-        switchLabel: 'English'
-      },
-      {
-        code: 'EN',
-        show: [purposeEN],
-        hide: [purposeTH, purposeZH, purposeJP],
-        title: 'Website Purpose',
-        btn: 'Purpose',
-        switchLabel: '中文'
-      },
-      {
-        code: 'ZH',
-        show: [purposeZH],
-        hide: [purposeTH, purposeEN, purposeJP],
-        title: '网站宗旨',
-        btn: '宗旨',
-        switchLabel: '日本語'
-      },
-      {
-        code: 'JP',
-        show: [purposeJP],
-        hide: [purposeTH, purposeEN, purposeZH],
-        title: 'ウェブサイトの目的',
-        btn: '目的',
-        switchLabel: 'ภาษาไทย'
-      }
-    ];
-    function setLang(idx) {
-      langs[idx].show.forEach(el => el.style.display = '');
-      langs[idx].hide.forEach(el => el.style.display = 'none');
-      purposeTitle.innerText = langs[idx].title;
-      switchLangLabel.innerText = langs[idx].switchLabel;
-      btnPurpose.title = langs[idx].title;
-    }
-    setLang(langIndex);
-    btnPurpose.onclick = () => purposeModal.classList.add('active');
-    closePurposeModal.onclick = () => purposeModal.classList.remove('active');
-    switchLangBtn.onclick = () => {
-      langIndex = (langIndex + 1) % langs.length;
-      setLang(langIndex);
-    };
-    purposeModal.onclick = (e) => {
-      if (e.target === purposeModal) {
-        purposeModal.classList.remove('active');
-      }
-    };
-    document.addEventListener('keydown', e => {
-      if (purposeModal.classList.contains('active') && e.key === 'Escape') {
-        purposeModal.classList.remove('active');
-      }
-    });
-
-    // ===== Browser Compatibility Check =====
-    function isSupportedBrowser() {
-      const ua = navigator.userAgent;
-      // รองรับ Chrome, Firefox, Safari, Edge (ไม่รองรับ IE, Opera, UC, Samsung, ฯลฯ)
-      if (/Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) return true; // Chrome
-      if (/Firefox\//.test(ua)) return true; // Firefox
-      if (/Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua)) return true; // Safari
-      if (/Edg\//.test(ua)) return true; // Edge
-      // ตรวจจับ in-app browser ของ Line, Instagram, Facebook
-      if (/Line\//i.test(ua) || /Instagram/i.test(ua) || /FBAN|FBAV|FB_IAB|FB4A|FBAN/i.test(ua)) return false;
-      return false;
-    }
-    window.addEventListener('DOMContentLoaded', function() {
-      if (!isSupportedBrowser() || !window.Promise || !window.fetch || !window.addEventListener) {
-        const bar = document.getElementById('unsupportedBrowserBar');
-        bar.style.display = 'block';
-        const copyBtn = document.getElementById('copySiteLinkBtn');
-        copyBtn.onclick = function() {
-          navigator.clipboard.writeText('https://ponrakitt.site/').then(function() {
-            copyBtn.innerText = 'คัดลอกแล้ว!';
-            setTimeout(()=>{copyBtn.innerText = 'Copy Link';}, 2000);
-          });
-        };
-      }
-    });
   </script>
   <!--Start of Tawk.to Script-->
 <script type="text/javascript">
@@ -1985,137 +904,5 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-<div id="valentines-popup-widget" style="display: none;">
-    <div class="v-popup-content">
-        <button class="v-close-btn" onclick="document.getElementById('valentines-popup-widget').style.display='none'">&times;</button>
-        
-        <div class="v-header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <span>Time until Valentine's</span>
-        </div>
-
-        <div class="v-timer">
-            <div class="v-box"><span id="v-days">00</span><small>Days</small></div>
-            <div class="v-box"><span id="v-hours">00</span><small>Hrs</small></div>
-            <div class="v-box"><span id="v-mins">00</span><small>Min</small></div>
-            <div class="v-box"><span id="v-secs">00</span><small>Sec</small></div>
-        </div>
-    </div>
-
-    <style>
-        /* CSS สำหรับ Pop-up */
-        #valentines-popup-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            animation: v-slideUp 0.5s ease-out;
-            display: block; /* เริ่มต้นแสดงผล */
-        }
-        .v-popup-content {
-            background: white;
-            border: 2px solid #ff4757;
-            border-radius: 12px;
-            padding: 15px 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            text-align: center;
-            min-width: 260px;
-            position: relative;
-        }
-        .v-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #ff4757;
-            font-weight: bold;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        .v-header svg {
-            animation: v-beat 1.2s infinite;
-        }
-        .v-timer {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-        }
-        .v-box {
-            background: #ff4757;
-            color: white;
-            padding: 5px;
-            border-radius: 6px;
-            min-width: 45px;
-        }
-        .v-box span {
-            display: block;
-            font-size: 18px;
-            font-weight: bold;
-            line-height: 1.2;
-        }
-        .v-box small {
-            font-size: 10px;
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-        .v-close-btn {
-            position: absolute;
-            top: 2px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 20px;
-            cursor: pointer;
-            line-height: 1;
-        }
-        .v-close-btn:hover { color: #333; }
-
-        @keyframes v-slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes v-beat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
-    </style>
-
-    <script>
-        (function() {
-            function updateValentineTimer() {
-                const now = new Date();
-                let year = now.getFullYear();
-                let vDay = new Date(year, 1, 14); // เดือน 1 คือกุมภาพันธ์ (0-indexed)
-
-                if (now > vDay) vDay = new Date(year + 1, 1, 14); // ถ้าเลยแล้ว ให้นับปีหน้า
-
-                const diff = vDay - now;
-
-                if (diff <= 0) {
-                    document.querySelector('.v-header span').innerText = "Happy Valentine's Day!";
-                    return;
-                }
-
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-                document.getElementById('v-days').innerText = d < 10 ? '0'+d : d;
-                document.getElementById('v-hours').innerText = h < 10 ? '0'+h : h;
-                document.getElementById('v-mins').innerText = m < 10 ? '0'+m : m;
-                document.getElementById('v-secs').innerText = s < 10 ? '0'+s : s;
-            }
-
-            document.getElementById('valentines-popup-widget').style.display = 'block';
-            setInterval(updateValentineTimer, 1000);
-            updateValentineTimer();
-        })();
-    </script>
-</div>
 </body>
 </html>
