@@ -103,6 +103,9 @@
         const Printer = ({size=24, className=""}) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
         );
+        const FileText = ({size=24, className=""}) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        );
         const CheckCircle = ({size=24, className=""}) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         );
@@ -145,7 +148,9 @@
         const AlertCircle = ({size=24, className=""}) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         );
-
+        const MessageCircle = ({size=24, className=""}) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+        );
 
         const generateOrderId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -172,6 +177,7 @@
                             detail: 'ห่อกระดาษสีดำ ริบบิ้นแดง\nแนบการ์ด: "Happy Anniversary na ka"',
                             address: 'คอนโด A ชั้น 5 ห้อง 502 ถ.สุขุมวิท',
                             phone: '081-234-5678',
+                            lineId: '@customer_flower',
                             mapLink: '',
                             deliveryNote: 'โทรหาก่อนถึง 10 นาที (คุณมิ้นท์)',
                             completed: false,
@@ -184,6 +190,7 @@
                         orderId: task.orderId || generateOrderId(),
                         paymentStatus: task.paymentStatus || 'unpaid',
                         mapLink: task.mapLink || '',
+                        lineId: task.lineId || '',
                         printed: task.printed || false
                     }));
                 } catch (e) {
@@ -191,6 +198,9 @@
                     return [];
                 }
             });
+
+            // Blank Tasks (for printing manual forms)
+            const [blankTasks, setBlankTasks] = useState([]);
 
             // Selection State
             const [selectedIds, setSelectedIds] = useState(new Set());
@@ -200,28 +210,56 @@
             const [newDetail, setNewDetail] = useState('');
             const [newAddress, setNewAddress] = useState('');
             const [newPhone, setNewPhone] = useState('');
+            const [newLineId, setNewLineId] = useState('');
             const [newMapLink, setNewMapLink] = useState('');
             const [newDeliveryNote, setNewDeliveryNote] = useState('');
             const [newPaymentStatus, setNewPaymentStatus] = useState('unpaid');
             
-            const [printFilter, setPrintFilter] = useState('new'); // 'new' | 'all' | 'selected'
+            // 'new' | 'all' | 'selected' | 'blank'
+            const [printFilter, setPrintFilter] = useState('new'); 
 
             // Modal State
-            const [modal, setModal] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
+            const [modal, setModal] = useState({ 
+                isOpen: false, 
+                type: 'alert', // 'alert' | 'confirm' | 'prompt'
+                title: '', 
+                message: '', 
+                onConfirm: null,
+                inputValue: ''
+            });
 
             useEffect(() => {
                 localStorage.setItem('flowerShopTasks', JSON.stringify(tasks));
             }, [tasks]);
 
+            // Window event to restore UI after printing blanks
+            useEffect(() => {
+                const handleAfterPrint = () => {
+                    setPrintFilter(prev => {
+                        if (prev === 'blank') {
+                            setBlankTasks([]);
+                            return 'new'; // Restore back to default
+                        }
+                        return prev;
+                    });
+                };
+                window.addEventListener('afterprint', handleAfterPrint);
+                return () => window.removeEventListener('afterprint', handleAfterPrint);
+            }, []);
+
             // --- Modal Handlers ---
             const closeModal = () => setModal({ ...modal, isOpen: false });
 
             const showConfirm = (title, message, onConfirm) => {
-                setModal({ isOpen: true, type: 'confirm', title, message, onConfirm });
+                setModal({ isOpen: true, type: 'confirm', title, message, onConfirm, inputValue: '' });
             };
 
             const showAlert = (title, message) => {
-                setModal({ isOpen: true, type: 'alert', title, message, onConfirm: null });
+                setModal({ isOpen: true, type: 'alert', title, message, onConfirm: null, inputValue: '' });
+            };
+
+            const showPrompt = (title, message, onConfirm) => {
+                setModal({ isOpen: true, type: 'prompt', title, message, onConfirm, inputValue: '1' });
             };
 
             // --- Handlers ---
@@ -239,6 +277,7 @@
                     detail: newDetail,
                     address: newAddress,
                     phone: newPhone,
+                    lineId: newLineId,
                     mapLink: newMapLink,
                     deliveryNote: newDeliveryNote,
                     completed: false,
@@ -249,7 +288,7 @@
                 setTasks([newTask, ...tasks]);
                 // Clear Form
                 setNewTitle(''); setNewPrice(''); setNewDetail(''); setNewAddress(''); 
-                setNewPhone(''); setNewMapLink(''); setNewDeliveryNote(''); setNewPaymentStatus('unpaid');
+                setNewPhone(''); setNewLineId(''); setNewMapLink(''); setNewDeliveryNote(''); setNewPaymentStatus('unpaid');
             };
 
             const toggleComplete = (id) => {
@@ -261,7 +300,6 @@
             const deleteTask = (id) => {
                 showConfirm('ยืนยันการลบ', 'ต้องการลบรายการนี้ใช่ไหม?', () => {
                     setTasks(tasks.filter(task => task.id !== id));
-                    // remove from selection if present
                     const newSelected = new Set(selectedIds);
                     newSelected.delete(id);
                     setSelectedIds(newSelected);
@@ -287,7 +325,6 @@
                 }));
             };
 
-            // Selection Handlers
             const toggleSelection = (id) => {
                 const newSelected = new Set(selectedIds);
                 if (newSelected.has(id)) {
@@ -307,15 +344,12 @@
             };
 
             const handlePrint = () => {
-                // Determine what to print based on selection state and current filter
                 let effectiveFilter = printFilter;
                 
-                // Intelligent Print Mode: If items are selected, assume user wants to print selected
                 if (selectedIds.size > 0) {
                     effectiveFilter = 'selected';
                 }
 
-                // Validation check
                 let countToPrint = 0;
                 if (effectiveFilter === 'selected') countToPrint = selectedIds.size;
                 else if (effectiveFilter === 'new') countToPrint = tasks.filter(t => !t.printed).length;
@@ -326,26 +360,21 @@
                     return;
                 }
 
-                // Auto switch filter for rendering correct view
                 if (selectedIds.size > 0 && printFilter !== 'selected') {
                     setPrintFilter('selected');
-                    // Wait for state update then print
                     setTimeout(() => window.print(), 100);
                 } else {
                     window.print();
                 }
 
-                // Post-print update logic
                 setTimeout(() => {
                     if (effectiveFilter === 'new' || effectiveFilter === 'selected') {
-                        // Confirm update with Custom Modal
                         const message = effectiveFilter === 'selected' 
                             ? `คุณได้พิมพ์ ${countToPrint} รายการที่เลือกแล้วใช่ไหม?`
                             : `คุณได้พิมพ์ ${countToPrint} รายการใหม่แล้วใช่ไหม?`;
 
                         showConfirm('บันทึกสถานะการพิมพ์', message + '\nกด "ตกลง" เพื่อบันทึกว่าพิมพ์แล้ว', () => {
                             setTasks(prevTasks => prevTasks.map(t => {
-                                // If printing selected, update only selected. If printing new, update unprinted.
                                 if (effectiveFilter === 'selected') {
                                     return selectedIds.has(t.id) ? { ...t, printed: true } : t;
                                 } else if (effectiveFilter === 'new') {
@@ -353,12 +382,28 @@
                                 }
                                 return t; 
                             }));
-                            
-                            // Optional: Clear selection after printing selected
                             if (effectiveFilter === 'selected') setSelectedIds(new Set());
                         });
                     }
                 }, 500);
+            };
+
+            const handlePrintBlank = () => {
+                showPrompt('พิมพ์ใบเปล่า', 'ระบุจำนวนใบเปล่าที่ต้องการพิมพ์ (เช่น 5, 10)\n\nระบบจะรันรหัส Order ID ไว้ให้สำหรับเขียนมือ', (value) => {
+                    const count = parseInt(value, 10);
+                    if (isNaN(count) || count <= 0) return;
+
+                    const newBlanks = Array.from({ length: count }).map((_, i) => ({
+                        id: `blank-${Date.now()}-${i}`,
+                        orderId: generateOrderId(),
+                        isBlank: true
+                    }));
+                    
+                    setBlankTasks(newBlanks);
+                    setPrintFilter('blank');
+                    // Give React a brief moment to render the blank items to DOM before printing
+                    setTimeout(() => window.print(), 150);
+                });
             };
 
             // --- Helpers ---
@@ -393,11 +438,10 @@
             // --- Grouping Logic ---
             const groupedTasks = useMemo(() => {
                 const groups = {};
-                // Sort tasks by date desc first (newest top)
                 const sortedTasks = [...tasks].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
                 sortedTasks.forEach(task => {
-                    const dateKey = new Date(task.timestamp).toDateString(); // Grouping Key
+                    const dateKey = new Date(task.timestamp).toDateString();
                     if (!groups[dateKey]) {
                         groups[dateKey] = [];
                     }
@@ -417,15 +461,30 @@
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform transition-all scale-100">
                                 <div className="p-6">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className={`p-2 rounded-full ${modal.type === 'confirm' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
-                                            <AlertCircle size={24} />
+                                        <div className={`p-2 rounded-full ${modal.type === 'confirm' ? 'bg-blue-100 text-blue-600' : (modal.type === 'prompt' ? 'bg-pink-100 text-pink-600' : 'bg-red-100 text-red-600')}`}>
+                                            {modal.type === 'prompt' ? <FileText size={24} /> : <AlertCircle size={24} />}
                                         </div>
                                         <h3 className="text-xl font-bold text-gray-800">{modal.title}</h3>
                                     </div>
                                     <p className="text-gray-600 whitespace-pre-wrap leading-relaxed">{modal.message}</p>
+                                    
+                                    {modal.type === 'prompt' && (
+                                        <div className="mt-4">
+                                            <input 
+                                                type="number" 
+                                                min="1" 
+                                                max="100"
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none text-center text-lg font-bold"
+                                                value={modal.inputValue}
+                                                onChange={(e) => setModal({...modal, inputValue: e.target.value})}
+                                                placeholder="ระบุจำนวน (เช่น 5)"
+                                                autoFocus
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
-                                    {modal.type === 'confirm' && (
+                                    {(modal.type === 'confirm' || modal.type === 'prompt') && (
                                         <button 
                                             onClick={closeModal} 
                                             className="px-5 py-2 text-gray-600 hover:bg-gray-200 rounded-lg font-medium transition"
@@ -435,7 +494,7 @@
                                     )}
                                     <button 
                                         onClick={() => {
-                                            if(modal.onConfirm) modal.onConfirm();
+                                            if(modal.onConfirm) modal.onConfirm(modal.inputValue);
                                             closeModal();
                                         }} 
                                         className="px-6 py-2 bg-pink-500 text-white rounded-lg font-medium shadow-md hover:bg-pink-600 hover:shadow-lg transition"
@@ -463,7 +522,7 @@
                             </div>
                             
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                                {/* Delete Button (Visible if items selected) */}
+                                {/* Delete Button */}
                                 {selectedIds.size > 0 && (
                                     <button 
                                         onClick={deleteSelected}
@@ -473,235 +532,380 @@
                                     </button>
                                 )}
 
-                                {/* Print Filter Selector */}
-                                <div className="bg-white border border-gray-300 rounded-lg p-1 flex shadow-sm w-full sm:w-auto">
+                                {/* Function Buttons (Filters & Print) */}
+                                <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full sm:w-auto">
+                                    {/* Print Blank Sheet Button */}
                                     <button 
-                                        onClick={() => setPrintFilter('new')}
-                                        disabled={selectedIds.size > 0}
-                                        className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition ${printFilter === 'new' && selectedIds.size === 0 ? 'bg-pink-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100 disabled:opacity-50'}`}
+                                        onClick={handlePrintBlank}
+                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 transition font-medium"
+                                        title="พิมพ์ใบเปล่าสำหรับจดออเดอร์ด้วยมือ"
                                     >
-                                        ใหม่ ({unprintedCount})
+                                        <FileText size={18} />
+                                        <span className="hidden md:inline">ใบเปล่า</span>
                                     </button>
+
+                                    <div className="bg-white border border-gray-300 rounded-lg p-1 flex shadow-sm w-full sm:w-auto">
+                                        <button 
+                                            onClick={() => setPrintFilter('new')}
+                                            disabled={selectedIds.size > 0}
+                                            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition ${printFilter === 'new' && selectedIds.size === 0 ? 'bg-pink-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100 disabled:opacity-50'}`}
+                                        >
+                                            ใหม่ ({unprintedCount})
+                                        </button>
+                                        <button 
+                                            onClick={() => setPrintFilter('all')}
+                                            disabled={selectedIds.size > 0}
+                                            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition ${printFilter === 'all' && selectedIds.size === 0 ? 'bg-pink-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100 disabled:opacity-50'}`}
+                                        >
+                                            ทั้งหมด
+                                        </button>
+                                    </div>
+
                                     <button 
-                                        onClick={() => setPrintFilter('all')}
-                                        disabled={selectedIds.size > 0}
-                                        className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition ${printFilter === 'all' && selectedIds.size === 0 ? 'bg-pink-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100 disabled:opacity-50'}`}
+                                        onClick={handlePrint}
+                                        className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2 rounded-lg border shadow-sm hover:shadow transition font-medium
+                                            ${selectedIds.size > 0 
+                                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
+                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            }`}
                                     >
-                                        ทั้งหมด
+                                        <Printer size={18} />
+                                        <span>
+                                            {selectedIds.size > 0 
+                                                ? `พิมพ์ที่เลือก (${selectedIds.size})` 
+                                                : (printFilter === 'new' ? 'พิมพ์รายการใหม่' : 'พิมพ์ทั้งหมด')}
+                                        </span>
                                     </button>
                                 </div>
-
-                                <button 
-                                    onClick={handlePrint}
-                                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2 rounded-lg border shadow-sm hover:shadow transition font-medium
-                                        ${selectedIds.size > 0 
-                                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <Printer size={18} />
-                                    <span>
-                                        {selectedIds.size > 0 
-                                            ? `พิมพ์ที่เลือก (${selectedIds.size})` 
-                                            : (printFilter === 'new' ? 'พิมพ์รายการใหม่' : 'พิมพ์ทั้งหมด')}
-                                    </span>
-                                </button>
                             </div>
                         </header>
 
-                        {/* --- Input Form --- */}
-                        <section className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-pink-100 print-hidden">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700">
-                                <Plus size={20} className="text-pink-500"/> เพิ่มรายการใหม่
-                            </h2>
-                            <form onSubmit={addTask} className="space-y-4">
-                                {/* Same Inputs as before */}
-                                <div className="flex flex-col md:flex-row gap-3">
-                                    <div className="flex-1"><input type="text" placeholder="ชื่องาน" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none" /></div>
-                                    <div className="w-full md:w-1/4 relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Tag size={16} className="text-gray-400" /></div><input type="number" placeholder="ราคา" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none" /></div>
-                                    <div className="w-full md:w-1/4 relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CreditCard size={16} className="text-gray-400" /></div><select value={newPaymentStatus} onChange={(e) => setNewPaymentStatus(e.target.value)} className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none appearance-none bg-white">{PAYMENT_STATUSES.map(status => (<option key={status.id} value={status.id}>{status.label}</option>))}</select></div>
-                                </div>
-                                <textarea placeholder="รายละเอียดสินค้า..." value={newDetail} onChange={(e) => setNewDetail(e.target.value)} rows="2" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none resize-none"></textarea>
-                                <hr className="border-pink-100" />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div className="md:col-span-2"><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><MapPin size={14}/> ที่อยู่จัดส่ง</label><textarea placeholder="ที่อยู่ผู้รับ..." value={newAddress} onChange={(e) => setNewAddress(e.target.value)} rows="2" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none resize-none bg-blue-50/30"></textarea></div>
-                                    <div className="md:col-span-2"><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><LinkIcon size={14}/> ลิงก์แผนที่</label><input type="text" placeholder="Google Map Link" value={newMapLink} onChange={(e) => setNewMapLink(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
-                                    <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><Phone size={14}/> เบอร์โทรศัพท์</label><input type="text" placeholder="0xx-xxx-xxxx" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
-                                    <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><Truck size={14}/> หมายเหตุการส่ง</label><input type="text" placeholder="เช่น ฝากป้อมยาม" value={newDeliveryNote} onChange={(e) => setNewDeliveryNote(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
-                                </div>
-                                <div className="flex justify-end pt-2"><button type="submit" disabled={!newTitle.trim()} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-2.5 rounded-lg font-medium shadow-md transition disabled:opacity-50">บันทึกรายการ</button></div>
-                            </form>
-                        </section>
-
-                        {/* --- Select All Toolbar (Visible only if tasks exist) --- */}
-                        {tasks.length > 0 && (
-                            <div className="flex items-center gap-2 mb-4 ml-1 print-hidden">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedIds.size === tasks.length && tasks.length > 0} 
-                                    onChange={toggleSelectAll}
-                                    className="w-5 h-5 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
-                                />
-                                <span className="text-sm text-gray-600">เลือกทั้งหมด</span>
-                            </div>
+                        {/* --- Input Form (Hidden when blank print is active) --- */}
+                        {printFilter !== 'blank' && (
+                            <section className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-pink-100 print-hidden">
+                                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                                    <Plus size={20} className="text-pink-500"/> เพิ่มรายการใหม่
+                                </h2>
+                                <form onSubmit={addTask} className="space-y-4">
+                                    <div className="flex flex-col md:flex-row gap-3">
+                                        <div className="flex-1"><input type="text" placeholder="ชื่องาน" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none" /></div>
+                                        <div className="w-full md:w-1/4 relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Tag size={16} className="text-gray-400" /></div><input type="number" placeholder="ราคา" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none" /></div>
+                                        <div className="w-full md:w-1/4 relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CreditCard size={16} className="text-gray-400" /></div><select value={newPaymentStatus} onChange={(e) => setNewPaymentStatus(e.target.value)} className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none appearance-none bg-white">{PAYMENT_STATUSES.map(status => (<option key={status.id} value={status.id}>{status.label}</option>))}</select></div>
+                                    </div>
+                                    <textarea placeholder="รายละเอียดสินค้า..." value={newDetail} onChange={(e) => setNewDetail(e.target.value)} rows="2" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none resize-none"></textarea>
+                                    <hr className="border-pink-100" />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div className="md:col-span-2"><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><MapPin size={14}/> ที่อยู่จัดส่ง</label><textarea placeholder="ที่อยู่ผู้รับ..." value={newAddress} onChange={(e) => setNewAddress(e.target.value)} rows="2" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none resize-none bg-blue-50/30"></textarea></div>
+                                        
+                                        <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><MessageCircle size={14}/> ชื่อ LINE ลูกค้า</label><input type="text" placeholder="เช่น @customer หรือ ชื่อไลน์" value={newLineId} onChange={(e) => setNewLineId(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-green-50/30" /></div>
+                                        <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><LinkIcon size={14}/> ลิงก์แผนที่ (Google Map)</label><input type="text" placeholder="https://maps.app.goo.gl/..." value={newMapLink} onChange={(e) => setNewMapLink(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
+                                        
+                                        <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><Phone size={14}/> เบอร์โทรศัพท์</label><input type="text" placeholder="0xx-xxx-xxxx" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
+                                        <div><label className="text-sm text-gray-500 mb-1 block flex items-center gap-1"><Truck size={14}/> หมายเหตุการส่ง</label><input type="text" placeholder="เช่น ฝากป้อมยาม" value={newDeliveryNote} onChange={(e) => setNewDeliveryNote(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 outline-none bg-blue-50/30" /></div>
+                                    </div>
+                                    <div className="flex justify-end pt-2"><button type="submit" disabled={!newTitle.trim()} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-2.5 rounded-lg font-medium shadow-md transition disabled:opacity-50">บันทึกรายการ</button></div>
+                                </form>
+                            </section>
                         )}
 
-                        {/* --- Task List (Grouped by Date) --- */}
-                        <section className="space-y-8 print-space-y-0">
-                            {Object.keys(groupedTasks).length === 0 ? (
-                                <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-                                    <Flower2 className="mx-auto mb-2 opacity-20" size={48} />
-                                    <p>ยังไม่มีรายการงานวันนี้</p>
-                                </div>
-                            ) : (
-                                Object.entries(groupedTasks).map(([dateStr, groupTasks]) => (
-                                    <div key={dateStr} className="break-inside-avoid">
-                                        
-                                        {/* Date Divider - Hidden in Print */}
-                                        <div className="flex items-center gap-4 mb-4 print-hidden">
-                                            <div className="h-px bg-pink-200 flex-1"></div>
-                                            <div className="flex items-center gap-2 text-pink-500 font-medium bg-pink-50 px-3 py-1 rounded-full">
-                                                <CalendarIcon size={16} />
-                                                <span className="text-sm">{formatDateHeader(groupTasks[0].timestamp)}</span>
+                        {/* --- Render Blanks (Visible ONLY when printing blanks) --- */}
+                        {printFilter === 'blank' ? (
+                            <section className="space-y-0 print-block">
+                                <div className="text-center py-6 text-gray-400 print-hidden">กำลังเตรียมพิมพ์ใบเปล่า {blankTasks.length} ใบ...</div>
+                                {blankTasks.map((task, index) => (
+                                    <React.Fragment key={task.id}>
+                                        <div className="flex items-start gap-3 print-block print-hidden-force">
+                                            {/* We use print-hidden-force on this wrapper but override it with print-block in standard print, 
+                                                actually since we are IN blank mode, we want this to be the ONLY thing printed. 
+                                                So we remove print-hidden-force and just print it. */}
+                                        </div>
+
+                                        <div className="print-flex print-border-wrapper break-inside-avoid print-mb-0 bg-white rounded-xl shadow-sm border border-pink-200 overflow-hidden group relative hidden">
+                                            
+                                            {/* Watermark ID */}
+                                            <div className="hidden print-block absolute top-1/2 left-[22%] transform -translate-x-1/2 -translate-y-1/2 -rotate-90 text-gray-300 text-xl font-bold tracking-[0.3em] pointer-events-none select-none z-10 uppercase">
+                                                #{task.orderId}
                                             </div>
-                                            <div className="h-px bg-pink-200 flex-1"></div>
-                                        </div>
 
-                                        <div className="space-y-6 print-space-y-0">
-                                            {groupTasks.map((task, index) => {
-                                                const paymentStatus = getPaymentStatusObj(task.paymentStatus);
-                                                
-                                                // Visibility Logic for Printing
-                                                let isHiddenInPrint = false;
-                                                if (selectedIds.size > 0) {
-                                                    // "Print Selected" mode is active (implicitly or explicitly)
-                                                    if (!selectedIds.has(task.id)) isHiddenInPrint = true;
-                                                } else {
-                                                    // Standard modes
-                                                    if (printFilter === 'new' && task.printed) isHiddenInPrint = true;
-                                                }
+                                            {/* Blank Merchant Stub */}
+                                            <div className="hidden print-block print-w-stub print-border-r-dashed print-bg-gray flex flex-col justify-between p-2 print-p-1 text-center relative">
+                                                <div className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full border border-gray-400 border-dashed flex items-center justify-center bg-white/50"><div className="w-0.5 h-0.5 bg-gray-400 rounded-full"></div></div>
+                                                <div className="text-gray-400 font-bold uppercase tracking-widest print-text-tiny mb-1 mt-3">ต้นขั่วร้าน</div>
+                                                <div>
+                                                    <div className="font-bold text-xl mb-1">#{task.orderId}</div>
+                                                    {/* Empty Status */}
+                                                    <div className="w-16 h-4 border border-gray-300 rounded mb-1 mx-auto bg-white"></div>
+                                                    {/* Empty Price */}
+                                                    <div className="w-12 border-b border-gray-400 border-dashed h-4 mb-2 mx-auto"></div>
+                                                    {/* Empty Title Lines */}
+                                                    <div className="w-full border-b border-gray-400 border-dashed h-4 mb-2"></div>
+                                                    <div className="w-full border-b border-gray-400 border-dashed h-4 mb-2"></div>
+                                                </div>
+                                                <div className="mt-2 pt-2 border-t border-gray-300 border-dashed text-left">
+                                                    <div className="print-text-tiny font-bold text-gray-600">Tel:</div>
+                                                    <div className="w-full border-b border-gray-400 border-dashed h-4 mt-1"></div>
+                                                </div>
+                                            </div>
 
-                                                return (
-                                                    <React.Fragment key={task.id}>
-                                                        <div className={`
-                                                            flex items-start gap-3 print-block
-                                                            ${isHiddenInPrint ? 'print-hidden-force' : ''}
-                                                        `}>
-                                                            {/* Selection Checkbox (Screen Only) */}
-                                                            <div className="pt-6 print-hidden">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    checked={selectedIds.has(task.id)}
-                                                                    onChange={() => toggleSelection(task.id)}
-                                                                    className="w-5 h-5 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
-                                                                />
-                                                            </div>
+                                            {/* Blank Main Ticket */}
+                                            <div className="flex-1 print-w-main print-bg-transparent print-no-border">
+                                                {/* Header */}
+                                                <div className="p-4 print-p-1 flex items-start gap-3 bg-white border-b border-gray-100 print-no-border">
+                                                    <Circle size={24} className="mt-1 text-gray-300 flex-shrink-0 print-hidden" />
+                                                    <div className="mt-0.5 w-16 h-5 border border-gray-300 rounded flex-shrink-0 bg-gray-50"></div>
 
-                                                            {/* Ticket Card */}
-                                                            <div className="flex-1 print-flex print-border-wrapper break-inside-avoid print-mb-0 bg-white rounded-xl shadow-sm border border-pink-200 overflow-hidden group relative">
-                                                                
-                                                                {/* --- Watermark ID --- */}
-                                                                <div className="hidden print-block absolute top-1/2 left-[22%] transform -translate-x-1/2 -translate-y-1/2 -rotate-90 text-gray-300 text-xl font-bold tracking-[0.3em] pointer-events-none select-none z-10 uppercase">
-                                                                    #{task.orderId}
-                                                                </div>
-
-                                                                {/* --- Merchant Stub --- */}
-                                                                <div className="hidden print-block print-w-stub print-border-r-dashed print-bg-gray flex flex-col justify-between p-2 print-p-1 text-center relative">
-                                                                    <div className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full border border-gray-400 border-dashed flex items-center justify-center bg-white/50"><div className="w-0.5 h-0.5 bg-gray-400 rounded-full"></div></div>
-                                                                    <div className="text-gray-400 font-bold uppercase tracking-widest print-text-tiny mb-1 mt-3">ต้นขั่วร้าน</div>
-                                                                    <div>
-                                                                        <div className="font-bold text-xl mb-1">#{task.orderId}</div>
-                                                                        <div className={`print-text-tiny inline-block px-1 border rounded ${paymentStatus.color} mb-1`}>{paymentStatus.label}</div>
-                                                                        <div className="font-bold print-text-xs text-black mb-1 underline">{task.price ? `฿${Number(task.price).toLocaleString()}` : ''}</div>
-                                                                        <div className="print-text-xs line-clamp-2 text-left font-medium mb-1">{task.title}</div>
-                                                                        <div className="print-text-tiny text-gray-500 text-left">{formatDateShort(task.timestamp)}</div>
-                                                                    </div>
-                                                                    <div className="mt-2 pt-2 border-t border-gray-300 border-dashed text-left">
-                                                                        <div className="print-text-tiny font-bold text-gray-600">Tel:</div>
-                                                                        <div className="print-text-xs truncate">{task.phone || '-'}</div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* --- Main Ticket --- */}
-                                                                <div className="flex-1 print-w-main print-bg-transparent print-no-border">
-                                                                    {/* Header */}
-                                                                    <div className="p-4 print-p-1 flex items-start gap-3 bg-white border-b border-gray-100 print-no-border">
-                                                                        <button onClick={() => toggleComplete(task.id)} className="mt-1 text-gray-300 hover:text-green-500 transition print-hidden flex-shrink-0">
-                                                                            {task.completed ? <CheckCircle className="text-green-500" size={24} /> : <Circle size={24} />}
-                                                                        </button>
-                                                                        
-                                                                        <button onClick={() => cyclePaymentStatus(task.id)} className={`mt-0.5 text-xs font-bold border px-2 py-0.5 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition ${paymentStatus.color}`} title="คลิกเพื่อเปลี่ยนสถานะ">
-                                                                            {paymentStatus.label}
-                                                                        </button>
-
-                                                                        <div className="flex-1 w-full min-w-0 ml-1">
-                                                                            <div className="flex justify-between items-start">
-                                                                                <div className="flex-1">
-                                                                                    <div className="hidden print-block text-gray-400 text-xs font-bold mb-0.5">#{task.orderId}</div>
-                                                                                    <div className="flex items-start gap-2">
-                                                                                        <h3 className={`text-lg font-bold print-text-sm break-words whitespace-pre-wrap ${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-                                                                                            {task.title}
-                                                                                        </h3>
-                                                                                        {!task.printed && (<span className="print-hidden inline-flex items-center gap-1 bg-pink-100 text-pink-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-pink-200">NEW</span>)}
-                                                                                    </div>
-                                                                                    <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded mt-1 print-hidden">{task.price ? `฿${Number(task.price).toLocaleString()}` : ''}</span>
-                                                                                </div>
-                                                                                
-                                                                                <button onClick={() => deleteTask(task.id)} className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition print-hidden ml-2 flex-shrink-0">
-                                                                                    <Trash2 size={18} />
-                                                                                </button>
-                                                                            </div>
-                                                                            {task.detail && (<p className="text-gray-600 mt-1 whitespace-pre-wrap text-sm print-text-xs break-words">{task.detail}</p>)}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Info Section */}
-                                                                    <div className="p-4 print-p-1 bg-blue-50/40 text-sm print-text-xs border-t border-gray-50 print-bg-transparent print-no-border">
-                                                                        <div className="flex items-end justify-between gap-2">
-                                                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 print-grid print-grid-cols-2 print-gap-1">
-                                                                                <div className="col-span-1 md:col-span-2 print-col-span-2 flex items-start gap-2 text-gray-700 w-full"><MapPin size={16} className="text-blue-500 mt-0.5 flex-shrink-0" /><div className="w-full min-w-0"><span className="font-semibold mr-1 print-whitespace-nowrap">ที่อยู่ส่ง:</span><span className="break-words whitespace-pre-wrap">{task.address || <span className="text-gray-400 italic">- ไม่ระบุ -</span>}</span></div></div>
-                                                                                <div className="flex items-start gap-2 text-gray-700"><Phone size={16} className="text-blue-500 flex-shrink-0 mt-0.5" /><div className="flex-1 min-w-0"><span className="font-semibold print-whitespace-nowrap mr-1">โทร:</span><span className="phone-display">{task.phone || <span className="text-gray-400 italic">-</span>}</span></div></div>
-                                                                                <div className="flex items-start gap-2 text-gray-700"><Truck size={16} className="text-orange-500 flex-shrink-0 mt-0.5" /><div className="flex-1 min-w-0"><span className="font-semibold print-whitespace-nowrap mr-1">หมายเหตุ:</span><span className="text-orange-700 font-medium break-words whitespace-pre-wrap">{task.deliveryNote || <span className="text-gray-400 italic font-normal">-</span>}</span></div></div>
-                                                                            </div>
-                                                                            
-                                                                            {/* QR Code Section - Restored to Bottom Right */}
-                                                                            {task.mapLink && (
-                                                                                <div className="hidden print-block flex-shrink-0 ml-2">
-                                                                                    <div className="flex flex-col items-center justify-center border border-gray-200 p-1 rounded-md bg-white shadow-sm">
-                                                                                        <img 
-                                                                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(task.mapLink)}`} 
-                                                                                            alt="Map QR" 
-                                                                                            className="print-qr-size"
-                                                                                        />
-                                                                                        <span className="text-[7px] text-blue-500 font-medium text-center w-full leading-none mt-1">Scan for Map</span>
-                                                                                    </div>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-
-                                                                        <div className="mt-3 pt-2 border-t border-dashed border-gray-200 flex items-center gap-1 text-xs text-gray-400 justify-end print-hidden"><Clock size={12} /><span>รับออเดอร์เมื่อ: {formatDate(task.timestamp)}</span></div>
-                                                                        <div className="hidden print-block mt-2 pt-1 border-t border-dashed border-gray-300 text-right"><span className="text-[9px] text-gray-500 font-medium">* กรุณาดึงออกก่อนส่งให้ลูกค้าทุกครั้ง</span></div>
-                                                                    </div>
-                                                                </div>
+                                                    <div className="flex-1 w-full min-w-0 ml-1">
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="flex-1">
+                                                                <div className="hidden print-block text-gray-400 text-xs font-bold mb-0.5">#{task.orderId}</div>
+                                                                <div className="w-full border-b border-gray-400 border-dashed h-5 mt-1 mb-2"></div>
+                                                                <div className="w-3/4 border-b border-gray-400 border-dashed h-5 mb-2"></div>
                                                             </div>
                                                         </div>
+                                                        <div className="w-full border-b border-gray-400 border-dashed h-4 mt-3"></div>
+                                                        <div className="w-4/5 border-b border-gray-400 border-dashed h-4 mt-2"></div>
+                                                    </div>
+                                                </div>
 
-                                                        {/* Cut Line (Only if not last in this group AND not hidden in print) */}
-                                                        <div className={`
-                                                            hidden print-block relative py-6 print-py-05 break-inside-avoid
-                                                            ${isHiddenInPrint ? 'print-hidden-force' : ''}
-                                                        `}>
-                                                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-dashed border-gray-300"></div></div>
-                                                            <div className="relative flex justify-center"><span className="bg-white px-2 text-gray-400"><Scissors size={12} /></span></div>
+                                                {/* Info Section */}
+                                                <div className="p-4 print-p-1 bg-blue-50/40 text-sm print-text-xs border-t border-gray-50 print-bg-transparent print-no-border">
+                                                    <div className="flex items-end justify-between gap-2">
+                                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 print-grid print-grid-cols-2 print-gap-2">
+                                                            <div className="col-span-1 md:col-span-2 print-col-span-2 flex items-end gap-2 text-gray-700 w-full">
+                                                                <MapPin size={16} className="text-blue-500 shrink-0" />
+                                                                <span className="font-semibold print-whitespace-nowrap">ที่อยู่ส่ง:</span>
+                                                                <div className="flex-1 border-b border-gray-400 border-dashed h-4"></div>
+                                                            </div>
+                                                            
+                                                            <div className="flex items-end gap-2 text-gray-700">
+                                                                <Phone size={16} className="text-blue-500 shrink-0" />
+                                                                <span className="font-semibold print-whitespace-nowrap">โทร:</span>
+                                                                <div className="flex-1 border-b border-gray-400 border-dashed h-4"></div>
+                                                            </div>
+                                                            
+                                                            <div className="flex items-end gap-2 text-gray-700">
+                                                                <MessageCircle size={14} className="text-green-500 shrink-0" />
+                                                                <span className="font-semibold text-green-600 print-whitespace-nowrap">LINE:</span>
+                                                                <div className="flex-1 border-b border-gray-400 border-dashed h-4"></div>
+                                                            </div>
+
+                                                            <div className="flex items-end gap-2 text-gray-700 col-span-1 md:col-span-2 print-col-span-2">
+                                                                <Truck size={16} className="text-orange-500 shrink-0" />
+                                                                <span className="font-semibold print-whitespace-nowrap">หมายเหตุ:</span>
+                                                                <div className="flex-1 border-b border-gray-400 border-dashed h-4"></div>
+                                                            </div>
                                                         </div>
-                                                    </React.Fragment>
-                                                );
-                                            })}
+                                                        
+                                                        {/* Empty QR Box */}
+                                                        <div className="hidden print-block flex-shrink-0 ml-2">
+                                                            <div className="flex flex-col items-center justify-center border border-gray-300 border-dashed p-1 rounded-md bg-white/50 w-[50px] h-[50px]">
+                                                                <span className="text-[8px] text-gray-400 text-center leading-tight">QR<br/>Code</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="hidden print-block mt-2 pt-1 border-t border-dashed border-gray-300 text-right"><span className="text-[9px] text-gray-500 font-medium">* กรุณาดึงออกก่อนส่งให้ลูกค้าทุกครั้ง</span></div>
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* Cut Line */}
+                                        {index < blankTasks.length - 1 && (
+                                            <div className="hidden print-block relative py-6 print-py-05 break-inside-avoid">
+                                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-dashed border-gray-300"></div></div>
+                                                <div className="relative flex justify-center"><span className="bg-white px-2 text-gray-400"><Scissors size={12} /></span></div>
+                                            </div>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </section>
+                        ) : (
+                            /* --- Normal Task List (Hidden when blank print is active) --- */
+                            <React.Fragment>
+                                {/* Select All Toolbar */}
+                                {tasks.length > 0 && (
+                                    <div className="flex items-center gap-2 mb-4 ml-1 print-hidden">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.size === tasks.length && tasks.length > 0} 
+                                            onChange={toggleSelectAll}
+                                            className="w-5 h-5 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-600">เลือกทั้งหมด</span>
                                     </div>
-                                ))
-                            )}
-                        </section>
+                                )}
+
+                                <section className="space-y-8 print-space-y-0">
+                                    {Object.keys(groupedTasks).length === 0 ? (
+                                        <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                                            <Flower2 className="mx-auto mb-2 opacity-20" size={48} />
+                                            <p>ยังไม่มีรายการงานวันนี้</p>
+                                        </div>
+                                    ) : (
+                                        Object.entries(groupedTasks).map(([dateStr, groupTasks]) => (
+                                            <div key={dateStr} className="break-inside-avoid">
+                                                
+                                                {/* Date Divider */}
+                                                <div className="flex items-center gap-4 mb-4 print-hidden">
+                                                    <div className="h-px bg-pink-200 flex-1"></div>
+                                                    <div className="flex items-center gap-2 text-pink-500 font-medium bg-pink-50 px-3 py-1 rounded-full">
+                                                        <CalendarIcon size={16} />
+                                                        <span className="text-sm">{formatDateHeader(groupTasks[0].timestamp)}</span>
+                                                    </div>
+                                                    <div className="h-px bg-pink-200 flex-1"></div>
+                                                </div>
+
+                                                <div className="space-y-6 print-space-y-0">
+                                                    {groupTasks.map((task, index) => {
+                                                        const paymentStatus = getPaymentStatusObj(task.paymentStatus);
+                                                        
+                                                        let isHiddenInPrint = false;
+                                                        if (selectedIds.size > 0) {
+                                                            if (!selectedIds.has(task.id)) isHiddenInPrint = true;
+                                                        } else {
+                                                            if (printFilter === 'new' && task.printed) isHiddenInPrint = true;
+                                                        }
+
+                                                        return (
+                                                            <React.Fragment key={task.id}>
+                                                                <div className={`
+                                                                    flex items-start gap-3 print-block
+                                                                    ${isHiddenInPrint ? 'print-hidden-force' : ''}
+                                                                `}>
+                                                                    {/* Selection Checkbox */}
+                                                                    <div className="pt-6 print-hidden">
+                                                                        <input 
+                                                                            type="checkbox" 
+                                                                            checked={selectedIds.has(task.id)}
+                                                                            onChange={() => toggleSelection(task.id)}
+                                                                            className="w-5 h-5 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
+                                                                        />
+                                                                    </div>
+
+                                                                    {/* Ticket Card */}
+                                                                    <div className="flex-1 print-flex print-border-wrapper break-inside-avoid print-mb-0 bg-white rounded-xl shadow-sm border border-pink-200 overflow-hidden group relative">
+                                                                        
+                                                                        {/* --- Watermark ID --- */}
+                                                                        <div className="hidden print-block absolute top-1/2 left-[22%] transform -translate-x-1/2 -translate-y-1/2 -rotate-90 text-gray-300 text-xl font-bold tracking-[0.3em] pointer-events-none select-none z-10 uppercase">
+                                                                            #{task.orderId}
+                                                                        </div>
+
+                                                                        {/* --- Merchant Stub --- */}
+                                                                        <div className="hidden print-block print-w-stub print-border-r-dashed print-bg-gray flex flex-col justify-between p-2 print-p-1 text-center relative">
+                                                                            <div className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full border border-gray-400 border-dashed flex items-center justify-center bg-white/50"><div className="w-0.5 h-0.5 bg-gray-400 rounded-full"></div></div>
+                                                                            <div className="text-gray-400 font-bold uppercase tracking-widest print-text-tiny mb-1 mt-3">ต้นขั่วร้าน</div>
+                                                                            <div>
+                                                                                <div className="font-bold text-xl mb-1">#{task.orderId}</div>
+                                                                                <div className={`print-text-tiny inline-block px-1 border rounded ${paymentStatus.color} mb-1`}>{paymentStatus.label}</div>
+                                                                                <div className="font-bold print-text-xs text-black mb-1 underline">{task.price ? `฿${Number(task.price).toLocaleString()}` : ''}</div>
+                                                                                <div className="print-text-xs line-clamp-2 text-left font-medium mb-1">{task.title}</div>
+                                                                                <div className="print-text-tiny text-gray-500 text-left">{formatDateShort(task.timestamp)}</div>
+                                                                            </div>
+                                                                            <div className="mt-2 pt-2 border-t border-gray-300 border-dashed text-left">
+                                                                                <div className="print-text-xs truncate"><span className="font-bold text-gray-600">T:</span> {task.phone || '-'}</div>
+                                                                                <div className="print-text-xs truncate"><span className="font-bold text-gray-600">L:</span> {task.lineId || '-'}</div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* --- Main Ticket --- */}
+                                                                        <div className="flex-1 print-w-main print-bg-transparent print-no-border">
+                                                                            {/* Header */}
+                                                                            <div className="p-4 print-p-1 flex items-start gap-3 bg-white border-b border-gray-100 print-no-border">
+                                                                                <button onClick={() => toggleComplete(task.id)} className="mt-1 text-gray-300 hover:text-green-500 transition print-hidden flex-shrink-0">
+                                                                                    {task.completed ? <CheckCircle className="text-green-500" size={24} /> : <Circle size={24} />}
+                                                                                </button>
+                                                                                
+                                                                                <button onClick={() => cyclePaymentStatus(task.id)} className={`mt-0.5 text-xs font-bold border px-2 py-0.5 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition ${paymentStatus.color}`} title="คลิกเพื่อเปลี่ยนสถานะ">
+                                                                                    {paymentStatus.label}
+                                                                                </button>
+
+                                                                                <div className="flex-1 w-full min-w-0 ml-1">
+                                                                                    <div className="flex justify-between items-start">
+                                                                                        <div className="flex-1">
+                                                                                            <div className="hidden print-block text-gray-400 text-xs font-bold mb-0.5">#{task.orderId}</div>
+                                                                                            <div className="flex items-start gap-2">
+                                                                                                <h3 className={`text-lg font-bold print-text-sm break-words whitespace-pre-wrap ${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                                                                                                    {task.title}
+                                                                                                </h3>
+                                                                                                {!task.printed && (<span className="print-hidden inline-flex items-center gap-1 bg-pink-100 text-pink-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-pink-200">NEW</span>)}
+                                                                                            </div>
+                                                                                            <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded mt-1 print-hidden">{task.price ? `฿${Number(task.price).toLocaleString()}` : ''}</span>
+                                                                                        </div>
+                                                                                        
+                                                                                        <button onClick={() => deleteTask(task.id)} className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition print-hidden ml-2 flex-shrink-0">
+                                                                                            <Trash2 size={18} />
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    {task.detail && (<p className="text-gray-600 mt-1 whitespace-pre-wrap text-sm print-text-xs break-words">{task.detail}</p>)}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Info Section */}
+                                                                            <div className="p-4 print-p-1 bg-blue-50/40 text-sm print-text-xs border-t border-gray-50 print-bg-transparent print-no-border">
+                                                                                <div className="flex items-end justify-between gap-2">
+                                                                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 print-grid print-grid-cols-2 print-gap-1">
+                                                                                        <div className="col-span-1 md:col-span-2 print-col-span-2 flex items-start gap-2 text-gray-700 w-full"><MapPin size={16} className="text-blue-500 mt-0.5 flex-shrink-0" /><div className="w-full min-w-0"><span className="font-semibold mr-1 print-whitespace-nowrap">ที่อยู่ส่ง:</span><span className="break-words whitespace-pre-wrap">{task.address || <span className="text-gray-400 italic">- ไม่ระบุ -</span>}</span></div></div>
+                                                                                        
+                                                                                        <div className="flex items-start gap-2 text-gray-700">
+                                                                                            <Phone size={16} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                                                                                            <div className="flex-1 min-w-0 flex flex-wrap gap-x-3 gap-y-1">
+                                                                                                <div className="flex items-center gap-1">
+                                                                                                    <span className="font-semibold print-whitespace-nowrap">โทร:</span>
+                                                                                                    <span className="phone-display">{task.phone || <span className="text-gray-400 italic">-</span>}</span>
+                                                                                                </div>
+                                                                                                <div className="flex items-center gap-1">
+                                                                                                    <MessageCircle size={14} className="text-green-500" />
+                                                                                                    <span className="font-semibold print-whitespace-nowrap text-green-600">LINE:</span>
+                                                                                                    <span className="break-words whitespace-pre-wrap">{task.lineId || <span className="text-gray-400 italic">-</span>}</span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        <div className="flex items-start gap-2 text-gray-700"><Truck size={16} className="text-orange-500 flex-shrink-0 mt-0.5" /><div className="flex-1 min-w-0"><span className="font-semibold print-whitespace-nowrap mr-1">หมายเหตุ:</span><span className="text-orange-700 font-medium break-words whitespace-pre-wrap">{task.deliveryNote || <span className="text-gray-400 italic font-normal">-</span>}</span></div></div>
+                                                                                    </div>
+                                                                                    
+                                                                                    {/* QR Code Section */}
+                                                                                    {task.mapLink && (
+                                                                                        <div className="hidden print-block flex-shrink-0 ml-2">
+                                                                                            <div className="flex flex-col items-center justify-center border border-gray-200 p-1 rounded-md bg-white shadow-sm">
+                                                                                                <img 
+                                                                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(task.mapLink)}`} 
+                                                                                                    alt="Map QR" 
+                                                                                                    className="print-qr-size"
+                                                                                                />
+                                                                                                <span className="text-[7px] text-blue-500 font-medium text-center w-full leading-none mt-1">Scan for Map</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+
+                                                                                <div className="mt-3 pt-2 border-t border-dashed border-gray-200 flex items-center gap-1 text-xs text-gray-400 justify-end print-hidden"><Clock size={12} /><span>รับออเดอร์เมื่อ: {formatDate(task.timestamp)}</span></div>
+                                                                                <div className="hidden print-block mt-2 pt-1 border-t border-dashed border-gray-300 text-right"><span className="text-[9px] text-gray-500 font-medium">* กรุณาดึงออกก่อนส่งให้ลูกค้าทุกครั้ง</span></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Cut Line */}
+                                                                {index < tasks.length - 1 && (
+                                                                    <div className={`
+                                                                        hidden print-block relative py-6 print-py-05 break-inside-avoid
+                                                                        ${isHiddenInPrint ? 'print-hidden-force' : ''}
+                                                                    `}>
+                                                                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-dashed border-gray-300"></div></div>
+                                                                        <div className="relative flex justify-center"><span className="bg-white px-2 text-gray-400"><Scissors size={12} /></span></div>
+                                                                    </div>
+                                                                )}
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </section>
+                            </React.Fragment>
+                        )}
                     </div>
                     
                     <footer className="text-center p-4 text-gray-400 text-sm print-hidden">
