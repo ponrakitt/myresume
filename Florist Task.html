@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ดอกไม้ - ระบบจัดการร้านดอกไม้</title>
+    <title>เราดอกไม้ - ระบบจัดการร้านดอกไม้</title>
     
-    <!-- Favicon (โลโก้ใหม่: วงกลมสีชมพู ดอกไม้ขาว) -->
-    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2Y0NzJiNiIvPjxwYXRoIGQ9Ik01MCAyNUM0MCAyNSA0MCA0MCAzMCA0MEMyMCA0MCAyMCAyNSAxMCAyNUMwIDI1IDAgNTAgMTAgNTBDMCA2MCAxMCA3MCAyMCA3MFM0MCA2MCA1MCA2MEM2MCA3MCA4MCA3MCA5MCA2MEMxMDAgNjAgMTAwIDUwIDkwIDUwQzEwMCA1MCAxMDAgMjUgOTAgMjVDODAgMjUgODAgNDAgNzAgNDBDNjAgNDAgNjAgMjUgNTAgMjVaTTUwIDYwTDUwIDg1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01MCAzMCBDNDUgMzAgNDUgNDAgMzUgNDAgQzMwIDQwIDMwIDMwIDI1IDMwIEMyMCAzMCAyMCA1MCAyNSA1MCBDMjAgNTUgMzAgNjAgMzUgNjAgQzQ1IDYwIDQ1IDUwIDUwIDUwIEM1NSA1MCA1NSA2MCA2NSA2MCBDNzAgNjAgODAgNTUgNzUgNTAgQzgwIDUwIDgwIDMwIDc1IDMwIEM3MCAzMCA3MCA0MCA2NSA0MCBDNTUgNDAgNTUgMzAgNTAgMzBaIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==">
+    <!-- Favicon (รูปช่อดอกไม้) -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/933/933096.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -160,11 +160,14 @@
 
         const generateOrderId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+        // Updated generateQRData helper: Simplified content
         const generateQRData = (task, isBlank = false) => {
             if (isBlank) {
-                return `Order: #${task.orderId}\nTitle: -\nPrice: -\nDetail: -\nAddress: -\nPhone: -\nLine: -\nNote: -\nDate: -`;
+                return `Order #${task.orderId}`;
             }
-            return `Order: #${task.orderId}\nTitle: ${task.title || '-'}\nPrice: ${task.price || '-'}\nDetail: ${task.detail || '-'}\nAddress: ${task.address || '-'}\nPhone: ${task.phone || '-'}\nLine: ${task.lineId || '-'}\nNote: ${task.deliveryNote || '-'}\nDate: ${new Date(task.timestamp).toLocaleString('th-TH')}`;
+            // Reduced info: Order ID, Title (truncated), Price, Phone
+            const shortTitle = task.title ? (task.title.length > 25 ? task.title.substring(0, 25) + '...' : task.title) : '-';
+            return `ID: ${task.orderId}\nItem: ${shortTitle}\nPrice: ${task.price || '-'}\nTel: ${task.phone || '-'}`;
         };
 
         const PAYMENT_STATUSES = [
@@ -485,14 +488,14 @@
                         {/* --- Header --- */}
                         <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-2 border-pink-200 pb-4 gap-4 print-hidden">
                             <div className="flex items-center gap-3 self-start md:self-center">
-                                {/* Logo ร้านดอกไม้ (Header) - Changed to new logo */}
+                                {/* Logo ร้านดอกไม้ (Header) */}
                                 <img 
                                     src={LOGO_URI} 
                                     alt="Logo" 
                                     className="w-14 h-14 object-contain drop-shadow-md"
                                 />
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-800 tracking-tight">ดอกไม้</h1>
+                                    <h1 className="text-3xl font-bold text-gray-800 tracking-tight">เราดอกไม้</h1>
                                     <p className="text-pink-600 font-medium">ระบบจัดการออเดอร์ &amp; การจัดส่ง</p>
                                 </div>
                             </div>
@@ -647,11 +650,11 @@
 
                                                     <div className="flex-1 w-full min-w-0 ml-1 relative print:pl-[55px]">
                                                         {/* DATA QR Code for Blank (Main Ticket) - Replaces the placeholder - Using Flower Image */}
-                                                        <div className="hidden print-block absolute top-0 left-0">
+                                                        <div className="hidden print-block absolute top-0 right-0">
                                                             <div className="flex flex-col items-center justify-center border border-gray-300 border-dashed p-0.5 rounded bg-white/50 w-[50px] h-[50px]">
                                                                 <img 
                                                                     src={LOGO_URI} 
-                                                                    className="w-8 h-8 opacity-20" 
+                                                                    className="w-8 h-8 opacity-20 filter grayscale" 
                                                                     alt="flower placeholder" 
                                                                 />
                                                             </div>
@@ -845,16 +848,11 @@
                                                                                 </button>
 
                                                                                 <div className="flex-1 w-full min-w-0 ml-1 relative print:pl-[55px]">
-                                                                                    
-                                                                                    {/* Map QR Code - Absolute Left */}
+                                                                                    {/* Map QR Code - Absolute Right */}
                                                                                     {task.mapLink && (
-                                                                                        <div className="hidden print-block absolute top-0 left-0">
+                                                                                        <div className="hidden print-block absolute top-0 right-0">
                                                                                             <div className="flex flex-col items-center justify-center border p-0.5 rounded bg-white">
-                                                                                                <img 
-                                                                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(task.mapLink)}`} 
-                                                                                                    alt="Map QR" 
-                                                                                                    className="print-qr-size"
-                                                                                                />
+                                                                                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(task.mapLink)}`} alt="Map QR" className="print-qr-size" />
                                                                                                 <span className="text-[6px] text-gray-500 text-center w-full leading-none mt-0.5">Map</span>
                                                                                             </div>
                                                                                         </div>
