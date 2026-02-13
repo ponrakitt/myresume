@@ -340,20 +340,83 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            try {
-                const parsed = JSON.parse(decodedText);
-                if(parsed.id || parsed.orderId) document.getElementById('orderId').value = parsed.id || parsed.orderId;
-                if(parsed.name || parsed.customer) document.getElementById('customerName').value = parsed.name || parsed.customer;
-                if(parsed.price) document.getElementById('price').value = parsed.price;
-                if(parsed.phone) document.getElementById('phoneNumber').value = parsed.phone;
-            } catch (e) {
-                document.getElementById('orderId').value = decodedText;
+            const text = decodedText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+            let isFormatted = false;
+
+            // Check if text matches the line-by-line key:value format
+            if (text.includes("Order:") || text.includes("Title:") || text.includes("Price:")) {
+                isFormatted = true;
+                const lines = text.split('\n');
+                let phone = "";
+                let lineId = "";
+                let detail = "";
+                let note = "";
+                
+                lines.forEach(line => {
+                    const separatorIndex = line.indexOf(':');
+                    if (separatorIndex === -1) return;
+                    
+                    const key = line.substring(0, separatorIndex).trim().toLowerCase();
+                    const value = line.substring(separatorIndex + 1).trim();
+                    
+                    switch(key) {
+                        case 'order':
+                            document.getElementById('orderId').value = value.replace('#', '');
+                            break;
+                        case 'title':
+                            document.getElementById('customerName').value = value;
+                            break;
+                        case 'price':
+                            document.getElementById('price').value = value.replace(/[^0-9.]/g, '');
+                            break;
+                        case 'address':
+                            document.getElementById('address').value = value;
+                            break;
+                        case 'phone':
+                            phone = value;
+                            break;
+                        case 'line':
+                            lineId = value;
+                            break;
+                        case 'detail':
+                            detail = value;
+                            break;
+                        case 'note':
+                            note = value;
+                            break;
+                    }
+                });
+
+                // Combine Phone and Line
+                let contact = phone;
+                if (lineId) {
+                    contact = contact ? `${contact} (Line: ${lineId})` : `Line: ${lineId}`;
+                }
+                document.getElementById('phoneNumber').value = contact;
+
+                // Combine Detail and Note
+                let combinedNote = [];
+                if (detail) combinedNote.push(detail);
+                if (note) combinedNote.push(note);
+                document.getElementById('note').value = combinedNote.join(', ');
+
+                alert('สแกนและกรอกข้อมูลสำเร็จ');
+            } else {
+                // Fallback for JSON or plain text
+                try {
+                    const parsed = JSON.parse(decodedText);
+                    if(parsed.id || parsed.orderId) document.getElementById('orderId').value = parsed.id || parsed.orderId;
+                    if(parsed.name || parsed.customer) document.getElementById('customerName').value = parsed.name || parsed.customer;
+                    if(parsed.price) document.getElementById('price').value = parsed.price;
+                    if(parsed.phone) document.getElementById('phoneNumber').value = parsed.phone;
+                    alert('สแกนสำเร็จ (JSON)');
+                } catch (e) {
+                    document.getElementById('orderId').value = decodedText;
+                    alert(`สแกนสำเร็จ: ${decodedText}`);
+                }
             }
             
-            // Play a beep sound if desired (optional) or just vibrate
             if (navigator.vibrate) navigator.vibrate(200);
-
-            alert(`สแกนสำเร็จ: ${decodedText}`);
             stopScanner();
         }
 
