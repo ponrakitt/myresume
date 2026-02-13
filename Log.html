@@ -202,6 +202,8 @@
     <!-- Scripts -->
     <script>
         // ▼▼▼ กำหนด URL ของ Google Apps Script ที่นี่ (Hardcode) ▼▼▼
+        // วิธีใส่: ลบข้อความใน "" ออก แล้ววาง URL ที่ขึ้นต้นด้วย https://script.google.com/macros/s/...
+        // ข้อควรระวัง: ตอน Deploy Script ต้องเลือก "Who has access" เป็น "Anyone" (ทุกคน) เท่านั้น
         const HARDCODED_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNsfQSMeU_mqG09GQOtxI83rX_lGfuYlTYfW09yZeY3gArZr7-DYnYoNjIIYzqkp_t/exec"; 
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -216,6 +218,7 @@
                 logs = JSON.parse(savedLogs);
             }
 
+            // Load Config
             if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL !== "วาง URL ของ Google Apps Script ที่นี่") {
                 sheetUrl = HARDCODED_SCRIPT_URL;
             }
@@ -251,9 +254,26 @@
                 note: document.getElementById('note').value.trim()
             };
 
+            // 1. Save Local (Always save locally first)
             logs.unshift(newLog);
             localStorage.setItem('productionLogs', JSON.stringify(logs));
             renderLogs();
+
+            // 2. Validate & Send to Google Sheets
+            // Check if URL is placeholder
+            if (sheetUrl === "วาง URL ของ Google Apps Script ที่นี่") {
+                alert("✅ บันทึกลงเครื่องสำเร็จ\n\n⚠️ แต่ยังไม่ได้ส่งไป Google Sheet\nเนื่องจากคุณยังไม่ได้ใส่ URL ในโค้ด (บรรทัดที่เขียนว่า HARDCODED_SCRIPT_URL)");
+                // Clear form even if sheet failed, because local save succeeded
+                resetForm();
+                return;
+            }
+
+            // Check if URL is invalid format
+            if (sheetUrl && !sheetUrl.startsWith("https://script.google.com/")) {
+                alert("✅ บันทึกลงเครื่องสำเร็จ\n\n⚠️ URL ของ Google Apps Script ไม่ถูกต้อง\nต้องขึ้นต้นด้วย https://script.google.com/");
+                resetForm();
+                return;
+            }
 
             if (sheetUrl) {
                 btnSave.disabled = true;
@@ -263,14 +283,16 @@
                 try {
                     await fetch(sheetUrl, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain' },
+                        mode: 'no-cors', // Important for GAS
+                        headers: { 'Content-Type': 'text/plain' }, // Prevent preflight
                         body: JSON.stringify(newLog)
                     });
                     console.log('Sent to Sheets');
+                    // Note: 'no-cors' returns opaque response, we can't check .ok
+                    // If permissions are wrong, it fails silently in console/network tab
                 } catch (error) {
                     console.error('Sheet Error:', error);
-                    alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ');
+                    alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ (Network Error)');
                 } finally {
                     btnSave.disabled = false;
                     btnSave.classList.replace('bg-gray-400', 'bg-blue-600');
@@ -279,6 +301,10 @@
                 }
             }
 
+            resetForm();
+        }
+
+        function resetForm() {
             document.getElementById('orderForm').reset();
             document.getElementById('status').value = 'ยังไม่จ่าย';
             updateStatusColor(document.getElementById('status'));
