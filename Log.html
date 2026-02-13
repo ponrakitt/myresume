@@ -46,6 +46,10 @@
                 </div>
                 <h1 class="text-lg font-bold text-gray-800 truncate">ระบบบันทึก Order</h1>
             </div>
+            <div class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                ออนไลน์
+            </div>
         </div>
     </header>
 
@@ -201,14 +205,12 @@
 
     <!-- Scripts -->
     <script>
-        // ▼▼▼ กำหนด URL ของ Google Apps Script ที่นี่ (Hardcode) ▼▼▼
-        // วิธีใส่: ลบข้อความใน "" ออก แล้ววาง URL ที่ขึ้นต้นด้วย https://script.google.com/macros/s/...
-        // ข้อควรระวัง: ตอน Deploy Script ต้องเลือก "Who has access" เป็น "Anyone" (ทุกคน) เท่านั้น
+        // ▼▼▼ HARDCODED GOOGLE SCRIPT URL ▼▼▼
         const HARDCODED_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNsfQSMeU_mqG09GQOtxI83rX_lGfuYlTYfW09yZeY3gArZr7-DYnYoNjIIYzqkp_t/exec"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let logs = [];
-        let html5QrCode = null; // Changed from scanner widget to core instance
+        let html5QrCode = null; 
         let sheetUrl = "";
 
         // Initialization
@@ -218,8 +220,7 @@
                 logs = JSON.parse(savedLogs);
             }
 
-            // Load Config
-            if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL !== "วาง URL ของ Google Apps Script ที่นี่") {
+            if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL.startsWith("https")) {
                 sheetUrl = HARDCODED_SCRIPT_URL;
             }
             
@@ -254,27 +255,12 @@
                 note: document.getElementById('note').value.trim()
             };
 
-            // 1. Save Local (Always save locally first)
+            // 1. Save Local
             logs.unshift(newLog);
             localStorage.setItem('productionLogs', JSON.stringify(logs));
             renderLogs();
 
             // 2. Validate & Send to Google Sheets
-            // Check if URL is placeholder
-            if (sheetUrl === "วาง URL ของ Google Apps Script ที่นี่") {
-                alert("✅ บันทึกลงเครื่องสำเร็จ\n\n⚠️ แต่ยังไม่ได้ส่งไป Google Sheet\nเนื่องจากคุณยังไม่ได้ใส่ URL ในโค้ด (บรรทัดที่เขียนว่า HARDCODED_SCRIPT_URL)");
-                // Clear form even if sheet failed, because local save succeeded
-                resetForm();
-                return;
-            }
-
-            // Check if URL is invalid format
-            if (sheetUrl && !sheetUrl.startsWith("https://script.google.com/")) {
-                alert("✅ บันทึกลงเครื่องสำเร็จ\n\n⚠️ URL ของ Google Apps Script ไม่ถูกต้อง\nต้องขึ้นต้นด้วย https://script.google.com/");
-                resetForm();
-                return;
-            }
-
             if (sheetUrl) {
                 btnSave.disabled = true;
                 btnSave.classList.replace('bg-blue-600', 'bg-gray-400');
@@ -283,13 +269,11 @@
                 try {
                     await fetch(sheetUrl, {
                         method: 'POST',
-                        mode: 'no-cors', // Important for GAS
-                        headers: { 'Content-Type': 'text/plain' }, // Prevent preflight
+                        mode: 'no-cors', 
+                        headers: { 'Content-Type': 'text/plain' },
                         body: JSON.stringify(newLog)
                     });
                     console.log('Sent to Sheets');
-                    // Note: 'no-cors' returns opaque response, we can't check .ok
-                    // If permissions are wrong, it fails silently in console/network tab
                 } catch (error) {
                     console.error('Sheet Error:', error);
                     alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ (Network Error)');
@@ -299,6 +283,8 @@
                     btnSave.innerHTML = originalBtnText;
                     lucide.createIcons();
                 }
+            } else {
+                 alert("⚠️ ยังไม่ได้ใส่ URL ของ Google Apps Script หรือ URL ผิดพลาด");
             }
 
             resetForm();
@@ -310,7 +296,7 @@
             updateStatusColor(document.getElementById('status'));
         }
 
-        // Updated Scanner Logic using Html5Qrcode Core API for better permission handling
+        // Scanner Logic
         async function startScanner() {
             const scannerDiv = document.getElementById('scannerContainer');
             const btnScan = document.getElementById('btnStartScan');
@@ -319,12 +305,10 @@
             btnScan.classList.add('hidden');
 
             try {
-                // Initialize if not already created
                 if (!html5QrCode) {
                     html5QrCode = new Html5Qrcode("reader");
                 }
                 
-                // Force request camera (prefer environment/back camera)
                 await html5QrCode.start(
                     { facingMode: "environment" }, 
                     { 
@@ -342,7 +326,7 @@
                     msg += "\n\nคำเตือน: เบราว์เซอร์อาจบล็อกกล้องเพราะไม่ได้ใช้ HTTPS";
                 }
                 alert(msg);
-                stopScanner(); // Revert UI
+                stopScanner(); 
             }
         }
 
@@ -352,7 +336,6 @@
 
             if (html5QrCode) {
                 try {
-                    // Try to stop if running
                     if(html5QrCode.isScanning) {
                         await html5QrCode.stop();
                     }
@@ -367,11 +350,9 @@
 
         function onScanSuccess(decodedText, decodedResult) {
             const text = decodedText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-            let isFormatted = false;
 
-            // Check if text matches the line-by-line key:value format
-            if (text.includes("Order:") || text.includes("Title:") || text.includes("Price:")) {
-                isFormatted = true;
+            // Smart Parse based on "Key: Value" format
+            if (text.includes("Order:") || text.includes("Title:")) {
                 const lines = text.split('\n');
                 let phone = "";
                 let lineId = "";
@@ -393,6 +374,7 @@
                             document.getElementById('customerName').value = value;
                             break;
                         case 'price':
+                            // Extract only numbers and decimals
                             document.getElementById('price').value = value.replace(/[^0-9.]/g, '');
                             break;
                         case 'address':
@@ -413,30 +395,35 @@
                     }
                 });
 
-                // Combine Phone and Line
-                let contact = phone;
-                if (lineId) {
-                    contact = contact ? `${contact} (Line: ${lineId})` : `Line: ${lineId}`;
-                }
-                document.getElementById('phoneNumber').value = contact;
+                // Combine Phone/Line
+                let contactParts = [];
+                if(phone && phone !== 'test') contactParts.push(phone);
+                if(lineId && lineId !== 'test') contactParts.push("Line: " + lineId);
+                // Fallback if values are just 'test'
+                if(contactParts.length === 0 && (phone || lineId)) contactParts.push(phone || lineId);
+                
+                document.getElementById('phoneNumber').value = contactParts.join(' / ');
 
-                // Combine Detail and Note
-                let combinedNote = [];
-                if (detail) combinedNote.push(detail);
-                if (note) combinedNote.push(note);
-                document.getElementById('note').value = combinedNote.join(', ');
+                // Combine Note
+                let noteParts = [];
+                if(detail && detail !== 'test') noteParts.push(detail);
+                if(note && note !== 'tset') noteParts.push(note);
+                 // Fallback
+                if(noteParts.length === 0 && (detail || note)) noteParts.push(detail || note);
+                
+                document.getElementById('note').value = noteParts.join(', ');
 
                 alert('สแกนและกรอกข้อมูลสำเร็จ');
             } else {
-                // Fallback for JSON or plain text
+                // Fallback JSON
                 try {
                     const parsed = JSON.parse(decodedText);
                     if(parsed.id || parsed.orderId) document.getElementById('orderId').value = parsed.id || parsed.orderId;
                     if(parsed.name || parsed.customer) document.getElementById('customerName').value = parsed.name || parsed.customer;
                     if(parsed.price) document.getElementById('price').value = parsed.price;
-                    if(parsed.phone) document.getElementById('phoneNumber').value = parsed.phone;
                     alert('สแกนสำเร็จ (JSON)');
                 } catch (e) {
+                    // Raw Text -> Order ID
                     document.getElementById('orderId').value = decodedText;
                     alert(`สแกนสำเร็จ: ${decodedText}`);
                 }
@@ -447,7 +434,7 @@
         }
 
         function onScanFailure(error) {
-            // console.warn(`Code scan error = ${error}`);
+            // ignore
         }
 
         // Render List & Helper functions
