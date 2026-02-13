@@ -11,7 +11,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- QR Code Scanner Library -->
+    <!-- QR Code Scanner Library (Direct Link) -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <!-- Google Font: Noto Sans Thai -->
@@ -22,7 +22,6 @@
             font-family: 'Noto Sans Thai', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Custom Scrollbar for better look */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -33,13 +32,6 @@
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1; 
             border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-        /* Hide HTML5-QRCode default text */
-        #reader__dashboard_section_csr span {
-            display: none !important;
         }
     </style>
 </head>
@@ -54,7 +46,6 @@
                 </div>
                 <h1 class="text-lg font-bold text-gray-800 truncate">ระบบบันทึก Order</h1>
             </div>
-            <!-- ปุ่มตั้งค่าถูกลบออกแล้วตามคำขอ -->
         </div>
     </header>
 
@@ -90,11 +81,13 @@
 
                 <!-- Camera Area (Hidden by default) -->
                 <div id="scannerContainer" class="hidden mb-5 relative bg-black rounded-xl overflow-hidden aspect-square">
-                    <div id="reader" class="w-full h-full object-cover"></div>
-                    <button onclick="stopScanner()" class="absolute top-3 right-3 bg-white/20 backdrop-blur-md border border-white/30 text-white p-2 rounded-full z-20">
+                    <!-- reader div is handled by library -->
+                    <div id="reader" class="w-full h-full"></div>
+                    
+                    <button onclick="stopScanner()" class="absolute top-3 right-3 bg-white/20 backdrop-blur-md border border-white/30 text-white p-2 rounded-full z-20 hover:bg-white/30">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
-                    <div class="absolute bottom-4 left-0 w-full text-center text-white text-xs bg-black/50 py-1 z-10">
+                    <div class="absolute bottom-4 left-0 w-full text-center text-white text-xs bg-black/50 py-1 z-10 pointer-events-none">
                         วาง QR Code ให้อยู่ในกรอบ
                     </div>
                 </div>
@@ -213,23 +206,20 @@
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let logs = [];
-        let html5QrcodeScanner = null;
+        let html5QrCode = null; // Changed from scanner widget to core instance
         let sheetUrl = "";
 
         // Initialization
         window.addEventListener('DOMContentLoaded', () => {
-            // Load Logs
             const savedLogs = localStorage.getItem('productionLogs');
             if (savedLogs) {
                 logs = JSON.parse(savedLogs);
             }
 
-            // Load Settings (System Only)
             if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL !== "วาง URL ของ Google Apps Script ที่นี่") {
                 sheetUrl = HARDCODED_SCRIPT_URL;
             }
             
-            // UI setup
             renderLogs();
             lucide.createIcons();
         });
@@ -249,7 +239,6 @@
             const btnSave = document.getElementById('btnSave');
             const originalBtnText = btnSave.innerHTML;
             
-            // Prepare Data
             const newLog = {
                 id: Date.now(),
                 timestamp: new Date().toLocaleString('th-TH'),
@@ -262,12 +251,10 @@
                 note: document.getElementById('note').value.trim()
             };
 
-            // 1. Save Local
-            logs.unshift(newLog); // Add to top
+            logs.unshift(newLog);
             localStorage.setItem('productionLogs', JSON.stringify(logs));
             renderLogs();
 
-            // 2. Send to Google Sheets (if configured via code)
             if (sheetUrl) {
                 btnSave.disabled = true;
                 btnSave.classList.replace('bg-blue-600', 'bg-gray-400');
@@ -288,35 +275,108 @@
                     btnSave.disabled = false;
                     btnSave.classList.replace('bg-gray-400', 'bg-blue-600');
                     btnSave.innerHTML = originalBtnText;
-                    lucide.createIcons(); // Refresh icons in button
+                    lucide.createIcons();
                 }
             }
 
-            // 3. Reset Form
             document.getElementById('orderForm').reset();
             document.getElementById('status').value = 'ยังไม่จ่าย';
             updateStatusColor(document.getElementById('status'));
         }
 
-        // Render List
+        // Updated Scanner Logic using Html5Qrcode Core API for better permission handling
+        async function startScanner() {
+            const scannerDiv = document.getElementById('scannerContainer');
+            const btnScan = document.getElementById('btnStartScan');
+            
+            scannerDiv.classList.remove('hidden');
+            btnScan.classList.add('hidden');
+
+            try {
+                // Initialize if not already created
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("reader");
+                }
+                
+                // Force request camera (prefer environment/back camera)
+                await html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    { 
+                        fps: 10, 
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0
+                    },
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } catch (err) {
+                console.error("Camera Error:", err);
+                let msg = "ไม่สามารถเปิดกล้องได้: " + err;
+                if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                    msg += "\n\nคำเตือน: เบราว์เซอร์อาจบล็อกกล้องเพราะไม่ได้ใช้ HTTPS";
+                }
+                alert(msg);
+                stopScanner(); // Revert UI
+            }
+        }
+
+        async function stopScanner() {
+            const scannerDiv = document.getElementById('scannerContainer');
+            const btnScan = document.getElementById('btnStartScan');
+
+            if (html5QrCode) {
+                try {
+                    // Try to stop if running
+                    if(html5QrCode.isScanning) {
+                        await html5QrCode.stop();
+                    }
+                } catch (err) {
+                    console.warn("Error stopping scanner:", err);
+                }
+            }
+            
+            scannerDiv.classList.add('hidden');
+            btnScan.classList.remove('hidden');
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const parsed = JSON.parse(decodedText);
+                if(parsed.id || parsed.orderId) document.getElementById('orderId').value = parsed.id || parsed.orderId;
+                if(parsed.name || parsed.customer) document.getElementById('customerName').value = parsed.name || parsed.customer;
+                if(parsed.price) document.getElementById('price').value = parsed.price;
+                if(parsed.phone) document.getElementById('phoneNumber').value = parsed.phone;
+            } catch (e) {
+                document.getElementById('orderId').value = decodedText;
+            }
+            
+            // Play a beep sound if desired (optional) or just vibrate
+            if (navigator.vibrate) navigator.vibrate(200);
+
+            alert(`สแกนสำเร็จ: ${decodedText}`);
+            stopScanner();
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        // Render List & Helper functions
         function renderLogs() {
             const listContainer = document.getElementById('logList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const emptyState = document.getElementById('emptyState');
             
-            // Filter
             const filteredLogs = logs.filter(log => 
                 (log.orderId || "").toLowerCase().includes(searchTerm) ||
                 (log.customerName || "").toLowerCase().includes(searchTerm)
             );
 
-            // Update Stats
             const totalAmount = logs.reduce((sum, log) => sum + (parseFloat(log.price) || 0), 0);
             document.getElementById('statTotalOrders').innerText = logs.length;
             document.getElementById('statTotalAmount').innerText = "฿" + totalAmount.toLocaleString();
             document.getElementById('logCount').innerText = filteredLogs.length + " รายการ";
 
-            // Build HTML
             if (filteredLogs.length === 0) {
                 listContainer.innerHTML = '';
                 emptyState.classList.remove('hidden');
@@ -370,8 +430,6 @@
                 </div>
                 `;
             }).join('');
-
-            // Re-init icons for new elements
             lucide.createIcons();
         }
 
@@ -383,61 +441,6 @@
             }
         }
 
-        // Scanner Logic
-        function startScanner() {
-            const scannerDiv = document.getElementById('scannerContainer');
-            const btnScan = document.getElementById('btnStartScan');
-            
-            scannerDiv.classList.remove('hidden');
-            btnScan.classList.add('hidden');
-
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner(
-                    "reader", 
-                    { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                    false
-                );
-            }
-            
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        }
-
-        function stopScanner() {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear().then(() => {
-                    document.getElementById('scannerContainer').classList.add('hidden');
-                    document.getElementById('btnStartScan').classList.remove('hidden');
-                }).catch(error => {
-                    console.error("Failed to clear html5QrcodeScanner. ", error);
-                });
-            } else {
-                document.getElementById('scannerContainer').classList.add('hidden');
-                document.getElementById('btnStartScan').classList.remove('hidden');
-            }
-        }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            // Handle result
-            try {
-                const parsed = JSON.parse(decodedText);
-                if(parsed.id || parsed.orderId) document.getElementById('orderId').value = parsed.id || parsed.orderId;
-                if(parsed.name || parsed.customer) document.getElementById('customerName').value = parsed.name || parsed.customer;
-                if(parsed.price) document.getElementById('price').value = parsed.price;
-                if(parsed.phone) document.getElementById('phoneNumber').value = parsed.phone;
-            } catch (e) {
-                // Not JSON, assume Order ID
-                document.getElementById('orderId').value = decodedText;
-            }
-            
-            alert(`สแกนสำเร็จ: ${decodedText}`);
-            stopScanner();
-        }
-
-        function onScanFailure(error) {
-            // ignore
-        }
-
-        // Helper
         function updateStatusColor(select) {
             select.className = `w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base appearance-none shadow-sm font-medium ${
                 select.value === 'จ่ายแล้ว' ? 'bg-green-50 text-green-700 border-green-200' : 
