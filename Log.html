@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบบันทึก Order</title>
+    <title>ระบบบันทึก Order (Stable Sync)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -242,7 +242,10 @@
 
             try {
                 // Get ALL Data
-                const response = await fetch(`${sheetUrl}?t=${new Date().getTime()}`);
+                const response = await fetch(`${sheetUrl}?t=${new Date().getTime()}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
                 if (!response.ok) throw new Error('Network response was not ok');
                 const allData = await response.json();
                 
@@ -262,7 +265,9 @@
                 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                if (!isBackground) alert('⚠️ ไม่สามารถดึงข้อมูลจาก Google Sheet ได้ (กรุณาตรวจสอบว่า Deploy Apps Script ใหม่หรือยัง)');
+                if (!isBackground) {
+                    alert('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล (Failed to fetch)\n\nสาเหตุที่เป็นไปได้:\n1. คุณยังไม่ได้กด Deploy เป็น "New version" (เวอร์ชันใหม่) หลังจากแก้โค้ดใน Google Sheet\n2. URL ผิด\n\nวิธีแก้: ไปที่ Google Apps Script > Deploy > Manage deployments > กดดินสอ > เลือก New version > Deploy');
+                }
             } finally {
                 refreshIcon.classList.remove('animate-spin');
                 if(!isBackground) {
@@ -454,7 +459,11 @@
             const listContainer = document.getElementById('logList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const emptyState = document.getElementById('emptyState');
-            const filteredLogs = logs.filter(log => (log.orderId || "").toLowerCase().includes(searchTerm) || (log.customerName || "").toLowerCase().includes(searchTerm));
+            // FIX: Convert to String before toLowerCase() because orderId might be a number from JSON
+            const filteredLogs = logs.filter(log => 
+                String(log.orderId || "").toLowerCase().includes(searchTerm) || 
+                String(log.customerName || "").toLowerCase().includes(searchTerm)
+            );
             const totalAmount = logs.reduce((sum, log) => sum + (parseFloat(log.price) || 0), 0);
             document.getElementById('statTotalOrders').innerText = logs.length;
             document.getElementById('statTotalAmount').innerText = "฿" + totalAmount.toLocaleString();
