@@ -150,6 +150,7 @@
             <div id="emptyState" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300 mx-4 md:mx-0">
                 <div class="flex justify-center mb-3"><i data-lucide="clipboard-list" class="w-16 h-16 text-gray-200"></i></div>
                 <p class="text-gray-400 text-lg">ไม่พบข้อมูลใน 48 ชม. ล่าสุด</p>
+                <p class="text-xs text-gray-400 mt-1">รายการเก่ากว่า 2 วันจะไม่แสดงที่นี่</p>
             </div>
         </div>
     </main>
@@ -197,73 +198,71 @@
         let sheetUrl = "";
         let isEditing = false;
         
-        // Auto Sync Interval (ms) - 30 seconds
+        // Auto Sync Interval (ms)
         const AUTO_SYNC_INTERVAL = 30000; 
 
         window.addEventListener('DOMContentLoaded', () => {
-            // โหลดจาก LocalStorage ก่อนเพื่อความเร็ว
             const savedLogs = localStorage.getItem('productionLogs');
             if (savedLogs) logs = JSON.parse(savedLogs);
 
             if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL.startsWith("https")) {
                 sheetUrl = HARDCODED_SCRIPT_URL;
-                // ดึงข้อมูลใหม่จาก Sheet ทันทีที่เปิด
                 fetchLogsFromSheet();
-                
-                // เริ่มระบบ Auto Sync
                 setInterval(() => {
-                    // ถ้ากำลังแก้ไขอยู่ ไม่ต้องอัปเดต เพื่อป้องกันข้อมูลหายขณะพิมพ์
-                    if (!isEditing) {
-                        fetchLogsFromSheet(true); // true = Background mode (เงียบๆ)
-                    }
+                    if (!isEditing) fetchLogsFromSheet(true);
                 }, AUTO_SYNC_INTERVAL);
             }
             renderLogs();
             lucide.createIcons();
         });
 
-        // ฟังก์ชันดึงข้อมูลจาก Sheet (GET)
+        // Helper: Generate Consistent Date Format (DD/MM/YYYY HH:mm:ss BE)
+        function getThaiDateTime() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear() + 543;
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${mins}:${secs}`;
+        }
+
         async function fetchLogsFromSheet(isBackground = false) {
             if (!sheetUrl) return;
-            
             const refreshIcon = document.getElementById('refreshIcon');
             const loadingState = document.getElementById('loadingState');
             const logList = document.getElementById('logList');
-            
             refreshIcon.classList.add('animate-spin');
             
-            // ถ้าเป็นการโหลดครั้งแรก (และไม่มีข้อมูล) ให้โชว์หน้า Loading ใหญ่
             if(!isBackground && logs.length === 0) {
                 logList.classList.add('hidden');
                 loadingState.classList.remove('hidden');
             }
 
             try {
-                // เรียก GET ไปที่ Script พร้อม Time parameter เพื่อกัน Cache
+                // Get ALL Data
                 const response = await fetch(`${sheetUrl}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const allData = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-                
-                // อัปเดตข้อมูล LocalStorage
-                logs = data;
-                localStorage.setItem('productionLogs', JSON.stringify(logs));
-                
-                // อัปเดต UI
-                renderLogs();
-                
+                // CLIENT-SIDE FILTERING (48 Hours)
                 const now = new Date();
-                document.getElementById('lastSyncTime').innerText = 'อัปเดตล่าสุด: ' + now.toLocaleTimeString('th-TH');
+                const cutoff = now.getTime() - (48 * 60 * 60 * 1000); // 48 Hours ago
+                
+                // Filter only items within 48 hours for main list
+                logs = allData.filter(log => {
+                    const logDate = parseLogDate(log.timestamp);
+                    return logDate.getTime() >= cutoff;
+                });
+
+                localStorage.setItem('productionLogs', JSON.stringify(logs));
+                renderLogs();
+                document.getElementById('lastSyncTime').innerText = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
                 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                // แจ้งเตือนเฉพาะตอนกดปุ่มเอง (Background mode จะไม่แจ้งเตือนรบกวน)
-                if (!isBackground) {
-                    alert('⚠️ ไม่สามารถดึงข้อมูลจาก Google Sheet ได้\n\nระบบจะแสดงข้อมูลล่าสุดที่บันทึกไว้ในเครื่องแทน');
-                }
+                if (!isBackground) alert('⚠️ ไม่สามารถดึงข้อมูลจาก Google Sheet ได้ (กรุณาตรวจสอบว่า Deploy Apps Script ใหม่หรือยัง)');
             } finally {
                 refreshIcon.classList.remove('animate-spin');
                 if(!isBackground) {
@@ -285,7 +284,8 @@
             
             const logData = {
                 id: id,
-                timestamp: isEditing ? getLogById(id).timestamp : new Date().toLocaleString('th-TH'),
+                // Use Standard Format function
+                timestamp: isEditing ? getLogById(id).timestamp : getThaiDateTime(),
                 orderId: orderId, customerName: customerName,
                 phoneNumber: document.getElementById('phoneNumber').value.trim(),
                 address: document.getElementById('address').value.trim(),
@@ -296,7 +296,7 @@
                 action: isEditing ? 'edit' : 'add'
             };
 
-            // 1. Optimistic UI Update (Save Local)
+            // Optimistic UI
             if (isEditing) {
                 const index = logs.findIndex(log => log.id == id);
                 if (index !== -1) logs[index] = logData;
@@ -306,7 +306,6 @@
             localStorage.setItem('productionLogs', JSON.stringify(logs));
             renderLogs();
 
-            // 2. Send to Google Sheets
             if (sheetUrl) {
                 btnSave.disabled = true;
                 btnSave.classList.replace('bg-blue-600', 'bg-gray-400');
@@ -320,7 +319,6 @@
                         headers: { 'Content-Type': 'text/plain' },
                         body: JSON.stringify(logData)
                     });
-                    // Refresh data after save to ensure sync
                     setTimeout(() => fetchLogsFromSheet(true), 1000); 
                 } catch (error) {
                     alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ');
@@ -384,12 +382,9 @@
 
         async function deleteLog(id) {
             if (confirm('ยืนยันการลบรายการนี้? (จะลบทั้งในเครื่องและ Google Sheet)')) {
-                // 1. Delete Local UI immediately
                 logs = logs.filter(log => log.id !== id);
                 localStorage.setItem('productionLogs', JSON.stringify(logs));
                 renderLogs();
-
-                // 2. Delete from Sheet
                 if (sheetUrl) {
                     try {
                         await fetch(sheetUrl, {
@@ -398,12 +393,8 @@
                             headers: { 'Content-Type': 'text/plain' },
                             body: JSON.stringify({ action: 'delete', id: id })
                         });
-                        console.log('Delete req sent');
-                        // Optional: Fetch again to sync
                         setTimeout(() => fetchLogsFromSheet(true), 1000);
-                    } catch (error) {
-                        alert('ลบในเครื่องแล้ว แต่ส่งคำสั่งลบไป Sheet ไม่สำเร็จ');
-                    }
+                    } catch (error) { alert('ลบในเครื่องแล้ว แต่ส่งคำสั่งลบไป Sheet ไม่สำเร็จ'); }
                 }
             }
         }
@@ -415,17 +406,11 @@
             updateStatusColor(document.getElementById('status'));
         }
 
-        // --- Stats ---
         function parseLogDate(dateString) {
             try {
-                // Handle both String (from localStorage) and Sheet Format
                 if(!dateString) return new Date();
-                
-                // If it's already ISO string or timestamp
                 const d = new Date(dateString);
                 if(!isNaN(d.getTime())) return d;
-
-                // Thai Format DD/MM/YYYY
                 const parts = dateString.split(' ');
                 const dateParts = parts[0].replace(',', '').split('/'); 
                 if (dateParts.length !== 3) return new Date();
@@ -441,12 +426,10 @@
             document.getElementById('summaryModal').classList.remove('hidden');
             const now = new Date();
             let stats = { day: 0, month: 0, quarter: 0, year: 0, dayCount:0, monthCount:0, quarterCount:0, yearCount:0 };
-
             logs.forEach(log => {
                 const logDate = parseLogDate(log.timestamp);
                 const price = parseFloat(log.price) || 0;
                 if (log.status === 'ยกเลิก') return; 
-
                 if (logDate.getFullYear() === now.getFullYear()) {
                     stats.year += price; stats.yearCount++;
                     if (Math.floor(logDate.getMonth() / 3) === Math.floor(now.getMonth() / 3)) { stats.quarter += price; stats.quarterCount++; }
@@ -456,7 +439,6 @@
                     }
                 }
             });
-
             document.getElementById('sumDayAmount').innerText = '฿' + stats.day.toLocaleString();
             document.getElementById('sumDayCount').innerText = stats.dayCount + ' ออเดอร์';
             document.getElementById('sumMonthAmount').innerText = '฿' + stats.month.toLocaleString();
@@ -468,24 +450,16 @@
         }
         function closeSummary() { document.getElementById('summaryModal').classList.add('hidden'); }
 
-        // --- Render & Scanner ---
         function renderLogs() {
             const listContainer = document.getElementById('logList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const emptyState = document.getElementById('emptyState');
-            
             const filteredLogs = logs.filter(log => (log.orderId || "").toLowerCase().includes(searchTerm) || (log.customerName || "").toLowerCase().includes(searchTerm));
             const totalAmount = logs.reduce((sum, log) => sum + (parseFloat(log.price) || 0), 0);
             document.getElementById('statTotalOrders').innerText = logs.length;
             document.getElementById('statTotalAmount').innerText = "฿" + totalAmount.toLocaleString();
             document.getElementById('logCount').innerText = filteredLogs.length + " รายการ";
-
-            if (filteredLogs.length === 0) {
-                listContainer.innerHTML = '';
-                if(logs.length > 0) emptyState.classList.remove('hidden'); 
-                return;
-            } else { emptyState.classList.add('hidden'); }
-
+            if (filteredLogs.length === 0) { listContainer.innerHTML = ''; if(logs.length > 0 || !searchTerm) emptyState.classList.remove('hidden'); return; } else { emptyState.classList.add('hidden'); }
             listContainer.innerHTML = filteredLogs.map(log => {
                 let statusClass = log.status === 'จ่ายแล้ว' ? 'bg-green-100 text-green-700' : log.status === 'ส่งแล้ว' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700';
                 return `
