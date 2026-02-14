@@ -3,20 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบบันทึก Order (Edit Mode)</title>
-    
-    <!-- Tailwind CSS -->
+    <title>ระบบบันทึก Order (Sync Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- QR Code Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         body { font-family: 'Noto Sans Thai', sans-serif; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -33,17 +24,19 @@
                 <div class="bg-blue-600 p-1.5 rounded-lg">
                     <i data-lucide="clipboard-list" class="text-white w-5 h-5"></i>
                 </div>
-                <h1 class="text-lg font-bold text-gray-800 truncate">ระบบบันทึก Order</h1>
+                <div class="overflow-hidden">
+                    <h1 class="text-lg font-bold text-gray-800 truncate">ระบบบันทึก Order</h1>
+                    <p class="text-[10px] text-gray-500" id="lastSyncTime">รอการซิงค์...</p>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <button onclick="fetchLogsFromSheet()" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors" title="รีเฟรชข้อมูล">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-gray-600" id="refreshIcon"></i>
+                </button>
                 <button onclick="openSummary()" class="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors">
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">ดูสรุปยอด</span>
+                    <span class="hidden sm:inline">สรุป</span>
                 </button>
-                <div class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="hidden sm:inline">ออนไลน์</span>
-                </div>
             </div>
         </div>
     </header>
@@ -52,11 +45,10 @@
         
         <!-- Left Column: Form -->
         <div class="md:col-span-1 space-y-4">
-            
             <!-- Stats -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 gap-4">
                 <div class="text-center p-3 bg-blue-50 rounded-xl">
-                    <div class="text-xs text-gray-500 font-medium">ออเดอร์วันนี้</div>
+                    <div class="text-xs text-gray-500 font-medium">ออเดอร์ (48ชม.)</div>
                     <div id="statTotalOrders" class="text-2xl font-bold text-blue-600 leading-tight">0</div>
                 </div>
                 <div class="text-center p-3 bg-green-50 rounded-xl">
@@ -72,98 +64,61 @@
                         <i data-lucide="file-text" class="w-5 h-5 text-indigo-500"></i>
                         <span>บันทึกข้อมูลใหม่</span>
                     </h2>
-                    <button id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-red-500 bg-red-50 px-2 py-1 rounded hover:bg-red-100">
-                        ยกเลิกแก้ไข
-                    </button>
+                    <button id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-red-500 bg-red-50 px-2 py-1 rounded hover:bg-red-100">ยกเลิกแก้ไข</button>
                 </div>
 
-                <!-- Scan Button (Hidden when editing) -->
                 <button id="btnStartScan" onclick="startScanner()" class="w-full mb-5 bg-gray-800 active:bg-gray-900 text-white py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-sm text-sm font-medium">
-                    <i data-lucide="qr-code" class="w-5 h-5"></i>
-                    แตะเพื่อสแกน QR Code
+                    <i data-lucide="qr-code" class="w-5 h-5"></i> แตะเพื่อสแกน QR Code
                 </button>
 
-                <!-- Camera Area -->
                 <div id="scannerContainer" class="hidden mb-5 relative bg-black rounded-xl overflow-hidden aspect-square">
                     <div id="reader" class="w-full h-full"></div>
-                    <button onclick="stopScanner()" class="absolute top-3 right-3 bg-white/20 backdrop-blur-md border border-white/30 text-white p-2 rounded-full z-20 hover:bg-white/30">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                    <div class="absolute bottom-4 left-0 w-full text-center text-white text-xs bg-black/50 py-1 z-10 pointer-events-none">
-                        วาง QR Code ให้อยู่ในกรอบ
-                    </div>
+                    <button onclick="stopScanner()" class="absolute top-3 right-3 bg-white/20 backdrop-blur-md border border-white/30 text-white p-2 rounded-full z-20 hover:bg-white/30"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    <div class="absolute bottom-4 left-0 w-full text-center text-white text-xs bg-black/50 py-1 z-10 pointer-events-none">วาง QR Code ให้อยู่ในกรอบ</div>
                 </div>
 
                 <form id="orderForm" onsubmit="handleSubmit(event)" class="space-y-4">
-                    <input type="hidden" id="editId" value=""> <!-- Hidden ID for Editing -->
-                    
+                    <input type="hidden" id="editId" value="">
                     <div>
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">รหัสออเดอร์</label>
-                        <div class="relative">
-                            <span class="absolute left-3.5 top-3 text-gray-400 font-bold">#</span>
-                            <input type="text" id="orderId" placeholder="700564" class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm">
-                        </div>
+                        <div class="relative"><span class="absolute left-3.5 top-3 text-gray-400 font-bold">#</span><input type="text" id="orderId" placeholder="700564" class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">ราคา</label>
-                            <div class="relative">
-                                <i data-lucide="dollar-sign" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i>
-                                <input type="number" id="price" placeholder="0.00" class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm">
-                            </div>
+                            <div class="relative"><i data-lucide="dollar-sign" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i><input type="number" id="price" placeholder="0.00" class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></div>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">สถานะ</label>
-                            <div class="relative">
-                                <select id="status" class="w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base appearance-none shadow-sm font-medium bg-red-50 text-red-700 border-red-200" onchange="updateStatusColor(this)">
-                                    <option value="ยังไม่จ่าย">ยังไม่จ่าย</option>
-                                    <option value="จ่ายแล้ว">จ่ายแล้ว</option>
-                                    <option value="ส่งแล้ว">ส่งแล้ว</option>
-                                    <option value="ยกเลิก">ยกเลิก</option>
-                                </select>
-                            </div>
+                            <select id="status" class="w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base appearance-none shadow-sm font-medium bg-red-50 text-red-700 border-red-200" onchange="updateStatusColor(this)">
+                                <option value="ยังไม่จ่าย">ยังไม่จ่าย</option>
+                                <option value="จ่ายแล้ว">จ่ายแล้ว</option>
+                                <option value="ส่งแล้ว">ส่งแล้ว</option>
+                                <option value="ยกเลิก">ยกเลิก</option>
+                            </select>
                         </div>
                     </div>
-                    
                     <div>
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">รายการสินค้า</label>
-                        <div class="relative">
-                            <i data-lucide="package" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i>
-                            <textarea id="products" rows="2" placeholder="รายการสินค้า..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></textarea>
-                        </div>
+                        <div class="relative"><i data-lucide="package" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i><textarea id="products" rows="2" placeholder="รายการสินค้า..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></textarea></div>
                     </div>
-
                     <div>
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">ข้อมูลลูกค้า</label>
                         <div class="space-y-2">
-                            <div class="relative">
-                                <i data-lucide="user" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i>
-                                <input type="text" id="customerName" placeholder="ชื่อ-นามสกุล" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm">
-                            </div>
-                            <div class="relative">
-                                <i data-lucide="smartphone" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i>
-                                <input type="text" id="phoneNumber" placeholder="เบอร์โทร / LINE" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm">
-                            </div>
+                            <div class="relative"><i data-lucide="user" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i><input type="text" id="customerName" placeholder="ชื่อ-นามสกุล" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></div>
+                            <div class="relative"><i data-lucide="smartphone" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i><input type="text" id="phoneNumber" placeholder="เบอร์โทร / LINE" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></div>
                         </div>
                     </div>
-
                     <div>
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">ที่อยู่จัดส่ง</label>
-                        <div class="relative">
-                            <i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i>
-                            <textarea id="address" rows="2" placeholder="ที่อยู่..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></textarea>
-                        </div>
+                        <div class="relative"><i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-3.5 text-gray-400"></i><textarea id="address" rows="2" placeholder="ที่อยู่..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm"></textarea></div>
                     </div>
-
                     <div>
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 block ml-1">หมายเหตุ</label>
                         <input type="text" id="note" placeholder="เช่น ระวังแตก, ส่งด่วน" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-sm">
                     </div>
-
                     <button type="submit" id="btnSave" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-4 shadow-md transition-all active:scale-95 text-base">
-                        <i data-lucide="save" class="w-5 h-5"></i>
-                        <span id="btnSaveText">บันทึกข้อมูล</span>
+                        <i data-lucide="save" class="w-5 h-5"></i> <span id="btnSaveText">บันทึกข้อมูล</span>
                     </button>
                 </form>
             </div>
@@ -171,30 +126,27 @@
 
         <!-- Right Column: List -->
         <div class="md:col-span-2 space-y-4">
-            <!-- Search -->
             <div class="bg-white p-2 pl-4 pr-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2 sticky top-20 md:static z-10">
                 <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
                 <input type="text" id="searchInput" placeholder="ค้นหา Order..." class="flex-1 py-2 focus:outline-none text-base text-gray-700 bg-transparent" oninput="renderLogs()">
-                <button onclick="clearSearch()" class="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
+                <button onclick="clearSearch()" class="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-
-            <!-- Header -->
             <div class="flex justify-between items-end px-1">
-               <h2 class="text-lg font-bold text-gray-700">รายการล่าสุด</h2>
+               <h2 class="text-lg font-bold text-gray-700">รายการล่าสุด (จาก Sheet)</h2>
                <span id="logCount" class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">0 รายการ</span>
             </div>
+            
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-10 hidden">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p class="text-gray-400 text-sm">กำลังดึงข้อมูลจาก Google Sheet...</p>
+            </div>
 
-            <!-- List -->
             <div id="logList" class="space-y-3 pb-20"></div>
             
-            <!-- Empty -->
             <div id="emptyState" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300 mx-4 md:mx-0">
-                <div class="flex justify-center mb-3">
-                    <i data-lucide="clipboard-list" class="w-16 h-16 text-gray-200"></i>
-                </div>
-                <p class="text-gray-400 text-lg">ยังไม่มีข้อมูล</p>
+                <div class="flex justify-center mb-3"><i data-lucide="clipboard-list" class="w-16 h-16 text-gray-200"></i></div>
+                <p class="text-gray-400 text-lg">ไม่พบข้อมูลใน 48 ชม. ล่าสุด</p>
             </div>
         </div>
     </main>
@@ -203,91 +155,37 @@
     <div id="summaryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
         <div class="bg-white rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
-                <h3 class="font-bold text-xl flex items-center gap-2 text-indigo-800">
-                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
-                    สรุปยอดขาย
-                </h3>
-                <button onclick="closeSummary()" class="p-2 hover:bg-white/50 rounded-full transition-colors">
-                    <i data-lucide="x" class="w-6 h-6 text-indigo-800"></i>
-                </button>
+                <h3 class="font-bold text-xl flex items-center gap-2 text-indigo-800"><i data-lucide="bar-chart-2" class="w-6 h-6"></i> สรุปยอดขาย</h3>
+                <button onclick="closeSummary()" class="p-2 hover:bg-white/50 rounded-full transition-colors"><i data-lucide="x" class="w-6 h-6 text-indigo-800"></i></button>
             </div>
-            
             <div class="p-6 overflow-y-auto max-h-[80vh]">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Daily -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                        <div class="relative z-10">
-                            <h4 class="text-sm font-medium text-gray-500 mb-1">วันนี้</h4>
-                            <div class="text-2xl font-bold text-blue-600 mb-1" id="sumDayAmount">฿0</div>
-                            <div class="text-xs text-gray-400" id="sumDayCount">0 ออเดอร์</div>
-                        </div>
+                        <div class="relative z-10"><h4 class="text-sm font-medium text-gray-500 mb-1">วันนี้</h4><div class="text-2xl font-bold text-blue-600 mb-1" id="sumDayAmount">฿0</div><div class="text-xs text-gray-400" id="sumDayCount">0 ออเดอร์</div></div>
                     </div>
-
-                    <!-- Monthly -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-green-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-16 h-16 bg-green-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                        <div class="relative z-10">
-                            <h4 class="text-sm font-medium text-gray-500 mb-1">เดือนนี้</h4>
-                            <div class="text-2xl font-bold text-green-600 mb-1" id="sumMonthAmount">฿0</div>
-                            <div class="text-xs text-gray-400" id="sumMonthCount">0 ออเดอร์</div>
-                        </div>
+                        <div class="relative z-10"><h4 class="text-sm font-medium text-gray-500 mb-1">เดือนนี้</h4><div class="text-2xl font-bold text-green-600 mb-1" id="sumMonthAmount">฿0</div><div class="text-xs text-gray-400" id="sumMonthCount">0 ออเดอร์</div></div>
                     </div>
-
-                    <!-- Quarterly -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-orange-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                        <div class="relative z-10">
-                            <h4 class="text-sm font-medium text-gray-500 mb-1">ไตรมาสนี้</h4>
-                            <div class="text-2xl font-bold text-orange-600 mb-1" id="sumQuarterAmount">฿0</div>
-                            <div class="text-xs text-gray-400" id="sumQuarterCount">0 ออเดอร์</div>
-                        </div>
+                        <div class="relative z-10"><h4 class="text-sm font-medium text-gray-500 mb-1">ไตรมาสนี้</h4><div class="text-2xl font-bold text-orange-600 mb-1" id="sumQuarterAmount">฿0</div><div class="text-xs text-gray-400" id="sumQuarterCount">0 ออเดอร์</div></div>
                     </div>
-
-                    <!-- Yearly -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-purple-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-16 h-16 bg-purple-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                        <div class="relative z-10">
-                            <h4 class="text-sm font-medium text-gray-500 mb-1">ปีนี้</h4>
-                            <div class="text-2xl font-bold text-purple-600 mb-1" id="sumYearAmount">฿0</div>
-                            <div class="text-xs text-gray-400" id="sumYearCount">0 ออเดอร์</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <h4 class="font-bold text-gray-700 mb-3">สถานะออเดอร์ (ทั้งหมด)</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                            <span class="text-sm text-gray-600">จ่ายแล้ว</span>
-                            <span class="font-bold text-green-600" id="statusPaid">0</span>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                            <span class="text-sm text-gray-600">ยังไม่จ่าย</span>
-                            <span class="font-bold text-red-600" id="statusUnpaid">0</span>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                            <span class="text-sm text-gray-600">ส่งแล้ว</span>
-                            <span class="font-bold text-blue-600" id="statusShipped">0</span>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                            <span class="text-sm text-gray-600">ยกเลิก</span>
-                            <span class="font-bold text-gray-500" id="statusCancelled">0</span>
-                        </div>
+                        <div class="relative z-10"><h4 class="text-sm font-medium text-gray-500 mb-1">ปีนี้</h4><div class="text-2xl font-bold text-purple-600 mb-1" id="sumYearAmount">฿0</div><div class="text-xs text-gray-400" id="sumYearCount">0 ออเดอร์</div></div>
                     </div>
                 </div>
             </div>
-            
             <div class="p-4 bg-gray-50 border-t border-gray-100 text-right">
-                <button onclick="closeSummary()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
-                    ปิดหน้าต่าง
-                </button>
+                <button onclick="closeSummary()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">ปิดหน้าต่าง</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ▼▼▼ URL เดิมของคุณ (ไม่ต้องเปลี่ยน ถ้าแก้ไข Script ใน Google Sheet แล้ว) ▼▼▼
+        // ▼▼▼ URL Script (ไม่ต้องเปลี่ยนถ้าใช้ตัวเดิม) ▼▼▼
         const HARDCODED_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNsfQSMeU_mqG09GQOtxI83rX_lGfuYlTYfW09yZeY3gArZr7-DYnYoNjIIYzqkp_t/exec"; 
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -297,48 +195,87 @@
         let isEditing = false;
 
         window.addEventListener('DOMContentLoaded', () => {
+            // โหลดจาก LocalStorage ก่อนเพื่อความเร็ว
             const savedLogs = localStorage.getItem('productionLogs');
             if (savedLogs) logs = JSON.parse(savedLogs);
 
             if (HARDCODED_SCRIPT_URL && HARDCODED_SCRIPT_URL.startsWith("https")) {
                 sheetUrl = HARDCODED_SCRIPT_URL;
+                // ดึงข้อมูลใหม่จาก Sheet ทันทีที่เปิด
+                fetchLogsFromSheet();
             }
             renderLogs();
             lucide.createIcons();
         });
 
+        // ฟังก์ชันดึงข้อมูลจาก Sheet (GET)
+        async function fetchLogsFromSheet() {
+            if (!sheetUrl) return;
+            
+            const refreshIcon = document.getElementById('refreshIcon');
+            const loadingState = document.getElementById('loadingState');
+            const logList = document.getElementById('logList');
+            
+            refreshIcon.classList.add('animate-spin');
+            if(logs.length === 0) {
+                logList.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+            }
+
+            try {
+                // เรียก GET ไปที่ Script พร้อม Time parameter เพื่อกัน Cache
+                const response = await fetch(`${sheetUrl}?t=${new Date().getTime()}`);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                
+                // อัปเดตข้อมูล LocalStorage
+                logs = data;
+                localStorage.setItem('productionLogs', JSON.stringify(logs));
+                
+                // อัปเดต UI
+                renderLogs();
+                
+                const now = new Date();
+                document.getElementById('lastSyncTime').innerText = 'อัปเดตล่าสุด: ' + now.toLocaleTimeString('th-TH');
+                
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                alert('⚠️ ไม่สามารถดึงข้อมูลจาก Google Sheet ได้\n\nสาเหตุที่เป็นไปได้:\n1. คุณแก้ไขโค้ด Script แล้วลืมกด Deploy เป็น "New version" (สำคัญมาก!)\n2. สิทธิ์การเข้าถึงไม่ใช่ "Anyone"\n\nระบบจะแสดงข้อมูลล่าสุดที่บันทึกไว้ในเครื่องแทน');
+            } finally {
+                refreshIcon.classList.remove('animate-spin');
+                logList.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+            }
+        }
+
         async function handleSubmit(e) {
             e.preventDefault();
-            
-            // Get Values
             const id = isEditing ? document.getElementById('editId').value : Date.now();
             const orderId = document.getElementById('orderId').value.trim();
             const customerName = document.getElementById('customerName').value.trim();
-            
-            if (!orderId || !customerName) {
-                alert('กรุณากรอกรหัสออเดอร์และชื่อลูกค้า');
-                return;
-            }
+            if (!orderId || !customerName) { alert('กรุณากรอกรหัสออเดอร์และชื่อลูกค้า'); return; }
 
             const btnSave = document.getElementById('btnSave');
             const originalBtnText = document.getElementById('btnSaveText').innerText;
             
-            // Construct Data Object
             const logData = {
                 id: id,
                 timestamp: isEditing ? getLogById(id).timestamp : new Date().toLocaleString('th-TH'),
-                orderId: orderId,
-                customerName: customerName,
+                orderId: orderId, customerName: customerName,
                 phoneNumber: document.getElementById('phoneNumber').value.trim(),
                 address: document.getElementById('address').value.trim(),
                 price: document.getElementById('price').value.trim(),
                 status: document.getElementById('status').value,
                 products: document.getElementById('products').value.trim(),
                 note: document.getElementById('note').value.trim(),
-                action: isEditing ? 'edit' : 'add' // Tell GAS what to do
+                action: isEditing ? 'edit' : 'add'
             };
 
-            // 1. Save Local
+            // 1. Optimistic UI Update (Save Local)
             if (isEditing) {
                 const index = logs.findIndex(log => log.id == id);
                 if (index !== -1) logs[index] = logData;
@@ -353,7 +290,6 @@
                 btnSave.disabled = true;
                 btnSave.classList.replace('bg-blue-600', 'bg-gray-400');
                 if(isEditing) btnSave.classList.replace('bg-yellow-500', 'bg-gray-400');
-                
                 document.getElementById('btnSaveText').innerText = "กำลังบันทึก...";
                 
                 try {
@@ -363,21 +299,15 @@
                         headers: { 'Content-Type': 'text/plain' },
                         body: JSON.stringify(logData)
                     });
-                    console.log('Sync to Sheets success');
+                    // Refresh data after save to ensure sync
+                    setTimeout(fetchLogsFromSheet, 1000); 
                 } catch (error) {
-                    console.error('Sheet Error:', error);
-                    alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ (Network Error)');
+                    alert('บันทึกลงเครื่องแล้ว แต่ส่ง Google Sheet ไม่สำเร็จ');
                 } finally {
                     btnSave.disabled = false;
                     btnSave.classList.replace('bg-gray-400', isEditing ? 'bg-yellow-500' : 'bg-blue-600');
                     document.getElementById('btnSaveText').innerText = originalBtnText;
-                    
-                    if (isEditing) {
-                        cancelEdit();
-                        alert("แก้ไขข้อมูลเรียบร้อย");
-                    } else {
-                        resetForm();
-                    }
+                    if (isEditing) { cancelEdit(); alert("แก้ไขข้อมูลเรียบร้อย"); } else { resetForm(); }
                 }
             } else {
                  alert("⚠️ ยังไม่ได้ตั้งค่า URL");
@@ -385,15 +315,11 @@
             }
         }
 
-        function getLogById(id) {
-            return logs.find(log => log.id == id);
-        }
+        function getLogById(id) { return logs.find(log => log.id == id); }
 
         function startEdit(id) {
             const log = getLogById(id);
             if (!log) return;
-
-            // Enter Edit Mode
             isEditing = true;
             document.getElementById('editId').value = log.id;
             document.getElementById('orderId').value = log.orderId;
@@ -405,23 +331,16 @@
             document.getElementById('address').value = log.address || '';
             document.getElementById('note').value = log.note || '';
             updateStatusColor(document.getElementById('status'));
-
-            // UI Changes
             document.getElementById('formTitle').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-yellow-600"></i><span>แก้ไขข้อมูล (Order #${log.orderId})</span>`;
             document.getElementById('btnCancelEdit').classList.remove('hidden');
-            document.getElementById('btnStartScan').classList.add('hidden'); // Hide scan during edit
-            
+            document.getElementById('btnStartScan').classList.add('hidden');
             const btnSave = document.getElementById('btnSave');
             btnSave.classList.replace('bg-blue-600', 'bg-yellow-500');
             btnSave.classList.replace('hover:bg-blue-700', 'hover:bg-yellow-600');
             document.getElementById('btnSaveText').innerText = "บันทึกการแก้ไข";
-            
-            // Highlight Form
             const formCard = document.getElementById('formCard');
             formCard.classList.replace('border-l-blue-500', 'border-l-yellow-500');
             formCard.classList.add('ring-2', 'ring-yellow-100');
-            
-            // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
         }
@@ -429,17 +348,13 @@
         function cancelEdit() {
             isEditing = false;
             resetForm();
-            
-            // Reset UI
             document.getElementById('formTitle').innerHTML = `<i data-lucide="file-text" class="w-5 h-5 text-indigo-500"></i><span>บันทึกข้อมูลใหม่</span>`;
             document.getElementById('btnCancelEdit').classList.add('hidden');
             document.getElementById('btnStartScan').classList.remove('hidden');
-            
             const btnSave = document.getElementById('btnSave');
             btnSave.classList.replace('bg-yellow-500', 'bg-blue-600');
             btnSave.classList.replace('hover:bg-yellow-600', 'hover:bg-blue-700');
             document.getElementById('btnSaveText').innerText = "บันทึกข้อมูล";
-
             const formCard = document.getElementById('formCard');
             formCard.classList.replace('border-l-yellow-500', 'border-l-blue-500');
             formCard.classList.remove('ring-2', 'ring-yellow-100');
@@ -448,7 +363,7 @@
 
         async function deleteLog(id) {
             if (confirm('ยืนยันการลบรายการนี้? (จะลบทั้งในเครื่องและ Google Sheet)')) {
-                // 1. Delete Local
+                // 1. Delete Local UI immediately
                 logs = logs.filter(log => log.id !== id);
                 localStorage.setItem('productionLogs', JSON.stringify(logs));
                 renderLogs();
@@ -463,6 +378,8 @@
                             body: JSON.stringify({ action: 'delete', id: id })
                         });
                         console.log('Delete req sent');
+                        // Optional: Fetch again to sync
+                        setTimeout(fetchLogsFromSheet, 1000);
                     } catch (error) {
                         alert('ลบในเครื่องแล้ว แต่ส่งคำสั่งลบไป Sheet ไม่สำเร็จ');
                     }
@@ -477,121 +394,66 @@
             updateStatusColor(document.getElementById('status'));
         }
 
-        // --- Stats & Dashboard Logic ---
+        // --- Stats ---
         function parseLogDate(dateString) {
-            // Expected format: "14/2/2569 14:19:00" or "14/2/2569, 14:19:00"
-            // Split Date and Time
             try {
-                const parts = dateString.split(' ');
-                const dateParts = parts[0].replace(',', '').split('/'); // [14, 2, 2569]
+                // Handle both String (from localStorage) and Sheet Format
+                if(!dateString) return new Date();
                 
-                if (dateParts.length !== 3) return new Date(); // Fallback
+                // If it's already ISO string or timestamp
+                const d = new Date(dateString);
+                if(!isNaN(d.getTime())) return d;
 
+                // Thai Format DD/MM/YYYY
+                const parts = dateString.split(' ');
+                const dateParts = parts[0].replace(',', '').split('/'); 
+                if (dateParts.length !== 3) return new Date();
                 const day = parseInt(dateParts[0]);
-                const month = parseInt(dateParts[1]) - 1; // JS month 0-11
+                const month = parseInt(dateParts[1]) - 1; 
                 let year = parseInt(dateParts[2]);
-
-                // Adjust Buddhist Year to AD if > 2400 (Rough check)
                 if (year > 2400) year -= 543;
-
                 return new Date(year, month, day);
-            } catch (e) {
-                return new Date();
-            }
+            } catch (e) { return new Date(); }
         }
 
         function openSummary() {
-            const modal = document.getElementById('summaryModal');
-            modal.classList.remove('hidden');
-
+            document.getElementById('summaryModal').classList.remove('hidden');
             const now = new Date();
-            const currentDay = now.getDate();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            const currentQuarter = Math.floor(now.getMonth() / 3);
-
-            let stats = {
-                day: { count: 0, amount: 0 },
-                month: { count: 0, amount: 0 },
-                quarter: { count: 0, amount: 0 },
-                year: { count: 0, amount: 0 },
-                status: { paid: 0, unpaid: 0, shipped: 0, cancelled: 0 }
-            };
+            let stats = { day: 0, month: 0, quarter: 0, year: 0, dayCount:0, monthCount:0, quarterCount:0, yearCount:0 };
 
             logs.forEach(log => {
                 const logDate = parseLogDate(log.timestamp);
                 const price = parseFloat(log.price) || 0;
-                const status = log.status;
+                if (log.status === 'ยกเลิก') return; 
 
-                // Status Count
-                if (status === 'จ่ายแล้ว') stats.status.paid++;
-                else if (status === 'ยังไม่จ่าย') stats.status.unpaid++;
-                else if (status === 'ส่งแล้ว') stats.status.shipped++;
-                else if (status === 'ยกเลิก') stats.status.cancelled++;
-
-                // Don't sum up cancelled orders in revenue (Optional logic, but usually good practice)
-                if (status === 'ยกเลิก') return; 
-
-                // Year
-                if (logDate.getFullYear() === currentYear) {
-                    stats.year.count++;
-                    stats.year.amount += price;
-
-                    // Quarter
-                    if (Math.floor(logDate.getMonth() / 3) === currentQuarter) {
-                        stats.quarter.count++;
-                        stats.quarter.amount += price;
-                    }
-
-                    // Month
-                    if (logDate.getMonth() === currentMonth) {
-                        stats.month.count++;
-                        stats.month.amount += price;
-
-                        // Day
-                        if (logDate.getDate() === currentDay) {
-                            stats.day.count++;
-                            stats.day.amount += price;
-                        }
+                if (logDate.getFullYear() === now.getFullYear()) {
+                    stats.year += price; stats.yearCount++;
+                    if (Math.floor(logDate.getMonth() / 3) === Math.floor(now.getMonth() / 3)) { stats.quarter += price; stats.quarterCount++; }
+                    if (logDate.getMonth() === now.getMonth()) {
+                        stats.month += price; stats.monthCount++;
+                        if (logDate.getDate() === now.getDate()) { stats.day += price; stats.dayCount++; }
                     }
                 }
             });
 
-            // Update UI
-            document.getElementById('sumDayAmount').innerText = '฿' + stats.day.amount.toLocaleString();
-            document.getElementById('sumDayCount').innerText = stats.day.count + ' ออเดอร์';
-            
-            document.getElementById('sumMonthAmount').innerText = '฿' + stats.month.amount.toLocaleString();
-            document.getElementById('sumMonthCount').innerText = stats.month.count + ' ออเดอร์';
-            
-            document.getElementById('sumQuarterAmount').innerText = '฿' + stats.quarter.amount.toLocaleString();
-            document.getElementById('sumQuarterCount').innerText = stats.quarter.count + ' ออเดอร์';
-            
-            document.getElementById('sumYearAmount').innerText = '฿' + stats.year.amount.toLocaleString();
-            document.getElementById('sumYearCount').innerText = stats.year.count + ' ออเดอร์';
-
-            // Status UI
-            document.getElementById('statusPaid').innerText = stats.status.paid;
-            document.getElementById('statusUnpaid').innerText = stats.status.unpaid;
-            document.getElementById('statusShipped').innerText = stats.status.shipped;
-            document.getElementById('statusCancelled').innerText = stats.status.cancelled;
+            document.getElementById('sumDayAmount').innerText = '฿' + stats.day.toLocaleString();
+            document.getElementById('sumDayCount').innerText = stats.dayCount + ' ออเดอร์';
+            document.getElementById('sumMonthAmount').innerText = '฿' + stats.month.toLocaleString();
+            document.getElementById('sumMonthCount').innerText = stats.monthCount + ' ออเดอร์';
+            document.getElementById('sumQuarterAmount').innerText = '฿' + stats.quarter.toLocaleString();
+            document.getElementById('sumQuarterCount').innerText = stats.quarterCount + ' ออเดอร์';
+            document.getElementById('sumYearAmount').innerText = '฿' + stats.year.toLocaleString();
+            document.getElementById('sumYearCount').innerText = stats.yearCount + ' ออเดอร์';
         }
+        function closeSummary() { document.getElementById('summaryModal').classList.add('hidden'); }
 
-        function closeSummary() {
-            document.getElementById('summaryModal').classList.add('hidden');
-        }
-
-        // --- Render, Scanner & Utilities (Same as before) ---
+        // --- Render & Scanner ---
         function renderLogs() {
             const listContainer = document.getElementById('logList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const emptyState = document.getElementById('emptyState');
             
-            const filteredLogs = logs.filter(log => 
-                (log.orderId || "").toLowerCase().includes(searchTerm) ||
-                (log.customerName || "").toLowerCase().includes(searchTerm)
-            );
-
+            const filteredLogs = logs.filter(log => (log.orderId || "").toLowerCase().includes(searchTerm) || (log.customerName || "").toLowerCase().includes(searchTerm));
             const totalAmount = logs.reduce((sum, log) => sum + (parseFloat(log.price) || 0), 0);
             document.getElementById('statTotalOrders').innerText = logs.length;
             document.getElementById('statTotalAmount').innerText = "฿" + totalAmount.toLocaleString();
@@ -599,67 +461,30 @@
 
             if (filteredLogs.length === 0) {
                 listContainer.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                if(logs.length > 0) emptyState.classList.remove('hidden'); 
                 return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
+            } else { emptyState.classList.add('hidden'); }
 
             listContainer.innerHTML = filteredLogs.map(log => {
-                let statusClass = 'bg-red-100 text-red-700';
-                if (log.status === 'จ่ายแล้ว') statusClass = 'bg-green-100 text-green-700';
-                else if (log.status === 'ส่งแล้ว') statusClass = 'bg-blue-100 text-blue-700';
-
+                let statusClass = log.status === 'จ่ายแล้ว' ? 'bg-green-100 text-green-700' : log.status === 'ส่งแล้ว' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700';
                 return `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative group">
                     <div class="flex justify-between items-start mb-3">
-                        <div class="flex flex-col gap-1">
-                            <span class="text-lg font-bold text-gray-800 tracking-tight">#${log.orderId}</span>
-                            <span class="text-xs text-gray-400">${log.timestamp}</span>
-                        </div>
-                        <div class="text-right flex flex-col items-end gap-1">
-                            <span class="text-lg font-bold text-blue-600">฿${parseFloat(log.price || 0).toLocaleString()}</span>
-                            <span class="${statusClass} px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">
-                                ${log.status}
-                            </span>
-                        </div>
+                        <div class="flex flex-col gap-1"><span class="text-lg font-bold text-gray-800 tracking-tight">#${log.orderId}</span><span class="text-xs text-gray-400">${log.timestamp}</span></div>
+                        <div class="text-right flex flex-col items-end gap-1"><span class="text-lg font-bold text-blue-600">฿${parseFloat(log.price || 0).toLocaleString()}</span><span class="${statusClass} px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">${log.status}</span></div>
                     </div>
-                    
                     <hr class="border-gray-50 my-2" />
-
                     <div class="grid grid-cols-1 gap-2 text-sm text-gray-600 mt-2">
-                        ${log.products ? `
-                        <div class="col-span-1 flex items-start gap-2 bg-blue-50 p-2 rounded-lg border border-blue-100">
-                            <div class="mt-0.5"><i data-lucide="package" class="w-3.5 h-3.5 text-blue-500"></i></div>
-                            <span class="text-blue-900 font-medium">${log.products}</span>
-                        </div>` : ''}
-
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="bg-gray-100 p-1 rounded-full"><i data-lucide="user" class="w-3 h-3 text-gray-500"></i></div>
-                            <span class="font-medium text-gray-900">${log.customerName}</span>
-                            ${log.phoneNumber ? `<span class="text-gray-400 text-xs pl-2 border-l border-gray-200">${log.phoneNumber}</span>` : ''}
-                        </div>
-                        <div class="flex items-start gap-2">
-                            <div class="bg-gray-100 p-1 rounded-full mt-0.5"><i data-lucide="map-pin" class="w-3 h-3 text-gray-500"></i></div>
-                            <span class="text-gray-500 text-xs leading-relaxed">${log.address || 'ไม่ระบุที่อยู่'}</span>
-                        </div>
-                        ${log.note ? `
-                        <div class="mt-1 bg-yellow-50 p-2.5 rounded-lg text-xs text-yellow-800 border border-yellow-100 flex gap-2">
-                            <span class="font-bold shrink-0">หมายเหตุ:</span> 
-                            <span>${log.note}</span>
-                        </div>` : ''}
+                        ${log.products ? `<div class="col-span-1 flex items-start gap-2 bg-blue-50 p-2 rounded-lg border border-blue-100"><div class="mt-0.5"><i data-lucide="package" class="w-3.5 h-3.5 text-blue-500"></i></div><span class="text-blue-900 font-medium">${log.products}</span></div>` : ''}
+                        <div class="flex items-center gap-2 mt-1"><div class="bg-gray-100 p-1 rounded-full"><i data-lucide="user" class="w-3 h-3 text-gray-500"></i></div><span class="font-medium text-gray-900">${log.customerName}</span>${log.phoneNumber ? `<span class="text-gray-400 text-xs pl-2 border-l border-gray-200">${log.phoneNumber}</span>` : ''}</div>
+                        <div class="flex items-start gap-2"><div class="bg-gray-100 p-1 rounded-full mt-0.5"><i data-lucide="map-pin" class="w-3 h-3 text-gray-500"></i></div><span class="text-gray-500 text-xs leading-relaxed">${log.address || 'ไม่ระบุที่อยู่'}</span></div>
+                        ${log.note ? `<div class="mt-1 bg-yellow-50 p-2.5 rounded-lg text-xs text-yellow-800 border border-yellow-100 flex gap-2"><span class="font-bold shrink-0">หมายเหตุ:</span><span>${log.note}</span></div>` : ''}
                     </div>
-
                     <div class="absolute bottom-4 right-4 flex gap-2">
-                        <button onclick="startEdit(${log.id})" class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-full transition-all" title="แก้ไข">
-                            <i data-lucide="edit-3" class="w-5 h-5"></i>
-                        </button>
-                        <button onclick="deleteLog(${log.id})" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all" title="ลบ">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
+                        <button onclick="startEdit(${log.id})" class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-full transition-all" title="แก้ไข"><i data-lucide="edit-3" class="w-5 h-5"></i></button>
+                        <button onclick="deleteLog(${log.id})" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all" title="ลบ"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
             lucide.createIcons();
         }
@@ -667,57 +492,35 @@
         async function startScanner() {
             const scannerDiv = document.getElementById('scannerContainer');
             const btnScan = document.getElementById('btnStartScan');
-            scannerDiv.classList.remove('hidden');
-            btnScan.classList.add('hidden');
-            try {
-                if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
-                await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, onScanSuccess, onScanFailure);
-            } catch (err) { alert("Camera Error: " + err); stopScanner(); }
+            scannerDiv.classList.remove('hidden'); btnScan.classList.add('hidden');
+            try { if (!html5QrCode) html5QrCode = new Html5Qrcode("reader"); await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, onScanSuccess, onScanFailure); } catch (err) { alert("Camera Error: " + err); stopScanner(); }
         }
-
-        async function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch (e) {} }
-            document.getElementById('scannerContainer').classList.add('hidden');
-            document.getElementById('btnStartScan').classList.remove('hidden');
-        }
-
+        async function stopScanner() { if (html5QrCode && html5QrCode.isScanning) try { await html5QrCode.stop(); } catch (e) {} document.getElementById('scannerContainer').classList.add('hidden'); document.getElementById('btnStartScan').classList.remove('hidden'); }
         function onScanSuccess(decodedText) {
             const text = decodedText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
             if (text.includes("Order:") || text.includes("Title:")) {
                 const lines = text.split('\n');
                 let phone = "", lineId = "", detail = "", note = "";
                 lines.forEach(line => {
-                    const idx = line.indexOf(':');
-                    if (idx === -1) return;
-                    const key = line.substring(0, idx).trim().toLowerCase();
-                    const val = line.substring(idx + 1).trim();
+                    const idx = line.indexOf(':'); if (idx === -1) return;
+                    const key = line.substring(0, idx).trim().toLowerCase(); const val = line.substring(idx + 1).trim();
                     if(key==='order') document.getElementById('orderId').value = val.replace('#','');
                     if(key==='title') document.getElementById('customerName').value = val;
                     if(key==='price') document.getElementById('price').value = val.replace(/[^0-9.]/g, '');
                     if(key==='address') document.getElementById('address').value = val;
-                    if(key==='phone') phone = val;
-                    if(key==='line') lineId = val;
-                    if(key==='detail') detail = val;
-                    if(key==='note') note = val;
+                    if(key==='phone') phone = val; if(key==='line') lineId = val;
+                    if(key==='detail') detail = val; if(key==='note') note = val;
                 });
-                let contactParts = [];
-                if(phone && phone!=='test') contactParts.push(phone);
-                if(lineId && lineId!=='test') contactParts.push("Line: "+lineId);
-                if(contactParts.length===0 && (phone||lineId)) contactParts.push(phone||lineId);
+                let contactParts = []; if(phone && phone!=='test') contactParts.push(phone); if(lineId && lineId!=='test') contactParts.push("Line: "+lineId); if(contactParts.length===0 && (phone||lineId)) contactParts.push(phone||lineId);
                 document.getElementById('phoneNumber').value = contactParts.join(' / ');
                 if(detail && detail!=='test') document.getElementById('products').value = detail; else if(detail) document.getElementById('products').value = detail;
                 if(note && note!=='tset') document.getElementById('note').value = note; else if(note) document.getElementById('note').value = note;
                 alert('สแกนสำเร็จ');
-            } else {
-                 document.getElementById('orderId').value = decodedText;
-                 alert(`สแกนสำเร็จ: ${decodedText}`);
-            }
+            } else { document.getElementById('orderId').value = decodedText; alert(`สแกนสำเร็จ: ${decodedText}`); }
             stopScanner();
         }
         function onScanFailure(err) {}
-        function updateStatusColor(select) {
-            select.className = `w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base appearance-none shadow-sm font-medium ${select.value === 'จ่ายแล้ว' ? 'bg-green-50 text-green-700 border-green-200' : select.value === 'ส่งแล้ว' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`;
-        }
+        function updateStatusColor(select) { select.className = `w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base appearance-none shadow-sm font-medium ${select.value === 'จ่ายแล้ว' ? 'bg-green-50 text-green-700 border-green-200' : select.value === 'ส่งแล้ว' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`; }
         function clearSearch() { document.getElementById('searchInput').value = ''; renderLogs(); }
     </script>
 </body>
