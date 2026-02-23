@@ -3,34 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตรวจสอบสถานะพัสดุ</title>
+    <title>ตรวจสอบสถานะพัสดุ | Order Tracking</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
-    <header class="bg-white shadow-sm p-4 text-center">
-        <h1 class="text-xl font-bold text-indigo-700">ตรวจสอบสถานะสินค้า</h1>
+    <header class="bg-white shadow-sm p-4 relative flex items-center justify-center">
+        <h1 class="text-xl font-bold text-indigo-700" data-i18n="title_main">ตรวจสอบสถานะสินค้า</h1>
+        
+        <!-- ตัวเลือกเปลี่ยนภาษา -->
+        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="th">🇹🇭 ไทย</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ja">🇯🇵 日本語</option>
+        </select>
     </header>
 
     <main class="max-w-md mx-auto p-4 mt-4 relative flex-1 w-full">
         <!-- ช่องค้นหา -->
         <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100">
-            <input type="text" id="searchId" required placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
+            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
             <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors"><i class="ph ph-magnifying-glass text-lg"></i></button>
         </form>
 
         <!-- สถานะกำลังโหลด -->
         <div id="loading" class="hidden text-center py-12">
             <i class="ph ph-spinner animate-spin text-5xl text-indigo-500 mb-3 inline-block"></i>
-            <p class="text-slate-500 font-medium">กำลังค้นหาข้อมูลจากระบบ...</p>
+            <p class="text-slate-500 font-medium" data-i18n="loading_text">กำลังค้นหาข้อมูลจากระบบ...</p>
         </div>
 
         <!-- กล่องแสดงผลลัพธ์ -->
         <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div class="border-b border-slate-100 pb-4 mb-6">
-                <p class="text-sm text-slate-500 mb-1">เลขพัสดุ</p>
+                <p class="text-sm text-slate-500 mb-1" data-i18n="tracking_no_label">เลขพัสดุ</p>
                 <h2 id="showId" class="text-2xl font-bold tracking-wider text-indigo-700">WAN---</h2>
-                <p id="showName" class="text-sm text-slate-600 mt-1 flex items-center"><i class="ph ph-user mr-1"></i> <span id="nameSpan">ชื่อลูกค้า</span></p>
+                <p class="text-sm text-slate-600 mt-1 flex items-center">
+                    <i class="ph ph-user mr-1"></i> 
+                    <span data-i18n="customer_name_label" class="mr-1">ชื่อลูกค้า:</span>
+                    <span id="nameSpan" class="font-medium text-slate-800">ชื่อลูกค้า</span>
+                </p>
             </div>
 
             <!-- Stepper / Timeline -->
@@ -38,40 +50,42 @@
                 <!-- Step 1: Pending -->
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
-                    <h3 class="font-bold text-slate-800">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
+                    <h3 class="font-bold text-slate-800" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
                     <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
                 <!-- Step 2: Shipping -->
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot2"></div>
-                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text2">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
-                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2">รอการอัปเดต</p>
+                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
+                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2" data-i18n="waiting_update">รอการอัปเดต</p>
                 </div>
                 <!-- Step 3: Completed -->
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot3"></div>
-                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text3">จัดส่งสำเร็จ</h3>
-                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3">รอการอัปเดต</p>
+                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
+                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3" data-i18n="waiting_update">รอการอัปเดต</p>
                     
-                    <!-- ส่วนแสดงรูปและหมายเหตุ (จะแสดงเมื่อส่งสำเร็จ) -->
+                    <!-- ส่วนแสดงรูปและหมายเหตุ -->
                     <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <p class="text-xs font-bold text-slate-700 mb-1">หมายเหตุ: <span id="showNote" class="font-normal"></span></p>
+                        <p class="text-xs font-bold text-slate-700 mb-1">
+                            <span data-i18n="note_label">หมายเหตุ:</span> <span id="showNote" class="font-normal"></span>
+                        </p>
                         <a id="proofImageLink" href="#" target="_blank" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-1">
-                            <i class="ph ph-image mr-1 text-lg"></i> ดูรูปภาพหลักฐานการจัดส่ง
+                            <i class="ph ph-image mr-1 text-lg"></i> <span data-i18n="view_proof">ดูรูปภาพหลักฐานการจัดส่ง</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- กล่องประเมินความพึงพอใจ (แสดงเมื่อส่งสำเร็จ) -->
+            <!-- กล่องประเมินความพึงพอใจ -->
             <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm">
                 <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl">
                     <i class="ph-fill ph-star"></i>
                 </div>
-                <h4 class="font-bold text-indigo-800 mb-1">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
+                <h4 class="font-bold text-indigo-800 mb-1" data-i18n="survey_title">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
                 <p id="surveyText" class="text-xs text-indigo-600 mb-4">เปิดรับความคิดเห็นถึงวันที่ --/--/----</p>
                 <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto">
-                    <i class="ph ph-clipboard-text mr-2 text-lg"></i> ประเมินการจัดส่ง
+                    <i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">ประเมินการจัดส่ง</span>
                 </a>
             </div>
         </div>
@@ -79,14 +93,14 @@
         <!-- แจ้งเตือนไม่พบข้อมูล -->
         <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100">
             <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400"></i>
-            <h3 class="font-bold text-lg mb-1">ไม่พบข้อมูล</h3>
-            <p id="errorMsg" class="text-slate-600 text-sm">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
+            <h3 class="font-bold text-lg mb-1" data-i18n="not_found_title">ไม่พบข้อมูล</h3>
+            <p id="errorMsg" class="text-slate-600 text-sm" data-i18n="not_found_desc">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
         </div>
 
         <!-- ปุ่มลิงก์แจ้งปัญหาการใช้งาน -->
         <div class="text-center mt-8 mb-2">
             <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors bg-white px-5 py-2.5 rounded-full shadow-sm border border-slate-200 hover:shadow-md">
-                <i class="ph ph-warning-circle mr-1.5 text-lg"></i> แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน
+                <i class="ph ph-warning-circle mr-1.5 text-lg"></i> <span data-i18n="report_issue">แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน</span>
             </a>
         </div>
     </main>
@@ -94,18 +108,172 @@
     <!-- หมายเหตุเครดิตร้าน -->
     <footer class="text-center py-6 mt-auto">
         <p class="text-xs text-slate-400">
-            หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน 
-            <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium">
+            <span data-i18n="footer_note">หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน</span>
+            <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium mx-1">
                 www.wanflorist.net
             </a> 
-            เท่านั้น
+            <span data-i18n="footer_only">เท่านั้น</span>
         </p>
     </footer>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
+        // --- ส่วนระบบแปลภาษา (i18n) ---
+        const translations = {
+            th: {
+                title_main: "ตรวจสอบสถานะสินค้า",
+                placeholder_search: "กรอกเลขพัสดุ WAN-...",
+                loading_text: "กำลังค้นหาข้อมูลจากระบบ...",
+                tracking_no_label: "เลขพัสดุ",
+                customer_name_label: "ชื่อลูกค้า:",
+                step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)",
+                step2_title: "สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)",
+                step3_title: "จัดส่งสำเร็จ",
+                waiting_update: "รอการอัปเดต",
+                note_label: "หมายเหตุ:",
+                no_note: "-ไม่มี-",
+                view_proof: "ดูรูปภาพหลักฐานการจัดส่ง",
+                survey_title: "ความพึงพอใจของคุณสำคัญสำหรับเรา",
+                survey_btn_active: "ประเมินการจัดส่ง",
+                survey_btn_expired: "หมดเวลาประเมิน",
+                survey_expired_text: "ขออภัย หมดเวลาการตอบแบบสอบถามสำหรับออเดอร์นี้แล้ว",
+                survey_open_until: "เปิดรับความคิดเห็นถึงวันที่",
+                not_found_title: "ไม่พบข้อมูล",
+                not_found_desc: "ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน",
+                report_issue: "แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน",
+                footer_note: "หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน",
+                footer_only: "เท่านั้น",
+                status_processing: "กำลังดำเนินการ",
+                status_delivered: "พัสดุถึงมือผู้รับแล้ว",
+                error_network: "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย",
+                locale_date: "th-TH"
+            },
+            en: {
+                title_main: "Track Your Order",
+                placeholder_search: "Enter tracking no. WAN-...",
+                loading_text: "Searching system data...",
+                tracking_no_label: "Tracking No.",
+                customer_name_label: "Customer Name:",
+                step1_title: "Order Received (Preparing)",
+                step2_title: "Dispatched (Out for delivery)",
+                step3_title: "Delivered Successfully",
+                waiting_update: "Waiting for update",
+                note_label: "Note:",
+                no_note: "-None-",
+                view_proof: "View delivery proof",
+                survey_title: "Your satisfaction is important to us",
+                survey_btn_active: "Rate Delivery",
+                survey_btn_expired: "Evaluation Expired",
+                survey_expired_text: "Sorry, the feedback period for this order has expired.",
+                survey_open_until: "Feedback open until",
+                not_found_title: "Not Found",
+                not_found_desc: "Please check the tracking number or contact admin.",
+                report_issue: "Report Issue / Contact Admin",
+                footer_note: "Note: This system is exclusively for",
+                footer_only: "only.",
+                status_processing: "Processing",
+                status_delivered: "Package delivered to recipient",
+                error_network: "Network connection error",
+                locale_date: "en-GB"
+            },
+            zh: {
+                title_main: "订单状态查询",
+                placeholder_search: "输入快递单号 WAN-...",
+                loading_text: "正在查询系统数据...",
+                tracking_no_label: "快递单号",
+                customer_name_label: "客户姓名:",
+                step1_title: "收到订单 (准备中)",
+                step2_title: "已发货 (派送中)",
+                step3_title: "已签收",
+                waiting_update: "等待更新",
+                note_label: "备注:",
+                no_note: "-无-",
+                view_proof: "查看送达证明",
+                survey_title: "您的满意对我们很重要",
+                survey_btn_active: "评价配送",
+                survey_btn_expired: "评价已过期",
+                survey_expired_text: "抱歉，该订单的评价时间已过期。",
+                survey_open_until: "评价开放至",
+                not_found_title: "未找到数据",
+                not_found_desc: "请再次检查快递单号或联系管理员。",
+                report_issue: "报告问题 / 联系管理员",
+                footer_note: "注意: 本系统仅供",
+                footer_only: "使用",
+                status_processing: "处理中",
+                status_delivered: "包裹已送达收件人",
+                error_network: "网络连接错误",
+                locale_date: "zh-CN"
+            },
+            ja: {
+                title_main: "配送状況の確認",
+                placeholder_search: "追跡番号を入力 WAN-...",
+                loading_text: "システムデータを検索中...",
+                tracking_no_label: "追跡番号",
+                customer_name_label: "お客様名:",
+                step1_title: "注文受付 (準備中)",
+                step2_title: "発送済み (配達中)",
+                step3_title: "配達完了",
+                waiting_update: "更新待ち",
+                note_label: "備考:",
+                no_note: "-なし-",
+                view_proof: "配達証明写真を見る",
+                survey_title: "お客様の満足は私たちにとって重要です",
+                survey_btn_active: "配達を評価する",
+                survey_btn_expired: "評価の期限切れ",
+                survey_expired_text: "申し訳ありませんが、この注文の評価期間は終了しました。",
+                survey_open_until: "評価受付期限:",
+                not_found_title: "データが見つかりません",
+                not_found_desc: "追跡番号をもう一度確認するか、管理者にお問い合わせください。",
+                report_issue: "問題の報告 / 管理者に連絡",
+                footer_note: "注意: このシステムは",
+                footer_only: "専用です",
+                status_processing: "処理中",
+                status_delivered: "荷物は受取人に配達されました",
+                error_network: "ネットワーク接続エラー",
+                locale_date: "ja-JP"
+            }
+        };
+
+        let currentLang = localStorage.getItem('appLang') || 'th';
+        let currentOrderData = null; // เก็บข้อมูลไว้รีเฟรชตอนเปลี่ยนภาษา
+
+        // ฟังก์ชันอัปเดตภาษาบนหน้าจอ
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('appLang', lang);
+            document.getElementById('langSelect').value = lang;
+            document.documentElement.lang = lang; // อัปเดต HTML lang attribute
+
+            const t = translations[lang];
+
+            // 1. แปลงข้อความ Text ธรรมดา
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.textContent = t[key];
+            });
+
+            // 2. แปลง Placeholder
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+
+            // 3. รีเฟรชข้อมูล Dynamic (ถ้ามีข้อมูลค้างอยู่บนหน้าจอ)
+            if (currentOrderData) {
+                renderOrderData(currentOrderData);
+            }
+        }
+
+        // จับ Event ตอนเปลี่ยนภาษาจาก Dropdown
+        document.getElementById('langSelect').addEventListener('change', (e) => {
+            applyLanguage(e.target.value);
+        });
+
+        // --- ส่วนระบบหลัก (ดึงและแสดงข้อมูล) ---
         window.onload = () => {
+            applyLanguage(currentLang); // โหลดภาษาตอนเปิดเว็บ
+
             const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (urlOrderId) {
                 document.getElementById('searchId').value = urlOrderId;
@@ -118,15 +286,17 @@
             fetchData(document.getElementById('searchId').value.toUpperCase().trim());
         };
 
-        function formatDate(dateString) {
+        function formatDate(dateString, lang) {
             if (!dateString) return '';
             const d = new Date(dateString);
-            return d.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) + ' น.';
+            const localeStr = translations[lang].locale_date;
+            return d.toLocaleString(localeStr, { dateStyle: 'medium', timeStyle: 'short' });
         }
 
         async function fetchData(id) {
             if (!id) return;
             
+            const t = translations[currentLang];
             document.getElementById('resultBox').classList.add('hidden');
             document.getElementById('notFound').classList.add('hidden');
             document.getElementById('loading').classList.remove('hidden');
@@ -138,54 +308,60 @@
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
-                    const data = result.data;
-                    document.getElementById('resultBox').classList.remove('hidden');
-                    document.getElementById('showId').textContent = data.id;
-                    document.getElementById('nameSpan').textContent = data.name;
-
-                    // เซ็ตเวลาเริ่มต้น
-                    document.getElementById('time1').textContent = formatDate(data.created);
-
-                    // รีเซ็ต UI
-                    ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500');
-                    ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 transition-colors duration-500');
-                    document.getElementById('time2').textContent = 'รอการอัปเดต';
-                    document.getElementById('time3').textContent = 'รอการอัปเดต';
-                    document.getElementById('proofBox').classList.add('hidden');
-                    document.getElementById('surveyBox').classList.add('hidden'); // ซ่อนแบบสอบถามไว้ก่อน
-
-                    // อัปเดตสถานะ "กำลังจัดส่ง"
-                    if (data.status === 'shipping' || data.status === 'completed') {
-                        document.getElementById('dot2').classList.replace('bg-slate-200', 'bg-blue-500');
-                        document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
-                        document.getElementById('time2').textContent = formatDate(data.shippedDate) || 'กำลังดำเนินการ';
-                        document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
-                    }
-
-                    // อัปเดตสถานะ "จัดส่งสำเร็จ"
-                    if (data.status === 'completed') {
-                        document.getElementById('dot3').classList.replace('bg-slate-200', 'bg-green-500');
-                        document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
-                        document.getElementById('time3').textContent = formatDate(data.completedDate) || 'พัสดุถึงมือผู้รับแล้ว'; 
-                        document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
-
-                        document.getElementById('proofBox').classList.remove('hidden');
-                        document.getElementById('showNote').textContent = data.note || '-ไม่มี-';
-                        document.getElementById('proofImageLink').href = data.imageUrl;
-
-                        // --- ระบบคำนวณอายุแบบสอบถาม (15 วัน) ---
-                        setupSurveyBox(data.completedDate);
-                    }
-
+                    currentOrderData = result.data; // เก็บไว้เผื่อผู้ใช้เปลี่ยนภาษา
+                    renderOrderData(currentOrderData);
                 } else {
+                    currentOrderData = null;
                     document.getElementById('notFound').classList.remove('hidden');
-                    document.getElementById('errorMsg').textContent = result.message;
+                    document.getElementById('errorMsg').textContent = result.message || t.not_found_desc;
                 }
             } catch (error) {
                 console.error(error);
+                currentOrderData = null;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('notFound').classList.remove('hidden');
-                document.getElementById('errorMsg').textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย";
+                document.getElementById('errorMsg').textContent = translations[currentLang].error_network;
+            }
+        }
+
+        function renderOrderData(data) {
+            const t = translations[currentLang];
+            
+            document.getElementById('resultBox').classList.remove('hidden');
+            document.getElementById('showId').textContent = data.id;
+            document.getElementById('nameSpan').textContent = data.name;
+
+            // เซ็ตเวลาเริ่มต้นและล้าง UI กลับเป็นสถานะตั้งต้น
+            document.getElementById('time1').textContent = formatDate(data.created, currentLang);
+            
+            ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500');
+            ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 transition-colors duration-500');
+            
+            document.getElementById('time2').textContent = t.waiting_update;
+            document.getElementById('time3').textContent = t.waiting_update;
+            document.getElementById('proofBox').classList.add('hidden');
+            document.getElementById('surveyBox').classList.add('hidden');
+
+            // อัปเดตสถานะ "กำลังจัดส่ง"
+            if (data.status === 'shipping' || data.status === 'completed') {
+                document.getElementById('dot2').classList.replace('bg-slate-200', 'bg-blue-500');
+                document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
+                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+            }
+
+            // อัปเดตสถานะ "จัดส่งสำเร็จ"
+            if (data.status === 'completed') {
+                document.getElementById('dot3').classList.replace('bg-slate-200', 'bg-green-500');
+                document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
+                document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
+                document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+
+                document.getElementById('proofBox').classList.remove('hidden');
+                document.getElementById('showNote').textContent = data.note || t.no_note;
+                document.getElementById('proofImageLink').href = data.imageUrl;
+
+                setupSurveyBox(data.completedDate);
             }
         }
 
@@ -193,38 +369,35 @@
         function setupSurveyBox(completedDateString) {
             if (!completedDateString) return;
 
+            const t = translations[currentLang];
             const completedDate = new Date(completedDateString);
-            
-            // คำนวณวันหมดอายุ (+15 วัน)
             const expireDate = new Date(completedDate);
             expireDate.setDate(expireDate.getDate() + 15);
-            
-            // เวลาปัจจุบัน
             const now = new Date();
 
             const surveyBox = document.getElementById('surveyBox');
             const surveyBtn = document.getElementById('surveyBtn');
+            const surveyBtnText = document.getElementById('surveyBtnText');
             const surveyText = document.getElementById('surveyText');
 
             surveyBox.classList.remove('hidden');
 
             if (now <= expireDate) {
-                // ยังไม่หมดอายุ -> ให้กดได้
+                // ยังไม่หมดอายุ
                 surveyBtn.href = "https://forms.gle/iWpViNdXNXDsEwXq7";
                 surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto";
-                surveyBtn.innerHTML = '<i class="ph ph-clipboard-text mr-2 text-lg"></i> ประเมินการจัดส่ง';
+                surveyBtn.innerHTML = `<i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">${t.survey_btn_active}</span>`;
                 
-                // แปลงวันที่แบบอ่านง่าย
-                const expireStr = expireDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-                surveyText.textContent = `เปิดรับความคิดเห็นถึงวันที่ ${expireStr}`;
+                const expireStr = expireDate.toLocaleDateString(t.locale_date, { day: 'numeric', month: 'short', year: 'numeric' });
+                surveyText.textContent = `${t.survey_open_until} ${expireStr}`;
                 surveyText.className = "text-xs text-indigo-600 mb-4";
             } else {
-                // หมดอายุแล้ว -> ปุ่มสีเทา กดไม่ได้
+                // หมดอายุแล้ว
                 surveyBtn.removeAttribute('href');
                 surveyBtn.className = "inline-flex items-center justify-center bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg cursor-not-allowed w-full sm:w-auto";
-                surveyBtn.innerHTML = '<i class="ph ph-lock-key mr-2 text-lg"></i> หมดเวลาประเมิน';
+                surveyBtn.innerHTML = `<i class="ph ph-lock-key mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_expired">${t.survey_btn_expired}</span>`;
                 
-                surveyText.textContent = "ขออภัย หมดเวลาการตอบแบบสอบถามสำหรับออเดอร์นี้แล้ว";
+                surveyText.textContent = t.survey_expired_text;
                 surveyText.className = "text-xs text-red-500 mb-4 font-medium";
             }
         }
