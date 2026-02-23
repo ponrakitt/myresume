@@ -3,251 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3. ยืนยันการจัดส่งสินค้า</title>
+    <title>1. ระบบแอดมิน (สร้างพัสดุ)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        /* สไตล์สำหรับพริ้นต์ QR Code ให้ออกมาสวยงาม */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #qrBox, #qrBox * {
+                visibility: visible;
+            }
+            #qrBox {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                text-align: center;
+                padding-top: 20px;
+            }
+            /* ซ่อนปุ่มพริ้นต์เวลากดพริ้นต์ไปแล้ว */
+            #printBtn {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased font-sans">
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative flex flex-col">
-        <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10">
-            <h1 class="text-xl font-bold text-center">พนักงานจัดส่ง (Delivery)</h1>
-        </header>
-
-        <main class="flex-1 p-5 space-y-6">
-            
-            <!-- 1. สถานะโหลดตอนสแกน QR เข้ามา -->
-            <div id="initialLoad" class="text-center py-20">
-                <i class="ph ph-spinner animate-spin text-5xl text-blue-600 mb-4 inline-block"></i>
-                <h2 class="text-xl font-bold text-slate-700">กำลังตรวจสอบ QR Code...</h2>
+<body class="bg-slate-100 text-slate-800 font-sans">
+    <nav class="bg-indigo-700 text-white p-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="ph ph-user-gear mr-2 text-2xl"></i>
+                <h1 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin)</h1>
             </div>
+            <!-- ปุ่มแจ้งปัญหาด้านบนขวา -->
+            <a href="https://ponrakitt.site/report.html" target="_blank" class="hidden sm:flex text-sm bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-lg items-center transition-colors">
+                <i class="ph ph-info mr-1.5 text-lg"></i> แนะนำการใช้งาน / แจ้งปัญหา
+            </a>
+        </div>
+    </nav>
 
-            <!-- 2. หน้าจอแจ้งเตือน QR หมดอายุ (ซ่อนไว้ก่อน) -->
-            <div id="expiredAlert" class="hidden text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10">
-                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
-                    <i class="ph ph-warning-circle"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-red-600 mb-2">QR Code หมดอายุ</h2>
-                <p class="text-slate-600 px-4">ออเดอร์ <span id="expiredOrderId" class="font-bold text-slate-800"></span><br>ได้รับการยืนยันการจัดส่งไปแล้ว<br>ไม่สามารถทำรายการซ้ำได้</p>
-                <button onclick="window.location.reload()" class="mt-6 text-sm text-red-500 hover:text-red-700 underline font-medium">ลองตรวจสอบใหม่อีกครั้ง</button>
-            </div>
-
-            <!-- 3. ฟอร์มส่งของ (ซ่อนไว้ก่อนจนกว่าจะเช็คผ่าน) -->
-            <form id="deliveryForm" class="hidden space-y-6">
+    <div class="max-w-6xl mx-auto p-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ฝั่งสร้างข้อมูล -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-1 h-fit">
+            <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-2">
+                <i class="ph ph-plus-circle mr-2 text-indigo-600"></i> สร้างรายการจัดส่งใหม่
+            </h2>
+            <form id="form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">เลขพัสดุ / Order ID *</label>
-                    <input type="text" id="orderId" required placeholder="สแกน QR เพื่อกรอก" 
-                        class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold text-lg text-center tracking-wider">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">หมายเหตุการส่ง (ถ้ามี)</label>
-                    <textarea id="note" rows="2" placeholder="เช่น วางไว้ที่ป้อมยาม, ฝากนิติบุคคล" 
-                        class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ถ่ายรูปยืนยันการส่ง *</label>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" required>
-                    <button type="button" id="cameraBtn" class="w-full border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 hover:bg-slate-50 transition-all cursor-pointer">
-                        <i class="ph ph-camera text-4xl mb-2"></i>
-                        <span class="font-medium">แตะเพื่อเปิดกล้องถ่ายรูป</span>
-                    </button>
-                    <div id="previewContainer" class="hidden mt-4 relative">
-                        <img id="imagePreview" src="" class="w-full h-auto rounded-lg shadow-sm border border-slate-200">
-                        <button type="button" id="removePhotoBtn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-md hover:bg-red-600 transition-colors">
-                            <i class="ph ph-x font-bold"></i>
-                        </button>
+                    <label class="block text-sm font-medium mb-1">เลขพัสดุ *</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300"><i class="ph ph-arrows-clockwise text-lg"></i></button>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / รายละเอียด</label>
+                    <input type="text" id="custName" required class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <!-- กำหนด URL หน้าแอปคนส่งของของคุณ -->
+                <div class="pt-2">
+                    <label class="block text-xs font-medium text-slate-500 mb-1">URL หน้าคนส่งของ (Delivery App)</label>
+                    <input type="text" id="deliveryAppUrl" required 
+                        class="w-full px-3 py-1.5 text-sm rounded border border-slate-300 bg-slate-50 text-slate-500">
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex justify-center items-center">
+                    <span id="btnText">สร้างออเดอร์</span>
+                    <i id="btnSpinner" class="ph ph-spinner animate-spin hidden ml-2 text-xl"></i>
+                </button>
             </form>
-        </main>
 
-        <!-- ปุ่มกดยืนยัน (ซ่อนไว้ก่อนเหมือนกัน) -->
-        <div id="footerAction" class="hidden p-5 border-t border-slate-200 bg-slate-50 sticky bottom-0 z-10">
-            <button type="submit" form="deliveryForm" id="submitBtn" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center">
-                <span>อัปโหลดรูปและส่งข้อมูล</span>
-                <i class="ph ph-paper-plane-right ml-2 text-xl"></i>
-            </button>
+            <!-- ส่วนแสดง QR Code 2 แบบ -->
+            <div id="qrBox" class="hidden mt-6 text-center border-t pt-4">
+                <h3 class="font-bold text-green-600 mb-2">บันทึกเข้า Google Sheets สำเร็จ!</h3>
+                <p class="text-xl font-bold text-slate-800 mb-4 tracking-wider" id="displayId"></p>
+                <p class="text-sm text-slate-500 mb-4" id="displayCustName"></p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- QR 1: สำหรับคนส่งของ -->
+                    <div class="border border-blue-200 p-4 rounded-xl bg-blue-50/50 flex flex-col items-center">
+                        <p class="text-sm font-bold text-blue-700 mb-2 flex items-center">
+                            <i class="ph ph-truck text-lg mr-1"></i> สำหรับพนักงาน
+                        </p>
+                        <canvas id="qrcodeDelivery" class="bg-white border p-2 rounded shadow-sm"></canvas>
+                        <p class="text-[10px] text-slate-500 mt-2">พนักงานสแกนเพื่อถ่ายรูปยืนยัน</p>
+                    </div>
+
+                    <!-- QR 2: สำหรับลูกค้า -->
+                    <div class="border border-indigo-200 p-4 rounded-xl bg-indigo-50/50 flex flex-col items-center">
+                        <p class="text-sm font-bold text-indigo-700 mb-2 flex items-center">
+                            <i class="ph ph-user text-lg mr-1"></i> สำหรับลูกค้า
+                        </p>
+                        <canvas id="qrcodeCustomer" class="bg-white border p-2 rounded shadow-sm"></canvas>
+                        <p class="text-[10px] text-slate-500 mt-2">ลูกค้าสแกนเพื่อเช็คสถานะ</p>
+                    </div>
+                </div>
+                
+                <button type="button" id="printBtn" onclick="window.print()" class="mt-4 bg-slate-800 text-white text-sm px-4 py-3 rounded-lg hover:bg-slate-900 w-full font-bold transition-colors">
+                    <i class="ph ph-printer mr-1"></i> พริ้นต์ QR Code ทั้ง 2 แบบ
+                </button>
+            </div>
         </div>
 
-        <!-- หน้าจอ Loading ตอนส่งข้อมูล -->
-        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
-            <p class="text-blue-600 font-bold text-lg text-center px-4">กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...</p>
-        </div>
-
-        <!-- แจ้งเตือนสำเร็จ / ผิดพลาด -->
-        <div id="resultModal" class="hidden absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
-                <div id="modalIcon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"></div>
-                <h2 id="modalTitle" class="text-2xl font-bold mb-2"></h2>
-                <p id="modalDesc" class="text-slate-600 mb-6"></p>
-                <button type="button" onclick="closeModal()" class="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200">ตกลง</button>
+        <!-- ฝั่งแสดงตารางประวัติ (ดึงจาก LocalStorage สำหรับให้แอดมินดูง่ายๆ) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold"><i class="ph ph-clock-counter-clockwise mr-2 text-indigo-600"></i> ประวัติการสร้าง (บนเครื่องนี้)</h2>
+                <button onclick="clearDB()" class="text-xs text-red-500 hover:underline">ล้างประวัติหน้าจอ</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 border-b">
+                            <th class="p-3">Order ID</th>
+                            <th class="p-3">ลูกค้า</th>
+                            <th class="p-3 text-center">ลิงก์ติดตามสำหรับลูกค้า</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
+    <!-- ลิงก์แจ้งปัญหาด้านล่างสุด -->
+    <div class="max-w-6xl mx-auto p-4 mt-4 mb-8 text-center">
+        <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors">
+            <i class="ph ph-warning-circle mr-1 text-lg"></i> แจ้งการทำงานผิดพลาดและแนะนำการใช้งาน
+        </a>
+    </div>
+
     <script>
+        // API URL ของคุณ
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
-        const photoInput = document.getElementById('photoInput');
-        const cameraBtn = document.getElementById('cameraBtn');
-        const previewContainer = document.getElementById('previewContainer');
-        const imagePreview = document.getElementById('imagePreview');
-        const orderIdInput = document.getElementById('orderId');
-
-        // เมื่อเปิดหน้าเว็บขึ้นมา (แสกน QR)
-        window.onload = async () => {
-            const qrOrderId = new URLSearchParams(window.location.search).get('orderId');
-            if (qrOrderId) {
-                orderIdInput.value = qrOrderId;
-                orderIdInput.readOnly = true;
-                orderIdInput.classList.add('bg-slate-100', 'text-slate-500');
-                
-                // ดึงข้อมูลจาก Google Sheets ทันทีเพื่อเช็คสถานะ
-                await checkOrderStatus(qrOrderId);
-            } else {
-                // ถ้าเข้ามาแบบไม่ได้สแกน QR Code ให้เปิดฟอร์มปกติเลย
-                document.getElementById('initialLoad').classList.add('hidden');
-                document.getElementById('deliveryForm').classList.remove('hidden');
-                document.getElementById('footerAction').classList.remove('hidden');
-            }
-        };
-
-        // ฟังก์ชันตรวจสอบสถานะ QR Code
-        async function checkOrderStatus(orderId) {
-            try {
-                // ใช้ API GET เหมือนหน้าเช็คสถานะลูกค้า
-                const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
-                const result = await response.json();
-                
-                document.getElementById('initialLoad').classList.add('hidden'); // ปิดหน้าโหลด
-
-                if (result.status === 'success') {
-                    // ถ้าสถานะเป็น completed คือส่งไปแล้ว
-                    if (result.data.status === 'completed') {
-                        document.getElementById('expiredAlert').classList.remove('hidden');
-                        document.getElementById('expiredOrderId').textContent = orderId;
-                    } else {
-                        // ถ้าระบบยังไม่ส่ง ให้เปิดฟอร์มสำหรับถ่ายรูป
-                        document.getElementById('deliveryForm').classList.remove('hidden');
-                        document.getElementById('footerAction').classList.remove('hidden');
-                    }
-                } else {
-                    // หาออเดอร์ไม่เจอ
-                    document.getElementById('expiredAlert').classList.remove('hidden');
-                    document.getElementById('expiredAlert').innerHTML = `
-                        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
-                            <i class="ph ph-x-circle"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-red-600 mb-2">ไม่พบข้อมูล</h2>
-                        <p class="text-slate-600 px-4">ไม่พบรหัสพัสดุนี้ในระบบ<br>หรืออาจถูกลบไปแล้ว</p>
-                    `;
-                }
-            } catch (error) {
-                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อตรวจสอบ QR ได้ โปรดตรวจสอบอินเทอร์เน็ต');
-                document.getElementById('initialLoad').classList.add('hidden');
-            }
-        }
-
-        cameraBtn.onclick = () => photoInput.click();
+        // แยกตัวสร้าง QR Code เป็น 2 ตัว
+        const qrDelivery = new QRious({ element: document.getElementById('qrcodeDelivery'), size: 140 });
+        const qrCustomer = new QRious({ element: document.getElementById('qrcodeCustomer'), size: 140 });
         
-        photoInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    imagePreview.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                    cameraBtn.classList.add('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        };
+        let localHistory = JSON.parse(localStorage.getItem('admin_history')) || [];
 
-        document.getElementById('removePhotoBtn').onclick = () => {
-            photoInput.value = ''; imagePreview.src = '';
-            previewContainer.classList.add('hidden'); cameraBtn.classList.remove('hidden');
-        };
+        // ดึง URL ของเว็บปัจจุบันมาใส่อัตโนมัติ
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentOrigin = window.location.origin; 
+            const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            document.getElementById('deliveryAppUrl').value = `${currentOrigin}${currentPath}/delivery-app.html`;
+        });
 
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
-                    if ((encoded.length % 4) > 0) encoded += '='.repeat(4 - (encoded.length % 4));
-                    resolve(encoded);
-                };
-                reader.onerror = error => reject(error);
+        // สุ่มเลข WAN
+        document.getElementById('genId').onclick = () => {
+            const date = new Date();
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const random6 = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+            document.getElementById('orderId').value = `WAN-${yyyy}${mm}${dd}-${random6}`;
+        };
+        document.getElementById('genId').click(); 
+
+        // ฟังก์ชันอัปเดตตารางประวัติ
+        function renderHistory() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // หา path ปัจจุบันเพื่อสร้างลิงก์เช็คสถานะ
+            const currentOrigin = window.location.origin;
+            const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+
+            [...localHistory].reverse().forEach(o => {
+                const trackingLink = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${o.id}`;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-bold text-indigo-600">${o.id}</td>
+                        <td class="p-3 text-slate-700">${o.name}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition shadow-sm border border-indigo-100">
+                                <i class="ph ph-copy mr-1"></i> คัดลอกลิงก์
+                            </button>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
-        document.getElementById('deliveryForm').onsubmit = async (e) => {
+        // เมื่อกด Submit
+        document.getElementById('form').onsubmit = async (e) => {
             e.preventDefault();
-            if (!photoInput.files || photoInput.files.length === 0) return alert('กรุณาถ่ายรูปยืนยันการจัดส่ง');
+            const id = document.getElementById('orderId').value.trim();
+            const name = document.getElementById('custName').value.trim();
+            const deliveryBaseUrl = document.getElementById('deliveryAppUrl').value.trim();
+            
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const submitBtn = document.getElementById('submitBtn');
 
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            document.getElementById('loadingOverlay').classList.add('flex');
+            submitBtn.disabled = true;
+            btnText.textContent = "กำลังบันทึก...";
+            btnSpinner.classList.remove('hidden');
 
             try {
-                const base64Image = await getBase64(photoInput.files[0]);
+                // 1. ส่งข้อมูลเข้า Google Sheets
                 const payload = {
-                    action: "completeDelivery",
-                    orderId: orderIdInput.value.toUpperCase().trim(),
-                    note: document.getElementById('note').value,
-                    imageBase64: base64Image
+                    action: "create",
+                    orderId: id,
+                    customerName: name
                 };
 
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload) 
                 });
+
                 const result = await response.json();
 
-                showModal(result.status === 'success', result.message);
-                
-                // ถ้าส่งสำเร็จ ให้ซ่อนฟอร์มและโชว์หน้าหมดอายุไปเลย จะได้ไม่เผลอกดซ้ำ
                 if (result.status === 'success') {
-                    document.getElementById('deliveryForm').classList.add('hidden');
-                    document.getElementById('footerAction').classList.add('hidden');
-                    document.getElementById('expiredAlert').classList.remove('hidden');
-                    document.getElementById('expiredOrderId').textContent = orderIdInput.value;
+                    // 2. สร้าง QR Code สำหรับคนส่งของ
+                    qrDelivery.value = `${deliveryBaseUrl}?orderId=${id}`;
+
+                    // 3. สร้าง QR Code สำหรับลูกค้าเช็คสถานะ
+                    const currentOrigin = window.location.origin;
+                    const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+                    const trackingUrl = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${id}`;
+                    qrCustomer.value = trackingUrl;
+
+                    // แสดงผลบนหน้าจอ
+                    document.getElementById('displayId').textContent = id;
+                    document.getElementById('displayCustName').textContent = `ลูกค้า: ${name}`;
+                    document.getElementById('qrBox').classList.remove('hidden');
+
+                    // 4. บันทึกประวัติลงหน้าจอ
+                    localHistory.push({ id, name });
+                    localStorage.setItem('admin_history', JSON.stringify(localHistory));
+                    renderHistory();
+
+                    document.getElementById('custName').value = '';
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
                 }
 
             } catch (error) {
-                console.error(error);
-                showModal(false, 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+                console.error('Error:', error);
+                alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่');
             } finally {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-                document.getElementById('loadingOverlay').classList.remove('flex');
+                submitBtn.disabled = false;
+                btnText.textContent = "สร้างออเดอร์";
+                btnSpinner.classList.add('hidden');
             }
         };
 
-        function showModal(isSuccess, message) {
-            const icon = document.getElementById('modalIcon');
-            const title = document.getElementById('modalTitle');
-            const desc = document.getElementById('modalDesc');
-            
-            if (isSuccess) {
-                icon.className = "w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-5xl";
-                icon.innerHTML = '<i class="ph ph-check-circle"></i>';
-                title.textContent = "ส่งสำเร็จ!";
-                title.className = "text-2xl font-bold mb-2 text-green-600";
-                desc.textContent = "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว";
-                document.getElementById('note').value = '';
-                document.getElementById('removePhotoBtn').click();
-            } else {
-                icon.className = "w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-5xl";
-                icon.innerHTML = '<i class="ph ph-x-circle"></i>';
-                title.textContent = "ผิดพลาด";
-                title.className = "text-2xl font-bold mb-2 text-red-600";
-                desc.textContent = message;
+        function clearDB() {
+            if(confirm('แน่ใจหรือไม่ที่จะล้างประวัติที่แสดงบนหน้าจอนี้? (ไม่กระทบกับข้อมูลใน Google Sheets)')) {
+                localStorage.removeItem('admin_history');
+                localHistory = []; 
+                renderHistory(); 
+                document.getElementById('qrBox').classList.add('hidden');
             }
-            document.getElementById('resultModal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('resultModal').classList.add('hidden');
-        }
+        renderHistory();
     </script>
 </body>
 </html>
