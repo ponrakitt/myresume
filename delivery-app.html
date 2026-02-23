@@ -241,7 +241,7 @@
             const rawBase64 = canvas.toDataURL('image/jpeg', 0.8);
             capturedImages.push(rawBase64); // เพิ่มรูปลงใน Array
             
-            stopLiveCamera(); // ปิดกล้องทุกครั้งหลังถ่าย (ถ้าอยากให้ถ่ายรัวๆ เอาบรรทัดนี้ออกแล้วเพิ่มเงื่อนไข)
+            stopLiveCamera(); // ปิดกล้องทุกครั้งหลังถ่าย
             updatePreview();
         }
 
@@ -260,66 +260,99 @@
                 reader.onload = function(event) {
                     capturedImages.push(event.target.result);
                     processedCount++;
-                    // เมื่ออ่านไฟล์ครบทั้งหมดที่เลือกมา
                     if (processedCount === filesToProcess.length) {
                         updatePreview();
-                        document.getElementById('photoInput').value = ""; // เคลียร์ input
+                        document.getElementById('photoInput').value = "";
                     }
                 };
                 reader.readAsDataURL(file);
             });
         });
 
-        // ================= ระบบประมวลผลต่อรูปภาพเป็นรูปเดียว (Stitching) =================
+        // ================= ระบบประมวลผลรูป (Stitching & Watermark) =================
         async function stitchImages() {
-            // ถ้ามีรูปเดียว ไม่ต้องต่อ ส่งได้เลย
-            if (capturedImages.length === 1) {
-                return capturedImages[0].replace(/^data:(.*,)?/, '');
-            }
-
             return new Promise((resolve) => {
                 const stitchCanvas = document.createElement('canvas');
                 const ctx = stitchCanvas.getContext('2d');
                 const loadedImages = [];
-                let totalHeight = 0;
-                const targetWidth = 800; // บีบขนาดกว้างสุดที่ 800px เพื่อลดขนาดไฟล์เวลาต่อกัน
-
+                const count = capturedImages.length;
                 let loadedCount = 0;
-                for (let i = 0; i < capturedImages.length; i++) {
+
+                // คำนวณจำนวนคอลัมน์และแถว (เพื่อให้จัดเรียงเป็นตารางจัตุรัสให้มากที่สุด)
+                let cols = 1;
+                let rows = 1;
+                if (count === 2) { cols = 2; rows = 1; }
+                else if (count === 3 || count === 4) { cols = 2; rows = 2; }
+
+                // ขนาดเซลล์รูปภาพแต่ละช่อง (ทำเป็นสี่เหลี่ยมจัตุรัส 800x800)
+                const cellSize = 800; 
+                const margin = 15;
+                const canvasWidth = (cols * cellSize) + ((cols - 1) * margin);
+                const canvasHeight = (rows * cellSize) + ((rows - 1) * margin);
+
+                stitchCanvas.width = canvasWidth;
+                stitchCanvas.height = canvasHeight;
+
+                // เทพื้นหลังสีขาว
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                for (let i = 0; i < count; i++) {
                     const img = new Image();
                     img.onload = () => {
-                        // คำนวณความสูงตามสัดส่วนของความกว้าง 800px
-                        const scale = targetWidth / img.width;
-                        const scaledHeight = img.height * scale;
-                        
-                        // เว้นระยะห่างระหว่างรูป (Margin) 10px ตรงกลาง
-                        const margin = (i > 0) ? 10 : 0;
-                        
-                        img.scaledWidth = targetWidth;
-                        img.scaledHeight = scaledHeight;
-                        img.marginTop = margin;
-
-                        totalHeight += scaledHeight + margin;
                         loadedImages[i] = img;
                         loadedCount++;
 
-                        if (loadedCount === capturedImages.length) {
-                            // วาดรูปทั้งหมดลง Canvas แผ่นเดียวกัน (เรียงแนวตั้ง)
-                            stitchCanvas.width = targetWidth;
-                            stitchCanvas.height = totalHeight;
-                            
-                            // เทพื้นหลังสีขาว (เผื่อไว้)
-                            ctx.fillStyle = "white";
-                            ctx.fillRect(0, 0, stitchCanvas.width, stitchCanvas.height);
+                        if (loadedCount === count) {
+                            // นำรูปลง Grid ทีละรูป
+                            for (let j = 0; j < count; j++) {
+                                const c = j % cols;
+                                const r = Math.floor(j / cols);
+                                const x = c * (cellSize + margin);
+                                const y = r * (cellSize + margin);
 
-                            let currentY = 0;
-                            for (let j = 0; j < loadedImages.length; j++) {
-                                currentY += loadedImages[j].marginTop;
-                                ctx.drawImage(loadedImages[j], 0, currentY, targetWidth, loadedImages[j].scaledHeight);
-                                currentY += loadedImages[j].scaledHeight;
+                                const currentImg = loadedImages[j];
+                                
+                                // คํานวณ Crop ให้ภาพเป็นสี่เหลี่ยมจัตุรัสแบบ Center Crop
+                                const minSide = Math.min(currentImg.width, currentImg.height);
+                                const sx = (currentImg.width - minSide) / 2;
+                                const sy = (currentImg.height - minSide) / 2;
+
+                                ctx.drawImage(currentImg, sx, sy, minSide, minSide, x, y, cellSize, cellSize);
                             }
+
+                            // === วาดลายน้ำ (Watermark) ===
+                            const orderIdText = orderIdInput.value.toUpperCase().trim() || "NO-ORDER-ID";
                             
-                            // ส่งออกแบบ Base64 (คุณภาพ 80%)
+                            // จัดการวันที่และเวลา
+                            const now = new Date();
+                            const dateStr = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                            const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            
+                            const watermarkText1 = `Order ID: ${orderIdText}`;
+                            const watermarkText2 = `${dateStr} ${timeStr}`;
+
+                            ctx.textAlign = "right";
+                            ctx.textBaseline = "bottom";
+                            ctx.font = "bold 40px sans-serif";
+                            
+                            // วัดขนาดความกว้างของข้อความที่ยาวที่สุด เพื่อวาดพื้นหลัง
+                            const textWidth1 = ctx.measureText(watermarkText1).width;
+                            const textWidth2 = ctx.measureText(watermarkText2).width;
+                            const maxTextWidth = Math.max(textWidth1, textWidth2);
+                            
+                            // วาดกล่องพื้นหลังลายน้ำ (โปร่งแสง) มุมขวาล่างสุด
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+                            const bgWidth = maxTextWidth + 50;
+                            const bgHeight = 130;
+                            ctx.fillRect(canvasWidth - bgWidth, canvasHeight - bgHeight, bgWidth, bgHeight);
+
+                            // วาดข้อความสีขาว
+                            ctx.fillStyle = "white";
+                            ctx.fillText(watermarkText1, canvasWidth - 25, canvasHeight - 70);
+                            ctx.fillText(watermarkText2, canvasWidth - 25, canvasHeight - 20);
+
+                            // ส่งรูปแบบ Base64 (ปรับคุณภาพลงเหลือ 80% เพื่อลดขนาดไฟล์ส่งเข้า Sheets)
                             resolve(stitchCanvas.toDataURL('image/jpeg', 0.8).replace(/^data:(.*,)?/, ''));
                         }
                     };
@@ -343,8 +376,8 @@
             loadingOverlay.classList.add('flex');
             
             try {
-                // 1. นำรูปภาพทั้งหมดมาต่อกันเป็นรูปเดียว
-                loadingText.innerHTML = "กำลังประมวลผลรูปภาพ...";
+                // 1. นำรูปภาพทั้งหมดมาต่อกัน จัดสี่เหลี่ยม และฝังลายน้ำ
+                loadingText.innerHTML = "กำลังประมวลผลรูปภาพและลายน้ำ...";
                 let finalImageBase64 = await stitchImages();
 
                 // 2. เติม Padding ให้ Base64 
