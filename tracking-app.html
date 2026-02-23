@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. ติดตามสถานะพัสดุ (Customer)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+    <header class="bg-white shadow-sm p-4 text-center">
+        <h1 class="text-xl font-bold text-indigo-700">ตรวจสอบสถานะสินค้า</h1>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 mt-4 relative">
+        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2">
+            <input type="text" id="searchId" required placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700"><i class="ph ph-magnifying-glass"></i></button>
+        </form>
+
+        <div id="loading" class="hidden text-center py-10">
+            <i class="ph ph-spinner animate-spin text-4xl text-indigo-500 mb-2 inline-block"></i>
+            <p class="text-slate-500">กำลังค้นหาข้อมูลจากระบบ...</p>
+        </div>
+
+        <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm">
+            <div class="border-b pb-4 mb-6">
+                <p class="text-sm text-slate-500">เลขพัสดุ</p>
+                <h2 id="showId" class="text-2xl font-bold tracking-wider text-slate-800">WAN---</h2>
+                <p id="showName" class="text-sm text-slate-600 mt-1">ชื่อลูกค้า</p>
+            </div>
+
+            <!-- Stepper / Timeline -->
+            <div class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-0.5 before:bg-slate-200">
+                <!-- Step 1: Pending -->
+                <div class="relative">
+                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
+                    <h3 class="font-bold text-slate-800">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
+                    <p class="text-xs text-slate-500" id="time1">-</p>
+                </div>
+                <!-- Step 2: Shipping -->
+                <div class="relative">
+                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot2"></div>
+                    <h3 class="font-bold text-slate-400" id="text2">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
+                    <p class="text-xs text-slate-400" id="time2">รอการอัปเดต</p>
+                </div>
+                <!-- Step 3: Completed -->
+                <div class="relative">
+                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot3"></div>
+                    <h3 class="font-bold text-slate-400" id="text3">จัดส่งสำเร็จ</h3>
+                    <p class="text-xs text-slate-400" id="time3">รอการอัปเดต</p>
+                    
+                    <!-- ส่วนแสดงรูปและหมายเหตุ (จะแสดงเมื่อส่งสำเร็จ) -->
+                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-xs font-bold text-slate-700 mb-1">หมายเหตุจัดส่ง: <span id="showNote" class="font-normal"></span></p>
+                        <a id="proofImageLink" href="#" target="_blank" class="text-sm text-indigo-600 hover:underline flex items-center mt-2">
+                            <i class="ph ph-image mr-1"></i> ดูรูปภาพหลักฐานการจัดส่ง
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl">
+            <i class="ph ph-warning-circle text-4xl mb-2 inline-block"></i>
+            <p id="errorMsg">ไม่พบข้อมูลพัสดุในระบบ</p>
+        </div>
+
+        <!-- หมายเหตุเครดิตร้าน (เพิ่มใหม่ตรงนี้) -->
+        <div class="text-center mt-12 mb-4">
+            <p class="text-[11px] text-slate-400">
+                หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน 
+                <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium">
+                    https://www.wanflorist.net/
+                </a> 
+                เท่านั้น
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
+        
+        // เช็ค Parameter ใน URL
+        window.onload = () => {
+            const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
+            if (urlOrderId) {
+                document.getElementById('searchId').value = urlOrderId;
+                fetchData(urlOrderId);
+            }
+        };
+
+        document.getElementById('searchForm').onsubmit = (e) => {
+            e.preventDefault();
+            fetchData(document.getElementById('searchId').value.toUpperCase().trim());
+        };
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const d = new Date(dateString);
+            return d.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) + ' น.';
+        }
+
+        async function fetchData(id) {
+            if (!id) return;
+            
+            document.getElementById('resultBox').classList.add('hidden');
+            document.getElementById('notFound').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+
+            try {
+                // เรียกใช้ GET Method ของ API
+                const response = await fetch(`${GAS_URL}?orderId=${id}`);
+                const result = await response.json();
+
+                document.getElementById('loading').classList.add('hidden');
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    document.getElementById('resultBox').classList.remove('hidden');
+                    document.getElementById('showId').textContent = data.id;
+                    document.getElementById('showName').textContent = data.name;
+
+                    // เซ็ตเวลาเริ่มต้น
+                    document.getElementById('time1').textContent = formatDate(data.created);
+
+                    // รีเซ็ต UI
+                    ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white');
+                    ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400');
+                    document.getElementById('time2').textContent = 'รอการอัปเดต';
+                    document.getElementById('time3').textContent = 'รอการอัปเดต';
+                    document.getElementById('proofBox').classList.add('hidden');
+
+                    // อัปเดตสถานะ "กำลังจัดส่ง"
+                    if (data.status === 'shipping' || data.status === 'completed') {
+                        document.getElementById('dot2').classList.replace('bg-slate-200', 'bg-blue-500');
+                        document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
+                        document.getElementById('time2').textContent = formatDate(data.shippedDate) || 'กำลังดำเนินการ';
+                        document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+                    }
+
+                    // อัปเดตสถานะ "จัดส่งสำเร็จ"
+                    if (data.status === 'completed') {
+                        document.getElementById('dot3').classList.replace('bg-slate-200', 'bg-green-500');
+                        document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
+                        document.getElementById('time3').textContent = formatDate(data.completedDate) || 'พัสดุถึงมือผู้รับแล้ว'; 
+                        document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+
+                        // แสดงหมายเหตุและรูปลิงก์
+                        document.getElementById('proofBox').classList.remove('hidden');
+                        document.getElementById('showNote').textContent = data.note || '-ไม่มีหมายเหตุ-';
+                        document.getElementById('proofImageLink').href = data.imageUrl;
+                    }
+
+                } else {
+                    document.getElementById('notFound').classList.remove('hidden');
+                    document.getElementById('errorMsg').textContent = result.message;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('notFound').classList.remove('hidden');
+                document.getElementById('errorMsg').textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย";
+            }
+        }
+    </script>
+</body>
+</html>

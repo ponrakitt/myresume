@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. ระบบแอดมิน (สร้างพัสดุ)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans">
+    <nav class="bg-indigo-700 text-white p-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="ph ph-user-gear mr-2 text-2xl"></i>
+                <h1 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin)</h1>
+            </div>
+            <!-- ปุ่มแจ้งปัญหาด้านบนขวา -->
+            <a href="https://ponrakitt.site/report.html" target="_blank" class="hidden sm:flex text-sm bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-lg items-center transition-colors">
+                <i class="ph ph-info mr-1.5 text-lg"></i> แนะนำการใช้งาน / แจ้งปัญหา
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ฝั่งสร้างข้อมูล -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-1 h-fit">
+            <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-2">
+                <i class="ph ph-plus-circle mr-2 text-indigo-600"></i> สร้างรายการจัดส่งใหม่
+            </h2>
+            <form id="form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">เลขพัสดุ *</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300"><i class="ph ph-arrows-clockwise text-lg"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / รายละเอียด</label>
+                    <input type="text" id="custName" required class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <!-- กำหนด URL หน้าแอปคนส่งของของคุณ -->
+                <div class="pt-2">
+                    <label class="block text-xs font-medium text-slate-500 mb-1">URL หน้าคนส่งของ (Delivery App)</label>
+                    <input type="text" id="deliveryAppUrl" required value="https://your-domain.com/delivery-app.html" 
+                        class="w-full px-3 py-1.5 text-sm rounded border border-slate-300 bg-slate-50 text-slate-500">
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex justify-center items-center">
+                    <span id="btnText">สร้างออเดอร์</span>
+                    <i id="btnSpinner" class="ph ph-spinner animate-spin hidden ml-2 text-xl"></i>
+                </button>
+            </form>
+
+            <div id="qrBox" class="hidden mt-6 text-center border-t pt-4">
+                <h3 class="font-bold text-green-600 mb-2">บันทึกเข้า Google Sheets สำเร็จ!</h3>
+                <canvas id="qrcode" class="mx-auto border p-2 rounded"></canvas>
+                <p class="text-xs text-slate-500 mt-2 font-bold" id="displayId"></p>
+                <p class="text-[10px] text-slate-400 mt-1">QR สำหรับคนส่งของสแกน</p>
+                
+                <button type="button" onclick="window.print()" class="mt-3 bg-slate-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-slate-900 w-full">
+                    <i class="ph ph-printer"></i> พริ้นต์แปะกล่อง
+                </button>
+            </div>
+        </div>
+
+        <!-- ฝั่งแสดงตารางประวัติ (ดึงจาก LocalStorage สำหรับให้แอดมินดูง่ายๆ) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold"><i class="ph ph-clock-counter-clockwise mr-2 text-indigo-600"></i> ประวัติการสร้าง (ประวัติบนเครื่องนี้)</h2>
+                <button onclick="clearDB()" class="text-xs text-red-500">ล้างประวัติหน้าจอ</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 border-b">
+                            <th class="p-3">Order ID</th>
+                            <th class="p-3">ลูกค้า</th>
+                            <th class="p-3 text-center">ลิงก์ติดตามสำหรับลูกค้า</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ลิงก์แจ้งปัญหาด้านล่างสุด (แสดงผลชัดเจนบนมือถือ) -->
+    <div class="max-w-6xl mx-auto p-4 mt-4 mb-8 text-center">
+        <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors">
+            <i class="ph ph-warning-circle mr-1 text-lg"></i> แจ้งการทำงานผิดพลาดและแนะนำการใช้งาน
+        </a>
+    </div>
+
+    <script>
+        // API URL ของคุณ
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
+        
+        const qr = new QRious({ element: document.getElementById('qrcode'), size: 150 });
+        
+        // ประวัติในเครื่อง (เก็บไว้ดูเฉยๆ ฐานข้อมูลจริงอยู่บน Sheets)
+        let localHistory = JSON.parse(localStorage.getItem('admin_history')) || [];
+
+        // สุ่มเลข WAN
+        document.getElementById('genId').onclick = () => {
+            const date = new Date();
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const random6 = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+            document.getElementById('orderId').value = `WAN-${yyyy}${mm}${dd}-${random6}`;
+        };
+        document.getElementById('genId').click(); // สุ่มให้ทันทีที่เปิดหน้า
+
+        // ฟังก์ชันอัปเดตตารางประวัติ
+        function renderHistory() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            [...localHistory].reverse().forEach(o => {
+                // สร้างลิงก์เช็คสถานะ สมมติว่าไฟล์ tracking-app.html อยู่ที่เดียวกัน
+                const trackingLink = `tracking-app.html?orderId=${o.id}`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 font-bold">${o.id}</td>
+                        <td class="p-3">${o.name}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${window.location.origin}/${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full hover:bg-indigo-100 transition">
+                                <i class="ph ph-link"></i> คัดลอกลิงก์
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // เมื่อกด Submit (ยิง API ไป Google Sheets)
+        document.getElementById('form').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('orderId').value.trim();
+            const name = document.getElementById('custName').value.trim();
+            const deliveryBaseUrl = document.getElementById('deliveryAppUrl').value.trim();
+            
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // เปลี่ยนปุ่มเป็นสถานะโหลด
+            submitBtn.disabled = true;
+            btnText.textContent = "กำลังบันทึก...";
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                // 1. ส่งข้อมูลเข้า Google Sheets
+                const payload = {
+                    action: "create",
+                    orderId: id,
+                    customerName: name
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload) // ไม่ใส่ headers เพื่อป้องกัน CORS preflight
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // 2. สร้าง QR Code สำหรับคนส่งของ
+                    qr.value = `${deliveryBaseUrl}?orderId=${id}`;
+                    document.getElementById('displayId').textContent = id;
+                    document.getElementById('qrBox').classList.remove('hidden');
+
+                    // 3. บันทึกประวัติลงหน้าจอ
+                    localHistory.push({ id, name });
+                    localStorage.setItem('admin_history', JSON.stringify(localHistory));
+                    renderHistory();
+
+                    // ล้างช่องชื่อลูกค้า เพื่อเตรียมสร้างใหม่
+                    document.getElementById('custName').value = '';
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่');
+            } finally {
+                // คืนค่าปุ่มกลับมา
+                submitBtn.disabled = false;
+                btnText.textContent = "สร้างออเดอร์";
+                btnSpinner.classList.add('hidden');
+            }
+        };
+
+        function clearDB() {
+            localStorage.removeItem('admin_history');
+            localHistory = []; 
+            renderHistory(); 
+            document.getElementById('qrBox').classList.add('hidden');
+        }
+
+        renderHistory();
+    </script>
+</body>
+</html>

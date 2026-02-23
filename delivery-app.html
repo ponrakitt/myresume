@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3. ยืนยันการจัดส่งสินค้า</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased font-sans">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative flex flex-col">
+        <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10">
+            <h1 class="text-xl font-bold text-center">พนักงานจัดส่ง (Delivery)</h1>
+        </header>
+
+        <main class="flex-1 p-5 space-y-6">
+            <form id="deliveryForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">เลขพัสดุ / Order ID *</label>
+                    <input type="text" id="orderId" required placeholder="สแกน QR เพื่อกรอก" 
+                        class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold text-lg text-center tracking-wider">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">หมายเหตุการส่ง (ถ้ามี)</label>
+                    <textarea id="note" rows="2" placeholder="เช่น วางไว้ที่ป้อมยาม, ฝากนิติบุคคล" 
+                        class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ถ่ายรูปยืนยันการส่ง *</label>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" required>
+                    <button type="button" id="cameraBtn" class="w-full border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 hover:bg-slate-50 transition-all cursor-pointer">
+                        <i class="ph ph-camera text-4xl mb-2"></i>
+                        <span class="font-medium">แตะเพื่อเปิดกล้องถ่ายรูป</span>
+                    </button>
+                    <div id="previewContainer" class="hidden mt-4 relative">
+                        <img id="imagePreview" src="" class="w-full h-auto rounded-lg shadow-sm border border-slate-200">
+                        <button type="button" id="removePhotoBtn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-md">
+                            <i class="ph ph-x font-bold"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </main>
+
+        <div class="p-5 border-t border-slate-200 bg-slate-50 sticky bottom-0 z-10">
+            <button type="submit" form="deliveryForm" id="submitBtn" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center">
+                <span>อัปโหลดรูปและส่งข้อมูล</span>
+                <i class="ph ph-paper-plane-right ml-2 text-xl"></i>
+            </button>
+        </div>
+
+        <!-- หน้าจอ Loading -->
+        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+            <p class="text-blue-600 font-bold text-lg text-center px-4">กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...</p>
+        </div>
+
+        <!-- แจ้งเตือนสำเร็จ / ผิดพลาด -->
+        <div id="resultModal" class="hidden absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
+                <div id="modalIcon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+                <h2 id="modalTitle" class="text-2xl font-bold mb-2"></h2>
+                <p id="modalDesc" class="text-slate-600 mb-6"></p>
+                <button type="button" onclick="closeModal()" class="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
+        
+        const photoInput = document.getElementById('photoInput');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const orderIdInput = document.getElementById('orderId');
+
+        // อ่านค่า OrderID จาก URL
+        window.onload = () => {
+            const qrOrderId = new URLSearchParams(window.location.search).get('orderId');
+            if (qrOrderId) {
+                orderIdInput.value = qrOrderId;
+                orderIdInput.readOnly = true;
+                orderIdInput.classList.add('bg-slate-100', 'text-slate-500');
+            }
+        };
+
+        cameraBtn.onclick = () => photoInput.click();
+        
+        photoInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imagePreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    cameraBtn.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        document.getElementById('removePhotoBtn').onclick = () => {
+            photoInput.value = ''; imagePreview.src = '';
+            previewContainer.classList.add('hidden'); cameraBtn.classList.remove('hidden');
+        };
+
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
+                    if ((encoded.length % 4) > 0) encoded += '='.repeat(4 - (encoded.length % 4));
+                    resolve(encoded);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        document.getElementById('deliveryForm').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!photoInput.files || photoInput.files.length === 0) return alert('กรุณาถ่ายรูปยืนยันการจัดส่ง');
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+
+            try {
+                const base64Image = await getBase64(photoInput.files[0]);
+                const payload = {
+                    action: "completeDelivery",
+                    orderId: orderIdInput.value.toUpperCase().trim(),
+                    note: document.getElementById('note').value,
+                    imageBase64: base64Image
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                showModal(result.status === 'success', result.message);
+            } catch (error) {
+                console.error(error);
+                showModal(false, 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+            }
+        };
+
+        function showModal(isSuccess, message) {
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const desc = document.getElementById('modalDesc');
+            
+            if (isSuccess) {
+                icon.className = "w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-5xl";
+                icon.innerHTML = '<i class="ph ph-check-circle"></i>';
+                title.textContent = "ส่งสำเร็จ!";
+                title.className = "text-2xl font-bold mb-2 text-green-600";
+                desc.textContent = "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว";
+                // ล้างฟอร์ม
+                document.getElementById('note').value = '';
+                document.getElementById('removePhotoBtn').click();
+            } else {
+                icon.className = "w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-5xl";
+                icon.innerHTML = '<i class="ph ph-x-circle"></i>';
+                title.textContent = "ผิดพลาด";
+                title.className = "text-2xl font-bold mb-2 text-red-600";
+                desc.textContent = message;
+            }
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2. ระบบหน้าร้าน (ยืนยันสินค้า)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center relative overflow-hidden">
+        
+        <!-- Loading Overlay สำหรับหน้านี้ -->
+        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 z-10 flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-2"></div>
+            <p class="text-blue-600 font-bold">กำลังอัปเดตระบบ...</p>
+        </div>
+
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+            <i class="ph ph-package"></i>
+        </div>
+        <h1 class="text-2xl font-bold mb-2">หน้าร้าน / คลังสินค้า</h1>
+        <p class="text-slate-500 mb-6 text-sm">ยืนยันการจัดเตรียมสินค้าเพื่อส่งมอบให้พนักงานขับรถ</p>
+
+        <form id="warehouseForm" class="space-y-4">
+            <input type="text" id="scanId" required placeholder="สแกน หรือ พิมพ์ Order ID" 
+                class="w-full px-4 py-4 text-center text-xl font-bold rounded-xl border-2 border-slate-200 focus:border-blue-500 outline-none uppercase">
+            
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-md hover:bg-blue-700 transition flex justify-center items-center text-lg">
+                <i class="ph ph-check-circle mr-2 text-2xl"></i> ยืนยันสินค้าพร้อมส่ง
+            </button>
+        </form>
+
+        <div id="msg" class="mt-6 font-medium p-4 rounded-lg hidden"></div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
+
+        document.getElementById('warehouseForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('scanId').value.toUpperCase().trim();
+            const msgBox = document.getElementById('msg');
+            const loading = document.getElementById('loadingOverlay');
+
+            // เปิดหน้าจอโหลด
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+            msgBox.classList.add('hidden'); // ซ่อนข้อความเก่า
+
+            try {
+                // ส่งคำสั่งอัปเดตไป Google Sheets
+                const payload = {
+                    action: "updateShipping",
+                    orderId: id
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                // ปิดหน้าจอโหลด
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'bg-green-50', 'text-green-600');
+
+                if (result.status === 'success') {
+                    msgBox.innerHTML = `✅ อัปเดต <b>${id}</b> เป็น "กำลังจัดส่ง" สำเร็จ!`;
+                    msgBox.classList.add('bg-green-50', 'text-green-600');
+                    document.getElementById('scanId').value = ''; // ล้างช่อง
+                    document.getElementById('scanId').focus();
+                } else {
+                    msgBox.innerHTML = `❌ เกิดข้อผิดพลาด:<br>${result.message}`;
+                    msgBox.classList.add('bg-red-50', 'text-red-600');
+                }
+
+            } catch (error) {
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                msgBox.classList.remove('hidden');
+                msgBox.innerHTML = `❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้`;
+                msgBox.classList.add('bg-red-50', 'text-red-600');
+                console.error(error);
+            }
+        };
+    </script>
+</body>
+</html>
