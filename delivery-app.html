@@ -21,13 +21,9 @@
                 <h2 class="text-xl font-bold text-slate-700">กำลังตรวจสอบ QR Code...</h2>
             </div>
 
-            <!-- 2. หน้าจอแจ้งเตือน QR หมดอายุ -->
+            <!-- 2. หน้าจอแจ้งเตือนต่างๆ (จะถูกแก้คลาสและข้อความผ่าน JS) -->
             <div id="expiredAlert" class="hidden text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10">
-                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
-                    <i class="ph ph-warning-circle"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-red-600 mb-2">QR Code หมดอายุ</h2>
-                <p class="text-slate-600 px-4">ออเดอร์ <span id="expiredOrderId" class="font-bold text-slate-800"></span><br>ได้รับการยืนยันการจัดส่งไปแล้ว</p>
+                <!-- เนื้อหาจะถูกแทรกโดย JS -->
             </div>
 
             <!-- 3. ฟอร์มส่งของ -->
@@ -142,26 +138,58 @@
             }
         };
 
+        // ตรวจสอบสถานะก่อนให้ใช้งาน (อัปเดตใหม่)
         async function checkOrderStatus(orderId) {
             try {
                 const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
                 const result = await response.json();
                 document.getElementById('initialLoad').classList.add('hidden');
+                
+                const alertBox = document.getElementById('expiredAlert');
 
                 if (result.status === 'success') {
-                    if (result.data.status === 'completed' || result.data.status === 'cancelled') {
-                        document.getElementById('expiredAlert').classList.remove('hidden');
-                        document.getElementById('expiredOrderId').textContent = orderId;
+                    const status = result.data.status;
+                    
+                    if (status === 'completed') {
+                        // ส่งสำเร็จไปแล้ว
+                        alertBox.className = "text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10";
+                        alertBox.innerHTML = `
+                            <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner"><i class="ph ph-warning-circle"></i></div>
+                            <h2 class="text-2xl font-bold text-red-600 mb-2">QR Code หมดอายุ</h2>
+                            <p class="text-slate-600 px-4">ออเดอร์ <span class="font-bold text-slate-800">${orderId}</span><br>ได้รับการยืนยันการจัดส่งไปแล้ว</p>`;
+                        alertBox.classList.remove('hidden');
+                        
+                    } else if (status === 'cancelled') {
+                        // ออเดอร์ถูกยกเลิก
+                        alertBox.className = "text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10";
+                        alertBox.innerHTML = `
+                            <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner"><i class="ph ph-x-circle"></i></div>
+                            <h2 class="text-2xl font-bold text-red-600 mb-2">ออเดอร์ถูกยกเลิก</h2>
+                            <p class="text-slate-600 px-4">ออเดอร์ <span class="font-bold text-slate-800">${orderId}</span><br>ถูกยกเลิกไปแล้ว ไม่สามารถจัดส่งได้</p>`;
+                        alertBox.classList.remove('hidden');
+                        
+                    } else if (status === 'pending') {
+                        // *** เพิ่มใหม่: ยังไม่ผ่านหน้าร้าน/คลังสินค้า ***
+                        alertBox.className = "text-center py-12 bg-orange-50 rounded-2xl border border-orange-100 shadow-sm mt-10";
+                        alertBox.innerHTML = `
+                            <div class="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-500 text-6xl shadow-inner"><i class="ph ph-clock-countdown"></i></div>
+                            <h2 class="text-2xl font-bold text-orange-600 mb-2">ยังไม่พร้อมจัดส่ง</h2>
+                            <p class="text-slate-600 px-4 mt-2">ออเดอร์ <span class="font-bold text-slate-800">${orderId}</span><br>ยังไม่ได้ถูกกดยืนยันจากหน้าร้าน<br><span class="text-sm text-orange-500 font-medium">(กรุณารอให้หน้าร้านเตรียมของเสร็จก่อน)</span></p>`;
+                        alertBox.classList.remove('hidden');
+                        
                     } else {
+                        // สถานะเป็น 'shipping' เท่านั้นถึงจะส่งของได้
                         document.getElementById('deliveryForm').classList.remove('hidden');
                         document.getElementById('footerAction').classList.remove('hidden');
                     }
                 } else {
-                    document.getElementById('expiredAlert').classList.remove('hidden');
-                    document.getElementById('expiredAlert').innerHTML = `
+                    // หาข้อมูลไม่เจอ
+                    alertBox.className = "text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10";
+                    alertBox.innerHTML = `
                         <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner"><i class="ph ph-x-circle"></i></div>
                         <h2 class="text-2xl font-bold text-red-600 mb-2">ไม่พบข้อมูล</h2>
                         <p class="text-slate-600 px-4">ไม่พบรหัสพัสดุนี้ในระบบ<br>หรืออาจถูกลบไปแล้ว</p>`;
+                    alertBox.classList.remove('hidden');
                 }
             } catch (error) {
                 alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อตรวจสอบ QR ได้ โปรดตรวจสอบอินเทอร์เน็ต');
@@ -405,12 +433,14 @@
                 if (result.status === 'success') {
                     document.getElementById('deliveryForm').classList.add('hidden');
                     document.getElementById('footerAction').classList.add('hidden');
-                    document.getElementById('expiredAlert').classList.remove('hidden');
                     
-                    document.getElementById('expiredAlert').innerHTML = `
+                    const alertBox = document.getElementById('expiredAlert');
+                    alertBox.className = "text-center py-12 bg-green-50 rounded-2xl border border-green-100 shadow-sm mt-10";
+                    alertBox.innerHTML = `
                         <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-6xl shadow-inner"><i class="ph ph-check-circle"></i></div>
                         <h2 class="text-2xl font-bold text-green-600 mb-2">จัดส่งสำเร็จ</h2>
                         <p class="text-slate-600 px-4">ระบบได้บันทึกรูปภาพ<br>และส่งข้อมูลเข้าศูนย์เรียบร้อยแล้ว</p>`;
+                    alertBox.classList.remove('hidden');
                 }
 
             } catch (error) {
