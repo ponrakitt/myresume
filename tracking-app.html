@@ -3,31 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4. ติดตามสถานะพัสดุ (Customer)</title>
+    <title>ตรวจสอบสถานะพัสดุ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
     <header class="bg-white shadow-sm p-4 text-center">
         <h1 class="text-xl font-bold text-indigo-700">ตรวจสอบสถานะสินค้า</h1>
     </header>
 
-    <main class="max-w-md mx-auto p-4 mt-4 relative">
-        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2">
-            <input type="text" id="searchId" required placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold">
-            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700"><i class="ph ph-magnifying-glass"></i></button>
+    <main class="max-w-md mx-auto p-4 mt-4 relative flex-1 w-full">
+        <!-- ช่องค้นหา -->
+        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100">
+            <input type="text" id="searchId" required placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors"><i class="ph ph-magnifying-glass text-lg"></i></button>
         </form>
 
-        <div id="loading" class="hidden text-center py-10">
-            <i class="ph ph-spinner animate-spin text-4xl text-indigo-500 mb-2 inline-block"></i>
-            <p class="text-slate-500">กำลังค้นหาข้อมูลจากระบบ...</p>
+        <!-- สถานะกำลังโหลด -->
+        <div id="loading" class="hidden text-center py-12">
+            <i class="ph ph-spinner animate-spin text-5xl text-indigo-500 mb-3 inline-block"></i>
+            <p class="text-slate-500 font-medium">กำลังค้นหาข้อมูลจากระบบ...</p>
         </div>
 
-        <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm">
-            <div class="border-b pb-4 mb-6">
-                <p class="text-sm text-slate-500">เลขพัสดุ</p>
-                <h2 id="showId" class="text-2xl font-bold tracking-wider text-slate-800">WAN---</h2>
-                <p id="showName" class="text-sm text-slate-600 mt-1">ชื่อลูกค้า</p>
+        <!-- กล่องแสดงผลลัพธ์ -->
+        <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <p class="text-sm text-slate-500 mb-1">เลขพัสดุ</p>
+                <h2 id="showId" class="text-2xl font-bold tracking-wider text-indigo-700">WAN---</h2>
+                <p id="showName" class="text-sm text-slate-600 mt-1 flex items-center"><i class="ph ph-user mr-1"></i> <span id="nameSpan">ชื่อลูกค้า</span></p>
             </div>
 
             <!-- Stepper / Timeline -->
@@ -36,52 +39,65 @@
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
                     <h3 class="font-bold text-slate-800">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
-                    <p class="text-xs text-slate-500" id="time1">-</p>
+                    <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
                 <!-- Step 2: Shipping -->
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot2"></div>
-                    <h3 class="font-bold text-slate-400" id="text2">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
-                    <p class="text-xs text-slate-400" id="time2">รอการอัปเดต</p>
+                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text2">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
+                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2">รอการอัปเดต</p>
                 </div>
                 <!-- Step 3: Completed -->
                 <div class="relative">
                     <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot3"></div>
-                    <h3 class="font-bold text-slate-400" id="text3">จัดส่งสำเร็จ</h3>
-                    <p class="text-xs text-slate-400" id="time3">รอการอัปเดต</p>
+                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text3">จัดส่งสำเร็จ</h3>
+                    <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3">รอการอัปเดต</p>
                     
                     <!-- ส่วนแสดงรูปและหมายเหตุ (จะแสดงเมื่อส่งสำเร็จ) -->
                     <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <p class="text-xs font-bold text-slate-700 mb-1">หมายเหตุจัดส่ง: <span id="showNote" class="font-normal"></span></p>
-                        <a id="proofImageLink" href="#" target="_blank" class="text-sm text-indigo-600 hover:underline flex items-center mt-2">
-                            <i class="ph ph-image mr-1"></i> ดูรูปภาพหลักฐานการจัดส่ง
+                        <p class="text-xs font-bold text-slate-700 mb-1">หมายเหตุ: <span id="showNote" class="font-normal"></span></p>
+                        <a id="proofImageLink" href="#" target="_blank" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-1">
+                            <i class="ph ph-image mr-1 text-lg"></i> ดูรูปภาพหลักฐานการจัดส่ง
                         </a>
                     </div>
                 </div>
             </div>
+
+            <!-- กล่องประเมินความพึงพอใจ (แสดงเมื่อส่งสำเร็จ) -->
+            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl">
+                    <i class="ph-fill ph-star"></i>
+                </div>
+                <h4 class="font-bold text-indigo-800 mb-1">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
+                <p id="surveyText" class="text-xs text-indigo-600 mb-4">เปิดรับความคิดเห็นถึงวันที่ --/--/----</p>
+                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto">
+                    <i class="ph ph-clipboard-text mr-2 text-lg"></i> ประเมินการจัดส่ง
+                </a>
+            </div>
         </div>
 
-        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl">
-            <i class="ph ph-warning-circle text-4xl mb-2 inline-block"></i>
-            <p id="errorMsg">ไม่พบข้อมูลพัสดุในระบบ</p>
-        </div>
-
-        <!-- หมายเหตุเครดิตร้าน (เพิ่มใหม่ตรงนี้) -->
-        <div class="text-center mt-12 mb-4">
-            <p class="text-[11px] text-slate-400">
-                หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน 
-                <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium">
-                    https://www.wanflorist.net/
-                </a> 
-                เท่านั้น
-            </p>
+        <!-- แจ้งเตือนไม่พบข้อมูล -->
+        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100">
+            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400"></i>
+            <h3 class="font-bold text-lg mb-1">ไม่พบข้อมูล</h3>
+            <p id="errorMsg" class="text-slate-600 text-sm">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
         </div>
     </main>
+
+    <!-- หมายเหตุเครดิตร้าน -->
+    <footer class="text-center py-6 mt-auto">
+        <p class="text-xs text-slate-400">
+            หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน 
+            <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium">
+                www.wanflorist.net
+            </a> 
+            เท่านั้น
+        </p>
+    </footer>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
-        // เช็ค Parameter ใน URL
         window.onload = () => {
             const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (urlOrderId) {
@@ -109,7 +125,6 @@
             document.getElementById('loading').classList.remove('hidden');
 
             try {
-                // เรียกใช้ GET Method ของ API
                 const response = await fetch(`${GAS_URL}?orderId=${id}`);
                 const result = await response.json();
 
@@ -119,17 +134,18 @@
                     const data = result.data;
                     document.getElementById('resultBox').classList.remove('hidden');
                     document.getElementById('showId').textContent = data.id;
-                    document.getElementById('showName').textContent = data.name;
+                    document.getElementById('nameSpan').textContent = data.name;
 
                     // เซ็ตเวลาเริ่มต้น
                     document.getElementById('time1').textContent = formatDate(data.created);
 
                     // รีเซ็ต UI
-                    ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white');
-                    ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400');
+                    ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500');
+                    ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 transition-colors duration-500');
                     document.getElementById('time2').textContent = 'รอการอัปเดต';
                     document.getElementById('time3').textContent = 'รอการอัปเดต';
                     document.getElementById('proofBox').classList.add('hidden');
+                    document.getElementById('surveyBox').classList.add('hidden'); // ซ่อนแบบสอบถามไว้ก่อน
 
                     // อัปเดตสถานะ "กำลังจัดส่ง"
                     if (data.status === 'shipping' || data.status === 'completed') {
@@ -146,10 +162,12 @@
                         document.getElementById('time3').textContent = formatDate(data.completedDate) || 'พัสดุถึงมือผู้รับแล้ว'; 
                         document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
 
-                        // แสดงหมายเหตุและรูปลิงก์
                         document.getElementById('proofBox').classList.remove('hidden');
-                        document.getElementById('showNote').textContent = data.note || '-ไม่มีหมายเหตุ-';
+                        document.getElementById('showNote').textContent = data.note || '-ไม่มี-';
                         document.getElementById('proofImageLink').href = data.imageUrl;
+
+                        // --- ระบบคำนวณอายุแบบสอบถาม (15 วัน) ---
+                        setupSurveyBox(data.completedDate);
                     }
 
                 } else {
@@ -161,6 +179,46 @@
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('notFound').classList.remove('hidden');
                 document.getElementById('errorMsg').textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย";
+            }
+        }
+
+        // ฟังก์ชันจัดการกล่องแบบสอบถาม
+        function setupSurveyBox(completedDateString) {
+            if (!completedDateString) return;
+
+            const completedDate = new Date(completedDateString);
+            
+            // คำนวณวันหมดอายุ (+15 วัน)
+            const expireDate = new Date(completedDate);
+            expireDate.setDate(expireDate.getDate() + 15);
+            
+            // เวลาปัจจุบัน
+            const now = new Date();
+
+            const surveyBox = document.getElementById('surveyBox');
+            const surveyBtn = document.getElementById('surveyBtn');
+            const surveyText = document.getElementById('surveyText');
+
+            surveyBox.classList.remove('hidden');
+
+            if (now <= expireDate) {
+                // ยังไม่หมดอายุ -> ให้กดได้
+                surveyBtn.href = "https://forms.gle/iWpViNdXNXDsEwXq7";
+                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto";
+                surveyBtn.innerHTML = '<i class="ph ph-clipboard-text mr-2 text-lg"></i> ประเมินการจัดส่ง';
+                
+                // แปลงวันที่แบบอ่านง่าย
+                const expireStr = expireDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                surveyText.textContent = `เปิดรับความคิดเห็นถึงวันที่ ${expireStr}`;
+                surveyText.className = "text-xs text-indigo-600 mb-4";
+            } else {
+                // หมดอายุแล้ว -> ปุ่มสีเทา กดไม่ได้
+                surveyBtn.removeAttribute('href');
+                surveyBtn.className = "inline-flex items-center justify-center bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg cursor-not-allowed w-full sm:w-auto";
+                surveyBtn.innerHTML = '<i class="ph ph-lock-key mr-2 text-lg"></i> หมดเวลาประเมิน';
+                
+                surveyText.textContent = "ขออภัย หมดเวลาการตอบแบบสอบถามสำหรับออเดอร์นี้แล้ว";
+                surveyText.className = "text-xs text-red-500 mb-4 font-medium";
             }
         }
     </script>
