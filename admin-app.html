@@ -111,8 +111,8 @@
         <!-- ฝั่งแสดงตารางประวัติ (ดึงจาก LocalStorage สำหรับให้แอดมินดูง่ายๆ) -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold"><i class="ph ph-clock-counter-clockwise mr-2 text-indigo-600"></i> ประวัติการสร้าง (บนเครื่องนี้)</h2>
-                <button onclick="clearDB()" class="text-xs text-red-500 hover:underline">ล้างประวัติหน้าจอ</button>
+                <h2 class="text-lg font-bold"><i class="ph ph-cloud-arrow-down mr-2 text-indigo-600"></i> ข้อมูลออเดอร์ทั้งหมด (ออนไลน์)</h2>
+                <button onclick="fetchOrders()" class="text-xs text-indigo-600 hover:underline flex items-center"><i class="ph ph-arrows-clockwise mr-1"></i> รีเฟรชข้อมูล</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
@@ -120,10 +120,13 @@
                         <tr class="bg-slate-100 border-b">
                             <th class="p-3">Order ID</th>
                             <th class="p-3">ลูกค้า</th>
-                            <th class="p-3 text-center">ลิงก์ติดตามสำหรับลูกค้า</th>
+                            <th class="p-3 text-center">สถานะ</th>
+                            <th class="p-3 text-center">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="text-center p-4 text-slate-500">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -144,13 +147,14 @@
         const qrDelivery = new QRious({ element: document.getElementById('qrcodeDelivery'), size: 140 });
         const qrCustomer = new QRious({ element: document.getElementById('qrcodeCustomer'), size: 140 });
         
-        let localHistory = JSON.parse(localStorage.getItem('admin_history')) || [];
-
         // ดึง URL ของเว็บปัจจุบันมาใส่อัตโนมัติ
         window.addEventListener('DOMContentLoaded', () => {
             const currentOrigin = window.location.origin; 
             const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
             document.getElementById('deliveryAppUrl').value = `${currentOrigin}${currentPath}/delivery-app.html`;
+            
+            // โหลดข้อมูลทั้งหมดจาก Google Sheets ทันทีที่เปิดหน้า
+            fetchOrders();
         });
 
         // สุ่มเลข WAN
@@ -164,29 +168,99 @@
         };
         document.getElementById('genId').click(); 
 
-        // ฟังก์ชันอัปเดตตารางประวัติ
-        function renderHistory() {
+        // ฟังก์ชันโหลดข้อมูลทั้งหมดจาก Google Sheets (ออนไลน์)
+        async function fetchOrders() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>';
+            
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAll`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    renderTable(result.data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-red-500">เกิดข้อผิดพลาด: ${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-red-500">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</td></tr>`;
+            }
+        }
+
+        // ฟังก์ชันวาดตาราง
+        function renderTable(orders) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            // หา path ปัจจุบันเพื่อสร้างลิงก์เช็คสถานะ
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-500">ยังไม่มีข้อมูลออเดอร์</td></tr>';
+                return;
+            }
+
             const currentOrigin = window.location.origin;
             const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
 
-            [...localHistory].reverse().forEach(o => {
+            orders.forEach(o => {
                 const trackingLink = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${o.id}`;
+                
+                // แปลงสถานะเป็นป้ายสี
+                let statusBadge = '';
+                let canCancel = false;
+                if(o.status === 'pending') {
+                    statusBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold whitespace-nowrap">รอจัดเตรียม</span>';
+                    canCancel = true;
+                } else if(o.status === 'shipping') {
+                    statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold whitespace-nowrap">กำลังจัดส่ง</span>';
+                    canCancel = true;
+                } else if(o.status === 'completed') {
+                    statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold whitespace-nowrap">ส่งสำเร็จ</span>';
+                } else if(o.status === 'cancelled') {
+                    statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold whitespace-nowrap">ยกเลิกแล้ว</span>';
+                }
+
+                // ปุ่มยกเลิก
+                const cancelBtnHtml = canCancel 
+                    ? `<button onclick="cancelOrder('${o.id}')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-2 py-1.5 rounded-lg transition" title="ยกเลิกออเดอร์"><i class="ph ph-trash"></i></button>`
+                    : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed"><i class="ph ph-trash"></i></button>`;
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-bold text-indigo-600">${o.id}</td>
+                        <td class="p-3 font-bold text-indigo-600 whitespace-nowrap">${o.id}</td>
                         <td class="p-3 text-slate-700">${o.name}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition shadow-sm border border-indigo-100">
-                                <i class="ph ph-copy mr-1"></i> คัดลอกลิงก์
+                        <td class="p-3 text-center">${statusBadge}</td>
+                        <td class="p-3 text-center flex justify-center gap-1">
+                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition shadow-sm border border-indigo-100" title="คัดลอกลิงก์">
+                                <i class="ph ph-copy text-lg"></i>
                             </button>
+                            ${cancelBtnHtml}
                         </td>
                     </tr>
                 `;
             });
+        }
+
+        // ฟังก์ชันยกเลิกออเดอร์
+        async function cancelOrder(orderId) {
+            if(!confirm(`คุณแน่ใจหรือไม่ว่าต้องการยกเลิกออเดอร์ ${orderId} ?\nหากยกเลิกแล้ว คนขับรถจะไม่สามารถส่งของได้`)) return;
+
+            try {
+                // ซ่อนตารางและขึ้นโหลด
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center p-6 text-red-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังยกเลิกออเดอร์...</td></tr>';
+
+                const payload = { action: "cancelOrder", orderId: orderId };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    fetchOrders(); // โหลดข้อมูลใหม่เพื่ออัปเดตตาราง
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                    fetchOrders();
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+                fetchOrders();
+            }
         }
 
         // เมื่อกด Submit
@@ -234,12 +308,10 @@
                     document.getElementById('displayCustName').textContent = `ลูกค้า: ${name}`;
                     document.getElementById('qrBox').classList.remove('hidden');
 
-                    // 4. บันทึกประวัติลงหน้าจอ
-                    localHistory.push({ id, name });
-                    localStorage.setItem('admin_history', JSON.stringify(localHistory));
-                    renderHistory();
-
                     document.getElementById('custName').value = '';
+                    
+                    // อัปเดตตารางออนไลน์แบบเรียลไทม์
+                    fetchOrders();
                 } else {
                     alert('เกิดข้อผิดพลาด: ' + result.message);
                 }
@@ -254,16 +326,6 @@
             }
         };
 
-        function clearDB() {
-            if(confirm('แน่ใจหรือไม่ที่จะล้างประวัติที่แสดงบนหน้าจอนี้? (ไม่กระทบกับข้อมูลใน Google Sheets)')) {
-                localStorage.removeItem('admin_history');
-                localHistory = []; 
-                renderHistory(); 
-                document.getElementById('qrBox').classList.add('hidden');
-            }
-        }
-
-        renderHistory();
     </script>
 </body>
 </html>
