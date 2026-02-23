@@ -21,17 +21,16 @@
                 <h2 class="text-xl font-bold text-slate-700">กำลังตรวจสอบ QR Code...</h2>
             </div>
 
-            <!-- 2. หน้าจอแจ้งเตือน QR หมดอายุ (ซ่อนไว้ก่อน) -->
+            <!-- 2. หน้าจอแจ้งเตือน QR หมดอายุ -->
             <div id="expiredAlert" class="hidden text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10">
                 <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
                     <i class="ph ph-warning-circle"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-red-600 mb-2">QR Code หมดอายุ</h2>
-                <p class="text-slate-600 px-4">ออเดอร์ <span id="expiredOrderId" class="font-bold text-slate-800"></span><br>ได้รับการยืนยันการจัดส่งไปแล้ว<br>ไม่สามารถทำรายการซ้ำได้</p>
-                <button onclick="window.location.reload()" class="mt-6 text-sm text-red-500 hover:text-red-700 underline font-medium">ลองตรวจสอบใหม่อีกครั้ง</button>
+                <p class="text-slate-600 px-4">ออเดอร์ <span id="expiredOrderId" class="font-bold text-slate-800"></span><br>ได้รับการยืนยันการจัดส่งไปแล้ว</p>
             </div>
 
-            <!-- 3. ฟอร์มส่งของ (ซ่อนไว้ก่อนจนกว่าจะเช็คผ่าน) -->
+            <!-- 3. ฟอร์มส่งของ -->
             <form id="deliveryForm" class="hidden space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">เลขพัสดุ / Order ID *</label>
@@ -43,24 +42,57 @@
                     <textarea id="note" rows="2" placeholder="เช่น วางไว้ที่ป้อมยาม, ฝากนิติบุคคล" 
                         class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 </div>
+                
+                <!-- ส่วนของการจัดการรูปภาพ -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">ถ่ายรูปยืนยันการส่ง *</label>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" required>
-                    <button type="button" id="cameraBtn" class="w-full border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 hover:bg-slate-50 transition-all cursor-pointer">
-                        <i class="ph ph-camera text-4xl mb-2"></i>
-                        <span class="font-medium">แตะเพื่อเปิดกล้องถ่ายรูป</span>
-                    </button>
-                    <div id="previewContainer" class="hidden mt-4 relative">
-                        <img id="imagePreview" src="" class="w-full h-auto rounded-lg shadow-sm border border-slate-200">
-                        <button type="button" id="removePhotoBtn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-md hover:bg-red-600 transition-colors">
-                            <i class="ph ph-x font-bold"></i>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">ถ่ายรูปยืนยันการส่ง *</label>
+                    
+                    <!-- เมนูเลือกวิธีถ่ายรูป (ซ่อนเมื่อเปิดกล้อง หรือ มีรูปแล้ว) -->
+                    <div id="cameraMenu" class="grid grid-cols-2 gap-3">
+                        <button type="button" onclick="startLiveCamera()" class="border-2 border-blue-200 bg-blue-50 text-blue-700 rounded-xl p-4 flex flex-col items-center justify-center hover:bg-blue-100 transition-all cursor-pointer shadow-sm">
+                            <i class="ph ph-camera text-3xl mb-1"></i>
+                            <span class="font-bold text-sm">เปิดกล้องถ่ายรูป</span>
                         </button>
+                        
+                        <button type="button" onclick="document.getElementById('photoInput').click()" class="border-2 border-slate-200 bg-slate-50 text-slate-600 rounded-xl p-4 flex flex-col items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm">
+                            <i class="ph ph-image text-3xl mb-1"></i>
+                            <span class="font-bold text-sm">เลือกจากอัลบั้ม</span>
+                        </button>
+                        <!-- input สำรองสำหรับการอัปโหลดรูป -->
+                        <input type="file" id="photoInput" accept="image/*" class="hidden">
+                    </div>
+
+                    <!-- พื้นที่แสดงกล้องสด (Live Camera) -->
+                    <div id="liveCameraContainer" class="hidden flex flex-col items-center bg-black rounded-xl overflow-hidden relative shadow-lg">
+                        <!-- กล้องวิดีโอ (playsinline สำคัญมากสำหรับ iOS) -->
+                        <video id="cameraVideo" autoplay playsinline class="w-full h-64 object-cover"></video>
+                        <canvas id="cameraCanvas" class="hidden"></canvas>
+                        
+                        <!-- แถบปุ่มกดถ่ายรูป -->
+                        <div class="w-full bg-black/80 p-4 flex justify-between items-center">
+                            <button type="button" onclick="stopLiveCamera()" class="text-white bg-slate-700 p-2 rounded-full hover:bg-slate-600">
+                                <i class="ph ph-x text-xl"></i>
+                            </button>
+                            <!-- ปุ่มชัตเตอร์ -->
+                            <button type="button" onclick="takeSnapshot()" class="w-14 h-14 bg-white rounded-full border-4 border-slate-400 hover:bg-slate-200 flex items-center justify-center shadow-lg transform active:scale-95 transition-transform"></button>
+                            <div class="w-10"></div> <!-- ตัวดันพื้นที่ให้สมดุล -->
+                        </div>
+                    </div>
+
+                    <!-- พื้นที่แสดงรูปพรีวิว (หลังถ่าย หรือ อัปโหลด) -->
+                    <div id="previewContainer" class="hidden mt-4 relative">
+                        <img id="imagePreview" src="" class="w-full h-auto rounded-xl shadow-md border-2 border-slate-200 object-cover">
+                        <div class="absolute top-2 right-2 flex gap-2">
+                            <button type="button" onclick="removePhoto()" class="bg-red-500 text-white rounded-full p-2.5 shadow-lg hover:bg-red-600 transition-colors" title="ลบรูปลองใหม่">
+                                <i class="ph ph-trash font-bold"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
         </main>
 
-        <!-- ปุ่มกดยืนยัน (ซ่อนไว้ก่อนเหมือนกัน) -->
+        <!-- ปุ่มกดยืนยัน -->
         <div id="footerAction" class="hidden p-5 border-t border-slate-200 bg-slate-50 sticky bottom-0 z-10">
             <button type="submit" form="deliveryForm" id="submitBtn" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center">
                 <span>อัปโหลดรูปและส่งข้อมูล</span>
@@ -80,7 +112,7 @@
                 <div id="modalIcon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"></div>
                 <h2 id="modalTitle" class="text-2xl font-bold mb-2"></h2>
                 <p id="modalDesc" class="text-slate-600 mb-6"></p>
-                <button type="button" onclick="closeModal()" class="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200">ตกลง</button>
+                <button type="button" onclick="closeModal()" class="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors">ตกลง</button>
             </div>
         </div>
     </div>
@@ -88,59 +120,50 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
-        const photoInput = document.getElementById('photoInput');
-        const cameraBtn = document.getElementById('cameraBtn');
-        const previewContainer = document.getElementById('previewContainer');
-        const imagePreview = document.getElementById('imagePreview');
+        // ตัวแปรสำหรับระบบกล้อง
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('cameraCanvas');
+        let cameraStream = null;
+        let finalImageBase64 = null; // เก็บข้อมูลรูปที่จะส่งไป API
+
         const orderIdInput = document.getElementById('orderId');
 
-        // เมื่อเปิดหน้าเว็บขึ้นมา (แสกน QR)
+        // เมื่อเปิดหน้าเว็บขึ้นมา
         window.onload = async () => {
             const qrOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (qrOrderId) {
                 orderIdInput.value = qrOrderId;
                 orderIdInput.readOnly = true;
                 orderIdInput.classList.add('bg-slate-100', 'text-slate-500');
-                
-                // ดึงข้อมูลจาก Google Sheets ทันทีเพื่อเช็คสถานะ
                 await checkOrderStatus(qrOrderId);
             } else {
-                // ถ้าเข้ามาแบบไม่ได้สแกน QR Code ให้เปิดฟอร์มปกติเลย
                 document.getElementById('initialLoad').classList.add('hidden');
                 document.getElementById('deliveryForm').classList.remove('hidden');
                 document.getElementById('footerAction').classList.remove('hidden');
             }
         };
 
-        // ฟังก์ชันตรวจสอบสถานะ QR Code
+        // ตรวจสอบสถานะว่าเคยส่งไปหรือยัง
         async function checkOrderStatus(orderId) {
             try {
-                // ใช้ API GET เหมือนหน้าเช็คสถานะลูกค้า
                 const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
                 const result = await response.json();
-                
-                document.getElementById('initialLoad').classList.add('hidden'); // ปิดหน้าโหลด
+                document.getElementById('initialLoad').classList.add('hidden');
 
                 if (result.status === 'success') {
-                    // ถ้าสถานะเป็น completed คือส่งไปแล้ว
-                    if (result.data.status === 'completed') {
+                    if (result.data.status === 'completed' || result.data.status === 'cancelled') {
                         document.getElementById('expiredAlert').classList.remove('hidden');
                         document.getElementById('expiredOrderId').textContent = orderId;
                     } else {
-                        // ถ้าระบบยังไม่ส่ง ให้เปิดฟอร์มสำหรับถ่ายรูป
                         document.getElementById('deliveryForm').classList.remove('hidden');
                         document.getElementById('footerAction').classList.remove('hidden');
                     }
                 } else {
-                    // หาออเดอร์ไม่เจอ
                     document.getElementById('expiredAlert').classList.remove('hidden');
                     document.getElementById('expiredAlert').innerHTML = `
-                        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
-                            <i class="ph ph-x-circle"></i>
-                        </div>
+                        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner"><i class="ph ph-x-circle"></i></div>
                         <h2 class="text-2xl font-bold text-red-600 mb-2">ไม่พบข้อมูล</h2>
-                        <p class="text-slate-600 px-4">ไม่พบรหัสพัสดุนี้ในระบบ<br>หรืออาจถูกลบไปแล้ว</p>
-                    `;
+                        <p class="text-slate-600 px-4">ไม่พบรหัสพัสดุนี้ในระบบ<br>หรืออาจถูกลบไปแล้ว</p>`;
                 }
             } catch (error) {
                 alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อตรวจสอบ QR ได้ โปรดตรวจสอบอินเทอร์เน็ต');
@@ -148,53 +171,106 @@
             }
         }
 
-        cameraBtn.onclick = () => photoInput.click();
-        
-        photoInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    imagePreview.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                    cameraBtn.classList.add('hidden');
-                }
-                reader.readAsDataURL(file);
+        // ================= ระบบ Live Camera =================
+        async function startLiveCamera() {
+            try {
+                // ขออนุญาตใช้กล้อง (เน้นกล้องหลัง facingMode: 'environment')
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
+                video.srcObject = cameraStream;
+                
+                // จัดการ UI
+                document.getElementById('cameraMenu').classList.add('hidden');
+                document.getElementById('liveCameraContainer').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+                alert("ไม่สามารถเข้าถึงกล้องถ่ายรูปได้ กรุณาอนุญาตการเข้าถึงกล้อง หรือใช้ปุ่ม 'เลือกจากอัลบั้ม' แทน");
             }
-        };
-
-        document.getElementById('removePhotoBtn').onclick = () => {
-            photoInput.value = ''; imagePreview.src = '';
-            previewContainer.classList.add('hidden'); cameraBtn.classList.remove('hidden');
-        };
-
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
-                    if ((encoded.length % 4) > 0) encoded += '='.repeat(4 - (encoded.length % 4));
-                    resolve(encoded);
-                };
-                reader.onerror = error => reject(error);
-            });
         }
 
+        function stopLiveCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            document.getElementById('liveCameraContainer').classList.add('hidden');
+            document.getElementById('cameraMenu').classList.remove('hidden');
+        }
+
+        // กดปุ่มชัตเตอร์ถ่ายรูป
+        function takeSnapshot() {
+            // ปรับขนาด canvas ให้เท่ากับวิดีโอ
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // วาดภาพจากวิดีโอลง canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // ดึงข้อมูลรูปภาพออกมา (ลดคุณภาพลงเหลือ 0.8 เพื่อไม่ให้ไฟล์ใหญ่เกินไป)
+            const rawBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // ตัดส่วนหัว "data:image/jpeg;base64," ออก เพื่อเตรียมส่งให้ API
+            finalImageBase64 = rawBase64.replace(/^data:(.*,)?/, '');
+            
+            // แสดงรูปที่ถ่ายบนหน้าจอ
+            document.getElementById('imagePreview').src = rawBase64;
+            document.getElementById('previewContainer').classList.remove('hidden');
+            
+            // ปิดกล้องวิดีโอ
+            stopLiveCamera();
+            document.getElementById('cameraMenu').classList.add('hidden'); // ซ่อนเมนูด้วย เพราะมีรูปแล้ว
+        }
+
+        // ================= ระบบเลือกรูปจากอัลบั้ม (Fallback) =================
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('imagePreview').src = event.target.result;
+                document.getElementById('previewContainer').classList.remove('hidden');
+                document.getElementById('cameraMenu').classList.add('hidden');
+                
+                // เก็บ Base64 ไว้ส่ง API
+                finalImageBase64 = event.target.result.toString().replace(/^data:(.*,)?/, '');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ลบรูปภาพที่ถ่าย/เลือกไว้
+        function removePhoto() {
+            finalImageBase64 = null;
+            document.getElementById('imagePreview').src = "";
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('cameraMenu').classList.remove('hidden');
+            document.getElementById('photoInput').value = ""; // เคลียร์ค่า input
+        }
+
+        // ================= ระบบส่งข้อมูล (Submit) =================
         document.getElementById('deliveryForm').onsubmit = async (e) => {
             e.preventDefault();
-            if (!photoInput.files || photoInput.files.length === 0) return alert('กรุณาถ่ายรูปยืนยันการจัดส่ง');
+            
+            if (!finalImageBase64) {
+                return alert('กรุณาเปิดกล้องถ่ายรูป หรือ เลือกรูปเพื่อยืนยันการจัดส่ง');
+            }
 
             document.getElementById('loadingOverlay').classList.remove('hidden');
             document.getElementById('loadingOverlay').classList.add('flex');
 
             try {
-                const base64Image = await getBase64(photoInput.files[0]);
+                // เติม padding ให้ Base64 กรณีข้อมูลแหว่ง
+                if ((finalImageBase64.length % 4) > 0) {
+                    finalImageBase64 += '='.repeat(4 - (finalImageBase64.length % 4));
+                }
+
                 const payload = {
                     action: "completeDelivery",
                     orderId: orderIdInput.value.toUpperCase().trim(),
                     note: document.getElementById('note').value,
-                    imageBase64: base64Image
+                    imageBase64: finalImageBase64
                 };
 
                 const response = await fetch(GAS_URL, {
@@ -205,12 +281,15 @@
 
                 showModal(result.status === 'success', result.message);
                 
-                // ถ้าส่งสำเร็จ ให้ซ่อนฟอร์มและโชว์หน้าหมดอายุไปเลย จะได้ไม่เผลอกดซ้ำ
                 if (result.status === 'success') {
                     document.getElementById('deliveryForm').classList.add('hidden');
                     document.getElementById('footerAction').classList.add('hidden');
                     document.getElementById('expiredAlert').classList.remove('hidden');
-                    document.getElementById('expiredOrderId').textContent = orderIdInput.value;
+                    
+                    document.getElementById('expiredAlert').innerHTML = `
+                        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-6xl shadow-inner"><i class="ph ph-check-circle"></i></div>
+                        <h2 class="text-2xl font-bold text-green-600 mb-2">จัดส่งสำเร็จ</h2>
+                        <p class="text-slate-600 px-4">ระบบได้บันทึกรูปภาพ<br>และส่งข้อมูลเข้าศูนย์เรียบร้อยแล้ว</p>`;
                 }
 
             } catch (error) {
@@ -230,11 +309,11 @@
             if (isSuccess) {
                 icon.className = "w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-5xl";
                 icon.innerHTML = '<i class="ph ph-check-circle"></i>';
-                title.textContent = "ส่งสำเร็จ!";
+                title.textContent = "สำเร็จ!";
                 title.className = "text-2xl font-bold mb-2 text-green-600";
-                desc.textContent = "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว";
+                desc.textContent = "บันทึกข้อมูลเรียบร้อย";
+                removePhoto(); // เคลียร์รูป
                 document.getElementById('note').value = '';
-                document.getElementById('removePhotoBtn').click();
             } else {
                 icon.className = "w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-5xl";
                 icon.innerHTML = '<i class="ph ph-x-circle"></i>';
