@@ -14,7 +14,25 @@
         </header>
 
         <main class="flex-1 p-5 space-y-6">
-            <form id="deliveryForm" class="space-y-6">
+            
+            <!-- 1. สถานะโหลดตอนสแกน QR เข้ามา -->
+            <div id="initialLoad" class="text-center py-20">
+                <i class="ph ph-spinner animate-spin text-5xl text-blue-600 mb-4 inline-block"></i>
+                <h2 class="text-xl font-bold text-slate-700">กำลังตรวจสอบ QR Code...</h2>
+            </div>
+
+            <!-- 2. หน้าจอแจ้งเตือน QR หมดอายุ (ซ่อนไว้ก่อน) -->
+            <div id="expiredAlert" class="hidden text-center py-12 bg-red-50 rounded-2xl border border-red-100 shadow-sm mt-10">
+                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
+                    <i class="ph ph-warning-circle"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-red-600 mb-2">QR Code หมดอายุ</h2>
+                <p class="text-slate-600 px-4">ออเดอร์ <span id="expiredOrderId" class="font-bold text-slate-800"></span><br>ได้รับการยืนยันการจัดส่งไปแล้ว<br>ไม่สามารถทำรายการซ้ำได้</p>
+                <button onclick="window.location.reload()" class="mt-6 text-sm text-red-500 hover:text-red-700 underline font-medium">ลองตรวจสอบใหม่อีกครั้ง</button>
+            </div>
+
+            <!-- 3. ฟอร์มส่งของ (ซ่อนไว้ก่อนจนกว่าจะเช็คผ่าน) -->
+            <form id="deliveryForm" class="hidden space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">เลขพัสดุ / Order ID *</label>
                     <input type="text" id="orderId" required placeholder="สแกน QR เพื่อกรอก" 
@@ -34,7 +52,7 @@
                     </button>
                     <div id="previewContainer" class="hidden mt-4 relative">
                         <img id="imagePreview" src="" class="w-full h-auto rounded-lg shadow-sm border border-slate-200">
-                        <button type="button" id="removePhotoBtn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-md">
+                        <button type="button" id="removePhotoBtn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-md hover:bg-red-600 transition-colors">
                             <i class="ph ph-x font-bold"></i>
                         </button>
                     </div>
@@ -42,14 +60,15 @@
             </form>
         </main>
 
-        <div class="p-5 border-t border-slate-200 bg-slate-50 sticky bottom-0 z-10">
+        <!-- ปุ่มกดยืนยัน (ซ่อนไว้ก่อนเหมือนกัน) -->
+        <div id="footerAction" class="hidden p-5 border-t border-slate-200 bg-slate-50 sticky bottom-0 z-10">
             <button type="submit" form="deliveryForm" id="submitBtn" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center">
                 <span>อัปโหลดรูปและส่งข้อมูล</span>
                 <i class="ph ph-paper-plane-right ml-2 text-xl"></i>
             </button>
         </div>
 
-        <!-- หน้าจอ Loading -->
+        <!-- หน้าจอ Loading ตอนส่งข้อมูล -->
         <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
             <p class="text-blue-600 font-bold text-lg text-center px-4">กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...</p>
@@ -75,15 +94,59 @@
         const imagePreview = document.getElementById('imagePreview');
         const orderIdInput = document.getElementById('orderId');
 
-        // อ่านค่า OrderID จาก URL
-        window.onload = () => {
+        // เมื่อเปิดหน้าเว็บขึ้นมา (แสกน QR)
+        window.onload = async () => {
             const qrOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (qrOrderId) {
                 orderIdInput.value = qrOrderId;
                 orderIdInput.readOnly = true;
                 orderIdInput.classList.add('bg-slate-100', 'text-slate-500');
+                
+                // ดึงข้อมูลจาก Google Sheets ทันทีเพื่อเช็คสถานะ
+                await checkOrderStatus(qrOrderId);
+            } else {
+                // ถ้าเข้ามาแบบไม่ได้สแกน QR Code ให้เปิดฟอร์มปกติเลย
+                document.getElementById('initialLoad').classList.add('hidden');
+                document.getElementById('deliveryForm').classList.remove('hidden');
+                document.getElementById('footerAction').classList.remove('hidden');
             }
         };
+
+        // ฟังก์ชันตรวจสอบสถานะ QR Code
+        async function checkOrderStatus(orderId) {
+            try {
+                // ใช้ API GET เหมือนหน้าเช็คสถานะลูกค้า
+                const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
+                const result = await response.json();
+                
+                document.getElementById('initialLoad').classList.add('hidden'); // ปิดหน้าโหลด
+
+                if (result.status === 'success') {
+                    // ถ้าสถานะเป็น completed คือส่งไปแล้ว
+                    if (result.data.status === 'completed') {
+                        document.getElementById('expiredAlert').classList.remove('hidden');
+                        document.getElementById('expiredOrderId').textContent = orderId;
+                    } else {
+                        // ถ้าระบบยังไม่ส่ง ให้เปิดฟอร์มสำหรับถ่ายรูป
+                        document.getElementById('deliveryForm').classList.remove('hidden');
+                        document.getElementById('footerAction').classList.remove('hidden');
+                    }
+                } else {
+                    // หาออเดอร์ไม่เจอ
+                    document.getElementById('expiredAlert').classList.remove('hidden');
+                    document.getElementById('expiredAlert').innerHTML = `
+                        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-6xl shadow-inner">
+                            <i class="ph ph-x-circle"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-red-600 mb-2">ไม่พบข้อมูล</h2>
+                        <p class="text-slate-600 px-4">ไม่พบรหัสพัสดุนี้ในระบบ<br>หรืออาจถูกลบไปแล้ว</p>
+                    `;
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อตรวจสอบ QR ได้ โปรดตรวจสอบอินเทอร์เน็ต');
+                document.getElementById('initialLoad').classList.add('hidden');
+            }
+        }
 
         cameraBtn.onclick = () => photoInput.click();
         
@@ -141,6 +204,15 @@
                 const result = await response.json();
 
                 showModal(result.status === 'success', result.message);
+                
+                // ถ้าส่งสำเร็จ ให้ซ่อนฟอร์มและโชว์หน้าหมดอายุไปเลย จะได้ไม่เผลอกดซ้ำ
+                if (result.status === 'success') {
+                    document.getElementById('deliveryForm').classList.add('hidden');
+                    document.getElementById('footerAction').classList.add('hidden');
+                    document.getElementById('expiredAlert').classList.remove('hidden');
+                    document.getElementById('expiredOrderId').textContent = orderIdInput.value;
+                }
+
             } catch (error) {
                 console.error(error);
                 showModal(false, 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
@@ -161,7 +233,6 @@
                 title.textContent = "ส่งสำเร็จ!";
                 title.className = "text-2xl font-bold mb-2 text-green-600";
                 desc.textContent = "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว";
-                // ล้างฟอร์ม
                 document.getElementById('note').value = '';
                 document.getElementById('removePhotoBtn').click();
             } else {
