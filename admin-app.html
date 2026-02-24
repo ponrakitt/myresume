@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1. ระบบแอดมิน (สร้างพัสดุ)</title>
+    <title>1. ระบบแอดมิน (สร้างพัสดุ & จัดการข้อมูล)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
-        /* สไตล์สำหรับพริ้นต์ QR Code ให้ออกมาสวยงาม */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #qrBox, #qrBox * {
-                visibility: visible;
-            }
+            body * { visibility: hidden; }
+            #qrBox, #qrBox * { visibility: visible; }
             #qrBox {
                 position: absolute;
                 left: 0;
@@ -24,21 +19,17 @@
                 text-align: center;
                 padding-top: 20px;
             }
-            /* ซ่อนปุ่มพริ้นต์เวลากดพริ้นต์ไปแล้ว */
-            #printBtn {
-                display: none !important;
-            }
+            #printBtn { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans">
-    <nav class="bg-indigo-700 text-white p-4 shadow-md">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+    <nav class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-10">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center">
                 <i class="ph ph-user-gear mr-2 text-2xl"></i>
                 <h1 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin)</h1>
             </div>
-            <!-- ปุ่มแจ้งปัญหาด้านบนขวา -->
             <a href="https://ponrakitt.site/report.html" target="_blank" class="hidden sm:flex text-sm bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-lg items-center transition-colors">
                 <i class="ph ph-info mr-1.5 text-lg"></i> แนะนำการใช้งาน / แจ้งปัญหา
             </a>
@@ -55,15 +46,14 @@
                 <div>
                     <label class="block text-sm font-medium mb-1">เลขพัสดุ *</label>
                     <div class="flex gap-2">
-                        <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300"><i class="ph ph-arrows-clockwise text-lg"></i></button>
+                        <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+                        <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300 transition-colors" title="สุ่มเลขใหม่"><i class="ph ph-arrows-clockwise text-lg"></i></button>
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / รายละเอียด</label>
                     <input type="text" id="custName" required class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
-                <!-- กำหนด URL หน้าแอปคนส่งของของคุณ -->
                 <div class="pt-2">
                     <label class="block text-xs font-medium text-slate-500 mb-1">URL หน้าคนส่งของ (Delivery App)</label>
                     <input type="text" id="deliveryAppUrl" required 
@@ -76,9 +66,9 @@
                 </button>
             </form>
 
-            <!-- ส่วนแสดง QR Code 2 แบบ -->
+            <!-- ส่วนแสดง QR Code -->
             <div id="qrBox" class="hidden mt-6 text-center border-t pt-4">
-                <h3 class="font-bold text-green-600 mb-2">บันทึกเข้า Google Sheets สำเร็จ!</h3>
+                <h3 class="font-bold text-green-600 mb-2">บันทึกข้อมูลสำเร็จ!</h3>
                 <p class="text-xl font-bold text-slate-800 mb-4 tracking-wider" id="displayId"></p>
                 <p class="text-sm text-slate-500 mb-4" id="displayCustName"></p>
                 
@@ -108,11 +98,13 @@
             </div>
         </div>
 
-        <!-- ฝั่งแสดงตารางประวัติ (ดึงจาก LocalStorage สำหรับให้แอดมินดูง่ายๆ) -->
+        <!-- ฝั่งแสดงตารางประวัติ (ดึงจากออนไลน์) -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold"><i class="ph ph-cloud-arrow-down mr-2 text-indigo-600"></i> ข้อมูลออเดอร์ทั้งหมด (ออนไลน์)</h2>
-                <button onclick="fetchOrders()" class="text-xs text-indigo-600 hover:underline flex items-center"><i class="ph ph-arrows-clockwise mr-1"></i> รีเฟรชข้อมูล</button>
+                <button onclick="fetchOrders()" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline flex items-center bg-indigo-50 px-2 py-1.5 rounded-md transition-colors">
+                    <i class="ph ph-arrows-clockwise mr-1"></i> รีเฟรชข้อมูล
+                </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
@@ -125,7 +117,7 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-100">
-                        <tr><td colspan="4" class="text-center p-4 text-slate-500">กำลังโหลดข้อมูล...</td></tr>
+                        <tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -139,25 +131,50 @@
         </a>
     </div>
 
+    <!-- Modal แสดงรูปภาพหลักฐาน -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="relative w-full max-w-xl flex flex-col items-center">
+            <button type="button" onclick="closeImageModal()" class="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
+                <i class="ph ph-x-circle text-4xl"></i>
+            </button>
+            <div class="bg-white p-2 rounded-xl shadow-2xl w-full">
+                <div id="modalLoading" class="hidden py-20 text-center">
+                    <i class="ph ph-spinner animate-spin text-4xl text-indigo-500 mb-2 inline-block"></i>
+                    <p class="text-slate-500 font-medium">กำลังโหลดรูปภาพ...</p>
+                </div>
+                <img id="modalImage" src="" class="w-full h-auto max-h-[75vh] object-contain rounded-lg bg-slate-100 hidden">
+                <div id="modalNote" class="mt-2 text-center text-sm text-slate-600 font-medium hidden">
+                    <!-- จะแทรกหมายเหตุที่นี่ -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay กลางจอ -->
+    <div id="globalLoading" class="hidden fixed inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 mx-auto mb-3"></div>
+            <p class="text-indigo-700 font-bold" id="globalLoadingText">กำลังดำเนินการ...</p>
+        </div>
+    </div>
+
     <script>
         // API URL ของคุณ
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
-        // แยกตัวสร้าง QR Code เป็น 2 ตัว
         const qrDelivery = new QRious({ element: document.getElementById('qrcodeDelivery'), size: 140 });
         const qrCustomer = new QRious({ element: document.getElementById('qrcodeCustomer'), size: 140 });
-        
-        // ดึง URL ของเว็บปัจจุบันมาใส่อัตโนมัติ
+
+        // ตั้งค่า URL เริ่มต้น
         window.addEventListener('DOMContentLoaded', () => {
             const currentOrigin = window.location.origin; 
             const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
             document.getElementById('deliveryAppUrl').value = `${currentOrigin}${currentPath}/delivery-app.html`;
             
-            // โหลดข้อมูลทั้งหมดจาก Google Sheets ทันทีที่เปิดหน้า
             fetchOrders();
         });
 
-        // สุ่มเลข WAN
+        // สุ่มเลข Order
         document.getElementById('genId').onclick = () => {
             const date = new Date();
             const yyyy = date.getFullYear();
@@ -168,7 +185,7 @@
         };
         document.getElementById('genId').click(); 
 
-        // ฟังก์ชันโหลดข้อมูลทั้งหมดจาก Google Sheets (ออนไลน์)
+        // ดึงข้อมูลออเดอร์ทั้งหมด
         async function fetchOrders() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>';
@@ -187,7 +204,6 @@
             }
         }
 
-        // ฟังก์ชันวาดตาราง
         function renderTable(orders) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -203,35 +219,39 @@
             orders.forEach(o => {
                 const trackingLink = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${o.id}`;
                 
-                // แปลงสถานะเป็นป้ายสี
                 let statusBadge = '';
                 let canCancel = false;
                 if(o.status === 'pending') {
-                    statusBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold whitespace-nowrap">รอจัดเตรียม</span>';
+                    statusBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold whitespace-nowrap"><i class="ph ph-clock mr-1"></i>รอจัดเตรียม</span>';
                     canCancel = true;
                 } else if(o.status === 'shipping') {
-                    statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold whitespace-nowrap">กำลังจัดส่ง</span>';
+                    statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold whitespace-nowrap"><i class="ph ph-truck mr-1"></i>กำลังจัดส่ง</span>';
                     canCancel = true;
                 } else if(o.status === 'completed') {
-                    statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold whitespace-nowrap">ส่งสำเร็จ</span>';
+                    statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold whitespace-nowrap"><i class="ph ph-check-circle mr-1"></i>ส่งสำเร็จ</span>';
                 } else if(o.status === 'cancelled') {
-                    statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold whitespace-nowrap">ยกเลิกแล้ว</span>';
+                    statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold whitespace-nowrap"><i class="ph ph-x-circle mr-1"></i>ยกเลิกแล้ว</span>';
                 }
 
-                // ปุ่มยกเลิก
+                // ปุ่มดูหลักฐาน (จะโผล่เฉพาะส่งสำเร็จแล้ว)
+                const viewProofBtn = (o.status === 'completed') 
+                    ? `<button onclick="viewProof('${o.id}')" class="text-green-600 bg-green-50 px-2 py-1.5 rounded-lg hover:bg-green-100 hover:text-green-700 transition shadow-sm border border-green-100" title="ดูรูปภาพหลักฐาน"><i class="ph ph-image text-lg"></i></button>` 
+                    : ``;
+
                 const cancelBtnHtml = canCancel 
-                    ? `<button onclick="cancelOrder('${o.id}')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-2 py-1.5 rounded-lg transition" title="ยกเลิกออเดอร์"><i class="ph ph-trash"></i></button>`
-                    : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed"><i class="ph ph-trash"></i></button>`;
+                    ? `<button onclick="cancelOrder('${o.id}')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-2 py-1.5 rounded-lg transition" title="ยกเลิกออเดอร์"><i class="ph ph-trash text-lg"></i></button>`
+                    : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed"><i class="ph ph-trash text-lg"></i></button>`;
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
                         <td class="p-3 font-bold text-indigo-600 whitespace-nowrap">${o.id}</td>
-                        <td class="p-3 text-slate-700">${o.name}</td>
+                        <td class="p-3 text-slate-700 truncate max-w-[150px]" title="${o.name}">${o.name}</td>
                         <td class="p-3 text-center">${statusBadge}</td>
-                        <td class="p-3 text-center flex justify-center gap-1">
-                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition shadow-sm border border-indigo-100" title="คัดลอกลิงก์">
-                                <i class="ph ph-copy text-lg"></i>
+                        <td class="p-3 flex justify-center gap-1.5">
+                            <button onclick="prompt('คัดลอกลิงก์ส่งให้ลูกค้า:', '${trackingLink}')" class="text-indigo-600 bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition shadow-sm border border-indigo-100" title="คัดลอกลิงก์ให้ลูกค้า">
+                                <i class="ph ph-link text-lg"></i>
                             </button>
+                            ${viewProofBtn}
                             ${cancelBtnHtml}
                         </td>
                     </tr>
@@ -239,31 +259,99 @@
             });
         }
 
-        // ฟังก์ชันยกเลิกออเดอร์
+        // ฟังก์ชันดึงและแสดงรูปภาพหลักฐาน (สำหรับแอดมิน)
+        async function viewProof(orderId) {
+            const loading = document.getElementById('globalLoading');
+            document.getElementById('globalLoadingText').textContent = "กำลังโหลดรูปภาพ...";
+            loading.classList.remove('hidden');
+
+            try {
+                // ดึงข้อมูลออเดอร์นั้นมาแบบเจาะจง เพื่อเอา ImageURL
+                const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
+                const result = await response.json();
+
+                loading.classList.add('hidden');
+
+                if (result.status === 'success' && result.data.status === 'completed') {
+                    let imgUrl = result.data.imageUrl;
+                    const note = result.data.note;
+
+                    if (!imgUrl) {
+                        alert("ออเดอร์นี้ไม่มีรูปภาพหลักฐาน");
+                        return;
+                    }
+
+                    // --- เพิ่มโค้ดส่วนนี้: แปลงลิงก์ Google Drive ให้แสดงเป็นรูปภาพได้ ---
+                    const driveMatch = imgUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (driveMatch && driveMatch[1]) {
+                        imgUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+                    }
+                    // --------------------------------------------------------
+
+                    // เปิด Modal
+                    document.getElementById('imageModal').classList.remove('hidden');
+                    const modalImg = document.getElementById('modalImage');
+                    const modalNote = document.getElementById('modalNote');
+                    const modalLoading = document.getElementById('modalLoading');
+
+                    modalLoading.classList.remove('hidden');
+                    modalImg.classList.add('hidden');
+                    modalNote.classList.add('hidden');
+
+                    // ซ่อน Loading เมื่อรูปโหลดเสร็จ
+                    modalImg.onload = () => {
+                        modalLoading.classList.add('hidden');
+                        modalImg.classList.remove('hidden');
+                        
+                        if (note) {
+                            modalNote.textContent = `หมายเหตุ: ${note}`;
+                            modalNote.classList.remove('hidden');
+                        }
+                    };
+                    
+                    // ป้องกัน Cache
+                    modalImg.src = imgUrl + (imgUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+                } else {
+                    alert('ไม่สามารถดึงข้อมูลรูปภาพได้ หรือสถานะไม่ใช่การจัดส่งสำเร็จ');
+                }
+            } catch (e) {
+                loading.classList.add('hidden');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย');
+            }
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('modalImage').src = "";
+            }, 300);
+        }
+
+        // ยกเลิกออเดอร์
         async function cancelOrder(orderId) {
             if(!confirm(`คุณแน่ใจหรือไม่ว่าต้องการยกเลิกออเดอร์ ${orderId} ?\nหากยกเลิกแล้ว คนขับรถจะไม่สามารถส่งของได้`)) return;
 
-            try {
-                // ซ่อนตารางและขึ้นโหลด
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center p-6 text-red-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังยกเลิกออเดอร์...</td></tr>';
+            document.getElementById('globalLoadingText').textContent = "กำลังยกเลิกออเดอร์...";
+            document.getElementById('globalLoading').classList.remove('hidden');
 
+            try {
                 const payload = { action: "cancelOrder", orderId: orderId };
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
 
-                if (result.status === 'success') {
-                    fetchOrders(); // โหลดข้อมูลใหม่เพื่ออัปเดตตาราง
-                } else {
+                if (result.status !== 'success') {
                     alert('เกิดข้อผิดพลาด: ' + result.message);
-                    fetchOrders();
                 }
             } catch (error) {
                 alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+            } finally {
+                document.getElementById('globalLoading').classList.add('hidden');
                 fetchOrders();
             }
         }
 
-        // เมื่อกด Submit
+        // สร้างออเดอร์ใหม่
         document.getElementById('form').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('orderId').value.trim();
@@ -279,45 +367,27 @@
             btnSpinner.classList.remove('hidden');
 
             try {
-                // 1. ส่งข้อมูลเข้า Google Sheets
-                const payload = {
-                    action: "create",
-                    orderId: id,
-                    customerName: name
-                };
-
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload) 
-                });
-
+                const payload = { action: "create", orderId: id, customerName: name };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // 2. สร้าง QR Code สำหรับคนส่งของ
                     qrDelivery.value = `${deliveryBaseUrl}?orderId=${id}`;
 
-                    // 3. สร้าง QR Code สำหรับลูกค้าเช็คสถานะ
                     const currentOrigin = window.location.origin;
                     const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-                    const trackingUrl = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${id}`;
-                    qrCustomer.value = trackingUrl;
+                    qrCustomer.value = `${currentOrigin}${currentPath}/tracking-app.html?orderId=${id}`;
 
-                    // แสดงผลบนหน้าจอ
                     document.getElementById('displayId').textContent = id;
                     document.getElementById('displayCustName').textContent = `ลูกค้า: ${name}`;
                     document.getElementById('qrBox').classList.remove('hidden');
-
                     document.getElementById('custName').value = '';
                     
-                    // อัปเดตตารางออนไลน์แบบเรียลไทม์
                     fetchOrders();
                 } else {
                     alert('เกิดข้อผิดพลาด: ' + result.message);
                 }
-
             } catch (error) {
-                console.error('Error:', error);
                 alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่');
             } finally {
                 submitBtn.disabled = false;
