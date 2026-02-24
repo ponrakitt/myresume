@@ -79,9 +79,10 @@
                         <p class="text-xs font-bold text-slate-700 mb-1">
                             <span data-i18n="note_label">หมายเหตุ:</span> <span id="showNote" class="font-normal"></span>
                         </p>
-                        <a id="proofImageLink" href="#" target="_blank" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-1">
+                        <!-- เปลี่ยนจาก <a> เป็น <button> เพื่อเปิด Modal -->
+                        <button type="button" id="proofImageBtn" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors">
                             <i class="ph ph-image mr-1 text-lg"></i> <span data-i18n="view_proof">ดูรูปภาพหลักฐานการจัดส่ง</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -134,6 +135,18 @@
             <span data-i18n="footer_only">เท่านั้น</span>
         </p>
     </footer>
+
+    <!-- Modal สำหรับแสดงรูปภาพหลักฐาน -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="relative w-full max-w-lg flex flex-col items-center">
+            <button type="button" onclick="closeImageModal()" class="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
+                <i class="ph ph-x-circle text-4xl"></i>
+            </button>
+            <div class="bg-white p-2 rounded-xl shadow-2xl w-full">
+                <img id="modalImage" src="" class="w-full h-auto max-h-[75vh] object-contain rounded-lg bg-slate-100">
+            </div>
+        </div>
+    </div>
 
     <script>
         // *** ใส่ URL ของ Google Apps Script ของคุณที่นี่ ***
@@ -393,11 +406,30 @@
 
                 document.getElementById('proofBox').classList.remove('hidden');
                 document.getElementById('showNote').textContent = data.note || t.no_note;
-                document.getElementById('proofImageLink').href = data.imageUrl;
+                
+                // เซ็ตให้ปุ่มกดเปิด Modal แทนการเปิดแท็บใหม่
+                document.getElementById('proofImageBtn').onclick = () => openImageModal(data.imageUrl);
 
                 setupSurveyBox(data.completedDate);
             }
         }
+
+        // --- ฟังก์ชันสำหรับเปิด/ปิดรูป Modal ---
+        function openImageModal(url) {
+            if (!url) return;
+            document.getElementById('modalImage').src = url;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            // ล้าง src ของรูปหลังจากการเปลี่ยน animation ปิดเสร็จ
+            setTimeout(() => {
+                document.getElementById('modalImage').src = "";
+            }, 300);
+        }
+
+        // ----------------------------------------
 
         function setupSurveyBox(completedDateString) {
             if (!completedDateString) return;
