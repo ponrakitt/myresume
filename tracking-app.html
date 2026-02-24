@@ -45,24 +45,33 @@
                 </p>
             </div>
 
-            <!-- Stepper / Timeline -->
-            <div class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-0.5 before:bg-slate-200">
+            <!-- Stepper / Timeline (เปลี่ยนเป็นไอคอน) -->
+            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+                
                 <!-- Step 1: Pending -->
-                <div class="relative">
-                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
-                    <h3 class="font-bold text-slate-800" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
+                <div class="relative" id="step1Container">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm" id="icon1">
+                        <i class="ph ph-receipt text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 pt-0.5" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
                     <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
+                
                 <!-- Step 2: Shipping -->
-                <div class="relative">
-                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot2"></div>
-                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
+                <div class="relative" id="step2Container">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon2">
+                        <i class="ph ph-truck text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2" data-i18n="waiting_update">รอการอัปเดต</p>
                 </div>
+                
                 <!-- Step 3: Completed -->
-                <div class="relative">
-                    <div class="absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500" id="dot3"></div>
-                    <h3 class="font-bold text-slate-400 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
+                <div class="relative" id="step3Container">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon3">
+                        <i class="ph ph-check-circle text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3" data-i18n="waiting_update">รอการอัปเดต</p>
                     
                     <!-- ส่วนแสดงรูปและหมายเหตุ -->
@@ -75,6 +84,16 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Step 4: Cancelled (แสดงเฉพาะถ้ายกเลิก) -->
+                <div class="relative hidden" id="stepCancelledContainer">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm">
+                        <i class="ph ph-x-circle text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-red-600 pt-0.5" data-i18n="step_cancelled_title">ยกเลิกออเดอร์</h3>
+                    <p class="text-xs text-red-500 mt-0.5" data-i18n="step_cancelled_desc">ออเดอร์นี้ถูกยกเลิกแล้ว</p>
+                </div>
+
             </div>
 
             <!-- กล่องประเมินความพึงพอใจ -->
@@ -117,6 +136,7 @@
     </footer>
 
     <script>
+        // *** ใส่ URL ของ Google Apps Script ของคุณที่นี่ ***
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
         // --- ส่วนระบบแปลภาษา (i18n) ---
@@ -130,6 +150,8 @@
                 step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)",
                 step2_title: "สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)",
                 step3_title: "จัดส่งสำเร็จ",
+                step_cancelled_title: "ยกเลิกออเดอร์",
+                step_cancelled_desc: "ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถจัดส่งได้",
                 waiting_update: "รอการอัปเดต",
                 note_label: "หมายเหตุ:",
                 no_note: "-ไม่มี-",
@@ -158,6 +180,8 @@
                 step1_title: "Order Received (Preparing)",
                 step2_title: "Dispatched (Out for delivery)",
                 step3_title: "Delivered Successfully",
+                step_cancelled_title: "Order Cancelled",
+                step_cancelled_desc: "This order has been cancelled and cannot be delivered.",
                 waiting_update: "Waiting for update",
                 note_label: "Note:",
                 no_note: "-None-",
@@ -186,6 +210,8 @@
                 step1_title: "收到订单 (准备中)",
                 step2_title: "已发货 (派送中)",
                 step3_title: "已签收",
+                step_cancelled_title: "订单已取消",
+                step_cancelled_desc: "该订单已被取消，无法进行配送。",
                 waiting_update: "等待更新",
                 note_label: "备注:",
                 no_note: "-无-",
@@ -214,6 +240,8 @@
                 step1_title: "注文受付 (準備中)",
                 step2_title: "発送済み (配達中)",
                 step3_title: "配達完了",
+                step_cancelled_title: "注文キャンセル",
+                step_cancelled_desc: "この注文はキャンセルされたため、配達できません。",
                 waiting_update: "更新待ち",
                 note_label: "備考:",
                 no_note: "-なし-",
@@ -236,44 +264,37 @@
         };
 
         let currentLang = localStorage.getItem('appLang') || 'th';
-        let currentOrderData = null; // เก็บข้อมูลไว้รีเฟรชตอนเปลี่ยนภาษา
+        let currentOrderData = null; 
 
-        // ฟังก์ชันอัปเดตภาษาบนหน้าจอ
         function applyLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('appLang', lang);
             document.getElementById('langSelect').value = lang;
-            document.documentElement.lang = lang; // อัปเดต HTML lang attribute
+            document.documentElement.lang = lang; 
 
             const t = translations[lang];
 
-            // 1. แปลงข้อความ Text ธรรมดา
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.textContent = t[key];
             });
 
-            // 2. แปลง Placeholder
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (t[key]) el.placeholder = t[key];
             });
 
-            // 3. รีเฟรชข้อมูล Dynamic (ถ้ามีข้อมูลค้างอยู่บนหน้าจอ)
             if (currentOrderData) {
                 renderOrderData(currentOrderData);
             }
         }
 
-        // จับ Event ตอนเปลี่ยนภาษาจาก Dropdown
         document.getElementById('langSelect').addEventListener('change', (e) => {
             applyLanguage(e.target.value);
         });
 
-        // --- ส่วนระบบหลัก (ดึงและแสดงข้อมูล) ---
         window.onload = () => {
-            applyLanguage(currentLang); // โหลดภาษาตอนเปิดเว็บ
-
+            applyLanguage(currentLang); 
             const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (urlOrderId) {
                 document.getElementById('searchId').value = urlOrderId;
@@ -308,7 +329,7 @@
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
-                    currentOrderData = result.data; // เก็บไว้เผื่อผู้ใช้เปลี่ยนภาษา
+                    currentOrderData = result.data; 
                     renderOrderData(currentOrderData);
                 } else {
                     currentOrderData = null;
@@ -331,20 +352,32 @@
             document.getElementById('showId').textContent = data.id;
             document.getElementById('nameSpan').textContent = data.name;
 
-            // เซ็ตเวลาเริ่มต้นและล้าง UI กลับเป็นสถานะตั้งต้น
+            // รีเซ็ตการแสดงผล
             document.getElementById('time1').textContent = formatDate(data.created, currentLang);
+            document.getElementById('step2Container').classList.remove('hidden');
+            document.getElementById('step3Container').classList.remove('hidden');
+            document.getElementById('stepCancelledContainer').classList.add('hidden');
+            document.getElementById('proofBox').classList.add('hidden');
+            document.getElementById('surveyBox').classList.add('hidden');
             
-            ['dot2', 'dot3'].forEach(id => document.getElementById(id).className = 'absolute -left-8 w-4 h-4 rounded-full bg-slate-200 ring-4 ring-white transition-colors duration-500');
-            ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 transition-colors duration-500');
+            ['icon2', 'icon3'].forEach(id => document.getElementById(id).className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500');
+            ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 pt-0.5 transition-colors duration-500');
             
             document.getElementById('time2').textContent = t.waiting_update;
             document.getElementById('time3').textContent = t.waiting_update;
-            document.getElementById('proofBox').classList.add('hidden');
-            document.getElementById('surveyBox').classList.add('hidden');
+
+            // ถ้าสถานะเป็น Cancelled (ยกเลิก)
+            if (data.status === 'cancelled') {
+                document.getElementById('step2Container').classList.add('hidden');
+                document.getElementById('step3Container').classList.add('hidden');
+                document.getElementById('stepCancelledContainer').classList.remove('hidden');
+                return; // หยุดการทำงานส่วนอื่น
+            }
 
             // อัปเดตสถานะ "กำลังจัดส่ง"
             if (data.status === 'shipping' || data.status === 'completed') {
-                document.getElementById('dot2').classList.replace('bg-slate-200', 'bg-blue-500');
+                document.getElementById('icon2').classList.replace('bg-slate-200', 'bg-blue-500');
+                document.getElementById('icon2').classList.replace('text-slate-400', 'text-white');
                 document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
                 document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
                 document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
@@ -352,7 +385,8 @@
 
             // อัปเดตสถานะ "จัดส่งสำเร็จ"
             if (data.status === 'completed') {
-                document.getElementById('dot3').classList.replace('bg-slate-200', 'bg-green-500');
+                document.getElementById('icon3').classList.replace('bg-slate-200', 'bg-green-500');
+                document.getElementById('icon3').classList.replace('text-slate-400', 'text-white');
                 document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
                 document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
                 document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
@@ -365,7 +399,6 @@
             }
         }
 
-        // ฟังก์ชันจัดการกล่องแบบสอบถาม
         function setupSurveyBox(completedDateString) {
             if (!completedDateString) return;
 
