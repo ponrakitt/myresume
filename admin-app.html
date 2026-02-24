@@ -131,25 +131,6 @@
         </a>
     </div>
 
-    <!-- Modal แสดงรูปภาพหลักฐาน -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="relative w-full max-w-xl flex flex-col items-center">
-            <button type="button" onclick="closeImageModal()" class="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
-                <i class="ph ph-x-circle text-4xl"></i>
-            </button>
-            <div class="bg-white p-2 rounded-xl shadow-2xl w-full">
-                <div id="modalLoading" class="hidden py-20 text-center">
-                    <i class="ph ph-spinner animate-spin text-4xl text-indigo-500 mb-2 inline-block"></i>
-                    <p class="text-slate-500 font-medium">กำลังโหลดรูปภาพ...</p>
-                </div>
-                <img id="modalImage" src="" class="w-full h-auto max-h-[75vh] object-contain rounded-lg bg-slate-100 hidden">
-                <div id="modalNote" class="mt-2 text-center text-sm text-slate-600 font-medium hidden">
-                    <!-- จะแทรกหมายเหตุที่นี่ -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Loading Overlay กลางจอ -->
     <div id="globalLoading" class="hidden fixed inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
         <div class="text-center">
@@ -233,14 +214,18 @@
                     statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold whitespace-nowrap"><i class="ph ph-x-circle mr-1"></i>ยกเลิกแล้ว</span>';
                 }
 
-                // ปุ่มดูหลักฐาน (จะโผล่เฉพาะส่งสำเร็จแล้ว)
+                // ปุ่มดูหลักฐาน
                 const viewProofBtn = (o.status === 'completed') 
                     ? `<button onclick="viewProof('${o.id}')" class="text-green-600 bg-green-50 px-2 py-1.5 rounded-lg hover:bg-green-100 hover:text-green-700 transition shadow-sm border border-green-100" title="ดูรูปภาพหลักฐาน"><i class="ph ph-image text-lg"></i></button>` 
                     : ``;
 
+                // เปลี่ยนไอคอนปุ่มยกเลิกเป็นกากบาทสีส้ม
                 const cancelBtnHtml = canCancel 
-                    ? `<button onclick="cancelOrder('${o.id}')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-2 py-1.5 rounded-lg transition" title="ยกเลิกออเดอร์"><i class="ph ph-trash text-lg"></i></button>`
-                    : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed"><i class="ph ph-trash text-lg"></i></button>`;
+                    ? `<button onclick="cancelOrder('${o.id}')" class="text-orange-500 hover:text-white hover:bg-orange-500 bg-orange-50 px-2 py-1.5 rounded-lg transition border border-orange-100" title="ยกเลิกออเดอร์ (เปลี่ยนสถานะ)"><i class="ph ph-x-circle text-lg"></i></button>`
+                    : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed border border-slate-100"><i class="ph ph-x-circle text-lg"></i></button>`;
+
+                // เพิ่มปุ่มลบถาวร (ถังขยะสีแดง)
+                const deleteBtnHtml = `<button onclick="deleteOrder('${o.id}')" class="text-red-600 hover:text-white hover:bg-red-600 bg-red-50 px-2 py-1.5 rounded-lg transition shadow-sm border border-red-100" title="ลบออเดอร์ถาวร (ลบออกจาก Sheet)"><i class="ph ph-trash text-lg"></i></button>`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
@@ -253,20 +238,20 @@
                             </button>
                             ${viewProofBtn}
                             ${cancelBtnHtml}
+                            ${deleteBtnHtml}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // ฟังก์ชันดึงและแสดงรูปภาพหลักฐาน (สำหรับแอดมิน)
+        // ฟังก์ชันดึงลิงก์และเปิดแท็บใหม่เพื่อดูรูปหลักฐาน (สำหรับแอดมิน)
         async function viewProof(orderId) {
             const loading = document.getElementById('globalLoading');
-            document.getElementById('globalLoadingText').textContent = "กำลังโหลดรูปภาพ...";
+            document.getElementById('globalLoadingText').textContent = "กำลังดึงข้อมูลรูปภาพ...";
             loading.classList.remove('hidden');
 
             try {
-                // ดึงข้อมูลออเดอร์นั้นมาแบบเจาะจง เพื่อเอา ImageURL
                 const response = await fetch(`${GAS_URL}?orderId=${orderId}`);
                 const result = await response.json();
 
@@ -281,36 +266,20 @@
                         return;
                     }
 
-                    // --- เพิ่มโค้ดส่วนนี้: แปลงลิงก์ Google Drive ให้แสดงเป็นรูปภาพได้ ---
+                    // แปลงลิงก์เพื่อให้อ่านได้เป็นไฟล์ภาพโดยตรง
+                    let directUrl = imgUrl;
                     const driveMatch = imgUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
                     if (driveMatch && driveMatch[1]) {
-                        imgUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+                        directUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
                     }
-                    // --------------------------------------------------------
 
-                    // เปิด Modal
-                    document.getElementById('imageModal').classList.remove('hidden');
-                    const modalImg = document.getElementById('modalImage');
-                    const modalNote = document.getElementById('modalNote');
-                    const modalLoading = document.getElementById('modalLoading');
+                    // แจ้ง Note ให้แอดมินทราบ (ถ้ามี) ก่อนเปิดรูป
+                    if (note) {
+                        alert(`หมายเหตุการส่ง:\n${note}`);
+                    }
 
-                    modalLoading.classList.remove('hidden');
-                    modalImg.classList.add('hidden');
-                    modalNote.classList.add('hidden');
-
-                    // ซ่อน Loading เมื่อรูปโหลดเสร็จ
-                    modalImg.onload = () => {
-                        modalLoading.classList.add('hidden');
-                        modalImg.classList.remove('hidden');
-                        
-                        if (note) {
-                            modalNote.textContent = `หมายเหตุ: ${note}`;
-                            modalNote.classList.remove('hidden');
-                        }
-                    };
-                    
-                    // ป้องกัน Cache
-                    modalImg.src = imgUrl + (imgUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                    // เปิดรูปในแท็บใหม่
+                    window.open(directUrl, '_blank');
 
                 } else {
                     alert('ไม่สามารถดึงข้อมูลรูปภาพได้ หรือสถานะไม่ใช่การจัดส่งสำเร็จ');
@@ -319,13 +288,6 @@
                 loading.classList.add('hidden');
                 alert('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย');
             }
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('modalImage').src = "";
-            }, 300);
         }
 
         // ยกเลิกออเดอร์
@@ -337,6 +299,29 @@
 
             try {
                 const payload = { action: "cancelOrder", orderId: orderId };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+
+                if (result.status !== 'success') {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+            } finally {
+                document.getElementById('globalLoading').classList.add('hidden');
+                fetchOrders();
+            }
+        }
+
+        // ลบออเดอร์ถาวร (ลบจาก Sheet)
+        async function deleteOrder(orderId) {
+            if(!confirm(`⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ออเดอร์ ${orderId} ออกจากระบบถาวร?\n\nข้อมูลแถวนี้จะถูกลบออกจาก Google Sheets ทันทีและไม่สามารถกู้คืนได้!`)) return;
+
+            document.getElementById('globalLoadingText').textContent = "กำลังลบออเดอร์...";
+            document.getElementById('globalLoading').classList.remove('hidden');
+
+            try {
+                const payload = { action: "deleteOrder", orderId: orderId };
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
 
