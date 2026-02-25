@@ -9,19 +9,22 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col items-center justify-center p-4">
     
-    <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center relative overflow-hidden">
-        
-        <!-- Loading Overlay สำหรับหน้านี้ -->
-        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 z-10 flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-2"></div>
-            <p class="text-blue-600 font-bold">กำลังอัปเดตระบบ...</p>
+    <!-- Loading Overlay กลางจอ (ใช้ร่วมกันทั้ง Mobile และ PC) -->
+    <div id="globalLoading" class="hidden fixed inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-3"></div>
+            <p class="text-blue-700 font-bold" id="globalLoadingText">กำลังดำเนินการ...</p>
         </div>
+    </div>
 
+    <!-- ================= โหมดมือถือ (Mobile View) ================= -->
+    <!-- แสดงเฉพาะหน้าจอที่เล็กกว่า md (768px) -->
+    <div class="md:hidden bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center relative overflow-hidden">
         <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
             <i class="ph ph-package"></i>
         </div>
         <h1 class="text-2xl font-bold mb-2">หน้าร้าน / คลังสินค้า</h1>
-        <p class="text-slate-500 mb-6 text-sm">ยืนยันการจัดเตรียมสินค้าเพื่อส่งมอบให้พนักงานขับรถ</p>
+        <p class="text-slate-500 mb-6 text-sm">ยืนยันการจัดเตรียมสินค้าเพื่อส่งมอบให้พนักงานขับรถ<br>(โหมดมือถือ)</p>
 
         <form id="warehouseForm" class="space-y-4">
             <input type="text" id="scanId" required placeholder="สแกน หรือ พิมพ์ Order ID" 
@@ -35,44 +38,167 @@
         <div id="msg" class="mt-6 font-medium p-4 rounded-lg hidden"></div>
     </div>
 
+
+    <!-- ================= โหมด PC (Desktop View) ================= -->
+    <!-- แสดงเฉพาะหน้าจอที่ใหญ่กว่าหรือเท่ากับ md (768px) -->
+    <div class="hidden md:block w-full max-w-5xl">
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4 text-2xl">
+                        <i class="ph ph-package"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">จัดการออเดอร์หน้าร้าน</h1>
+                        <p class="text-slate-500 text-sm">อัปเดตสถานะการจัดเตรียมสินค้า (โหมด PC)</p>
+                    </div>
+                </div>
+                <button onclick="fetchOrders()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium transition flex items-center">
+                    <i class="ph ph-arrows-clockwise mr-2"></i> โหลดข้อมูลใหม่
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b">
+                            <th class="p-3 font-semibold text-slate-600">Order ID</th>
+                            <th class="p-3 font-semibold text-slate-600">ชื่อลูกค้า</th>
+                            <th class="p-3 font-semibold text-slate-600 text-center">สถานะปัจจุบัน</th>
+                            <th class="p-3 font-semibold text-slate-600 text-center">อัปเดตสถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="text-center p-8 text-slate-500"><i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i><br>กำลังดึงข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
 
+        // ================= ฟังก์ชันโหลดข้อมูลออเดอร์สำหรับ PC =================
+        async function fetchOrders() {
+            // ไม่โหลดถ้าเป็นจอมือถือ (เพื่อประหยัดเน็ต)
+            if (window.innerWidth < 768) return; 
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-500"><i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i><br>กำลังดึงข้อมูล...</td></tr>';
+            
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAll`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    renderTable(result.data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-red-500">เกิดข้อผิดพลาด: ${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-red-500">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</td></tr>`;
+            }
+        }
+
+        function renderTable(orders) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // กรองเอาเฉพาะที่ยังไม่ "ส่งสำเร็จ" หรือ "ยกเลิก" เพื่อไม่ให้รกหน้าจอหน้าร้าน
+            const activeOrders = orders.filter(o => o.status === 'pending' || o.status === 'shipping');
+
+            if (!activeOrders || activeOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-500 bg-slate-50 rounded-lg">ไม่มีออเดอร์ที่ต้องจัดเตรียมในขณะนี้ 🎉</td></tr>';
+                return;
+            }
+
+            activeOrders.forEach(o => {
+                let statusBadge = '';
+                let actionBtn = '';
+
+                if (o.status === 'pending') {
+                    statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold flex items-center justify-center w-max mx-auto"><i class="ph ph-clock mr-1 text-base"></i>รอจัดเตรียม</span>';
+                    // ปุ่มเปลี่ยนเป็นกำลังจัดส่ง
+                    actionBtn = `<button onclick="toggleStatus('${o.id}', 'shipping')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm w-full max-w-[140px] mx-auto block">ส่งให้คนขับรถ <i class="ph ph-arrow-right"></i></button>`;
+                } else if (o.status === 'shipping') {
+                    statusBadge = '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center w-max mx-auto"><i class="ph ph-truck mr-1 text-base"></i>กำลังจัดส่ง</span>';
+                    // ปุ่มเปลี่ยนกลับเป็นรอจัดเตรียม
+                    actionBtn = `<button onclick="toggleStatus('${o.id}', 'pending')" class="bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm w-full max-w-[140px] mx-auto block"><i class="ph ph-arrow-counter-clockwise"></i> ดึงกลับหน้าร้าน</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                        <td class="p-4 font-bold text-slate-800 whitespace-nowrap">${o.id}</td>
+                        <td class="p-4 text-slate-600 truncate max-w-[200px]" title="${o.name}">${o.name}</td>
+                        <td class="p-4 text-center">${statusBadge}</td>
+                        <td class="p-4 text-center">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ================= ฟังก์ชันสลับสถานะ (สำหรับ PC) =================
+        async function toggleStatus(orderId, targetStatus) {
+            const loading = document.getElementById('globalLoading');
+            const actionLabel = targetStatus === 'shipping' ? "อัปเดตสถานะพร้อมส่ง" : "ดึงออเดอร์กลับหน้าร้าน";
+            document.getElementById('globalLoadingText').textContent = `กำลัง${actionLabel}...`;
+            
+            loading.classList.remove('hidden');
+
+            try {
+                // ถ้า targetStatus เป็น shipping ให้ยิงอัปเดตแบบเดิม, ถ้าเป็น pending ให้ยิง revertShipping (ต้องมีในระบบหลังบ้าน)
+                const actionCommand = targetStatus === 'shipping' ? 'updateShipping' : 'revertShipping';
+                
+                const payload = { action: actionCommand, orderId: orderId };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    fetchOrders(); // รีเฟรชตาราง
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ (ตรวจสอบความกว้างเพื่อดึงข้อมูล PC)
+        window.addEventListener('DOMContentLoaded', fetchOrders);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && document.getElementById('tableBody').children.length <= 1) {
+                fetchOrders();
+            }
+        });
+
+        // ================= ระบบฟอร์มสแกน (สำหรับ Mobile) =================
         document.getElementById('warehouseForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('scanId').value.toUpperCase().trim();
             const msgBox = document.getElementById('msg');
-            const loading = document.getElementById('loadingOverlay');
+            const loading = document.getElementById('globalLoading');
 
-            // เปิดหน้าจอโหลด
+            document.getElementById('globalLoadingText').textContent = `กำลังอัปเดตสถานะ...`;
             loading.classList.remove('hidden');
-            loading.classList.add('flex');
-            msgBox.classList.add('hidden'); // ซ่อนข้อความเก่า
+            msgBox.classList.add('hidden');
 
             try {
-                // ส่งคำสั่งอัปเดตไป Google Sheets
-                const payload = {
-                    action: "updateShipping",
-                    orderId: id
-                };
-
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-
+                const payload = { action: "updateShipping", orderId: id };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
 
-                // ปิดหน้าจอโหลด
                 loading.classList.add('hidden');
-                loading.classList.remove('flex');
                 msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'bg-green-50', 'text-green-600');
 
                 if (result.status === 'success') {
                     msgBox.innerHTML = `✅ อัปเดต <b>${id}</b> เป็น "กำลังจัดส่ง" สำเร็จ!`;
                     msgBox.classList.add('bg-green-50', 'text-green-600');
-                    document.getElementById('scanId').value = ''; // ล้างช่อง
+                    document.getElementById('scanId').value = ''; 
                     document.getElementById('scanId').focus();
+                    fetchOrders(); // อัปเดตข้อมูลตารางหลังบ้านเผื่อเปิดทั้งคู่
                 } else {
                     msgBox.innerHTML = `❌ เกิดข้อผิดพลาด:<br>${result.message}`;
                     msgBox.classList.add('bg-red-50', 'text-red-600');
@@ -80,7 +206,6 @@
 
             } catch (error) {
                 loading.classList.add('hidden');
-                loading.classList.remove('flex');
                 msgBox.classList.remove('hidden');
                 msgBox.innerHTML = `❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้`;
                 msgBox.classList.add('bg-red-50', 'text-red-600');
