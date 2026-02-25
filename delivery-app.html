@@ -39,10 +39,10 @@
                         class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 </div>
                 
-                <!-- ส่วนของการจัดการรูปภาพ (4 รูป + ลายน้ำ GPS) -->
+                <!-- ส่วนของการจัดการรูปภาพ (รองรับสูงสุด 4 รูป) -->
                 <div>
                     <div class="flex justify-between items-end mb-2">
-                        <label class="block text-sm font-medium text-slate-700">ถ่ายรูปยืนยันการส่ง * <br><span class="text-xs text-blue-500 font-normal">(ระบบจะบันทึกพิกัด GPS ลงในรูป)</span></label>
+                        <label class="block text-sm font-medium text-slate-700">ถ่ายรูปยืนยันการส่ง * <br><span class="text-xs text-blue-500 font-normal">(ระบบจะจัดเรียงและใส่ GPS อัตโนมัติ)</span></label>
                         <span id="photoCount" class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md">0/4 รูป</span>
                     </div>
                     
@@ -57,10 +57,11 @@
                             <i class="ph ph-image text-3xl mb-1"></i>
                             <span class="font-bold text-sm text-center">เลือกจากอัลบั้ม<br><span class="text-[10px] font-normal">(เลือกได้หลายรูป)</span></span>
                         </button>
+                        <!-- input รองรับหลายไฟล์ -->
                         <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
                     </div>
 
-                    <!-- พื้นที่แสดงกล้องสด (Live Camera) -->
+                    <!-- พื้นที่แสดงกล้องสด -->
                     <div id="liveCameraContainer" class="hidden flex flex-col items-center bg-black rounded-xl overflow-hidden relative shadow-lg mb-4">
                         <video id="cameraVideo" autoplay playsinline class="w-full h-64 object-cover"></video>
                         <canvas id="cameraCanvas" class="hidden"></canvas>
@@ -75,7 +76,7 @@
                         </div>
                     </div>
 
-                    <!-- พื้นที่แสดงรูปพรีวิวแบบ Grid -->
+                    <!-- พื้นที่แสดงรูปพรีวิว (Grid ของหน้าแอป) -->
                     <div id="previewGrid" class="grid grid-cols-2 gap-2 mt-2">
                         <!-- รูปจะถูกเพิ่มผ่าน JS ตรงนี้ -->
                     </div>
@@ -91,10 +92,10 @@
             </button>
         </div>
 
-        <!-- หน้าจอ Loading ตอนส่งข้อมูลและประมวลผลรูแ -->
+        <!-- หน้าจอ Loading ตอนส่งข้อมูลและประมวลผลรูป -->
         <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
-            <p class="text-blue-600 font-bold text-lg text-center px-4" id="loadingText">กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...</p>
+            <p class="text-blue-600 font-bold text-lg text-center px-4" id="loadingText">กำลังประมวลผล...<br>กรุณารอสักครู่</p>
         </div>
 
         <!-- แจ้งเตือนสำเร็จ / ผิดพลาด -->
@@ -117,7 +118,7 @@
         let cameraStream = null;
         
         let capturedImages = []; 
-        const MAX_IMAGES = 4;
+        const MAX_IMAGES = 4; // จำนวนรูปสูงสุด
 
         const orderIdInput = document.getElementById('orderId');
 
@@ -189,7 +190,7 @@
             }
         }
 
-        // ================= อัปเดต UI พรีวิวรูปภาพ =================
+        // ================= อัปเดต UI พรีวิวรูปภาพบนจอคนส่ง =================
         function updatePreview() {
             const grid = document.getElementById('previewGrid');
             const countLabel = document.getElementById('photoCount');
@@ -285,26 +286,26 @@
             });
         });
 
-        // ================= ฟังก์ชันขอพิกัด GPS =================
+        // ================= ฟังก์ชันขอพิกัด GPS (ดึงเป็นภาษาอังกฤษ) =================
         function getLocation() {
             return new Promise((resolve) => {
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
-                            resolve(`พิกัด: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
+                            resolve(`GPS: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
                         },
                         (error) => {
-                            resolve("พิกัด: ไม่สามารถระบุได้ (ไม่ได้เปิด GPS)");
+                            resolve("GPS: Not available");
                         },
                         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                     );
                 } else {
-                    resolve("พิกัด: อุปกรณ์ไม่รองรับ GPS");
+                    resolve("GPS: Not supported");
                 }
             });
         }
 
-        // ================= ระบบประมวลผลรูป (Stitching) =================
+        // ================= ระบบจัดเรียงรูปภาพเป็นสี่เหลี่ยมจัตุรัสเสมอ (Stitching) =================
         async function stitchImages() {
             return new Promise((resolve) => {
                 const count = capturedImages.length;
@@ -313,20 +314,14 @@
                     return;
                 }
 
-                if (count === 1) {
-                    resolve(capturedImages[0]);
-                    return;
-                }
-
                 const stitchCanvas = document.createElement('canvas');
                 const ctx = stitchCanvas.getContext('2d');
                 const loadedImages = [];
                 let loadedCount = 0;
 
-                let cols = 1;
-                let rows = 1;
-                if (count === 2) { cols = 2; rows = 1; }
-                else if (count === 3 || count === 4) { cols = 2; rows = 2; }
+                // บังคับให้เป็นกรอบสี่เหลี่ยมจัตุรัสเสมอ (ยกเว้นมีรูปเดียว)
+                let cols = count > 1 ? 2 : 1;
+                let rows = count > 1 ? 2 : 1;
 
                 const cellSize = 800; 
                 const margin = 15;
@@ -336,6 +331,7 @@
                 stitchCanvas.width = canvasWidth;
                 stitchCanvas.height = canvasHeight;
 
+                // เทพื้นหลังสีขาว
                 ctx.fillStyle = "white";
                 ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -347,12 +343,33 @@
 
                         if (loadedCount === count) {
                             for (let j = 0; j < count; j++) {
-                                const c = j % cols;
-                                const r = Math.floor(j / cols);
-                                const x = c * (cellSize + margin);
-                                const y = r * (cellSize + margin);
+                                let x, y;
+
+                                // คำนวณพิกัดเพื่อจัดเรียงให้สวยงามสมมาตร
+                                if (count === 2) {
+                                    // จัดให้อยู่ตรงกลางของความสูง
+                                    x = j * (cellSize + margin);
+                                    y = (canvasHeight - cellSize) / 2;
+                                } else if (count === 3) {
+                                    // 2 รูปบน, 1 รูปล่างอยู่ตรงกลาง
+                                    if (j < 2) {
+                                        x = j * (cellSize + margin);
+                                        y = 0;
+                                    } else {
+                                        x = (canvasWidth - cellSize) / 2; // จัดกึ่งกลางแกน X
+                                        y = cellSize + margin;
+                                    }
+                                } else {
+                                    // แบบมาตรฐาน (1 หรือ 4 รูป)
+                                    const c = j % cols;
+                                    const r = Math.floor(j / cols);
+                                    x = c * (cellSize + margin);
+                                    y = r * (cellSize + margin);
+                                }
 
                                 const currentImg = loadedImages[j];
+                                
+                                // คํานวณ Crop ให้ภาพเป็นสี่เหลี่ยมจัตุรัสพอดีแบบ Center Crop
                                 const minSide = Math.min(currentImg.width, currentImg.height);
                                 const sx = (currentImg.width - minSide) / 2;
                                 const sy = (currentImg.height - minSide) / 2;
@@ -367,12 +384,17 @@
             });
         }
 
-        // ================= ฟังก์ชันเพิ่มลายน้ำ (Order + เวลา + GPS) =================
+        // ================= ฟังก์ชันเพิ่มลายน้ำ (ภาษาอังกฤษ + รหัสตัวเลข 16 หลักจางๆ) =================
         async function processImageWithWatermark(base64Image) {
             const locText = await getLocation();
             const now = new Date();
-            const timeText = "วันที่: " + now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('th-TH');
-            const orderText = "Order ID: " + (document.getElementById('orderId').value.toUpperCase().trim() || "ไม่ระบุ");
+            
+            // Format เป็นภาษาอังกฤษ DD/MM/YYYY HH:MM:SS
+            const timeText = "Date: " + now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-GB');
+            const orderText = "Order ID: " + (document.getElementById('orderId').value.toUpperCase().trim() || "N/A");
+
+            // สร้างตัวเลขสุ่ม 16 หลัก
+            const refCode = Array.from({length: 16}, () => Math.floor(Math.random() * 10)).join('');
 
             return new Promise((resolve) => {
                 const img = new Image();
@@ -384,8 +406,9 @@
 
                     ctx.drawImage(img, 0, 0);
 
+                    // ================= 1. ลายน้ำหลัก (มุมขวาล่าง) =================
                     const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
-                    ctx.font = `${fontSize}px sans-serif`;
+                    ctx.font = `bold ${fontSize}px sans-serif`;
                     ctx.textAlign = "right";
                     ctx.textBaseline = "bottom";
 
@@ -397,6 +420,7 @@
                     const w3 = ctx.measureText(locText).width;
                     const maxWidth = Math.max(w1, w2, w3);
 
+                    // พื้นหลังสีดำโปร่งแสง
                     const bgWidth = maxWidth + (padding * 2);
                     const bgHeight = (fontSize * 3) + (padding * 2) + 15; 
                     const bgX = canvas.width - bgWidth - margin;
@@ -405,13 +429,24 @@
                     ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
                     ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
 
+                    // ข้อความสีขาว
                     ctx.fillStyle = "white";
                     const textX = canvas.width - margin - padding;
                     ctx.fillText(orderText, textX, canvas.height - margin - padding - (fontSize * 2) - 15);
                     ctx.fillText(timeText, textX, canvas.height - margin - padding - fontSize - 5);
                     ctx.fillText(locText, textX, canvas.height - margin - padding);
 
-                    // ส่งออกเป็น Base64 พร้อมปรับคุณภาพลงเหลือ 80% เพื่อลดขนาด
+                    // ================= 2. รหัสตัวเลข 16 หลักจางๆ (มุมซ้ายล่าง) =================
+                    const smallFontSize = Math.max(12, Math.floor(canvas.width * 0.02));
+                    ctx.font = `bold ${smallFontSize}px monospace`;
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "bottom";
+                    
+                    // สีเทาจางๆ เพื่อไม่ให้รบกวนสายตา แต่แอดมินยังมองเห็นได้เมื่อซูมดู
+                    ctx.fillStyle = "rgba(128, 128, 128, 0.6)"; 
+                    ctx.fillText(refCode, 15, canvas.height - 15);
+
+                    // ส่งออกเป็น Base64 (บีบอัด 80%)
                     resolve(canvas.toDataURL('image/jpeg', 0.8));
                 };
                 img.src = base64Image;
@@ -431,12 +466,12 @@
             loadingOverlay.classList.add('flex');
             
             try {
-                document.getElementById('loadingText').innerHTML = "กำลังประมวลผลรูปภาพ<br>และดึงพิกัด GPS...";
+                document.getElementById('loadingText').innerHTML = "กำลังดึงพิกัด GPS และ<br>จัดเรียงรูปภาพ...";
                 
-                // 1. รวมรูปเข้าด้วยกัน (ถ้ามีหลายรูป)
+                // 1. จัดเรียงภาพให้เป็นสี่เหลี่ยมจัตุรัส
                 let stitchedBase64 = await stitchImages();
 
-                // 2. ประทับลายน้ำและพิกัดลงในรูปภาพที่รวมแล้ว
+                // 2. ใส่ลายน้ำภาษาอังกฤษ + รหัสสุ่ม 16 หลักจางๆ
                 let watermarkedBase64 = await processImageWithWatermark(stitchedBase64);
                 let finalImageBase64 = watermarkedBase64.replace(/^data:(.*,)?/, '');
 
