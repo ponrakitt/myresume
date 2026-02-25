@@ -39,9 +39,12 @@
                         class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 </div>
                 
-                <!-- ส่วนของการจัดการรูปภาพ (1 รูป + ลายน้ำ GPS) -->
+                <!-- ส่วนของการจัดการรูปภาพ (4 รูป + ลายน้ำ GPS) -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">ถ่ายรูปยืนยันการส่ง * <span class="text-xs text-blue-500 font-normal">(ระบบจะบันทึกพิกัด GPS ลงในรูป)</span></label>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-sm font-medium text-slate-700">ถ่ายรูปยืนยันการส่ง * <br><span class="text-xs text-blue-500 font-normal">(ระบบจะบันทึกพิกัด GPS ลงในรูป)</span></label>
+                        <span id="photoCount" class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md">0/4 รูป</span>
+                    </div>
                     
                     <!-- เมนูเลือกวิธีถ่ายรูป -->
                     <div id="cameraMenu" class="grid grid-cols-2 gap-3 mb-4">
@@ -52,9 +55,9 @@
                         
                         <button type="button" onclick="document.getElementById('photoInput').click()" class="border-2 border-slate-200 bg-slate-50 text-slate-600 rounded-xl p-4 flex flex-col items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm">
                             <i class="ph ph-image text-3xl mb-1"></i>
-                            <span class="font-bold text-sm">เลือกจากอัลบั้ม</span>
+                            <span class="font-bold text-sm text-center">เลือกจากอัลบั้ม<br><span class="text-[10px] font-normal">(เลือกได้หลายรูป)</span></span>
                         </button>
-                        <input type="file" id="photoInput" accept="image/*" class="hidden">
+                        <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
                     </div>
 
                     <!-- พื้นที่แสดงกล้องสด (Live Camera) -->
@@ -72,12 +75,9 @@
                         </div>
                     </div>
 
-                    <!-- พื้นที่แสดงรูปพรีวิว -->
-                    <div id="previewContainer" class="hidden mt-2 relative">
-                        <img id="imagePreview" src="" class="w-full h-auto rounded-xl shadow-md border-2 border-slate-200 object-cover">
-                        <button type="button" onclick="removePhoto()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2.5 shadow-lg hover:bg-red-600 transition-colors" title="ลบรูปลองใหม่">
-                            <i class="ph ph-trash font-bold"></i>
-                        </button>
+                    <!-- พื้นที่แสดงรูปพรีวิวแบบ Grid -->
+                    <div id="previewGrid" class="grid grid-cols-2 gap-2 mt-2">
+                        <!-- รูปจะถูกเพิ่มผ่าน JS ตรงนี้ -->
                     </div>
                 </div>
             </form>
@@ -115,7 +115,9 @@
         const video = document.getElementById('cameraVideo');
         const canvas = document.getElementById('cameraCanvas');
         let cameraStream = null;
-        let finalImageBase64 = null; 
+        
+        let capturedImages = []; 
+        const MAX_IMAGES = 4;
 
         const orderIdInput = document.getElementById('orderId');
 
@@ -187,83 +189,44 @@
             }
         }
 
-        // ================= ฟังก์ชันขอพิกัด GPS =================
-        function getLocation() {
-            return new Promise((resolve) => {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            resolve(`พิกัด: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
-                        },
-                        (error) => {
-                            resolve("พิกัด: ไม่สามารถระบุได้ (ไม่ได้เปิด GPS)");
-                        },
-                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                    );
-                } else {
-                    resolve("พิกัด: อุปกรณ์ไม่รองรับ GPS");
-                }
+        // ================= อัปเดต UI พรีวิวรูปภาพ =================
+        function updatePreview() {
+            const grid = document.getElementById('previewGrid');
+            const countLabel = document.getElementById('photoCount');
+            const cameraMenu = document.getElementById('cameraMenu');
+
+            grid.innerHTML = '';
+            countLabel.textContent = `${capturedImages.length}/${MAX_IMAGES} รูป`;
+
+            capturedImages.forEach((base64, index) => {
+                const div = document.createElement('div');
+                div.className = 'relative';
+                div.innerHTML = `
+                    <img src="${base64}" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200">
+                    <button type="button" onclick="removePhoto(${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors" title="ลบรูปนี้">
+                        <i class="ph ph-x font-bold text-sm"></i>
+                    </button>
+                `;
+                grid.appendChild(div);
             });
+
+            if (capturedImages.length >= MAX_IMAGES) {
+                cameraMenu.classList.add('hidden');
+            } else {
+                if (document.getElementById('liveCameraContainer').classList.contains('hidden')) {
+                    cameraMenu.classList.remove('hidden');
+                }
+            }
         }
 
-        // ================= ฟังก์ชันเพิ่มลายน้ำ (Order + เวลา + GPS) =================
-        async function processImageWithWatermark(base64Image) {
-            const locText = await getLocation();
-            const now = new Date();
-            const timeText = "วันที่: " + now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('th-TH');
-            const orderText = "Order ID: " + (document.getElementById('orderId').value.toUpperCase().trim() || "ไม่ระบุ");
-
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    // วาดรูปต้นฉบับ
-                    ctx.drawImage(img, 0, 0);
-
-                    // คำนวณขนาดตัวอักษรให้พอดีกับความกว้างของรูป
-                    const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
-                    ctx.font = `${fontSize}px sans-serif`;
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "bottom";
-
-                    const margin = 15;
-                    const padding = 15;
-                    
-                    // วัดความกว้างของข้อความที่ยาวที่สุด
-                    const w1 = ctx.measureText(orderText).width;
-                    const w2 = ctx.measureText(timeText).width;
-                    const w3 = ctx.measureText(locText).width;
-                    const maxWidth = Math.max(w1, w2, w3);
-
-                    // วาดพื้นหลังสีดำโปร่งแสง
-                    const bgWidth = maxWidth + (padding * 2);
-                    const bgHeight = (fontSize * 3) + (padding * 2) + 15; // เผื่อระยะบรรทัด
-                    const bgX = canvas.width - bgWidth - margin;
-                    const bgY = canvas.height - bgHeight - margin;
-
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-                    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
-
-                    // วาดข้อความสีขาวลงไป
-                    ctx.fillStyle = "white";
-                    const textX = canvas.width - margin - padding;
-                    ctx.fillText(orderText, textX, canvas.height - margin - padding - (fontSize * 2) - 15);
-                    ctx.fillText(timeText, textX, canvas.height - margin - padding - fontSize - 5);
-                    ctx.fillText(locText, textX, canvas.height - margin - padding);
-
-                    // ส่งออกเป็น Base64 (บีบอัดคุณภาพ 80%)
-                    resolve(canvas.toDataURL('image/jpeg', 0.8));
-                };
-                img.src = base64Image;
-            });
+        function removePhoto(index) {
+            capturedImages.splice(index, 1);
+            updatePreview();
         }
 
         // ================= ระบบ Live Camera =================
         async function startLiveCamera() {
+            if (capturedImages.length >= MAX_IMAGES) return;
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
@@ -283,93 +246,207 @@
                 cameraStream = null;
             }
             document.getElementById('liveCameraContainer').classList.add('hidden');
-            if (!finalImageBase64) {
-                document.getElementById('cameraMenu').classList.remove('hidden');
-            }
+            updatePreview();
         }
 
-        async function takeSnapshot() {
-            // โชว์ Loading เพราะการดึง GPS อาจใช้เวลา 1-2 วินาที
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerHTML = "กำลังดึงพิกัด GPS<br>และประมวลผลรูปภาพ...";
-            loadingOverlay.classList.remove('hidden');
-            loadingOverlay.classList.add('flex');
-
+        function takeSnapshot() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            const rawBase64 = canvas.toDataURL('image/jpeg', 1.0);
-            
-            // นำรูปไปประทับลายน้ำ GPS
-            const watermarkedBase64 = await processImageWithWatermark(rawBase64);
-            
-            finalImageBase64 = watermarkedBase64.replace(/^data:(.*,)?/, '');
-            
-            document.getElementById('imagePreview').src = watermarkedBase64;
-            document.getElementById('previewContainer').classList.remove('hidden');
+            const rawBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            capturedImages.push(rawBase64);
             
             stopLiveCamera(); 
-            
-            loadingOverlay.classList.add('hidden');
-            loadingOverlay.classList.remove('flex');
+            updatePreview();
         }
 
         // ================= ระบบเลือกรูปจากอัลบั้ม =================
-        document.getElementById('photoInput').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
 
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerHTML = "กำลังดึงพิกัด GPS<br>และประมวลผลรูปภาพ...";
-            loadingOverlay.classList.remove('hidden');
-            loadingOverlay.classList.add('flex');
+            const remainingSlots = MAX_IMAGES - capturedImages.length;
+            const filesToProcess = files.slice(0, remainingSlots);
 
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                // นำรูปไปประทับลายน้ำ GPS
-                const watermarkedBase64 = await processImageWithWatermark(event.target.result);
-
-                document.getElementById('imagePreview').src = watermarkedBase64;
-                document.getElementById('previewContainer').classList.remove('hidden');
-                document.getElementById('cameraMenu').classList.add('hidden');
-                
-                finalImageBase64 = watermarkedBase64.replace(/^data:(.*,)?/, '');
-                document.getElementById('photoInput').value = "";
-
-                loadingOverlay.classList.add('hidden');
-                loadingOverlay.classList.remove('flex');
-            };
-            reader.readAsDataURL(file);
+            let processedCount = 0;
+            filesToProcess.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    capturedImages.push(event.target.result);
+                    processedCount++;
+                    if (processedCount === filesToProcess.length) {
+                        updatePreview();
+                        document.getElementById('photoInput').value = "";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         });
 
-        function removePhoto() {
-            finalImageBase64 = null;
-            document.getElementById('imagePreview').src = "";
-            document.getElementById('previewContainer').classList.add('hidden');
-            document.getElementById('cameraMenu').classList.remove('hidden');
+        // ================= ฟังก์ชันขอพิกัด GPS =================
+        function getLocation() {
+            return new Promise((resolve) => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            resolve(`พิกัด: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
+                        },
+                        (error) => {
+                            resolve("พิกัด: ไม่สามารถระบุได้ (ไม่ได้เปิด GPS)");
+                        },
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    );
+                } else {
+                    resolve("พิกัด: อุปกรณ์ไม่รองรับ GPS");
+                }
+            });
+        }
+
+        // ================= ระบบประมวลผลรูป (Stitching) =================
+        async function stitchImages() {
+            return new Promise((resolve) => {
+                const count = capturedImages.length;
+                if (count === 0) {
+                    resolve(null);
+                    return;
+                }
+
+                if (count === 1) {
+                    resolve(capturedImages[0]);
+                    return;
+                }
+
+                const stitchCanvas = document.createElement('canvas');
+                const ctx = stitchCanvas.getContext('2d');
+                const loadedImages = [];
+                let loadedCount = 0;
+
+                let cols = 1;
+                let rows = 1;
+                if (count === 2) { cols = 2; rows = 1; }
+                else if (count === 3 || count === 4) { cols = 2; rows = 2; }
+
+                const cellSize = 800; 
+                const margin = 15;
+                const canvasWidth = (cols * cellSize) + ((cols - 1) * margin);
+                const canvasHeight = (rows * cellSize) + ((rows - 1) * margin);
+
+                stitchCanvas.width = canvasWidth;
+                stitchCanvas.height = canvasHeight;
+
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                for (let i = 0; i < count; i++) {
+                    const img = new Image();
+                    img.onload = () => {
+                        loadedImages[i] = img;
+                        loadedCount++;
+
+                        if (loadedCount === count) {
+                            for (let j = 0; j < count; j++) {
+                                const c = j % cols;
+                                const r = Math.floor(j / cols);
+                                const x = c * (cellSize + margin);
+                                const y = r * (cellSize + margin);
+
+                                const currentImg = loadedImages[j];
+                                const minSide = Math.min(currentImg.width, currentImg.height);
+                                const sx = (currentImg.width - minSide) / 2;
+                                const sy = (currentImg.height - minSide) / 2;
+
+                                ctx.drawImage(currentImg, sx, sy, minSide, minSide, x, y, cellSize, cellSize);
+                            }
+                            resolve(stitchCanvas.toDataURL('image/jpeg', 1.0));
+                        }
+                    };
+                    img.src = capturedImages[i];
+                }
+            });
+        }
+
+        // ================= ฟังก์ชันเพิ่มลายน้ำ (Order + เวลา + GPS) =================
+        async function processImageWithWatermark(base64Image) {
+            const locText = await getLocation();
+            const now = new Date();
+            const timeText = "วันที่: " + now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('th-TH');
+            const orderText = "Order ID: " + (document.getElementById('orderId').value.toUpperCase().trim() || "ไม่ระบุ");
+
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    ctx.drawImage(img, 0, 0);
+
+                    const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
+                    ctx.font = `${fontSize}px sans-serif`;
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "bottom";
+
+                    const margin = 15;
+                    const padding = 15;
+                    
+                    const w1 = ctx.measureText(orderText).width;
+                    const w2 = ctx.measureText(timeText).width;
+                    const w3 = ctx.measureText(locText).width;
+                    const maxWidth = Math.max(w1, w2, w3);
+
+                    const bgWidth = maxWidth + (padding * 2);
+                    const bgHeight = (fontSize * 3) + (padding * 2) + 15; 
+                    const bgX = canvas.width - bgWidth - margin;
+                    const bgY = canvas.height - bgHeight - margin;
+
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+                    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+
+                    ctx.fillStyle = "white";
+                    const textX = canvas.width - margin - padding;
+                    ctx.fillText(orderText, textX, canvas.height - margin - padding - (fontSize * 2) - 15);
+                    ctx.fillText(timeText, textX, canvas.height - margin - padding - fontSize - 5);
+                    ctx.fillText(locText, textX, canvas.height - margin - padding);
+
+                    // ส่งออกเป็น Base64 พร้อมปรับคุณภาพลงเหลือ 80% เพื่อลดขนาด
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = base64Image;
+            });
         }
 
         // ================= ระบบส่งข้อมูล (Submit) =================
         document.getElementById('deliveryForm').onsubmit = async (e) => {
             e.preventDefault();
             
-            if (!finalImageBase64) {
-                return alert('กรุณาเปิดกล้องถ่ายรูป หรือ เลือกรูปเพื่อยืนยันการจัดส่ง');
+            if (capturedImages.length === 0) {
+                return alert('กรุณาเปิดกล้องถ่ายรูป หรือ เลือกรูปอย่างน้อย 1 รูป เพื่อยืนยันการจัดส่ง');
             }
 
             const loadingOverlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerHTML = "กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...";
             loadingOverlay.classList.remove('hidden');
             loadingOverlay.classList.add('flex');
             
             try {
-                // เติม Padding ให้ Base64 
+                document.getElementById('loadingText').innerHTML = "กำลังประมวลผลรูปภาพ<br>และดึงพิกัด GPS...";
+                
+                // 1. รวมรูปเข้าด้วยกัน (ถ้ามีหลายรูป)
+                let stitchedBase64 = await stitchImages();
+
+                // 2. ประทับลายน้ำและพิกัดลงในรูปภาพที่รวมแล้ว
+                let watermarkedBase64 = await processImageWithWatermark(stitchedBase64);
+                let finalImageBase64 = watermarkedBase64.replace(/^data:(.*,)?/, '');
+
+                // 3. เติม Padding
                 if ((finalImageBase64.length % 4) > 0) {
                     finalImageBase64 += '='.repeat(4 - (finalImageBase64.length % 4));
                 }
 
+                document.getElementById('loadingText').innerHTML = "กำลังอัปโหลดรูป<br>และบันทึกข้อมูลเข้าระบบ...";
+                
                 const payload = {
                     action: "completeDelivery",
                     orderId: orderIdInput.value.toUpperCase().trim(),
@@ -419,7 +496,8 @@
                 title.className = "text-2xl font-bold mb-2 text-green-600";
                 desc.textContent = "บันทึกข้อมูลเรียบร้อย";
                 
-                removePhoto();
+                capturedImages = [];
+                updatePreview();
                 document.getElementById('note').value = '';
             } else {
                 icon.className = "w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-5xl";
