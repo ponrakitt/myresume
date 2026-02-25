@@ -6,11 +6,30 @@
     <title>ตรวจสอบสถานะพัสดุ | Order Tracking</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* เพิ่ม CSS อนิเมชั่นสำหรับการแสดงผล */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUpFade 0.5s ease-out forwards;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
     <header class="bg-white shadow-sm p-4 relative flex items-center justify-center">
         <h1 class="text-xl font-bold text-indigo-700" data-i18n="title_main">ตรวจสอบสถานะสินค้า</h1>
-        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500">
+        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
             <option value="th">🇹🇭 ไทย</option>
             <option value="en">🇬🇧 English</option>
             <option value="zh">🇨🇳 中文</option>
@@ -19,16 +38,39 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 mt-4 relative flex-1 w-full">
-        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100">
-            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
-            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors"><i class="ph ph-magnifying-glass text-lg"></i></button>
+        <!-- ช่องค้นหา -->
+        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100 relative z-10">
+            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700 transition-shadow">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors active:scale-95 transform"><i class="ph ph-magnifying-glass text-lg"></i></button>
         </form>
 
-        <div id="loading" class="hidden text-center py-12">
-            <i class="ph ph-spinner animate-spin text-5xl text-indigo-500 mb-3 inline-block"></i>
-            <p class="text-slate-500 font-medium" data-i18n="loading_text">กำลังค้นหาข้อมูลจากระบบ...</p>
+        <!-- Skeleton Loading (อนิเมชั่นโหลดโครงร่าง) -->
+        <div id="loading" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full animate-pulse">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <div class="h-4 bg-slate-200 rounded w-24 mb-3"></div>
+                <div class="h-8 bg-slate-300 rounded w-48 mb-3"></div>
+                <div class="h-4 bg-slate-200 rounded w-32 mt-1"></div>
+            </div>
+            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+                <div class="relative">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-300 ring-4 ring-white"></div>
+                    <div class="h-5 bg-slate-300 rounded w-40 mb-2 mt-2"></div>
+                    <div class="h-3 bg-slate-200 rounded w-24"></div>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white"></div>
+                    <div class="h-5 bg-slate-200 rounded w-48 mb-2 mt-2"></div>
+                    <div class="h-3 bg-slate-200 rounded w-24"></div>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white"></div>
+                    <div class="h-5 bg-slate-200 rounded w-32 mb-2 mt-2"></div>
+                    <div class="h-3 bg-slate-200 rounded w-24"></div>
+                </div>
+            </div>
         </div>
 
+        <!-- กล่องแสดงผลลัพธ์ -->
         <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div class="border-b border-slate-100 pb-4 mb-6">
                 <p class="text-sm text-slate-500 mb-1" data-i18n="tracking_no_label">เลขพัสดุ</p>
@@ -40,43 +82,49 @@
                 </p>
             </div>
 
+            <!-- Stepper / Timeline -->
             <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+                
+                <!-- Step 1: Pending -->
                 <div class="relative" id="step1Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm" id="icon1">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm animate-pop-in" id="icon1">
                         <i class="ph ph-receipt text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-800 pt-0.5" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
                     <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
                 
+                <!-- Step 2: Shipping -->
                 <div class="relative" id="step2Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon2">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500" id="icon2">
                         <i class="ph ph-truck text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2" data-i18n="waiting_update">รอการอัปเดต</p>
                 </div>
                 
+                <!-- Step 3: Completed -->
                 <div class="relative" id="step3Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon3">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500" id="icon3">
                         <i class="ph ph-check-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3" data-i18n="waiting_update">รอการอัปเดต</p>
                     
-                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <!-- ส่วนแสดงรูปและหมายเหตุ -->
+                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100 animate-slide-up" style="animation-delay: 0.2s;">
                         <p class="text-xs font-bold text-slate-700 mb-1">
                             <span data-i18n="note_label">หมายเหตุ:</span> <span id="showNote" class="font-normal"></span>
                         </p>
-                        <!-- เปลี่ยนกลับเป็นแท็ก <a> เพื่อเปิดแท็บใหม่ -->
                         <a id="proofImageLink" href="#" target="_blank" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors">
                             <i class="ph ph-image mr-1 text-lg"></i> <span data-i18n="view_proof">ดูรูปภาพหลักฐานการจัดส่ง</span>
                         </a>
                     </div>
                 </div>
 
+                <!-- Step 4: Cancelled (แสดงเฉพาะถ้ายกเลิก) -->
                 <div class="relative hidden" id="stepCancelledContainer">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm animate-pop-in">
                         <i class="ph ph-x-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-red-600 pt-0.5" data-i18n="step_cancelled_title">ยกเลิกออเดอร์</h3>
@@ -84,8 +132,9 @@
                 </div>
             </div>
 
-            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl">
+            <!-- กล่องประเมินความพึงพอใจ -->
+            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl animate-pop-in" style="animation-delay: 0.6s;">
                     <i class="ph-fill ph-star"></i>
                 </div>
                 <h4 class="font-bold text-indigo-800 mb-1" data-i18n="survey_title">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
@@ -96,12 +145,14 @@
             </div>
         </div>
 
-        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100">
-            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400"></i>
+        <!-- แจ้งเตือนไม่พบข้อมูล -->
+        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100 animate-slide-up">
+            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400 animate-pop-in"></i>
             <h3 class="font-bold text-lg mb-1" data-i18n="not_found_title">ไม่พบข้อมูล</h3>
             <p id="errorMsg" class="text-slate-600 text-sm" data-i18n="not_found_desc">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
         </div>
 
+        <!-- ปุ่มลิงก์แจ้งปัญหาการใช้งาน -->
         <div class="text-center mt-8 mb-2">
             <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors bg-white px-5 py-2.5 rounded-full shadow-sm border border-slate-200 hover:shadow-md">
                 <i class="ph ph-warning-circle mr-1.5 text-lg"></i> <span data-i18n="report_issue">แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน</span>
@@ -120,13 +171,13 @@
     </footer>
 
     <script>
+        // *** ใส่ URL ของ Google Apps Script ของคุณที่นี่ ***
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
         
         const translations = {
             th: {
                 title_main: "ตรวจสอบสถานะสินค้า",
                 placeholder_search: "กรอกเลขพัสดุ WAN-...",
-                loading_text: "กำลังค้นหาข้อมูลจากระบบ...",
                 tracking_no_label: "เลขพัสดุ",
                 customer_name_label: "ชื่อลูกค้า:",
                 step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)",
@@ -156,7 +207,6 @@
             en: {
                 title_main: "Track Your Order",
                 placeholder_search: "Enter tracking no. WAN-...",
-                loading_text: "Searching system data...",
                 tracking_no_label: "Tracking No.",
                 customer_name_label: "Customer Name:",
                 step1_title: "Order Received (Preparing)",
@@ -186,7 +236,6 @@
             zh: {
                 title_main: "订单状态查询",
                 placeholder_search: "输入快递单号 WAN-...",
-                loading_text: "正在查询系统数据...",
                 tracking_no_label: "快递单号",
                 customer_name_label: "客户姓名:",
                 step1_title: "收到订单 (准备中)",
@@ -216,7 +265,6 @@
             ja: {
                 title_main: "配送状況の確認",
                 placeholder_search: "追跡番号を入力 WAN-...",
-                loading_text: "システムデータを検索中...",
                 tracking_no_label: "追跡番号",
                 customer_name_label: "お客様名:",
                 step1_title: "注文受付 (準備中)",
@@ -300,14 +348,19 @@
             if (!id) return;
             
             const t = translations[currentLang];
+            
+            // รีเซ็ตคลาสอนิเมชั่นและโชว์กล่อง Skeleton Loading
             document.getElementById('resultBox').classList.add('hidden');
+            document.getElementById('resultBox').classList.remove('animate-slide-up');
             document.getElementById('notFound').classList.add('hidden');
+            document.getElementById('notFound').classList.remove('animate-slide-up');
             document.getElementById('loading').classList.remove('hidden');
 
             try {
                 const response = await fetch(`${GAS_URL}?orderId=${id}`);
                 const result = await response.json();
 
+                // ปิด Skeleton Loading
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
@@ -316,6 +369,7 @@
                 } else {
                     currentOrderData = null;
                     document.getElementById('notFound').classList.remove('hidden');
+                    document.getElementById('notFound').classList.add('animate-slide-up');
                     document.getElementById('errorMsg').textContent = result.message || t.not_found_desc;
                 }
             } catch (error) {
@@ -323,6 +377,7 @@
                 currentOrderData = null;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('notFound').classList.remove('hidden');
+                document.getElementById('notFound').classList.add('animate-slide-up');
                 document.getElementById('errorMsg').textContent = translations[currentLang].error_network;
             }
         }
@@ -330,7 +385,11 @@
         function renderOrderData(data) {
             const t = translations[currentLang];
             
-            document.getElementById('resultBox').classList.remove('hidden');
+            // โชว์กล่องผลลัพธ์พร้อมอนิเมชั่น Slide Up
+            const resultBox = document.getElementById('resultBox');
+            resultBox.classList.remove('hidden');
+            resultBox.classList.add('animate-slide-up');
+            
             document.getElementById('showId').textContent = data.id;
             document.getElementById('nameSpan').textContent = data.name;
 
@@ -341,12 +400,19 @@
             document.getElementById('proofBox').classList.add('hidden');
             document.getElementById('surveyBox').classList.add('hidden');
             
-            ['icon2', 'icon3'].forEach(id => document.getElementById(id).className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500');
+            // รีเซ็ตสถานะและอนิเมชั่นของไอคอน
+            ['icon2', 'icon3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500';
+                // Trigger reflow เพื่อให้ Animation เล่นซ้ำ (ถ้ามี)
+                void el.offsetWidth;
+            });
             ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 pt-0.5 transition-colors duration-500');
             
             document.getElementById('time2').textContent = t.waiting_update;
             document.getElementById('time3').textContent = t.waiting_update;
 
+            // กรณีถูกยกเลิก
             if (data.status === 'cancelled') {
                 document.getElementById('step2Container').classList.add('hidden');
                 document.getElementById('step3Container').classList.add('hidden');
@@ -354,17 +420,25 @@
                 return;
             }
 
+            // สถานะ "กำลังจัดส่ง" หรือ "จัดส่งสำเร็จ"
             if (data.status === 'shipping' || data.status === 'completed') {
-                document.getElementById('icon2').classList.replace('bg-slate-200', 'bg-blue-500');
-                document.getElementById('icon2').classList.replace('text-slate-400', 'text-white');
+                const icon2 = document.getElementById('icon2');
+                icon2.classList.replace('bg-slate-200', 'bg-blue-500');
+                icon2.classList.replace('text-slate-400', 'text-white');
+                icon2.classList.add('animate-pop-in');
+                
                 document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
                 document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
                 document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
             }
 
+            // สถานะ "จัดส่งสำเร็จ"
             if (data.status === 'completed') {
-                document.getElementById('icon3').classList.replace('bg-slate-200', 'bg-green-500');
-                document.getElementById('icon3').classList.replace('text-slate-400', 'text-white');
+                const icon3 = document.getElementById('icon3');
+                icon3.classList.replace('bg-slate-200', 'bg-green-500');
+                icon3.classList.replace('text-slate-400', 'text-white');
+                icon3.classList.add('animate-pop-in');
+                
                 document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
                 document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
                 document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
@@ -372,7 +446,6 @@
                 document.getElementById('proofBox').classList.remove('hidden');
                 document.getElementById('showNote').textContent = data.note || t.no_note;
                 
-                // นำลิงก์จาก Google Drive มาดัดแปลงให้อ่านไฟล์รูปได้ แล้วใส่ใน href
                 let directUrl = data.imageUrl;
                 if (directUrl) {
                     const driveMatch = directUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -403,7 +476,7 @@
 
             if (now <= expireDate) {
                 surveyBtn.href = "https://forms.gle/iWpViNdXNXDsEwXq7";
-                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto";
+                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1";
                 surveyBtn.innerHTML = `<i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">${t.survey_btn_active}</span>`;
                 
                 const expireStr = expireDate.toLocaleDateString(t.locale_date, { day: 'numeric', month: 'short', year: 'numeric' });
