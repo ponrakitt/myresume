@@ -21,115 +21,156 @@
             }
             #printBtn { display: none !important; }
         }
+
+        /* อนิเมชั่นลอยขึ้นลงสำหรับโหมดมือถือ */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
-    <nav class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <div class="flex items-center">
-                <i class="ph ph-user-gear mr-2 text-2xl"></i>
-                <h1 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin)</h1>
+
+    <!-- ================= หน้าจอแจ้งเตือนเมื่อเปิดด้วยมือถือ ================= -->
+    <div id="mobileWarning" class="md:hidden min-h-screen flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-slate-50 to-slate-100">
+        <div class="animate-float mb-8 relative">
+            <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center text-slate-400 shadow-lg border border-slate-100">
+                <i class="ph ph-desktop text-6xl"></i>
             </div>
-            <a href="https://ponrakitt.site/report.html" target="_blank" class="hidden sm:flex text-sm bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-lg items-center transition-colors">
-                <i class="ph ph-info mr-1.5 text-lg"></i> แนะนำการใช้งาน / แจ้งปัญหา
+            <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 shadow-md">
+                <i class="ph-fill ph-warning-circle text-4xl text-red-500 animate-pulse"></i>
+            </div>
+        </div>
+        
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">ไม่รองรับอุปกรณ์มือถือ</h2>
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 text-slate-600 w-full max-w-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+            <p class="mb-4 font-medium">ระบบนี้ไม่เหมาะสำหรับการเปิดด้วยอุปกรณ์นี้ กรุณาเปิดด้วย PC</p>
+            <div class="bg-slate-50 p-4 rounded-xl text-sm text-left border border-slate-100">
+                หากพบว่าระบบมีข้อผิดพลาดกรุณาแจ้ง ที่<br>
+                <a href="https://ponrakitt.site/report.html" target="_blank" class="text-indigo-600 font-bold hover:underline break-all inline-block my-1">
+                    https://ponrakitt.site/report.html
+                </a><br>
+                ทันที แล้วเลือกระดับสูงสุด ขอบคุณ
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= ระบบแอดมินหลัก (แสดงเฉพาะ PC / Tablet แนวนอน) ================= -->
+    <div id="desktopApp" class="hidden md:block">
+        <nav class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-10">
+            <div class="max-w-6xl mx-auto flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="ph ph-user-gear mr-2 text-2xl"></i>
+                    <h1 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin)</h1>
+                </div>
+                <a href="https://ponrakitt.site/report.html" target="_blank" class="hidden sm:flex text-sm bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-lg items-center transition-colors">
+                    <i class="ph ph-info mr-1.5 text-lg"></i> แนะนำการใช้งาน / แจ้งปัญหา
+                </a>
+            </div>
+        </nav>
+
+        <div class="max-w-6xl mx-auto p-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- ฝั่งสร้างข้อมูล -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-1 h-fit">
+                <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-2">
+                    <i class="ph ph-plus-circle mr-2 text-indigo-600"></i> สร้างรายการจัดส่งใหม่
+                </h2>
+                <form id="form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">เลขพัสดุ *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+                            <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300 transition-colors" title="สุ่มเลขใหม่"><i class="ph ph-arrows-clockwise text-lg"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / รายละเอียด</label>
+                        <input type="text" id="custName" required class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div class="pt-2">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">URL หน้าคนส่งของ (Delivery App)</label>
+                        <input type="text" id="deliveryAppUrl" required 
+                            class="w-full px-3 py-1.5 text-sm rounded border border-slate-300 bg-slate-50 text-slate-500">
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex justify-center items-center">
+                        <span id="btnText">สร้างออเดอร์</span>
+                        <i id="btnSpinner" class="ph ph-spinner animate-spin hidden ml-2 text-xl"></i>
+                    </button>
+                </form>
+
+                <!-- ส่วนแสดง QR Code -->
+                <div id="qrBox" class="hidden mt-6 text-center border-t pt-4">
+                    <h3 class="font-bold text-green-600 mb-2">บันทึกข้อมูลสำเร็จ!</h3>
+                    <p class="text-xl font-bold text-slate-800 mb-4 tracking-wider" id="displayId"></p>
+                    <p class="text-sm text-slate-500 mb-4" id="displayCustName"></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- QR 1: สำหรับคนส่งของ -->
+                        <div class="border border-blue-200 p-4 rounded-xl bg-blue-50/50 flex flex-col items-center">
+                            <p class="text-sm font-bold text-blue-700 mb-2 flex items-center">
+                                <i class="ph ph-truck text-lg mr-1"></i> สำหรับพนักงาน
+                            </p>
+                            <canvas id="qrcodeDelivery" class="bg-white border p-2 rounded shadow-sm"></canvas>
+                            <p class="text-[10px] text-slate-500 mt-2">พนักงานสแกนเพื่อถ่ายรูปยืนยัน</p>
+                        </div>
+
+                        <!-- QR 2: สำหรับลูกค้า -->
+                        <div class="border border-indigo-200 p-4 rounded-xl bg-indigo-50/50 flex flex-col items-center">
+                            <p class="text-sm font-bold text-indigo-700 mb-2 flex items-center">
+                                <i class="ph ph-user text-lg mr-1"></i> สำหรับลูกค้า
+                            </p>
+                            <canvas id="qrcodeCustomer" class="bg-white border p-2 rounded shadow-sm"></canvas>
+                            <p class="text-[10px] text-slate-500 mt-2">ลูกค้าสแกนเพื่อเช็คสถานะ</p>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="printBtn" onclick="window.print()" class="mt-4 bg-slate-800 text-white text-sm px-4 py-3 rounded-lg hover:bg-slate-900 w-full font-bold transition-colors">
+                        <i class="ph ph-printer mr-1"></i> พริ้นต์ QR Code ทั้ง 2 แบบ
+                    </button>
+                </div>
+            </div>
+
+            <!-- ฝั่งแสดงตารางประวัติ (ดึงจากออนไลน์) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold"><i class="ph ph-cloud-arrow-down mr-2 text-indigo-600"></i> ข้อมูลออเดอร์ทั้งหมด (ออนไลน์)</h2>
+                    <button onclick="fetchOrders()" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline flex items-center bg-indigo-50 px-2 py-1.5 rounded-md transition-colors">
+                        <i class="ph ph-arrows-clockwise mr-1"></i> รีเฟรชข้อมูล
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-100 border-b">
+                                <th class="p-3">Order ID</th>
+                                <th class="p-3">ลูกค้า</th>
+                                <th class="p-3 text-center">สถานะ</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100">
+                            <tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ลิงก์แจ้งปัญหาด้านล่างสุด -->
+        <div class="max-w-6xl mx-auto p-4 mt-4 mb-8 text-center">
+            <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors">
+                <i class="ph ph-warning-circle mr-1 text-lg"></i> แจ้งการทำงานผิดพลาดและแนะนำการใช้งาน
             </a>
         </div>
-    </nav>
-
-    <div class="max-w-6xl mx-auto p-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- ฝั่งสร้างข้อมูล -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-1 h-fit">
-            <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-2">
-                <i class="ph ph-plus-circle mr-2 text-indigo-600"></i> สร้างรายการจัดส่งใหม่
-            </h2>
-            <form id="form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">เลขพัสดุ *</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="orderId" required placeholder="WAN-20260222-123456" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
-                        <button type="button" id="genId" class="bg-slate-200 px-3 rounded-lg hover:bg-slate-300 transition-colors" title="สุ่มเลขใหม่"><i class="ph ph-arrows-clockwise text-lg"></i></button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / รายละเอียด</label>
-                    <input type="text" id="custName" required class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-                <div class="pt-2">
-                    <label class="block text-xs font-medium text-slate-500 mb-1">URL หน้าคนส่งของ (Delivery App)</label>
-                    <input type="text" id="deliveryAppUrl" required 
-                        class="w-full px-3 py-1.5 text-sm rounded border border-slate-300 bg-slate-50 text-slate-500">
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex justify-center items-center">
-                    <span id="btnText">สร้างออเดอร์</span>
-                    <i id="btnSpinner" class="ph ph-spinner animate-spin hidden ml-2 text-xl"></i>
-                </button>
-            </form>
-
-            <!-- ส่วนแสดง QR Code -->
-            <div id="qrBox" class="hidden mt-6 text-center border-t pt-4">
-                <h3 class="font-bold text-green-600 mb-2">บันทึกข้อมูลสำเร็จ!</h3>
-                <p class="text-xl font-bold text-slate-800 mb-4 tracking-wider" id="displayId"></p>
-                <p class="text-sm text-slate-500 mb-4" id="displayCustName"></p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- QR 1: สำหรับคนส่งของ -->
-                    <div class="border border-blue-200 p-4 rounded-xl bg-blue-50/50 flex flex-col items-center">
-                        <p class="text-sm font-bold text-blue-700 mb-2 flex items-center">
-                            <i class="ph ph-truck text-lg mr-1"></i> สำหรับพนักงาน
-                        </p>
-                        <canvas id="qrcodeDelivery" class="bg-white border p-2 rounded shadow-sm"></canvas>
-                        <p class="text-[10px] text-slate-500 mt-2">พนักงานสแกนเพื่อถ่ายรูปยืนยัน</p>
-                    </div>
-
-                    <!-- QR 2: สำหรับลูกค้า -->
-                    <div class="border border-indigo-200 p-4 rounded-xl bg-indigo-50/50 flex flex-col items-center">
-                        <p class="text-sm font-bold text-indigo-700 mb-2 flex items-center">
-                            <i class="ph ph-user text-lg mr-1"></i> สำหรับลูกค้า
-                        </p>
-                        <canvas id="qrcodeCustomer" class="bg-white border p-2 rounded shadow-sm"></canvas>
-                        <p class="text-[10px] text-slate-500 mt-2">ลูกค้าสแกนเพื่อเช็คสถานะ</p>
-                    </div>
-                </div>
-                
-                <button type="button" id="printBtn" onclick="window.print()" class="mt-4 bg-slate-800 text-white text-sm px-4 py-3 rounded-lg hover:bg-slate-900 w-full font-bold transition-colors">
-                    <i class="ph ph-printer mr-1"></i> พริ้นต์ QR Code ทั้ง 2 แบบ
-                </button>
-            </div>
-        </div>
-
-        <!-- ฝั่งแสดงตารางประวัติ (ดึงจากออนไลน์) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 lg:col-span-2">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold"><i class="ph ph-cloud-arrow-down mr-2 text-indigo-600"></i> ข้อมูลออเดอร์ทั้งหมด (ออนไลน์)</h2>
-                <button onclick="fetchOrders()" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline flex items-center bg-indigo-50 px-2 py-1.5 rounded-md transition-colors">
-                    <i class="ph ph-arrows-clockwise mr-1"></i> รีเฟรชข้อมูล
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-slate-100 border-b">
-                            <th class="p-3">Order ID</th>
-                            <th class="p-3">ลูกค้า</th>
-                            <th class="p-3 text-center">สถานะ</th>
-                            <th class="p-3 text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100">
-                        <tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ลิงก์แจ้งปัญหาด้านล่างสุด -->
-    <div class="max-w-6xl mx-auto p-4 mt-4 mb-8 text-center">
-        <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors">
-            <i class="ph ph-warning-circle mr-1 text-lg"></i> แจ้งการทำงานผิดพลาดและแนะนำการใช้งาน
-        </a>
-    </div>
+    </div> <!-- ปิด Desktop App Wrapper -->
 
     <!-- Loading Overlay กลางจอ -->
     <div id="globalLoading" class="hidden fixed inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
@@ -148,11 +189,21 @@
 
         // ตั้งค่า URL เริ่มต้น
         window.addEventListener('DOMContentLoaded', () => {
+            // ถัาหน้าจอเล็กกว่า 768px (มือถือ) ให้หยุดทำงานเลย ไม่โหลดข้อมูลให้เปลืองเน็ต
+            if (window.innerWidth < 768) return;
+
             const currentOrigin = window.location.origin; 
             const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
             document.getElementById('deliveryAppUrl').value = `${currentOrigin}${currentPath}/delivery-app.html`;
             
             fetchOrders();
+        });
+
+        // รีโหลดเมื่อผู้ใช้หมุนหน้าจอกลับมาเป็นแนวนอน
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && document.getElementById('tableBody').children.length <= 1) {
+                fetchOrders();
+            }
         });
 
         // สุ่มเลข Order
@@ -168,6 +219,8 @@
 
         // ดึงข้อมูลออเดอร์ทั้งหมด
         async function fetchOrders() {
+            if (window.innerWidth < 768) return; // ป้องกันการดึงข้อมูลบนมือถือ
+
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-500"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>กำลังซิงค์ข้อมูล...</td></tr>';
             
@@ -219,12 +272,12 @@
                     ? `<button onclick="viewProof('${o.id}')" class="text-green-600 bg-green-50 px-2 py-1.5 rounded-lg hover:bg-green-100 hover:text-green-700 transition shadow-sm border border-green-100" title="ดูรูปภาพหลักฐาน"><i class="ph ph-image text-lg"></i></button>` 
                     : ``;
 
-                // เปลี่ยนไอคอนปุ่มยกเลิกเป็นกากบาทสีส้ม
+                // ปุ่มยกเลิก
                 const cancelBtnHtml = canCancel 
                     ? `<button onclick="cancelOrder('${o.id}')" class="text-orange-500 hover:text-white hover:bg-orange-500 bg-orange-50 px-2 py-1.5 rounded-lg transition border border-orange-100" title="ยกเลิกออเดอร์ (เปลี่ยนสถานะ)"><i class="ph ph-x-circle text-lg"></i></button>`
                     : `<button disabled class="text-slate-300 bg-slate-50 px-2 py-1.5 rounded-lg cursor-not-allowed border border-slate-100"><i class="ph ph-x-circle text-lg"></i></button>`;
 
-                // เพิ่มปุ่มลบถาวร (ถังขยะสีแดง)
+                // ปุ่มลบถาวร
                 const deleteBtnHtml = `<button onclick="deleteOrder('${o.id}')" class="text-red-600 hover:text-white hover:bg-red-600 bg-red-50 px-2 py-1.5 rounded-lg transition shadow-sm border border-red-100" title="ลบออเดอร์ถาวร (ลบออกจาก Sheet)"><i class="ph ph-trash text-lg"></i></button>`;
 
                 tbody.innerHTML += `
@@ -245,7 +298,7 @@
             });
         }
 
-        // ฟังก์ชันดึงลิงก์และเปิดแท็บใหม่เพื่อดูรูปหลักฐาน (สำหรับแอดมิน)
+        // ฟังก์ชันดึงลิงก์และเปิดแท็บใหม่เพื่อดูรูปหลักฐาน
         async function viewProof(orderId) {
             const loading = document.getElementById('globalLoading');
             document.getElementById('globalLoadingText').textContent = "กำลังดึงข้อมูลรูปภาพ...";
@@ -273,12 +326,10 @@
                         directUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
                     }
 
-                    // แจ้ง Note ให้แอดมินทราบ (ถ้ามี) ก่อนเปิดรูป
                     if (note) {
                         alert(`หมายเหตุการส่ง:\n${note}`);
                     }
 
-                    // เปิดรูปในแท็บใหม่
                     window.open(directUrl, '_blank');
 
                 } else {
@@ -313,7 +364,7 @@
             }
         }
 
-        // ลบออเดอร์ถาวร (ลบจาก Sheet)
+        // ลบออเดอร์ถาวร
         async function deleteOrder(orderId) {
             if(!confirm(`⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ออเดอร์ ${orderId} ออกจากระบบถาวร?\n\nข้อมูลแถวนี้จะถูกลบออกจาก Google Sheets ทันทีและไม่สามารถกู้คืนได้!`)) return;
 
