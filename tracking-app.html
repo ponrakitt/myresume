@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* เพิ่ม CSS อนิเมชั่นสำหรับการแสดงผล */
+        /* CSS อนิเมชั่นสำหรับการแสดงผล */
         @keyframes slideUpFade {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -23,6 +23,28 @@
         }
         .animate-pop-in {
             animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* CSS สำหรับหลอดแสงวิ่งระหว่างจัดส่ง */
+        @keyframes slideDownLaser {
+            0% { transform: translateY(-40px); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(120px); opacity: 0; }
+        }
+        .animate-laser {
+            animation: slideDownLaser 1.5s infinite linear;
+        }
+
+        /* CSS อนิเมชั่นลูปสำหรับสถานะยกเลิก (Pulse Warning) */
+        @keyframes pulseRedWarning {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); transform: scale(1.15); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+        }
+        .animate-cancelled-loop {
+            /* เด้ง Pop-in ขึ้นมาก่อน 0.4 วิ แล้วค่อยเริ่มกระพริบ Pulse วนลูป */
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseRedWarning 2s 0.4s infinite;
         }
     </style>
 </head>
@@ -51,19 +73,20 @@
                 <div class="h-8 bg-slate-300 rounded w-48 mb-3"></div>
                 <div class="h-4 bg-slate-200 rounded w-32 mt-1"></div>
             </div>
-            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+            <div class="relative pl-12 space-y-8">
+                <div class="absolute left-[14px] top-4 bottom-4 w-1 bg-slate-200 rounded-full"></div>
                 <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-300 ring-4 ring-white"></div>
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-300 ring-4 ring-white z-10"></div>
                     <div class="h-5 bg-slate-300 rounded w-40 mb-2 mt-2"></div>
                     <div class="h-3 bg-slate-200 rounded w-24"></div>
                 </div>
                 <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white"></div>
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div>
                     <div class="h-5 bg-slate-200 rounded w-48 mb-2 mt-2"></div>
                     <div class="h-3 bg-slate-200 rounded w-24"></div>
                 </div>
                 <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white"></div>
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div>
                     <div class="h-5 bg-slate-200 rounded w-32 mb-2 mt-2"></div>
                     <div class="h-3 bg-slate-200 rounded w-24"></div>
                 </div>
@@ -83,11 +106,16 @@
             </div>
 
             <!-- Stepper / Timeline -->
-            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+            <div class="relative pl-12 space-y-8">
                 
                 <!-- Step 1: Pending -->
                 <div class="relative" id="step1Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm animate-pop-in" id="icon1">
+                    <!-- พื้นหลังเส้นเทา -->
+                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine1"></div>
+                    <!-- หลอดวิ่ง 1 -->
+                    <div id="activeLine1" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;"></div>
+
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm z-10 animate-pop-in" id="icon1">
                         <i class="ph ph-receipt text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-800 pt-0.5" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
@@ -96,7 +124,15 @@
                 
                 <!-- Step 2: Shipping -->
                 <div class="relative" id="step2Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500" id="icon2">
+                    <!-- พื้นหลังเส้นเทา -->
+                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine2"></div>
+                    <!-- หลอดวิ่ง 2 -->
+                    <div id="activeLine2" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;">
+                        <!-- เอฟเฟกต์แสงวิ่ง (Laser) จะโผล่เฉพาะตอนกำลังจัดส่ง -->
+                        <div id="glowLine2" class="hidden absolute inset-0 w-full h-[30px] bg-gradient-to-b from-transparent via-white to-transparent opacity-80 animate-laser"></div>
+                    </div>
+
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon2">
                         <i class="ph ph-truck text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
@@ -105,7 +141,7 @@
                 
                 <!-- Step 3: Completed -->
                 <div class="relative" id="step3Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500" id="icon3">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon3">
                         <i class="ph ph-check-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
@@ -123,8 +159,8 @@
                 </div>
 
                 <!-- Step 4: Cancelled (แสดงเฉพาะถ้ายกเลิก) -->
-                <div class="relative hidden" id="stepCancelledContainer">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm animate-pop-in">
+                <div class="relative hidden animate-slide-up" id="stepCancelledContainer" style="animation-delay: 0.2s;">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white z-10 animate-cancelled-loop" id="iconCancelled">
                         <i class="ph ph-x-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-red-600 pt-0.5" data-i18n="step_cancelled_title">ยกเลิกออเดอร์</h3>
@@ -139,7 +175,7 @@
                 </div>
                 <h4 class="font-bold text-indigo-800 mb-1" data-i18n="survey_title">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
                 <p id="surveyText" class="text-xs text-indigo-600 mb-4">เปิดรับความคิดเห็นถึงวันที่ --/--/----</p>
-                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto">
+                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1">
                     <i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">ประเมินการจัดส่ง</span>
                 </a>
             </div>
@@ -360,7 +396,6 @@
                 const response = await fetch(`${GAS_URL}?orderId=${id}`);
                 const result = await response.json();
 
-                // ปิด Skeleton Loading
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
@@ -385,7 +420,7 @@
         function renderOrderData(data) {
             const t = translations[currentLang];
             
-            // โชว์กล่องผลลัพธ์พร้อมอนิเมชั่น Slide Up
+            // โชว์กล่องผลลัพธ์
             const resultBox = document.getElementById('resultBox');
             resultBox.classList.remove('hidden');
             resultBox.classList.add('animate-slide-up');
@@ -400,17 +435,28 @@
             document.getElementById('proofBox').classList.add('hidden');
             document.getElementById('surveyBox').classList.add('hidden');
             
-            // รีเซ็ตสถานะและอนิเมชั่นของไอคอน
+            // ----------------- รีเซ็ตสถานะและอนิเมชั่น -----------------
             ['icon2', 'icon3'].forEach(id => {
                 const el = document.getElementById(id);
-                el.className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500';
-                // Trigger reflow เพื่อให้ Animation เล่นซ้ำ (ถ้ามี)
-                void el.offsetWidth;
+                el.className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10';
+                void el.offsetWidth; // Trigger reflow
             });
             ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 pt-0.5 transition-colors duration-500');
             
             document.getElementById('time2').textContent = t.waiting_update;
             document.getElementById('time3').textContent = t.waiting_update;
+
+            const line1 = document.getElementById('activeLine1');
+            const line2 = document.getElementById('activeLine2');
+            const glow2 = document.getElementById('glowLine2');
+            
+            line1.style.height = '0%';
+            line1.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
+            line2.style.height = '0%';
+            line2.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
+            glow2.classList.add('hidden');
+
+            // --------------------------------------------------------
 
             // กรณีถูกยกเลิก
             if (data.status === 'cancelled') {
@@ -420,32 +466,60 @@
                 return;
             }
 
-            // สถานะ "กำลังจัดส่ง" หรือ "จัดส่งสำเร็จ"
-            if (data.status === 'shipping' || data.status === 'completed') {
-                const icon2 = document.getElementById('icon2');
-                icon2.classList.replace('bg-slate-200', 'bg-blue-500');
-                icon2.classList.replace('text-slate-400', 'text-white');
-                icon2.classList.add('animate-pop-in');
+            // สถานะ "กำลังจัดส่ง"
+            if (data.status === 'shipping') {
+                // หลอดที่ 1 วิ่งเต็ม
+                setTimeout(() => { line1.style.height = '100%'; }, 200);
                 
-                document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
-                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
-                document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+                // หลอดที่ 2 วิ่งขึ้นมาครึ่งทางและแสดงแสงเลเซอร์
+                setTimeout(() => {
+                    const icon2 = document.getElementById('icon2');
+                    icon2.classList.replace('bg-slate-200', 'bg-blue-500');
+                    icon2.classList.replace('text-slate-400', 'text-white');
+                    icon2.classList.add('animate-pop-in');
+                    
+                    document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
+                    document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                    document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+                    
+                    line2.style.height = '50%';
+                    glow2.classList.remove('hidden');
+                }, 800); // ดีเลย์ให้หลอด 1 วิ่งเสร็จก่อน
             }
 
             // สถานะ "จัดส่งสำเร็จ"
             if (data.status === 'completed') {
-                const icon3 = document.getElementById('icon3');
-                icon3.classList.replace('bg-slate-200', 'bg-green-500');
-                icon3.classList.replace('text-slate-400', 'text-white');
-                icon3.classList.add('animate-pop-in');
-                
-                document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
-                document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
-                document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+                // อัปเดตไอคอน 2
+                const icon2 = document.getElementById('icon2');
+                icon2.classList.replace('bg-slate-200', 'bg-green-500');
+                icon2.classList.replace('text-slate-400', 'text-white');
+                document.getElementById('text2').classList.replace('text-slate-400', 'text-green-600');
+                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                document.getElementById('time2').classList.replace('text-slate-400', 'text-green-500');
 
-                document.getElementById('proofBox').classList.remove('hidden');
-                document.getElementById('showNote').textContent = data.note || t.no_note;
-                
+                // เปลี่ยนหลอดวิ่งเป็นสีเขียวและเต็มหลอด
+                setTimeout(() => { 
+                    line1.classList.replace('bg-blue-500', 'bg-green-500');
+                    line1.style.height = '100%'; 
+                }, 100);
+
+                setTimeout(() => {
+                    line2.classList.replace('bg-blue-500', 'bg-green-500');
+                    line2.style.height = '100%';
+                    
+                    const icon3 = document.getElementById('icon3');
+                    icon3.classList.replace('bg-slate-200', 'bg-green-500');
+                    icon3.classList.replace('text-slate-400', 'text-white');
+                    icon3.classList.add('animate-pop-in');
+                    
+                    document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
+                    document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
+                    document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+
+                    document.getElementById('proofBox').classList.remove('hidden');
+                    document.getElementById('showNote').textContent = data.note || t.no_note;
+                }, 600); // หน่วงเวลาให้ดูเป็นลำดับขั้น
+
                 let directUrl = data.imageUrl;
                 if (directUrl) {
                     const driveMatch = directUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
