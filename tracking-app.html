@@ -6,11 +6,37 @@
     <title>ตรวจสอบสถานะพัสดุ | Order Tracking</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUpFade 0.5s ease-out forwards; }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideDownLaser {
+            0% { transform: translateY(-40px); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(120px); opacity: 0; }
+        }
+        .animate-laser { animation: slideDownLaser 1.5s infinite linear; }
+        @keyframes pulseRedWarning {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); transform: scale(1.15); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+        }
+        .animate-cancelled-loop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseRedWarning 2s 0.4s infinite; }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
     <header class="bg-white shadow-sm p-4 relative flex items-center justify-center">
         <h1 class="text-xl font-bold text-indigo-700" data-i18n="title_main">ตรวจสอบสถานะสินค้า</h1>
-        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500">
+        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
             <option value="th">🇹🇭 ไทย</option>
             <option value="en">🇬🇧 English</option>
             <option value="zh">🇨🇳 中文</option>
@@ -19,14 +45,23 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 mt-4 relative flex-1 w-full">
-        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100">
-            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
-            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors"><i class="ph ph-magnifying-glass text-lg"></i></button>
+        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100 relative z-10">
+            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700 transition-shadow">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors active:scale-95 transform"><i class="ph ph-magnifying-glass text-lg"></i></button>
         </form>
 
-        <div id="loading" class="hidden text-center py-12">
-            <i class="ph ph-spinner animate-spin text-5xl text-indigo-500 mb-3 inline-block"></i>
-            <p class="text-slate-500 font-medium" data-i18n="loading_text">กำลังค้นหาข้อมูลจากระบบ...</p>
+        <div id="loading" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full animate-pulse">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <div class="h-4 bg-slate-200 rounded w-24 mb-3"></div>
+                <div class="h-8 bg-slate-300 rounded w-48 mb-3"></div>
+                <div class="h-4 bg-slate-200 rounded w-32 mt-1"></div>
+            </div>
+            <div class="relative pl-12 space-y-8">
+                <div class="absolute left-[14px] top-4 bottom-4 w-1 bg-slate-200 rounded-full"></div>
+                <div class="relative"><div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-300 ring-4 ring-white z-10"></div><div class="h-5 bg-slate-300 rounded w-40 mb-2 mt-2"></div></div>
+                <div class="relative"><div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div><div class="h-5 bg-slate-200 rounded w-48 mb-2 mt-2"></div></div>
+                <div class="relative"><div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div><div class="h-5 bg-slate-200 rounded w-32 mb-2 mt-2"></div></div>
+            </div>
         </div>
 
         <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
@@ -34,37 +69,60 @@
                 <p class="text-sm text-slate-500 mb-1" data-i18n="tracking_no_label">เลขพัสดุ</p>
                 <h2 id="showId" class="text-2xl font-bold tracking-wider text-indigo-700">WAN---</h2>
                 <p class="text-sm text-slate-600 mt-1 flex items-center">
-                    <i class="ph ph-user mr-1"></i>
+                    <i class="ph ph-user mr-1"></i> 
                     <span data-i18n="customer_name_label" class="mr-1">ชื่อลูกค้า:</span>
                     <span id="nameSpan" class="font-medium text-slate-800">ชื่อลูกค้า</span>
                 </p>
             </div>
 
-            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
+            <!-- กล่องให้ลูกค้ากรอกอีเมลแจ้งเตือน (ปิดปรับปรุงชั่วคราว) -->
+            <div id="emailNotificationBox" class="hidden mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-slide-up" style="animation-delay: 0.1s;">
+                <h4 class="font-bold text-slate-500 mb-2 text-sm flex items-center"><i class="ph ph-bell-ringing mr-1.5 text-lg"></i> รับการแจ้งเตือนพัสดุผ่านอีเมล</h4>
+                <div id="emailInputGroup" class="flex gap-2 opacity-70">
+                    <input type="email" id="customerEmailInput" disabled placeholder="ปิดปรับปรุงระบบชั่วคราว" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed outline-none">
+                    <button type="button" disabled id="regEmailBtn" class="bg-slate-300 text-slate-500 px-4 rounded-lg cursor-not-allowed text-sm font-bold whitespace-nowrap flex items-center">
+                        <span id="regBtnText">ติดตาม</span>
+                    </button>
+                </div>
+                <p id="emailStatusMsg" class="hidden text-xs mt-2 font-medium flex items-center"></p>
+            </div>
+
+            <div class="relative pl-12 space-y-8">
+                <!-- Step 1: Pending -->
                 <div class="relative" id="step1Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm" id="icon1">
+                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine1"></div>
+                    <div id="activeLine1" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;"></div>
+
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm z-10 animate-pop-in" id="icon1">
                         <i class="ph ph-receipt text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-800 pt-0.5" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
                     <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
-               
+                
+                <!-- Step 2: Shipping -->
                 <div class="relative" id="step2Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon2">
+                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine2"></div>
+                    <div id="activeLine2" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;">
+                        <div id="glowLine2" class="hidden absolute inset-0 w-full h-[30px] bg-gradient-to-b from-transparent via-white to-transparent opacity-80 animate-laser"></div>
+                    </div>
+
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon2">
                         <i class="ph ph-truck text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2" data-i18n="waiting_update">รอการอัปเดต</p>
                 </div>
-               
+                
+                <!-- Step 3: Completed -->
                 <div class="relative" id="step3Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon3">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon3">
                         <i class="ph ph-check-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3" data-i18n="waiting_update">รอการอัปเดต</p>
-                   
-                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    
+                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100 animate-slide-up" style="animation-delay: 0.2s;">
                         <p class="text-xs font-bold text-slate-700 mb-1">
                             <span data-i18n="note_label">หมายเหตุ:</span> <span id="showNote" class="font-normal"></span>
                         </p>
@@ -74,8 +132,8 @@
                     </div>
                 </div>
 
-                <div class="relative hidden" id="stepCancelledContainer">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm">
+                <div class="relative hidden animate-slide-up" id="stepCancelledContainer" style="animation-delay: 0.2s;">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white z-10 animate-cancelled-loop" id="iconCancelled">
                         <i class="ph ph-x-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-red-600 pt-0.5" data-i18n="step_cancelled_title">ยกเลิกออเดอร์</h3>
@@ -83,35 +141,20 @@
                 </div>
             </div>
 
-            <!-- กล่องลงทะเบียนรับการแจ้งเตือนทางอีเมล -->
-            <div id="emailSubscribeBox" class="hidden mt-8 pt-6 border-t border-slate-100">
-                <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-                    <h4 class="font-bold text-indigo-800 mb-1 text-sm flex items-center"><i class="ph ph-bell-ringing mr-1.5 text-lg"></i> รับการแจ้งเตือนทางอีเมล</h4>
-                    <p class="text-xs text-indigo-600 mb-3">ระบบจะส่งอีเมลแจ้งเตือนเมื่อสถานะพัสดุมีการเปลี่ยนแปลง</p>
-                    <form id="emailForm" class="flex gap-2">
-                        <input type="email" id="customerEmail" required placeholder="กรอกอีเมลของคุณ" class="w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <button type="submit" id="emailSubmitBtn" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-bold whitespace-nowrap">
-                            รับแจ้งเตือน
-                        </button>
-                    </form>
-                    <p id="emailSuccessMsg" class="hidden text-sm text-green-600 font-bold mt-2 flex items-center"><i class="ph ph-check-circle mr-1"></i> ลงทะเบียนรับแจ้งเตือนสำเร็จแล้ว</p>
-                </div>
-            </div>
-
-            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl">
+            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl animate-pop-in" style="animation-delay: 0.6s;">
                     <i class="ph-fill ph-star"></i>
                 </div>
                 <h4 class="font-bold text-indigo-800 mb-1" data-i18n="survey_title">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
                 <p id="surveyText" class="text-xs text-indigo-600 mb-4">เปิดรับความคิดเห็นถึงวันที่ --/--/----</p>
-                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto">
+                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1">
                     <i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">ประเมินการจัดส่ง</span>
                 </a>
             </div>
         </div>
 
-        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100">
-            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400"></i>
+        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100 animate-slide-up">
+            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400 animate-pop-in"></i>
             <h3 class="font-bold text-lg mb-1" data-i18n="not_found_title">ไม่พบข้อมูล</h3>
             <p id="errorMsg" class="text-slate-600 text-sm" data-i18n="not_found_desc">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
         </div>
@@ -128,145 +171,29 @@
             <span data-i18n="footer_note">หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน</span>
             <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium mx-1">
                 www.wanflorist.net
-            </a>
+            </a> 
             <span data-i18n="footer_only">เท่านั้น</span>
         </p>
     </footer>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
-       
+        
         const translations = {
-            th: {
-                title_main: "ตรวจสอบสถานะสินค้า",
-                placeholder_search: "กรอกเลขพัสดุ WAN-...",
-                loading_text: "กำลังค้นหาข้อมูลจากระบบ...",
-                tracking_no_label: "เลขพัสดุ",
-                customer_name_label: "ชื่อลูกค้า:",
-                step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)",
-                step2_title: "สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)",
-                step3_title: "จัดส่งสำเร็จ",
-                step_cancelled_title: "ยกเลิกออเดอร์",
-                step_cancelled_desc: "ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถจัดส่งได้",
-                waiting_update: "รอการอัปเดต",
-                note_label: "หมายเหตุ:",
-                no_note: "-ไม่มี-",
-                view_proof: "ดูรูปภาพหลักฐานการจัดส่ง",
-                survey_title: "ความพึงพอใจของคุณสำคัญสำหรับเรา",
-                survey_btn_active: "ประเมินการจัดส่ง",
-                survey_btn_expired: "หมดเวลาประเมิน",
-                survey_expired_text: "ขออภัย หมดเวลาการตอบแบบสอบถามสำหรับออเดอร์นี้แล้ว",
-                survey_open_until: "เปิดรับความคิดเห็นถึงวันที่",
-                not_found_title: "ไม่พบข้อมูล",
-                not_found_desc: "ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน",
-                report_issue: "แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน",
-                footer_note: "หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน",
-                footer_only: "เท่านั้น",
-                status_processing: "กำลังดำเนินการ",
-                status_delivered: "พัสดุถึงมือผู้รับแล้ว",
-                error_network: "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย",
-                locale_date: "th-TH"
-            },
-            en: {
-                title_main: "Track Your Order",
-                placeholder_search: "Enter tracking no. WAN-...",
-                loading_text: "Searching system data...",
-                tracking_no_label: "Tracking No.",
-                customer_name_label: "Customer Name:",
-                step1_title: "Order Received (Preparing)",
-                step2_title: "Dispatched (Out for delivery)",
-                step3_title: "Delivered Successfully",
-                step_cancelled_title: "Order Cancelled",
-                step_cancelled_desc: "This order has been cancelled and cannot be delivered.",
-                waiting_update: "Waiting for update",
-                note_label: "Note:",
-                no_note: "-None-",
-                view_proof: "View delivery proof",
-                survey_title: "Your satisfaction is important to us",
-                survey_btn_active: "Rate Delivery",
-                survey_btn_expired: "Evaluation Expired",
-                survey_expired_text: "Sorry, the feedback period for this order has expired.",
-                survey_open_until: "Feedback open until",
-                not_found_title: "Not Found",
-                not_found_desc: "Please check the tracking number or contact admin.",
-                report_issue: "Report Issue / Contact Admin",
-                footer_note: "Note: This system is exclusively for",
-                footer_only: "only.",
-                status_processing: "Processing",
-                status_delivered: "Package delivered to recipient",
-                error_network: "Network connection error",
-                locale_date: "en-GB"
-            },
-            zh: {
-                title_main: "订单状态查询",
-                placeholder_search: "输入快递单号 WAN-...",
-                loading_text: "正在查询系统数据...",
-                tracking_no_label: "快递单号",
-                customer_name_label: "客户姓名:",
-                step1_title: "收到订单 (准备中)",
-                step2_title: "已发货 (派送中)",
-                step3_title: "已签收",
-                step_cancelled_title: "订单已取消",
-                step_cancelled_desc: "该订单已被取消，无法进行配送。",
-                waiting_update: "等待更新",
-                note_label: "备注:",
-                no_note: "-无-",
-                view_proof: "查看送达证明",
-                survey_title: "您的满意对我们很重要",
-                survey_btn_active: "评价配送",
-                survey_btn_expired: "评价已过期",
-                survey_expired_text: "抱歉，该订单的评价时间已过期。",
-                survey_open_until: "评价开放至",
-                not_found_title: "未找到数据",
-                not_found_desc: "请再次检查快递单号或联系管理员。",
-                report_issue: "报告问题 / 联系管理员",
-                footer_note: "注意: 本系统仅供",
-                footer_only: "使用",
-                status_processing: "处理中",
-                status_delivered: "包裹已送达收件人",
-                error_network: "网络连接错误",
-                locale_date: "zh-CN"
-            },
-            ja: {
-                title_main: "配送状況の確認",
-                placeholder_search: "追跡番号を入力 WAN-...",
-                loading_text: "システムデータを検索中...",
-                tracking_no_label: "追跡番号",
-                customer_name_label: "お客様名:",
-                step1_title: "注文受付 (準備中)",
-                step2_title: "発送済み (配達中)",
-                step3_title: "配達完了",
-                step_cancelled_title: "注文キャンセル",
-                step_cancelled_desc: "この注文はキャンセルされたため、配達できません。",
-                waiting_update: "更新待ち",
-                note_label: "備考:",
-                no_note: "-なし-",
-                view_proof: "配達証明写真を見る",
-                survey_title: "お客様の満足は私たちにとって重要です",
-                survey_btn_active: "配達を評価する",
-                survey_btn_expired: "評価の期限切れ",
-                survey_expired_text: "申し訳ありませんが、この注文の評価期間は終了しました。",
-                survey_open_until: "評価受付期限:",
-                not_found_title: "データが見つかりません",
-                not_found_desc: "追跡番号をもう一度確認するか、管理者にお問い合わせください。",
-                report_issue: "問題の報告 / 管理者に連絡",
-                footer_note: "注意: このシステムは",
-                footer_only: "専用です",
-                status_processing: "処理中",
-                status_delivered: "荷物は受取人に配達されました",
-                error_network: "ネットワーク接続エラー",
-                locale_date: "ja-JP"
-            }
+            th: { title_main: "ตรวจสอบสถานะสินค้า", placeholder_search: "กรอกเลขพัสดุ WAN-...", tracking_no_label: "เลขพัสดุ", customer_name_label: "ชื่อลูกค้า:", step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)", step2_title: "สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)", step3_title: "จัดส่งสำเร็จ", step_cancelled_title: "ยกเลิกออเดอร์", step_cancelled_desc: "ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถจัดส่งได้", waiting_update: "รอการอัปเดต", note_label: "หมายเหตุ:", no_note: "-ไม่มี-", view_proof: "ดูรูปภาพหลักฐานการจัดส่ง", survey_title: "ความพึงพอใจของคุณสำคัญสำหรับเรา", survey_btn_active: "ประเมินการจัดส่ง", survey_btn_expired: "หมดเวลาประเมิน", survey_expired_text: "ขออภัย หมดเวลาการตอบแบบสอบถามสำหรับออเดอร์นี้แล้ว", survey_open_until: "เปิดรับความคิดเห็นถึงวันที่", not_found_title: "ไม่พบข้อมูล", not_found_desc: "ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน", report_issue: "แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน", footer_note: "หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน", footer_only: "เท่านั้น", status_processing: "กำลังดำเนินการ", status_delivered: "พัสดุถึงมือผู้รับแล้ว", error_network: "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย", locale_date: "th-TH" },
+            en: { title_main: "Track Your Order", placeholder_search: "Enter tracking no. WAN-...", tracking_no_label: "Tracking No.", customer_name_label: "Customer Name:", step1_title: "Order Received (Preparing)", step2_title: "Dispatched (Out for delivery)", step3_title: "Delivered Successfully", step_cancelled_title: "Order Cancelled", step_cancelled_desc: "This order has been cancelled and cannot be delivered.", waiting_update: "Waiting for update", note_label: "Note:", no_note: "-None-", view_proof: "View delivery proof", survey_title: "Your satisfaction is important to us", survey_btn_active: "Rate Delivery", survey_btn_expired: "Evaluation Expired", survey_expired_text: "Sorry, the feedback period for this order has expired.", survey_open_until: "Feedback open until", not_found_title: "Not Found", not_found_desc: "Please check the tracking number or contact admin.", report_issue: "Report Issue / Contact Admin", footer_note: "Note: This system is exclusively for", footer_only: "only.", status_processing: "Processing", status_delivered: "Package delivered to recipient", error_network: "Network connection error", locale_date: "en-GB" },
+            zh: { title_main: "订单状态查询", placeholder_search: "输入快递单号 WAN-...", tracking_no_label: "快递单号", customer_name_label: "客户姓名:", step1_title: "收到订单 (准备中)", step2_title: "已发货 (派送中)", step3_title: "已签收", step_cancelled_title: "订单已取消", step_cancelled_desc: "该订单已被取消，无法进行配送。", waiting_update: "等待更新", note_label: "备注:", no_note: "-无-", view_proof: "查看送达证明", survey_title: "您的满意对我们很重要", survey_btn_active: "评价配送", survey_btn_expired: "评价已过期", survey_expired_text: "抱歉，该订单的评价时间已过期。", survey_open_until: "评价开放至", not_found_title: "未找到数据", not_found_desc: "请再次检查快递单号或联系管理员。", report_issue: "报告问题 / 联系管理员", footer_note: "注意: 本系统仅供", footer_only: "使用", status_processing: "处理中", status_delivered: "包裹已送达收件人", error_network: "网络连接错误", locale_date: "zh-CN" },
+            ja: { title_main: "配送状況の確認", placeholder_search: "追跡番号を入力 WAN-...", tracking_no_label: "追跡番号", customer_name_label: "お客様名:", step1_title: "注文受付 (準備中)", step2_title: "発送済み (配達中)", step3_title: "配達完了", step_cancelled_title: "注文キャンセル", step_cancelled_desc: "この注文はキャンセルされたため、配達できません。", waiting_update: "更新待ち", note_label: "備考:", no_note: "-なし-", view_proof: "配達証明写真を見る", survey_title: "お客様の満足は私たちにとって重要です", survey_btn_active: "配達を評価する", survey_btn_expired: "評価の期限切れ", survey_expired_text: "申し訳ありませんが、この注文の評価期間は終了しました。", survey_open_until: "評価受付期限:", not_found_title: "データが見つかりません", not_found_desc: "追跡番号をもう一度確認するか、管理者にお問い合わせください。", report_issue: "問題の報告 / 管理者に連絡", footer_note: "注意: このシステムは", footer_only: "専用です", status_processing: "処理中", status_delivered: "荷物は受取人に配達されました", error_network: "ネットワーク接続エラー", locale_date: "ja-JP" }
         };
 
         let currentLang = localStorage.getItem('appLang') || 'th';
-        let currentOrderData = null;
+        let currentOrderData = null; 
 
         function applyLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('appLang', lang);
             document.getElementById('langSelect').value = lang;
-            document.documentElement.lang = lang;
+            document.documentElement.lang = lang; 
 
             const t = translations[lang];
 
@@ -290,7 +217,7 @@
         });
 
         window.onload = () => {
-            applyLanguage(currentLang);
+            applyLanguage(currentLang); 
             const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (urlOrderId) {
                 document.getElementById('searchId').value = urlOrderId;
@@ -303,39 +230,6 @@
             fetchData(document.getElementById('searchId').value.toUpperCase().trim());
         };
 
-        // ส่งอีเมลลงทะเบียน
-        document.getElementById('emailForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const emailInput = document.getElementById('customerEmail');
-            const submitBtn = document.getElementById('emailSubmitBtn');
-            const orderId = document.getElementById('showId').textContent;
-           
-            const email = emailInput.value.trim();
-            if(!email) return;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = "กำลังลงทะเบียน...";
-
-            try {
-                const payload = { action: "subscribeEmail", orderId: orderId, email: email };
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    document.getElementById('emailForm').classList.add('hidden');
-                    document.getElementById('emailSuccessMsg').classList.remove('hidden');
-                } else {
-                    alert('เกิดข้อผิดพลาด: ' + result.message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "รับแจ้งเตือน";
-                }
-            } catch (error) {
-                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
-                submitBtn.disabled = false;
-                submitBtn.textContent = "รับแจ้งเตือน";
-            }
-        };
-
         function formatDate(dateString, lang) {
             if (!dateString) return '';
             const d = new Date(dateString);
@@ -345,10 +239,13 @@
 
         async function fetchData(id) {
             if (!id) return;
-           
+            
             const t = translations[currentLang];
+            
             document.getElementById('resultBox').classList.add('hidden');
+            document.getElementById('resultBox').classList.remove('animate-slide-up');
             document.getElementById('notFound').classList.add('hidden');
+            document.getElementById('notFound').classList.remove('animate-slide-up');
             document.getElementById('loading').classList.remove('hidden');
 
             try {
@@ -358,11 +255,12 @@
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
-                    currentOrderData = result.data;
+                    currentOrderData = result.data; 
                     renderOrderData(currentOrderData);
                 } else {
                     currentOrderData = null;
                     document.getElementById('notFound').classList.remove('hidden');
+                    document.getElementById('notFound').classList.add('animate-slide-up');
                     document.getElementById('errorMsg').textContent = result.message || t.not_found_desc;
                 }
             } catch (error) {
@@ -370,14 +268,18 @@
                 currentOrderData = null;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('notFound').classList.remove('hidden');
+                document.getElementById('notFound').classList.add('animate-slide-up');
                 document.getElementById('errorMsg').textContent = translations[currentLang].error_network;
             }
         }
 
         function renderOrderData(data) {
             const t = translations[currentLang];
-           
-            document.getElementById('resultBox').classList.remove('hidden');
+            
+            const resultBox = document.getElementById('resultBox');
+            resultBox.classList.remove('hidden');
+            resultBox.classList.add('animate-slide-up');
+            
             document.getElementById('showId').textContent = data.id;
             document.getElementById('nameSpan').textContent = data.name;
 
@@ -387,35 +289,57 @@
             document.getElementById('stepCancelledContainer').classList.add('hidden');
             document.getElementById('proofBox').classList.add('hidden');
             document.getElementById('surveyBox').classList.add('hidden');
-           
-            // จัดการระบบกล่องอีเมล
-            const emailBox = document.getElementById('emailSubscribeBox');
-            const emailForm = document.getElementById('emailForm');
-            const emailSuccess = document.getElementById('emailSuccessMsg');
-           
-            emailBox.classList.add('hidden'); // ซ่อนไว้ก่อน
-           
-            // ถ้าสถานะเป็น Pending หรือ Shipping ถึงจะแสดงกล่องกรอกอีเมลได้
-            if (data.status === 'pending' || data.status === 'shipping') {
-                if (!data.emailStatus || data.emailStatus === "") {
-                    // ยังไม่เคยลงทะเบียน -> โชว์ฟอร์ม
-                    emailBox.classList.remove('hidden');
-                    emailForm.classList.remove('hidden');
-                    emailSuccess.classList.add('hidden');
-                } else if (data.emailStatus.includes('@')) {
-                    // ลงทะเบียนแล้ว -> โชว์ข้อความสำเร็จ
-                    emailBox.classList.remove('hidden');
-                    emailForm.classList.add('hidden');
-                    emailSuccess.classList.remove('hidden');
-                }
-                // ถ้าเป็น finished กล่องจะถูกซ่อนไปเลย
-            }
 
-            ['icon2', 'icon3'].forEach(id => document.getElementById(id).className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500');
+            // --- ส่วนจัดการการแสดงผลกล่องลงทะเบียนอีเมล (เวอร์ชันระงับการใช้งาน) ---
+            const emailBox = document.getElementById('emailNotificationBox');
+            const emailGroup = document.getElementById('emailInputGroup');
+            const emailMsg = document.getElementById('emailStatusMsg');
+            
+            if (data.status === 'completed' || data.status === 'cancelled') {
+                if (data.email) {
+                    emailBox.classList.remove('hidden');
+                    emailGroup.classList.add('hidden');
+                    emailMsg.classList.remove('hidden');
+                    emailMsg.innerHTML = `<i class="ph ph-check-circle mr-1 text-lg"></i> ส่งอีเมลอัปเดตสถานะไปยัง: ${data.email} แล้ว`;
+                    emailMsg.className = "text-xs mt-2 font-medium text-slate-500 flex items-center";
+                } else {
+                    emailBox.classList.add('hidden'); 
+                }
+            } else {
+                emailBox.classList.remove('hidden');
+                if (data.email) {
+                    emailGroup.classList.add('hidden');
+                    emailMsg.classList.remove('hidden');
+                    emailMsg.innerHTML = `<i class="ph ph-check-circle mr-1 text-lg"></i> ลงทะเบียนแจ้งเตือนไปยัง: ${data.email} แล้ว`;
+                    emailMsg.className = "text-xs mt-2 font-medium text-green-600 flex items-center";
+                } else {
+                    emailGroup.classList.remove('hidden');
+                    emailMsg.classList.remove('hidden');
+                    emailMsg.innerHTML = `<i class="ph ph-warning-circle mr-1 text-lg"></i> ฟีเจอร์รับการแจ้งเตือนปิดปรับปรุงชั่วคราว`;
+                    emailMsg.className = "text-xs mt-2 font-medium text-orange-500 flex items-center";
+                }
+            }
+            // ------------------------------------------------
+            
+            ['icon2', 'icon3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10';
+                void el.offsetWidth; 
+            });
             ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 pt-0.5 transition-colors duration-500');
-           
+            
             document.getElementById('time2').textContent = t.waiting_update;
             document.getElementById('time3').textContent = t.waiting_update;
+
+            const line1 = document.getElementById('activeLine1');
+            const line2 = document.getElementById('activeLine2');
+            const glow2 = document.getElementById('glowLine2');
+            
+            line1.style.height = '0%';
+            line1.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
+            line2.style.height = '0%';
+            line2.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
+            glow2.classList.add('hidden');
 
             if (data.status === 'cancelled') {
                 document.getElementById('step2Container').classList.add('hidden');
@@ -424,24 +348,53 @@
                 return;
             }
 
-            if (data.status === 'shipping' || data.status === 'completed') {
-                document.getElementById('icon2').classList.replace('bg-slate-200', 'bg-blue-500');
-                document.getElementById('icon2').classList.replace('text-slate-400', 'text-white');
-                document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
-                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
-                document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+            if (data.status === 'shipping') {
+                setTimeout(() => { line1.style.height = '100%'; }, 200);
+                setTimeout(() => {
+                    const icon2 = document.getElementById('icon2');
+                    icon2.classList.replace('bg-slate-200', 'bg-blue-500');
+                    icon2.classList.replace('text-slate-400', 'text-white');
+                    icon2.classList.add('animate-pop-in');
+                    
+                    document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
+                    document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                    document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
+                    
+                    line2.style.height = '50%';
+                    glow2.classList.remove('hidden');
+                }, 800); 
             }
 
             if (data.status === 'completed') {
-                document.getElementById('icon3').classList.replace('bg-slate-200', 'bg-green-500');
-                document.getElementById('icon3').classList.replace('text-slate-400', 'text-white');
-                document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
-                document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered;
-                document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+                const icon2 = document.getElementById('icon2');
+                icon2.classList.replace('bg-slate-200', 'bg-green-500');
+                icon2.classList.replace('text-slate-400', 'text-white');
+                document.getElementById('text2').classList.replace('text-slate-400', 'text-green-600');
+                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                document.getElementById('time2').classList.replace('text-slate-400', 'text-green-500');
 
-                document.getElementById('proofBox').classList.remove('hidden');
-                document.getElementById('showNote').textContent = data.note || t.no_note;
-               
+                setTimeout(() => { 
+                    line1.classList.replace('bg-blue-500', 'bg-green-500');
+                    line1.style.height = '100%'; 
+                }, 100);
+
+                setTimeout(() => {
+                    line2.classList.replace('bg-blue-500', 'bg-green-500');
+                    line2.style.height = '100%';
+                    
+                    const icon3 = document.getElementById('icon3');
+                    icon3.classList.replace('bg-slate-200', 'bg-green-500');
+                    icon3.classList.replace('text-slate-400', 'text-white');
+                    icon3.classList.add('animate-pop-in');
+                    
+                    document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
+                    document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
+                    document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
+
+                    document.getElementById('proofBox').classList.remove('hidden');
+                    document.getElementById('showNote').textContent = data.note || t.no_note;
+                }, 600); 
+
                 let directUrl = data.imageUrl;
                 if (directUrl) {
                     const driveMatch = directUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -454,6 +407,8 @@
                 setupSurveyBox(data.completedDate);
             }
         }
+
+        // ฟังก์ชัน registerEmail ถูกถอดออกชั่วคราวเนื่องจากปุ่มถูกระงับ
 
         function setupSurveyBox(completedDateString) {
             if (!completedDateString) return;
@@ -472,9 +427,9 @@
 
             if (now <= expireDate) {
                 surveyBtn.href = "https://forms.gle/iWpViNdXNXDsEwXq7";
-                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto";
+                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1";
                 surveyBtn.innerHTML = `<i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">${t.survey_btn_active}</span>`;
-               
+                
                 const expireStr = expireDate.toLocaleDateString(t.locale_date, { day: 'numeric', month: 'short', year: 'numeric' });
                 surveyText.textContent = `${t.survey_open_until} ${expireStr}`;
                 surveyText.className = "text-xs text-indigo-600 mb-4";
@@ -482,7 +437,7 @@
                 surveyBtn.removeAttribute('href');
                 surveyBtn.className = "inline-flex items-center justify-center bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg cursor-not-allowed w-full sm:w-auto";
                 surveyBtn.innerHTML = `<i class="ph ph-lock-key mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_expired">${t.survey_btn_expired}</span>`;
-               
+                
                 surveyText.textContent = t.survey_expired_text;
                 surveyText.className = "text-xs text-red-500 mb-4 font-medium";
             }
