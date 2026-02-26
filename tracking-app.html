@@ -6,52 +6,11 @@
     <title>ตรวจสอบสถานะพัสดุ | Order Tracking</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        /* CSS อนิเมชั่นสำหรับการแสดงผล */
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-up {
-            animation: slideUpFade 0.5s ease-out forwards;
-        }
-        
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            70% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in {
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        /* CSS สำหรับหลอดแสงวิ่งระหว่างจัดส่ง */
-        @keyframes slideDownLaser {
-            0% { transform: translateY(-40px); opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translateY(120px); opacity: 0; }
-        }
-        .animate-laser {
-            animation: slideDownLaser 1.5s infinite linear;
-        }
-
-        /* CSS อนิเมชั่นลูปสำหรับสถานะยกเลิก (Pulse Warning) */
-        @keyframes pulseRedWarning {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); transform: scale(1); }
-            50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); transform: scale(1.15); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
-        }
-        .animate-cancelled-loop {
-            /* เด้ง Pop-in ขึ้นมาก่อน 0.4 วิ แล้วค่อยเริ่มกระพริบ Pulse วนลูป */
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseRedWarning 2s 0.4s infinite;
-        }
-    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
     <header class="bg-white shadow-sm p-4 relative flex items-center justify-center">
         <h1 class="text-xl font-bold text-indigo-700" data-i18n="title_main">ตรวจสอบสถานะสินค้า</h1>
-        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+        <select id="langSelect" class="absolute right-4 top-4 bg-slate-100 border-none text-sm font-medium text-slate-600 rounded-lg px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="th">🇹🇭 ไทย</option>
             <option value="en">🇬🇧 English</option>
             <option value="zh">🇨🇳 中文</option>
@@ -60,95 +19,52 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 mt-4 relative flex-1 w-full">
-        <!-- ช่องค้นหา -->
-        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100 relative z-10">
-            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700 transition-shadow">
-            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors active:scale-95 transform"><i class="ph ph-magnifying-glass text-lg"></i></button>
+        <form id="searchForm" class="bg-white p-4 rounded-xl shadow-sm mb-6 flex gap-2 border border-slate-100">
+            <input type="text" id="searchId" required data-i18n-placeholder="placeholder_search" placeholder="กรอกเลขพัสดุ WAN-..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-bold text-slate-700">
+            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors"><i class="ph ph-magnifying-glass text-lg"></i></button>
         </form>
 
-        <!-- Skeleton Loading (อนิเมชั่นโหลดโครงร่าง) -->
-        <div id="loading" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full animate-pulse">
-            <div class="border-b border-slate-100 pb-4 mb-6">
-                <div class="h-4 bg-slate-200 rounded w-24 mb-3"></div>
-                <div class="h-8 bg-slate-300 rounded w-48 mb-3"></div>
-                <div class="h-4 bg-slate-200 rounded w-32 mt-1"></div>
-            </div>
-            <div class="relative pl-12 space-y-8">
-                <div class="absolute left-[14px] top-4 bottom-4 w-1 bg-slate-200 rounded-full"></div>
-                <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-300 ring-4 ring-white z-10"></div>
-                    <div class="h-5 bg-slate-300 rounded w-40 mb-2 mt-2"></div>
-                    <div class="h-3 bg-slate-200 rounded w-24"></div>
-                </div>
-                <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div>
-                    <div class="h-5 bg-slate-200 rounded w-48 mb-2 mt-2"></div>
-                    <div class="h-3 bg-slate-200 rounded w-24"></div>
-                </div>
-                <div class="relative">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 ring-4 ring-white z-10"></div>
-                    <div class="h-5 bg-slate-200 rounded w-32 mb-2 mt-2"></div>
-                    <div class="h-3 bg-slate-200 rounded w-24"></div>
-                </div>
-            </div>
+        <div id="loading" class="hidden text-center py-12">
+            <i class="ph ph-spinner animate-spin text-5xl text-indigo-500 mb-3 inline-block"></i>
+            <p class="text-slate-500 font-medium" data-i18n="loading_text">กำลังค้นหาข้อมูลจากระบบ...</p>
         </div>
 
-        <!-- กล่องแสดงผลลัพธ์ -->
         <div id="resultBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div class="border-b border-slate-100 pb-4 mb-6">
                 <p class="text-sm text-slate-500 mb-1" data-i18n="tracking_no_label">เลขพัสดุ</p>
                 <h2 id="showId" class="text-2xl font-bold tracking-wider text-indigo-700">WAN---</h2>
                 <p class="text-sm text-slate-600 mt-1 flex items-center">
-                    <i class="ph ph-user mr-1"></i> 
+                    <i class="ph ph-user mr-1"></i>
                     <span data-i18n="customer_name_label" class="mr-1">ชื่อลูกค้า:</span>
                     <span id="nameSpan" class="font-medium text-slate-800">ชื่อลูกค้า</span>
                 </p>
             </div>
 
-            <!-- Stepper / Timeline -->
-            <div class="relative pl-12 space-y-8">
-                
-                <!-- Step 1: Pending -->
+            <div class="relative pl-12 space-y-8 before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-slate-200">
                 <div class="relative" id="step1Container">
-                    <!-- พื้นหลังเส้นเทา -->
-                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine1"></div>
-                    <!-- หลอดวิ่ง 1 -->
-                    <div id="activeLine1" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;"></div>
-
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm z-10 animate-pop-in" id="icon1">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm" id="icon1">
                         <i class="ph ph-receipt text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-800 pt-0.5" data-i18n="step1_title">รับคำสั่งซื้อ (รอจัดเตรียม)</h3>
                     <p class="text-xs text-slate-500 mt-0.5" id="time1">-</p>
                 </div>
-                
-                <!-- Step 2: Shipping -->
+               
                 <div class="relative" id="step2Container">
-                    <!-- พื้นหลังเส้นเทา -->
-                    <div class="absolute -left-[34px] top-8 -bottom-8 w-1 bg-slate-200 z-0 rounded-full" id="bgLine2"></div>
-                    <!-- หลอดวิ่ง 2 -->
-                    <div id="activeLine2" class="absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full" style="height: 0%;">
-                        <!-- เอฟเฟกต์แสงวิ่ง (Laser) จะโผล่เฉพาะตอนกำลังจัดส่ง -->
-                        <div id="glowLine2" class="hidden absolute inset-0 w-full h-[30px] bg-gradient-to-b from-transparent via-white to-transparent opacity-80 animate-laser"></div>
-                    </div>
-
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon2">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon2">
                         <i class="ph ph-truck text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text2" data-i18n="step2_title">สินค้าออกจากหน้าร้าน (กำลังจัดส่ง)</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time2" data-i18n="waiting_update">รอการอัปเดต</p>
                 </div>
-                
-                <!-- Step 3: Completed -->
+               
                 <div class="relative" id="step3Container">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10" id="icon3">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500" id="icon3">
                         <i class="ph ph-check-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-slate-400 pt-0.5 transition-colors duration-500" id="text3" data-i18n="step3_title">จัดส่งสำเร็จ</h3>
                     <p class="text-xs text-slate-400 mt-0.5 transition-colors duration-500" id="time3" data-i18n="waiting_update">รอการอัปเดต</p>
-                    
-                    <!-- ส่วนแสดงรูปและหมายเหตุ -->
-                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100 animate-slide-up" style="animation-delay: 0.2s;">
+                   
+                    <div id="proofBox" class="hidden mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                         <p class="text-xs font-bold text-slate-700 mb-1">
                             <span data-i18n="note_label">หมายเหตุ:</span> <span id="showNote" class="font-normal"></span>
                         </p>
@@ -158,9 +74,8 @@
                     </div>
                 </div>
 
-                <!-- Step 4: Cancelled (แสดงเฉพาะถ้ายกเลิก) -->
-                <div class="relative hidden animate-slide-up" id="stepCancelledContainer" style="animation-delay: 0.2s;">
-                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white z-10 animate-cancelled-loop" id="iconCancelled">
+                <div class="relative hidden" id="stepCancelledContainer">
+                    <div class="absolute -left-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center ring-4 ring-white shadow-sm">
                         <i class="ph ph-x-circle text-lg"></i>
                     </div>
                     <h3 class="font-bold text-red-600 pt-0.5" data-i18n="step_cancelled_title">ยกเลิกออเดอร์</h3>
@@ -168,27 +83,39 @@
                 </div>
             </div>
 
-            <!-- กล่องประเมินความพึงพอใจ -->
-            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm animate-slide-up" style="animation-delay: 0.4s;">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl animate-pop-in" style="animation-delay: 0.6s;">
+            <!-- กล่องลงทะเบียนรับการแจ้งเตือนทางอีเมล -->
+            <div id="emailSubscribeBox" class="hidden mt-8 pt-6 border-t border-slate-100">
+                <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                    <h4 class="font-bold text-indigo-800 mb-1 text-sm flex items-center"><i class="ph ph-bell-ringing mr-1.5 text-lg"></i> รับการแจ้งเตือนทางอีเมล</h4>
+                    <p class="text-xs text-indigo-600 mb-3">ระบบจะส่งอีเมลแจ้งเตือนเมื่อสถานะพัสดุมีการเปลี่ยนแปลง</p>
+                    <form id="emailForm" class="flex gap-2">
+                        <input type="email" id="customerEmail" required placeholder="กรอกอีเมลของคุณ" class="w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button type="submit" id="emailSubmitBtn" class="bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-bold whitespace-nowrap">
+                            รับแจ้งเตือน
+                        </button>
+                    </form>
+                    <p id="emailSuccessMsg" class="hidden text-sm text-green-600 font-bold mt-2 flex items-center"><i class="ph ph-check-circle mr-1"></i> ลงทะเบียนรับแจ้งเตือนสำเร็จแล้ว</p>
+                </div>
+            </div>
+
+            <div id="surveyBox" class="hidden mt-8 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl text-center shadow-sm">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-yellow-400 text-2xl">
                     <i class="ph-fill ph-star"></i>
                 </div>
                 <h4 class="font-bold text-indigo-800 mb-1" data-i18n="survey_title">ความพึงพอใจของคุณสำคัญสำหรับเรา</h4>
                 <p id="surveyText" class="text-xs text-indigo-600 mb-4">เปิดรับความคิดเห็นถึงวันที่ --/--/----</p>
-                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1">
+                <a id="surveyBtn" href="https://forms.gle/iWpViNdXNXDsEwXq7" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto">
                     <i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">ประเมินการจัดส่ง</span>
                 </a>
             </div>
         </div>
 
-        <!-- แจ้งเตือนไม่พบข้อมูล -->
-        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100 animate-slide-up">
-            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400 animate-pop-in"></i>
+        <div id="notFound" class="hidden text-center text-red-500 mt-10 bg-red-50 p-6 rounded-2xl border border-red-100">
+            <i class="ph ph-warning-circle text-5xl mb-3 inline-block text-red-400"></i>
             <h3 class="font-bold text-lg mb-1" data-i18n="not_found_title">ไม่พบข้อมูล</h3>
             <p id="errorMsg" class="text-slate-600 text-sm" data-i18n="not_found_desc">ตรวจสอบเลขพัสดุอีกครั้ง หรือติดต่อแอดมิน</p>
         </div>
 
-        <!-- ปุ่มลิงก์แจ้งปัญหาการใช้งาน -->
         <div class="text-center mt-8 mb-2">
             <a href="https://ponrakitt.site/report.html" target="_blank" class="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors bg-white px-5 py-2.5 rounded-full shadow-sm border border-slate-200 hover:shadow-md">
                 <i class="ph ph-warning-circle mr-1.5 text-lg"></i> <span data-i18n="report_issue">แจ้งปัญหาการใช้งาน / ติดต่อแอดมิน</span>
@@ -201,19 +128,19 @@
             <span data-i18n="footer_note">หมายเหตุ: ระบบนี้ถูกจัดทำเพื่อร้าน</span>
             <a href="https://www.wanflorist.net/" target="_blank" class="text-indigo-500 hover:text-indigo-700 hover:underline transition-colors font-medium mx-1">
                 www.wanflorist.net
-            </a> 
+            </a>
             <span data-i18n="footer_only">เท่านั้น</span>
         </p>
     </footer>
 
     <script>
-        // *** ใส่ URL ของ Google Apps Script ของคุณที่นี่ ***
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzkluk985oNTIFFPJ5tyNNWy3yMrWj7K-JKg27mdAGfxdYEfzKdcb0uSwiidu_iWrzE/exec";
-        
+       
         const translations = {
             th: {
                 title_main: "ตรวจสอบสถานะสินค้า",
                 placeholder_search: "กรอกเลขพัสดุ WAN-...",
+                loading_text: "กำลังค้นหาข้อมูลจากระบบ...",
                 tracking_no_label: "เลขพัสดุ",
                 customer_name_label: "ชื่อลูกค้า:",
                 step1_title: "รับคำสั่งซื้อ (รอจัดเตรียม)",
@@ -243,6 +170,7 @@
             en: {
                 title_main: "Track Your Order",
                 placeholder_search: "Enter tracking no. WAN-...",
+                loading_text: "Searching system data...",
                 tracking_no_label: "Tracking No.",
                 customer_name_label: "Customer Name:",
                 step1_title: "Order Received (Preparing)",
@@ -272,6 +200,7 @@
             zh: {
                 title_main: "订单状态查询",
                 placeholder_search: "输入快递单号 WAN-...",
+                loading_text: "正在查询系统数据...",
                 tracking_no_label: "快递单号",
                 customer_name_label: "客户姓名:",
                 step1_title: "收到订单 (准备中)",
@@ -301,6 +230,7 @@
             ja: {
                 title_main: "配送状況の確認",
                 placeholder_search: "追跡番号を入力 WAN-...",
+                loading_text: "システムデータを検索中...",
                 tracking_no_label: "追跡番号",
                 customer_name_label: "お客様名:",
                 step1_title: "注文受付 (準備中)",
@@ -330,13 +260,13 @@
         };
 
         let currentLang = localStorage.getItem('appLang') || 'th';
-        let currentOrderData = null; 
+        let currentOrderData = null;
 
         function applyLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('appLang', lang);
             document.getElementById('langSelect').value = lang;
-            document.documentElement.lang = lang; 
+            document.documentElement.lang = lang;
 
             const t = translations[lang];
 
@@ -360,7 +290,7 @@
         });
 
         window.onload = () => {
-            applyLanguage(currentLang); 
+            applyLanguage(currentLang);
             const urlOrderId = new URLSearchParams(window.location.search).get('orderId');
             if (urlOrderId) {
                 document.getElementById('searchId').value = urlOrderId;
@@ -373,6 +303,39 @@
             fetchData(document.getElementById('searchId').value.toUpperCase().trim());
         };
 
+        // ส่งอีเมลลงทะเบียน
+        document.getElementById('emailForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('customerEmail');
+            const submitBtn = document.getElementById('emailSubmitBtn');
+            const orderId = document.getElementById('showId').textContent;
+           
+            const email = emailInput.value.trim();
+            if(!email) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "กำลังลงทะเบียน...";
+
+            try {
+                const payload = { action: "subscribeEmail", orderId: orderId, email: email };
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('emailForm').classList.add('hidden');
+                    document.getElementById('emailSuccessMsg').classList.remove('hidden');
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "รับแจ้งเตือน";
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+                submitBtn.disabled = false;
+                submitBtn.textContent = "รับแจ้งเตือน";
+            }
+        };
+
         function formatDate(dateString, lang) {
             if (!dateString) return '';
             const d = new Date(dateString);
@@ -382,14 +345,10 @@
 
         async function fetchData(id) {
             if (!id) return;
-            
+           
             const t = translations[currentLang];
-            
-            // รีเซ็ตคลาสอนิเมชั่นและโชว์กล่อง Skeleton Loading
             document.getElementById('resultBox').classList.add('hidden');
-            document.getElementById('resultBox').classList.remove('animate-slide-up');
             document.getElementById('notFound').classList.add('hidden');
-            document.getElementById('notFound').classList.remove('animate-slide-up');
             document.getElementById('loading').classList.remove('hidden');
 
             try {
@@ -399,12 +358,11 @@
                 document.getElementById('loading').classList.add('hidden');
 
                 if (result.status === 'success') {
-                    currentOrderData = result.data; 
+                    currentOrderData = result.data;
                     renderOrderData(currentOrderData);
                 } else {
                     currentOrderData = null;
                     document.getElementById('notFound').classList.remove('hidden');
-                    document.getElementById('notFound').classList.add('animate-slide-up');
                     document.getElementById('errorMsg').textContent = result.message || t.not_found_desc;
                 }
             } catch (error) {
@@ -412,19 +370,14 @@
                 currentOrderData = null;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('notFound').classList.remove('hidden');
-                document.getElementById('notFound').classList.add('animate-slide-up');
                 document.getElementById('errorMsg').textContent = translations[currentLang].error_network;
             }
         }
 
         function renderOrderData(data) {
             const t = translations[currentLang];
-            
-            // โชว์กล่องผลลัพธ์
-            const resultBox = document.getElementById('resultBox');
-            resultBox.classList.remove('hidden');
-            resultBox.classList.add('animate-slide-up');
-            
+           
+            document.getElementById('resultBox').classList.remove('hidden');
             document.getElementById('showId').textContent = data.id;
             document.getElementById('nameSpan').textContent = data.name;
 
@@ -434,31 +387,36 @@
             document.getElementById('stepCancelledContainer').classList.add('hidden');
             document.getElementById('proofBox').classList.add('hidden');
             document.getElementById('surveyBox').classList.add('hidden');
-            
-            // ----------------- รีเซ็ตสถานะและอนิเมชั่น -----------------
-            ['icon2', 'icon3'].forEach(id => {
-                const el = document.getElementById(id);
-                el.className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-all duration-500 z-10';
-                void el.offsetWidth; // Trigger reflow
-            });
+           
+            // จัดการระบบกล่องอีเมล
+            const emailBox = document.getElementById('emailSubscribeBox');
+            const emailForm = document.getElementById('emailForm');
+            const emailSuccess = document.getElementById('emailSuccessMsg');
+           
+            emailBox.classList.add('hidden'); // ซ่อนไว้ก่อน
+           
+            // ถ้าสถานะเป็น Pending หรือ Shipping ถึงจะแสดงกล่องกรอกอีเมลได้
+            if (data.status === 'pending' || data.status === 'shipping') {
+                if (!data.emailStatus || data.emailStatus === "") {
+                    // ยังไม่เคยลงทะเบียน -> โชว์ฟอร์ม
+                    emailBox.classList.remove('hidden');
+                    emailForm.classList.remove('hidden');
+                    emailSuccess.classList.add('hidden');
+                } else if (data.emailStatus.includes('@')) {
+                    // ลงทะเบียนแล้ว -> โชว์ข้อความสำเร็จ
+                    emailBox.classList.remove('hidden');
+                    emailForm.classList.add('hidden');
+                    emailSuccess.classList.remove('hidden');
+                }
+                // ถ้าเป็น finished กล่องจะถูกซ่อนไปเลย
+            }
+
+            ['icon2', 'icon3'].forEach(id => document.getElementById(id).className = 'absolute -left-12 w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500');
             ['text2', 'text3'].forEach(id => document.getElementById(id).className = 'font-bold text-slate-400 pt-0.5 transition-colors duration-500');
-            
+           
             document.getElementById('time2').textContent = t.waiting_update;
             document.getElementById('time3').textContent = t.waiting_update;
 
-            const line1 = document.getElementById('activeLine1');
-            const line2 = document.getElementById('activeLine2');
-            const glow2 = document.getElementById('glowLine2');
-            
-            line1.style.height = '0%';
-            line1.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
-            line2.style.height = '0%';
-            line2.className = 'absolute -left-[34px] top-8 w-1 bg-blue-500 z-0 transition-all duration-700 ease-out overflow-hidden rounded-full';
-            glow2.classList.add('hidden');
-
-            // --------------------------------------------------------
-
-            // กรณีถูกยกเลิก
             if (data.status === 'cancelled') {
                 document.getElementById('step2Container').classList.add('hidden');
                 document.getElementById('step3Container').classList.add('hidden');
@@ -466,60 +424,24 @@
                 return;
             }
 
-            // สถานะ "กำลังจัดส่ง"
-            if (data.status === 'shipping') {
-                // หลอดที่ 1 วิ่งเต็ม
-                setTimeout(() => { line1.style.height = '100%'; }, 200);
-                
-                // หลอดที่ 2 วิ่งขึ้นมาครึ่งทางและแสดงแสงเลเซอร์
-                setTimeout(() => {
-                    const icon2 = document.getElementById('icon2');
-                    icon2.classList.replace('bg-slate-200', 'bg-blue-500');
-                    icon2.classList.replace('text-slate-400', 'text-white');
-                    icon2.classList.add('animate-pop-in');
-                    
-                    document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
-                    document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
-                    document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
-                    
-                    line2.style.height = '50%';
-                    glow2.classList.remove('hidden');
-                }, 800); // ดีเลย์ให้หลอด 1 วิ่งเสร็จก่อน
+            if (data.status === 'shipping' || data.status === 'completed') {
+                document.getElementById('icon2').classList.replace('bg-slate-200', 'bg-blue-500');
+                document.getElementById('icon2').classList.replace('text-slate-400', 'text-white');
+                document.getElementById('text2').classList.replace('text-slate-400', 'text-blue-600');
+                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
+                document.getElementById('time2').classList.replace('text-slate-400', 'text-blue-500');
             }
 
-            // สถานะ "จัดส่งสำเร็จ"
             if (data.status === 'completed') {
-                // อัปเดตไอคอน 2
-                const icon2 = document.getElementById('icon2');
-                icon2.classList.replace('bg-slate-200', 'bg-green-500');
-                icon2.classList.replace('text-slate-400', 'text-white');
-                document.getElementById('text2').classList.replace('text-slate-400', 'text-green-600');
-                document.getElementById('time2').textContent = formatDate(data.shippedDate, currentLang) || t.status_processing;
-                document.getElementById('time2').classList.replace('text-slate-400', 'text-green-500');
+                document.getElementById('icon3').classList.replace('bg-slate-200', 'bg-green-500');
+                document.getElementById('icon3').classList.replace('text-slate-400', 'text-white');
+                document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
+                document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered;
+                document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
 
-                // เปลี่ยนหลอดวิ่งเป็นสีเขียวและเต็มหลอด
-                setTimeout(() => { 
-                    line1.classList.replace('bg-blue-500', 'bg-green-500');
-                    line1.style.height = '100%'; 
-                }, 100);
-
-                setTimeout(() => {
-                    line2.classList.replace('bg-blue-500', 'bg-green-500');
-                    line2.style.height = '100%';
-                    
-                    const icon3 = document.getElementById('icon3');
-                    icon3.classList.replace('bg-slate-200', 'bg-green-500');
-                    icon3.classList.replace('text-slate-400', 'text-white');
-                    icon3.classList.add('animate-pop-in');
-                    
-                    document.getElementById('text3').classList.replace('text-slate-400', 'text-green-600');
-                    document.getElementById('time3').textContent = formatDate(data.completedDate, currentLang) || t.status_delivered; 
-                    document.getElementById('time3').classList.replace('text-slate-400', 'text-green-500');
-
-                    document.getElementById('proofBox').classList.remove('hidden');
-                    document.getElementById('showNote').textContent = data.note || t.no_note;
-                }, 600); // หน่วงเวลาให้ดูเป็นลำดับขั้น
-
+                document.getElementById('proofBox').classList.remove('hidden');
+                document.getElementById('showNote').textContent = data.note || t.no_note;
+               
                 let directUrl = data.imageUrl;
                 if (directUrl) {
                     const driveMatch = directUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -550,9 +472,9 @@
 
             if (now <= expireDate) {
                 surveyBtn.href = "https://forms.gle/iWpViNdXNXDsEwXq7";
-                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto transform hover:-translate-y-1";
+                surveyBtn.className = "inline-flex items-center justify-center bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all w-full sm:w-auto";
                 surveyBtn.innerHTML = `<i class="ph ph-clipboard-text mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_active">${t.survey_btn_active}</span>`;
-                
+               
                 const expireStr = expireDate.toLocaleDateString(t.locale_date, { day: 'numeric', month: 'short', year: 'numeric' });
                 surveyText.textContent = `${t.survey_open_until} ${expireStr}`;
                 surveyText.className = "text-xs text-indigo-600 mb-4";
@@ -560,7 +482,7 @@
                 surveyBtn.removeAttribute('href');
                 surveyBtn.className = "inline-flex items-center justify-center bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg cursor-not-allowed w-full sm:w-auto";
                 surveyBtn.innerHTML = `<i class="ph ph-lock-key mr-2 text-lg"></i> <span id="surveyBtnText" data-i18n="survey_btn_expired">${t.survey_btn_expired}</span>`;
-                
+               
                 surveyText.textContent = t.survey_expired_text;
                 surveyText.className = "text-xs text-red-500 mb-4 font-medium";
             }
