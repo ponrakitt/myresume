@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helpdesk Support - ฝั่งแอดมิน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+
+    <!-- Navbar Admin -->
+    <nav class="bg-slate-800 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2 text-xl font-bold">
+                <i class="fa-solid fa-shield-halved text-green-400"></i>
+                <span>Admin Dashboard</span>
+            </div>
+            <button onclick="fetchTickets()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm transition-colors flex items-center">
+                <i class="fa-solid fa-rotate-right mr-2"></i> รีเฟรช
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-list mr-2"></i> รายการ Tickets ทั้งหมด</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+                            <th class="p-4 font-medium">Ticket ID</th>
+                            <th class="p-4 font-medium">ผู้ใช้ / วันที่</th>
+                            <th class="p-4 font-medium">หัวข้อ</th>
+                            <th class="p-4 font-medium">สถานะ</th>
+                            <th class="p-4 font-medium text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-ticket-list" class="divide-y divide-gray-200">
+                        <tr><td colspan="5" class="text-center p-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal สำหรับตอบกลับ / ดูรายละเอียด -->
+    <div id="reply-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col transform transition-all">
+            <div class="flex justify-between items-center p-5 border-b border-gray-100">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800">จัดการ Ticket</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div id="modal-user-info" class="text-sm text-gray-500 mb-1"></div>
+                    <div id="modal-subject" class="font-bold text-gray-800 mb-2"></div>
+                    <div id="modal-message" class="text-gray-700 whitespace-pre-wrap"></div>
+                </div>
+
+                <!-- โซนฟอร์มตอบกลับ / แสดงคำตอบ -->
+                <div id="modal-action-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ใส่ Web App URL ลงในโค้ดแล้ว
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbylchiw4HjzE7XG7P2yZuYV74nyCzYi965Q22J7PHy6cDu3Hhq_zae5f16tzBji4fMMgw/exec'; 
+        
+        let tickets = [];
+        let selectedTicketId = null;
+
+        window.onload = () => {
+            fetchTickets();
+        };
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+            toast.className = `fixed bottom-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-y-10 opacity-0 z-50 ${bgColor}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function fetchTickets() {
+            const tbody = document.getElementById('admin-ticket-list');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</td></tr>';
+
+            try {
+                // Admin จะดึงข้อมูลแบบ get_all เพื่อดูทั้งหมด
+                const response = await fetch(`${GAS_WEB_APP_URL}?action=get_all`);
+                tickets = await response.json();
+                renderTable();
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('ไม่สามารถดึงข้อมูลได้', 'error');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('admin-ticket-list');
+            tbody.innerHTML = '';
+
+            if (tickets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500">ไม่มี Ticket ในระบบ</td></tr>';
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                const statusHtml = ticket.status === 'Open' 
+                    ? `<span class="inline-flex items-center text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full"><i class="fa-regular fa-clock mr-1"></i> รอการตอบกลับ</span>`
+                    : `<span class="inline-flex items-center text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full"><i class="fa-solid fa-check-circle mr-1"></i> ปิดแล้ว</span>`;
+
+                const btnHtml = ticket.status === 'Open'
+                    ? `<button onclick="openModal('${ticket.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded-md transition-colors"><i class="fa-solid fa-reply mr-1"></i> ตอบกลับ</button>`
+                    : `<button onclick="openModal('${ticket.id}')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-md transition-colors"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติ</button>`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 border-b border-gray-100';
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-blue-600">${ticket.id}</td>
+                    <td class="p-4">
+                        <div class="text-sm font-medium text-gray-900">${ticket.email}</div>
+                        <div class="text-xs text-gray-500">${ticket.timestamp}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-sm font-medium text-gray-900">${ticket.subject}</div>
+                        <div class="text-xs text-gray-500 truncate max-w-xs">${ticket.message}</div>
+                    </td>
+                    <td class="p-4">${statusHtml}</td>
+                    <td class="p-4 text-right">${btnHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModal(id) {
+            const ticket = tickets.find(t => t.id === id);
+            if (!ticket) return;
+            selectedTicketId = id;
+
+            document.getElementById('modal-title').innerText = ticket.status === 'Open' ? `ตอบกลับ Ticket : ${id}` : `รายละเอียด Ticket : ${id}`;
+            document.getElementById('modal-user-info').innerText = `จาก: ${ticket.email} (${ticket.timestamp})`;
+            document.getElementById('modal-subject').innerText = `เรื่อง: ${ticket.subject}`;
+            document.getElementById('modal-message').innerText = ticket.message;
+
+            const actionArea = document.getElementById('modal-action-area');
+            if (ticket.status === 'Closed') {
+                actionArea.innerHTML = `
+                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                        <div class="font-bold text-emerald-800 mb-2"><i class="fa-solid fa-comment-dots mr-2"></i>คำตอบจาก Admin (${ticket.replyTimestamp}):</div>
+                        <div class="text-gray-800 whitespace-pre-wrap">${ticket.adminReply.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg">ปิดหน้าต่าง</button>
+                    </div>
+                `;
+            } else {
+                actionArea.innerHTML = `
+                    <form id="reply-form" onsubmit="submitReply(event)">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">ข้อความตอบกลับ (ระบบจะส่งอีเมลและปิด Ticket ทันที)</label>
+                        <textarea id="reply-message" required rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-4" placeholder="พิมพ์คำตอบของคุณที่นี่..."></textarea>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">ยกเลิก</button>
+                            <button type="submit" id="submit-reply-btn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> ส่งคำตอบ & ปิด Ticket
+                            </button>
+                        </div>
+                    </form>
+                `;
+            }
+
+            const modal = document.getElementById('reply-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('reply-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            selectedTicketId = null;
+        }
+
+        async function submitReply(e) {
+            e.preventDefault();
+            const replyMessage = document.getElementById('reply-message').value;
+            const btn = document.getElementById('submit-reply-btn');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
+            btn.disabled = true;
+
+            const replyData = {
+                action: 'reply',
+                id: selectedTicketId,
+                replyMessage: replyMessage
+            };
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(replyData),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('ส่งคำตอบและแจ้งเตือนผู้ใช้สำเร็จ!');
+                    fetchTickets();
+                    closeModal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('เกิดข้อผิดพลาดในการตอบกลับ', 'error');
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งคำตอบ & ปิด Ticket';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
