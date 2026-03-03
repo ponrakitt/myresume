@@ -197,10 +197,13 @@
                     
                     // ดึงข้อมูลมาแสดงทันที
                     document.getElementById('search-btn').click();
+                } else {
+                    console.error('Server Error:', result.error);
+                    showToast('เซิร์ฟเวอร์ปฏิเสธการทำงาน: ' + result.error, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('เกิดข้อผิดพลาดในการส่งข้อมูล', 'error');
+                showToast('เกิดข้อผิดพลาดในการส่งข้อมูล โปรดลองใหม่', 'error');
             }
             
             btn.innerHTML = 'ส่งข้อความติดต่อ';
