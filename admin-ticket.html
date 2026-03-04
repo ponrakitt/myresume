@@ -3,234 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helpdesk Support - ฝั่งแอดมิน</title>
+    <title>ระบบจัดการ Ticket (Admin Dashboard)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.4s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(100%)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Prompt', sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .row-animate { opacity: 0; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen">
+<body class="bg-[#F3F4F6] min-h-screen p-4 md:p-6 text-gray-800">
 
-    <!-- Navbar Admin -->
-    <nav class="bg-slate-800 text-white shadow-md">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2 text-xl font-bold">
-                <i class="fa-solid fa-shield-halved text-green-400"></i>
-                <span>Admin Dashboard</span>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header & Controls -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-blue-200">
+                        <i class="fas fa-headset text-xl"></i>
+                    </div>
+                    Support Dashboard
+                </h1>
+                <p class="text-gray-500 mt-1 ml-13">ระบบจัดการแจ้งปัญหาและช่วยเหลือลูกค้า</p>
             </div>
-            <button onclick="fetchTickets()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm transition-colors flex items-center">
-                <i class="fa-solid fa-rotate-right mr-2"></i> รีเฟรช
-            </button>
+            <div class="flex items-center space-x-3 w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" onkeyup="filterTickets()" placeholder="ค้นหา Ticket..." class="w-full pl-10 pr-4 py-2.5 bg-white border-0 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                <button onclick="loadTickets()" class="bg-white p-2.5 rounded-xl shadow-sm text-gray-600 hover:text-blue-600 hover:shadow transition-all group" title="รีเฟรชข้อมูล">
+                    <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500"></i>
+                </button>
+            </div>
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-list mr-2"></i> รายการ Tickets ทั้งหมด</h2>
+        <!-- Dashboard Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xl mr-4">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Ticket ทั้งหมด</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="statTotal">-</h3>
+                </div>
             </div>
-            
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xl mr-4">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">รอรับเรื่อง</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="statPending">-</h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mr-4">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">กำลังดำเนินการ</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="statProgress">-</h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl mr-4">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">ปิดงานแล้ว</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="statClosed">-</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- ตารางแสดงข้อมูล -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[800px]">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                        <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
-                            <th class="p-4 font-medium">Ticket ID</th>
-                            <th class="p-4 font-medium">ผู้ใช้ / วันที่</th>
-                            <th class="p-4 font-medium">หัวข้อ</th>
-                            <th class="p-4 font-medium">สถานะ</th>
-                            <th class="p-4 font-medium text-right">จัดการ</th>
+                        <tr class="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                            <th class="py-4 px-6 font-semibold">Ticket ID & วันที่</th>
+                            <th class="py-4 px-6 font-semibold">ผู้แจ้ง</th>
+                            <th class="py-4 px-6 font-semibold">รายละเอียดปัญหา</th>
+                            <th class="py-4 px-6 font-semibold">สถานะ</th>
+                            <th class="py-4 px-6 text-center font-semibold">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-ticket-list" class="divide-y divide-gray-200">
-                        <tr><td colspan="5" class="text-center p-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</td></tr>
+                    <tbody id="ticketTableBody" class="text-sm">
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-gray-400">
+                                <i class="fas fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
+                                <p>กำลังดึงข้อมูลจากระบบ...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Modal สำหรับตอบกลับ / ดูรายละเอียด -->
-    <div id="reply-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col transform transition-all">
-            <div class="flex justify-between items-center p-5 border-b border-gray-100">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800">จัดการ Ticket</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+    <!-- Modal สำหรับอัปเดตสถานะ (Glassmorphism design) -->
+    <div id="updateModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity opacity-0">
+        <div class="glass-effect rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300" id="modalContent">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-edit text-blue-600 mr-3"></i> อัปเดตสถานะ
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 w-8 h-8 rounded-full transition-colors flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <div class="p-5 overflow-y-auto flex-1">
-                <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <div id="modal-user-info" class="text-sm text-gray-500 mb-1"></div>
-                    <div id="modal-subject" class="font-bold text-gray-800 mb-2"></div>
-                    <div id="modal-message" class="text-gray-700 whitespace-pre-wrap"></div>
+            <div class="bg-blue-50 text-blue-800 px-4 py-3 rounded-xl flex items-center mb-6 border border-blue-100">
+                <i class="fas fa-ticket-alt mr-3 text-blue-500"></i>
+                <span class="font-mono font-bold" id="modalTicketId"></span>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">เปลี่ยนสถานะ</label>
+                    <div class="relative">
+                        <select id="updateStatus" class="w-full pl-4 pr-10 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-shadow">
+                            <option value="กำลังดำเนินการ">กำลังดำเนินการ (In Progress)</option>
+                            <option value="ปิดงาน">ปิดงาน (Closed)</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        ข้อความถึงผู้ใช้ <span class="text-xs font-normal text-gray-500 ml-1">(จะถูกส่งไปในอีเมล)</span>
+                    </label>
+                    <textarea id="adminNote" rows="4" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow resize-none" placeholder="พิมพ์ข้อความตอบกลับหรือการแก้ไขปัญหา..."></textarea>
+                </div>
+            </div>
 
-                <!-- โซนฟอร์มตอบกลับ / แสดงคำตอบ -->
-                <div id="modal-action-area"></div>
+            <div class="mt-8 flex justify-end space-x-3">
+                <button onclick="closeModal()" class="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
+                <button id="saveBtn" onclick="saveUpdate()" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 font-medium transition-all flex items-center">
+                    <span id="saveText">บันทึกและส่งอีเมล</span>
+                    <i id="saveSpinner" class="fas fa-circle-notch fa-spin ml-2 hidden"></i>
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-3"></div>
+
     <script>
-        // ใส่ Web App URL ลงในโค้ดแล้ว
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbylchiw4HjzE7XG7P2yZuYV74nyCzYi965Q22J7PHy6cDu3Hhq_zae5f16tzBji4fMMgw/exec'; 
+        // URL ของ Web App จาก Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqLRrZFI1QlvC6wAkaNliuKzPiWTEYFn1OEDMlb2za-wpUzp_zAGL6iig4JLNxDaISsw/exec';
         
-        let tickets = [];
-        let selectedTicketId = null;
+        let allTickets = [];
+        let currentEditingTicket = null;
 
-        window.onload = () => {
-            fetchTickets();
-        };
+        window.onload = loadTickets;
 
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
-            toast.className = `fixed bottom-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-y-10 opacity-0 z-50 ${bgColor}`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i> ${message}`;
-            document.body.appendChild(toast);
+        async function loadTickets() {
+            const tbody = document.getElementById('ticketTableBody');
             
-            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('translate-y-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        async function fetchTickets() {
-            const tbody = document.getElementById('admin-ticket-list');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</td></tr>';
-
             try {
-                // Admin จะดึงข้อมูลแบบ get_all เพื่อดูทั้งหมด
-                const response = await fetch(`${GAS_WEB_APP_URL}?action=get_all`);
-                tickets = await response.json();
-                renderTable();
+                const response = await fetch(SCRIPT_URL);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    allTickets = result.data;
+                    updateDashboardStats();
+                    renderTable(allTickets);
+                }
             } catch (error) {
-                console.error('Error:', error);
-                showToast('ไม่สามารถดึงข้อมูลได้', 'error');
+                tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-red-500 bg-red-50"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><br>ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้</td></tr>`;
+                showToast('เชื่อมต่อฐานข้อมูลล้มเหลว', 'error');
             }
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('admin-ticket-list');
+        function updateDashboardStats() {
+            let pending = 0, progress = 0, closed = 0;
+            
+            allTickets.forEach(t => {
+                if (t.status === 'รอรับเรื่อง') pending++;
+                else if (t.status === 'กำลังดำเนินการ') progress++;
+                else if (t.status === 'ปิดงาน') closed++;
+            });
+
+            // ทำ Animate ตัวเลขวิ่ง (Counter Animation)
+            animateValue("statTotal", 0, allTickets.length, 500);
+            animateValue("statPending", 0, pending, 500);
+            animateValue("statProgress", 0, progress, 500);
+            animateValue("statClosed", 0, closed, 500);
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) {
+                document.getElementById(id).innerText = end;
+                return;
+            }
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            let obj = document.getElementById(id);
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerText = current;
+                if (current == end) clearInterval(timer);
+            }, stepTime);
+        }
+
+        function filterTickets() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allTickets.filter(t => 
+                t.id.toLowerCase().includes(keyword) || 
+                t.name.toLowerCase().includes(keyword) || 
+                t.email.toLowerCase().includes(keyword) || 
+                t.subject.toLowerCase().includes(keyword) ||
+                t.status.toLowerCase().includes(keyword)
+            );
+            renderTable(filtered);
+        }
+
+        function renderTable(tickets) {
+            const tbody = document.getElementById('ticketTableBody');
             tbody.innerHTML = '';
 
-            if (tickets.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500">ไม่มี Ticket ในระบบ</td></tr>';
+            if(tickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-16 text-center text-gray-400">
+                            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-search text-3xl"></i>
+                            </div>
+                            <p class="text-lg font-medium text-gray-500">ไม่พบข้อมูล Ticket</p>
+                        </td>
+                    </tr>`;
                 return;
             }
 
-            tickets.forEach(ticket => {
-                const statusHtml = ticket.status === 'Open' 
-                    ? `<span class="inline-flex items-center text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full"><i class="fa-regular fa-clock mr-1"></i> รอการตอบกลับ</span>`
-                    : `<span class="inline-flex items-center text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full"><i class="fa-solid fa-check-circle mr-1"></i> ปิดแล้ว</span>`;
+            tickets.forEach((ticket, index) => {
+                let badgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                let iconClass = 'fa-inbox';
+                if (ticket.status === 'กำลังดำเนินการ') {
+                    badgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
+                    iconClass = 'fa-spinner fa-spin';
+                }
+                if (ticket.status === 'ปิดงาน') {
+                    badgeClass = 'bg-green-100 text-green-700 border-green-200';
+                    iconClass = 'fa-check';
+                }
 
-                const btnHtml = ticket.status === 'Open'
-                    ? `<button onclick="openModal('${ticket.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded-md transition-colors"><i class="fa-solid fa-reply mr-1"></i> ตอบกลับ</button>`
-                    : `<button onclick="openModal('${ticket.id}')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-md transition-colors"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติ</button>`;
+                // Format วันที่และเวลา
+                let d = new Date(ticket.date);
+                let dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+                let timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+                // หน่วงเวลา animation ทีละแถว (staggered effect)
+                let animationDelay = index * 0.05;
 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50 border-b border-gray-100';
+                tr.className = `border-b border-gray-100 hover:bg-blue-50/30 transition-colors row-animate animate-fade-in-up`;
+                tr.style.animationDelay = `${animationDelay}s`;
+                
                 tr.innerHTML = `
-                    <td class="p-4 font-medium text-blue-600">${ticket.id}</td>
-                    <td class="p-4">
-                        <div class="text-sm font-medium text-gray-900">${ticket.email}</div>
-                        <div class="text-xs text-gray-500">${ticket.timestamp}</div>
+                    <td class="py-4 px-6">
+                        <div class="font-mono font-bold text-gray-800">${ticket.id}</div>
+                        <div class="text-xs text-gray-500 mt-1"><i class="far fa-clock mr-1"></i>${dateStr} ${timeStr}</div>
                     </td>
-                    <td class="p-4">
-                        <div class="text-sm font-medium text-gray-900">${ticket.subject}</div>
-                        <div class="text-xs text-gray-500 truncate max-w-xs">${ticket.message}</div>
+                    <td class="py-4 px-6">
+                        <div class="font-semibold text-gray-800">${ticket.name || 'ไม่มีชื่อ'}</div>
+                        <a href="mailto:${ticket.email}" class="text-xs text-blue-600 hover:underline"><i class="far fa-envelope mr-1"></i>${ticket.email}</a>
                     </td>
-                    <td class="p-4">${statusHtml}</td>
-                    <td class="p-4 text-right">${btnHtml}</td>
+                    <td class="py-4 px-6 max-w-xs">
+                        <div class="font-semibold text-gray-800 truncate">${ticket.subject}</div>
+                        <div class="text-xs text-gray-500 truncate mt-1" title="${ticket.details}">${ticket.details}</div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold border flex items-center inline-flex ${badgeClass}">
+                            <i class="fas ${iconClass} mr-2"></i> ${ticket.status}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        ${ticket.status !== 'ปิดงาน' ? 
+                          `<button onclick="openModal('${ticket.id}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-lg transition-all duration-200 shadow-sm" title="อัปเดตสถานะ">
+                             <i class="fas fa-pen text-sm"></i>
+                           </button>` 
+                          : `<div class="text-gray-400 bg-gray-50 px-3 py-2 rounded-lg inline-block cursor-not-allowed">
+                               <i class="fas fa-lock text-sm"></i>
+                             </div>`
+                        }
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function openModal(id) {
-            const ticket = tickets.find(t => t.id === id);
-            if (!ticket) return;
-            selectedTicketId = id;
-
-            document.getElementById('modal-title').innerText = ticket.status === 'Open' ? `ตอบกลับ Ticket : ${id}` : `รายละเอียด Ticket : ${id}`;
-            document.getElementById('modal-user-info').innerText = `จาก: ${ticket.email} (${ticket.timestamp})`;
-            document.getElementById('modal-subject').innerText = `เรื่อง: ${ticket.subject}`;
-            document.getElementById('modal-message').innerText = ticket.message;
-
-            const actionArea = document.getElementById('modal-action-area');
-            if (ticket.status === 'Closed') {
-                actionArea.innerHTML = `
-                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                        <div class="font-bold text-emerald-800 mb-2"><i class="fa-solid fa-comment-dots mr-2"></i>คำตอบจาก Admin (${ticket.replyTimestamp}):</div>
-                        <div class="text-gray-800 whitespace-pre-wrap">${ticket.adminReply.replace(/\n/g, '<br>')}</div>
-                    </div>
-                    <div class="mt-4 flex justify-end">
-                        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg">ปิดหน้าต่าง</button>
-                    </div>
-                `;
-            } else {
-                actionArea.innerHTML = `
-                    <form id="reply-form" onsubmit="submitReply(event)">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">ข้อความตอบกลับ (ระบบจะส่งอีเมลและปิด Ticket ทันที)</label>
-                        <textarea id="reply-message" required rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-4" placeholder="พิมพ์คำตอบของคุณที่นี่..."></textarea>
-                        <div class="flex justify-end space-x-3">
-                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">ยกเลิก</button>
-                            <button type="submit" id="submit-reply-btn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center">
-                                <i class="fa-solid fa-paper-plane mr-2"></i> ส่งคำตอบ & ปิด Ticket
-                            </button>
-                        </div>
-                    </form>
-                `;
-            }
-
-            const modal = document.getElementById('reply-modal');
+        // --- ระบบ Modal ---
+        function openModal(ticketId) {
+            currentEditingTicket = ticketId;
+            document.getElementById('modalTicketId').innerText = ticketId;
+            document.getElementById('adminNote').value = '';
+            
+            const modal = document.getElementById('updateModal');
+            const content = document.getElementById('modalContent');
+            
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            // Allow DOM to update before adding opacity
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
         }
 
         function closeModal() {
-            const modal = document.getElementById('reply-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            selectedTicketId = null;
+            const modal = document.getElementById('updateModal');
+            const content = document.getElementById('modalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                currentEditingTicket = null;
+            }, 300);
         }
 
-        async function submitReply(e) {
-            e.preventDefault();
-            const replyMessage = document.getElementById('reply-message').value;
-            const btn = document.getElementById('submit-reply-btn');
-            
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
-            btn.disabled = true;
+        // --- ฟังก์ชันบันทึกการอัปเดต ---
+        async function saveUpdate() {
+            if (!currentEditingTicket) return;
 
-            const replyData = {
-                action: 'reply',
-                id: selectedTicketId,
-                replyMessage: replyMessage
+            const btn = document.getElementById('saveBtn');
+            const saveText = document.getElementById('saveText');
+            const spinner = document.getElementById('saveSpinner');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-90', 'cursor-not-allowed');
+            saveText.innerText = 'กำลังดำเนินการ...';
+            spinner.classList.remove('hidden');
+
+            const payload = {
+                action: 'update_ticket',
+                ticketId: currentEditingTicket,
+                newStatus: document.getElementById('updateStatus').value,
+                adminNote: document.getElementById('adminNote').value
             };
 
             try {
-                const response = await fetch(GAS_WEB_APP_URL, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify(replyData),
+                    body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
+
                 const result = await response.json();
                 
-                if (result.success) {
-                    showToast('ส่งคำตอบและแจ้งเตือนผู้ใช้สำเร็จ!');
-                    fetchTickets();
+                if (result.status === 'success') {
                     closeModal();
+                    showToast(`อัปเดตสถานะ ${currentEditingTicket} เรียบร้อยแล้ว`, 'success');
+                    
+                    // รีเซ็ตช่องค้นหาและโหลดข้อมูลใหม่
+                    document.getElementById('searchInput').value = '';
+                    loadTickets(); 
+                } else {
+                    showToast('เกิดข้อผิดพลาด: ' + result.message, 'error');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showToast('เกิดข้อผิดพลาดในการตอบกลับ', 'error');
-                btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งคำตอบ & ปิด Ticket';
+                showToast('ไม่สามารถอัปเดตข้อมูลได้', 'error');
+                console.error(error);
+            } finally {
                 btn.disabled = false;
+                btn.classList.remove('opacity-90', 'cursor-not-allowed');
+                saveText.innerText = 'บันทึกและส่งอีเมล';
+                spinner.classList.add('hidden');
             }
+        }
+
+        // --- ระบบ Custom Toast Notification ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = 'animate-slide-in-right flex items-center p-4 mb-4 text-gray-800 bg-white rounded-xl shadow-lg border border-gray-100 min-w-[300px]';
+            
+            let iconHtml = type === 'success' 
+                ? '<div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg"><i class="fas fa-check"></i></div>'
+                : '<div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg"><i class="fas fa-exclamation-triangle"></i></div>';
+            
+            toast.innerHTML = `
+                ${iconHtml}
+                <div class="ml-3 text-sm font-medium font-prompt">${message}</div>
+                <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8" onclick="this.parentElement.remove()">
+                    <span class="sr-only">Close</span>
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // ลบอัตโนมัติหลัง 4 วินาที
+            setTimeout(() => {
+                if(container.contains(toast)) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
         }
     </script>
 </body>
