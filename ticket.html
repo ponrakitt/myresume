@@ -3,118 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ศูนย์ช่วยเหลือผู้ใช้งาน | Submit Ticket</title>
+    <title>ติดต่อเรา | Contact Us</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SweetAlert2 สำหรับแจ้งเตือนสวยๆ -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #f1f5f9;
         }
-        .bg-gradient-custom {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        
+        /* Custom Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
         }
+        .animate-blob {
+            animation: blob 10s infinite alternate;
+        }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Input Styling */
+        .premium-input {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.15);
+        }
+
         /* Loader */
         .loader {
-            border: 3px solid #f3f3f3; border-top: 3px solid #ffffff; border-radius: 50%;
-            width: 20px; height: 20px; animation: spin 1s linear infinite; display: none;
+            border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #ffffff; border-radius: 50%;
+            width: 18px; height: 18px; animation: spin 1s linear infinite; display: none;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-    
-    <!-- Background Decoration -->
-    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden selection:bg-indigo-500 selection:text-white">
 
-    <div class="w-full max-w-2xl glass-card rounded-2xl overflow-hidden relative z-10">
+    <!-- Animated Mesh Gradient Background -->
+    <div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-slate-50">
+        <div class="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-[40rem] h-[40rem] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Main Glass Container -->
+    <div class="w-full max-w-[1100px] bg-white/70 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden relative z-10 flex flex-col lg:flex-row fade-up">
         
-        <!-- Header -->
-        <div class="relative px-8 py-12 overflow-hidden bg-slate-900 text-white">
-            <!-- Decorative Glow Elements -->
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-            <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+        <!-- Left Side: Premium Contact Info -->
+        <div class="w-full lg:w-5/12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-10 lg:p-14 flex flex-col justify-between relative overflow-hidden group">
             
-            <div class="relative z-10 flex flex-col items-center text-center">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 mb-5 text-xs font-semibold tracking-widest text-blue-300 uppercase bg-blue-500/10 border border-blue-400/30 rounded-full shadow-sm">
-                    <i data-lucide="headphones" class="w-3.5 h-3.5"></i>
-                    Support Center
-                </span>
-                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
-                    How can we help you?
+            <!-- Abstract decorative circles -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full border border-white/10 transition-transform duration-700 group-hover:scale-110"></div>
+            <div class="absolute top-10 right-10 -mr-20 -mt-20 w-72 h-72 rounded-full border border-white/5 transition-transform duration-1000 group-hover:scale-125"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/20 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 text-xs font-semibold tracking-wider text-indigo-200 uppercase bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-inner">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                    Contact Support
+                </div>
+                
+                <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight mb-5 leading-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-100 to-slate-400">
+                    ติดต่อ<br>สอบถามข้อมูล
                 </h1>
-                <p class="text-slate-400 font-light text-sm md:text-base max-w-md mx-auto">
-                    ระบบแจ้งปัญหาและติดต่อแอดมิน กรอกข้อมูลด้านล่างเพื่อเปิด Ticket ใหม่
-                </p>
+
+                <div class="space-y-8 mt-12">
+                    <div class="flex items-start space-x-5 group/item">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 transition-colors group-hover/item:bg-indigo-500/20 group-hover/item:border-indigo-400/30">
+                            <i data-lucide="mail" class="w-5 h-5 text-indigo-300"></i>
+                        </div>
+                        <div class="pt-1">
+                            <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">ส่งอีเมลหาเรา</p>
+                            <p class="font-medium text-white text-lg">support@ponrakitt.site</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-10 mt-16 pt-8 border-t border-white/10 flex items-center justify-between">
+                <p class="text-sm text-slate-400">© 2026 Ponrakitt.site</p>
+                <div class="flex space-x-3">
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                </div>
             </div>
         </div>
 
-        <!-- Form -->
-        <form id="ticketForm" class="p-8 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Name -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
-                        </div>
-                        <input type="text" id="name" required class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-slate-50 placeholder-slate-400" placeholder="ระบุชื่อของคุณ">
+        <!-- Right Side: Clean Form -->
+        <div class="w-full lg:w-7/12 p-10 lg:p-14 bg-white/60">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800">ส่งข้อความถึงทีมงาน</h2>
+                <p class="text-slate-500 text-sm mt-1">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อให้เราช่วยเหลือคุณได้ดีที่สุด</p>
+            </div>
+            
+            <form id="contactForm" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">ชื่อ - นามสกุล <span class="text-indigo-500">*</span></label>
+                        <input type="text" id="name" required 
+                               class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
+                               placeholder="ระบุชื่อของคุณ">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">อีเมลติดต่อ <span class="text-indigo-500">*</span></label>
+                        <input type="email" id="email" required 
+                               class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
+                               placeholder="example@email.com">
                     </div>
                 </div>
 
-                <!-- Email -->
+                <!-- Subject -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">อีเมลติดต่อ <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="mail" class="h-5 w-5 text-slate-400"></i>
-                        </div>
-                        <input type="email" id="email" required class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-slate-50 placeholder-slate-400" placeholder="example@email.com">
-                    </div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">หัวข้อที่ต้องการสอบถาม <span class="text-indigo-500">*</span></label>
+                    <input type="text" id="subject" required 
+                           class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
+                           placeholder="เช่น สอบถามบริการ, ขอข้อมูลเพิ่มเติม, เสนอแนะ">
                 </div>
-            </div>
 
-            <!-- Subject -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">หัวข้อเรื่อง <span class="text-red-500">*</span></label>
-                <input type="text" id="subject" required class="block w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-slate-50 placeholder-slate-400" placeholder="เช่น ระบบขัดข้อง, สอบถามข้อมูล">
-            </div>
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">รายละเอียด / ข้อความ <span class="text-indigo-500">*</span></label>
+                    <textarea id="description" rows="4" required 
+                              class="premium-input block w-full px-5 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none resize-none" 
+                              placeholder="พิมพ์ข้อความของคุณที่นี่..."></textarea>
+                </div>
 
-            <!-- Description -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">รายละเอียดปัญหา <span class="text-red-500">*</span></label>
-                <textarea id="description" rows="5" required class="block w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-slate-50 placeholder-slate-400 resize-none" placeholder="อธิบายรายละเอียดปัญหาที่คุณพบ..."></textarea>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" id="submitBtn" class="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-blue-500/30">
-                <span id="btnText">ส่งข้อมูล (Submit Ticket)</span>
-                <i data-lucide="send" id="btnIcon" class="h-5 w-5"></i>
-                <div class="loader" id="btnLoader"></div>
-            </button>
-        </form>
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" id="submitBtn" 
+                            class="group relative w-full sm:w-auto inline-flex items-center justify-center bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold py-4 px-10 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_15px_30px_-10px_rgba(79,70,229,0.6)] overflow-hidden">
+                        
+                        <!-- Shine effect on hover -->
+                        <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                        
+                        <span id="btnText" class="relative z-10 text-[15px]">ส่งข้อความ</span>
+                        <i data-lucide="send" id="btnIcon" class="relative z-10 w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                        <div class="loader relative z-10 ml-2" id="btnLoader"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
         // กำหนดไอคอน Lucide
         lucide.createIcons();
 
-        // ** สิ่งสำคัญ: ใส่ URL ของเว็บแอป (Google Apps Script) ที่คุณ Deploy ลงที่นี่ **
+        // URL ของ Google Apps Script ที่ถูกต้อง
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxoupHfxfH3x6pvItELVW2wIXXTBi2zJi-1i3H9-7M_ZM5FxUJa64ITXItaTODl5-xKYw/exec";
 
-        document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // UI Loading state
@@ -124,7 +187,7 @@
             const btnLoader = document.getElementById('btnLoader');
 
             btn.disabled = true;
-            btn.classList.replace('bg-blue-600', 'bg-blue-400');
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
             btnText.textContent = "กำลังส่งข้อมูล...";
             btnIcon.style.display = 'none';
             btnLoader.style.display = 'block';
@@ -134,44 +197,53 @@
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 subject: document.getElementById('subject').value,
-                priority: '-', // กำหนดค่าเริ่มต้นแทนการดึงจาก Dropdown ที่ถูกลบออกไป
+                priority: '-', // ใส่ค่าว่างให้สอดคล้องกับโครงสร้างฐานข้อมูลเดิม
                 description: document.getElementById('description').value
             };
 
             try {
-                // เพิ่ม mode: 'no-cors' เพื่อบังคับข้ามการบล็อกของ Browser
+                // ส่งไปยัง Backend (ใช้ mode: no-cors เหมือนเดิม)
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    mode: 'no-cors', 
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: 'create', payload: payload })
                 });
 
-                // แสดงข้อความสำเร็จ (SweetAlert)
+                // แสดงข้อความสำเร็จ (SweetAlert) Premium Style
                 Swal.fire({
-                    title: 'ส่งข้อมูลสำเร็จ!',
-                    text: 'ระบบได้ส่งอีเมลยืนยันไปยังอีเมลของคุณแล้ว ทีมงานจะรีบดำเนินการครับ',
+                    title: 'ส่งข้อความสำเร็จ!',
+                    text: 'ระบบได้รับข้อความของคุณแล้ว ทีมงานจะรีบติดต่อกลับทางอีเมลครับ',
                     icon: 'success',
-                    confirmButtonColor: '#3b82f6',
-                    confirmButtonText: 'ตกลง'
+                    iconColor: '#4f46e5',
+                    confirmButtonColor: '#4f46e5',
+                    confirmButtonText: 'ตกลง',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
+                        confirmButton: 'rounded-xl px-8 py-3 font-semibold'
+                    }
                 });
                 
                 // รีเซ็ตฟอร์ม
-                document.getElementById('ticketForm').reset();
+                document.getElementById('contactForm').reset();
 
             } catch (error) {
                 console.error(error);
                 Swal.fire({
                     title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ',
+                    text: 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง',
                     icon: 'error',
-                    confirmButtonColor: '#ef4444'
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
+                        confirmButton: 'rounded-xl px-8 py-3 font-semibold'
+                    }
                 });
             } finally {
                 // คืนสถานะปุ่ม
                 btn.disabled = false;
-                btn.classList.replace('bg-blue-400', 'bg-blue-600');
-                btnText.textContent = "ส่งข้อมูล (Submit Ticket)";
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                btnText.textContent = "ส่งข้อความ";
                 btnIcon.style.display = 'block';
                 btnLoader.style.display = 'none';
             }
