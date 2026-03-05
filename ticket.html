@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ติดต่อเรา | Contact Us</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -57,20 +57,20 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-8 relative overflow-hidden selection:bg-indigo-500 selection:text-white">
 
     <!-- Animated Mesh Gradient Background -->
     <div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-slate-50">
-        <div class="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob"></div>
-        <div class="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-[40rem] h-[40rem] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[30rem] sm:w-[40rem] h-[30rem] sm:h-[40rem] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] animate-blob"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[30rem] sm:w-[40rem] h-[30rem] sm:h-[40rem] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-[30rem] sm:w-[40rem] h-[30rem] sm:h-[40rem] bg-purple-300/40 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] animate-blob animation-delay-4000"></div>
     </div>
 
     <!-- Main Glass Container -->
-    <div class="w-full max-w-[1100px] bg-white/70 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden relative z-10 flex flex-col lg:flex-row fade-up">
+    <div class="w-full max-w-[1100px] bg-white/70 backdrop-blur-xl rounded-3xl lg:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden relative z-10 flex flex-col lg:flex-row fade-up my-4 sm:my-0">
         
         <!-- Left Side: Premium Contact Info -->
-        <div class="w-full lg:w-5/12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-10 lg:p-14 flex flex-col justify-between relative overflow-hidden group">
+        <div class="w-full lg:w-5/12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 sm:p-10 lg:p-14 flex flex-col justify-between relative overflow-hidden group">
             
             <!-- Abstract decorative circles -->
             <div class="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full border border-white/10 transition-transform duration-700 group-hover:scale-110"></div>
@@ -78,7 +78,7 @@
             <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/20 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
 
             <div class="relative z-10">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 text-xs font-semibold tracking-wider text-indigo-200 uppercase bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-inner">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-6 lg:mb-8 text-xs font-semibold tracking-wider text-indigo-200 uppercase bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-inner">
                     <span class="relative flex h-2 w-2">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -86,82 +86,88 @@
                     Contact Support
                 </div>
                 
-                <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight mb-5 leading-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-100 to-slate-400">
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 lg:mb-5 leading-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-100 to-slate-400">
                     ติดต่อ<br>สอบถามข้อมูล
                 </h1>
-
-                <div class="space-y-8 mt-12">
-                    <div class="flex items-start space-x-5 group/item">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 transition-colors group-hover/item:bg-indigo-500/20 group-hover/item:border-indigo-400/30">
-                            <i data-lucide="mail" class="w-5 h-5 text-indigo-300"></i>
+                
+                <div class="space-y-6 lg:space-y-8 mt-8 lg:mt-12">
+                    <div class="flex items-start space-x-4 lg:space-x-5 group/item">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 transition-colors group-hover/item:bg-indigo-500/20 group-hover/item:border-indigo-400/30 shrink-0">
+                            <i data-lucide="mail" class="w-4 h-4 lg:w-5 lg:h-5 text-indigo-300"></i>
                         </div>
-                        <div class="pt-1">
-                            <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">ส่งอีเมลหาเรา</p>
-                            <p class="font-medium text-white text-lg">support@ponrakitt.site</p>
+                        <div class="pt-0.5 lg:pt-1 overflow-hidden">
+                            <p class="text-[10px] lg:text-xs text-slate-400 font-medium uppercase tracking-wider mb-0.5 lg:mb-1">ส่งอีเมลหาเรา</p>
+                            <p class="font-medium text-white text-base lg:text-lg truncate">support@ponrakitt.site</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="relative z-10 mt-16 pt-8 border-t border-white/10 flex items-center justify-between">
-                <p class="text-sm text-slate-400">© 2026 Ponrakitt.site</p>
+            <div class="relative z-10 mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-white/10 flex items-center justify-between">
+                <p class="text-xs lg:text-sm text-slate-400">© 2026 Ponrakitt.site</p>
                 <div class="flex space-x-3">
-                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="globe" class="w-4 h-4 lg:w-5 lg:h-5"></i></a>
                 </div>
             </div>
         </div>
 
         <!-- Right Side: Clean Form -->
-        <div class="w-full lg:w-7/12 p-10 lg:p-14 bg-white/60">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-800">ส่งข้อความถึงทีมงาน</h2>
-                <p class="text-slate-500 text-sm mt-1">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อให้เราช่วยเหลือคุณได้ดีที่สุด</p>
+        <div class="w-full lg:w-7/12 p-6 sm:p-10 lg:p-14 bg-white/60">
+            <div class="mb-6 lg:mb-8 flex justify-between items-start">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800">ส่งข้อความถึงทีมงาน</h2>
+                    <p class="text-slate-500 text-xs sm:text-sm mt-1">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อให้เราช่วยเหลือคุณได้ดีที่สุด</p>
+                </div>
+                <!-- ปุ่มคู่มือการใช้งาน -->
+                <button type="button" onclick="showGuide()" class="group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors shadow-sm border border-indigo-100 shrink-0 ml-3" title="คำแนะนำการใช้งาน">
+                    <i data-lucide="help-circle" class="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"></i>
+                </button>
             </div>
             
-            <form id="contactForm" class="space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <form id="contactForm" class="space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <!-- Name -->
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">ชื่อ - นามสกุล <span class="text-indigo-500">*</span></label>
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2 ml-1">ชื่อ - นามสกุล <span class="text-indigo-500">*</span></label>
                         <input type="text" id="name" required 
-                               class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
+                               class="premium-input block w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl sm:rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none text-sm sm:text-base" 
                                placeholder="ระบุชื่อของคุณ">
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">อีเมลติดต่อ <span class="text-indigo-500">*</span></label>
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2 ml-1">อีเมลติดต่อ <span class="text-indigo-500">*</span></label>
                         <input type="email" id="email" required 
-                               class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
+                               class="premium-input block w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl sm:rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none text-sm sm:text-base" 
                                placeholder="example@email.com">
                     </div>
                 </div>
 
                 <!-- Subject -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">หัวข้อที่ต้องการสอบถาม <span class="text-indigo-500">*</span></label>
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2 ml-1">หัวข้อที่ต้องการสอบถาม <span class="text-indigo-500">*</span></label>
                     <input type="text" id="subject" required 
-                           class="premium-input block w-full px-5 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none" 
-                           placeholder="เช่น สอบถามบริการ, ขอข้อมูลเพิ่มเติม, เสนอแนะ">
+                           class="premium-input block w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl sm:rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none text-sm sm:text-base" 
+                           placeholder="เช่น สอบถามบริการ, ขอข้อมูลเพิ่มเติม">
                 </div>
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">รายละเอียด / ข้อความ <span class="text-indigo-500">*</span></label>
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2 ml-1">รายละเอียด / ข้อความ <span class="text-indigo-500">*</span></label>
                     <textarea id="description" rows="4" required 
-                              class="premium-input block w-full px-5 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none resize-none" 
+                              class="premium-input block w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50/50 border border-slate-200 rounded-xl sm:rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none resize-none text-sm sm:text-base" 
                               placeholder="พิมพ์ข้อความของคุณที่นี่..."></textarea>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="pt-2">
                     <button type="submit" id="submitBtn" 
-                            class="group relative w-full sm:w-auto inline-flex items-center justify-center bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold py-4 px-10 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_15px_30px_-10px_rgba(79,70,229,0.6)] overflow-hidden">
+                            class="group relative w-full inline-flex items-center justify-center bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold py-3.5 sm:py-4 px-10 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_15px_30px_-10px_rgba(79,70,229,0.6)] overflow-hidden">
                         
                         <!-- Shine effect on hover -->
                         <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                         
-                        <span id="btnText" class="relative z-10 text-[15px]">ส่งข้อความ</span>
+                        <span id="btnText" class="relative z-10 text-sm sm:text-[15px]">ส่งข้อความ</span>
                         <i data-lucide="send" id="btnIcon" class="relative z-10 w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
                         <div class="loader relative z-10 ml-2" id="btnLoader"></div>
                     </button>
@@ -177,6 +183,56 @@
         // URL ของ Google Apps Script ที่ถูกต้อง
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxoupHfxfH3x6pvItELVW2wIXXTBi2zJi-1i3H9-7M_ZM5FxUJa64ITXItaTODl5-xKYw/exec";
 
+        // ฟังก์ชันแสดงคำแนะนำการใช้งาน
+        function showGuide() {
+            Swal.fire({
+                title: 'คำแนะนำการใช้งาน',
+                html: `
+                    <div class="text-left space-y-3 sm:space-y-4 mt-4">
+                        <div class="flex items-start gap-3 p-3 sm:p-4 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl transition-colors hover:bg-slate-100">
+                            <div class="bg-indigo-100 text-indigo-600 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0"><i data-lucide="edit-3" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-xs sm:text-sm">1. กรอกข้อมูลให้ครบถ้วน</p>
+                                <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">ระบุชื่อ อีเมล หัวข้อ และรายละเอียดให้ชัดเจนเพื่อให้ทีมงานวิเคราะห์และช่วยเหลือได้ตรงจุด</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 sm:p-4 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl transition-colors hover:bg-slate-100">
+                            <div class="bg-blue-100 text-blue-600 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0"><i data-lucide="send" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-xs sm:text-sm">2. กดส่งข้อความ</p>
+                                <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">คลิกที่ปุ่ม "ส่งข้อความ" ด้านล่าง และรอจนกว่าหน้าต่างจะขึ้นสถานะว่า 'ส่งข้อความสำเร็จ'</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 sm:p-4 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl transition-colors hover:bg-slate-100">
+                            <div class="bg-emerald-100 text-emerald-600 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0"><i data-lucide="mail-check" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-xs sm:text-sm">3. รอรับอีเมลยืนยัน</p>
+                                <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">ระบบจะส่งอีเมลตอบกลับอัตโนมัติ (พร้อม Ticket ID) ไปยังอีเมลที่คุณระบุไว้เป็นหลักฐาน</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 sm:p-4 bg-amber-50 border border-amber-100 rounded-xl sm:rounded-2xl transition-colors hover:bg-amber-100">
+                            <div class="bg-amber-100 text-amber-600 p-2 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0"><i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                            <div>
+                                <p class="font-semibold text-amber-900 text-xs sm:text-sm">4. ระยะเวลาดำเนินการ</p>
+                                <p class="text-[10px] sm:text-xs text-amber-700 mt-0.5 sm:mt-1">ทีมงานตรวจสอบและติดต่อกลับ 3-7 วัน (โปรดหลีกเลี่ยงการเปิด Ticket ซ้ำ เพื่อความรวดเร็ว)</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    title: 'text-lg sm:text-xl',
+                    popup: 'rounded-[1.5rem] sm:rounded-3xl shadow-2xl border border-slate-100 w-[95%] sm:w-[500px]'
+                },
+                didOpen: () => {
+                    // เรียกให้วาดไอคอนใหม่ภายใน popup
+                    lucide.createIcons();
+                }
+            });
+        }
+
+        // จัดการเหตุการณ์เมื่อกดส่งฟอร์ม
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -202,7 +258,7 @@
             };
 
             try {
-                // ส่งไปยัง Backend (ใช้ mode: no-cors เหมือนเดิม)
+                // ส่งไปยัง Backend (ใช้ mode: no-cors)
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -219,8 +275,8 @@
                     confirmButtonColor: '#4f46e5',
                     confirmButtonText: 'ตกลง',
                     customClass: {
-                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
-                        confirmButton: 'rounded-xl px-8 py-3 font-semibold'
+                        popup: 'rounded-[1.5rem] sm:rounded-3xl shadow-2xl border border-slate-100 w-[90%] sm:w-auto',
+                        confirmButton: 'rounded-xl px-6 sm:px-8 py-2.5 sm:py-3 font-semibold'
                     }
                 });
                 
@@ -235,8 +291,8 @@
                     icon: 'error',
                     confirmButtonColor: '#ef4444',
                     customClass: {
-                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
-                        confirmButton: 'rounded-xl px-8 py-3 font-semibold'
+                        popup: 'rounded-[1.5rem] sm:rounded-3xl shadow-2xl border border-slate-100 w-[90%] sm:w-auto',
+                        confirmButton: 'rounded-xl px-6 sm:px-8 py-2.5 sm:py-3 font-semibold'
                     }
                 });
             } finally {
