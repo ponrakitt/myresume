@@ -6,6 +6,7 @@
 <title>Admin — ระบบติดตามสินค้า</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
@@ -19,7 +20,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 /* Sidebar */
 .sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--navy);
   display:flex;flex-direction:column;z-index:100;overflow:hidden;}
-.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
 .sidebar-logo h1{font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px;}
 .sidebar-logo p{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
 .nav{flex:1;padding:12px 0;overflow-y:auto;}
@@ -27,18 +28,18 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   cursor:pointer;font-size:14px;font-weight:500;transition:.2s;border-left:3px solid transparent;}
 .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
 .nav-item.active{background:rgba(37,99,235,.2);color:#fff;border-left-color:var(--blue);}
-.nav-item .icon{font-size:18px;width:20px;text-align:center;}
+.nav-item .icon{width:20px;height:20px;}
 
 /* Main */
-.main{margin-left:240px;min-height:100vh;}
+.main{margin-left:240px;min-height:100vh;display:flex;flex-direction:column;}
 .topbar{background:var(--card);border-bottom:1px solid var(--border);
   padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:50;}
 .topbar h2{font-size:18px;font-weight:600;color:var(--text);}
 .topbar-right{display:flex;align-items:center;gap:12px;}
-.badge-user{background:var(--blue);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;}
+.badge-user{background:var(--blue);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;}
 
-.content{padding:28px;}
+.content{padding:28px;flex:1;}
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
@@ -54,7 +55,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 /* Card */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
 .card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-size:16px;font-weight:600;}
+.card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
 .card-body{padding:24px;}
 
 /* Buttons */
@@ -92,13 +93,13 @@ tr:hover td{background:#f8fafc;}
 /* Status Badge */
 .status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
   border-radius:20px;font-size:12px;font-weight:500;}
-.s-pending{background:#fef9c3;color:#854d0e;}
+.s-pending{background:#fefce8;color:#854d0e;}
 .s-preparing{background:#fff7ed;color:#c2410c;}
 .s-ready{background:#f0fdf4;color:#166534;}
 .s-out_for_delivery{background:#eff6ff;color:#1d4ed8;}
 .s-delivered{background:#f0fdf4;color:#15803d;}
 .s-cancelled{background:#fef2f2;color:#991b1b;}
-.s-confirmed{background:#f0fdf4;color:#166534;}
+.s-confirmed{background:#f5f3ff;color:#6d28d9;}
 
 /* Modal */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
@@ -109,14 +110,16 @@ tr:hover td{background:#f8fafc;}
   display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:17px;font-weight:600;}
 .modal-body{padding:24px;}
-.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--muted);display:flex;}
 
 /* QR Section */
-.qr-box{background:#f8fafc;border:2px dashed var(--border);border-radius:12px;
-  padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;}
-.qr-id{font-size:22px;font-weight:700;color:var(--blue);letter-spacing:2px;font-family:monospace;}
+.qr-dual-container{display:flex;gap:16px;flex-wrap:wrap;}
+.qr-box{flex:1;min-width:240px;background:#f8fafc;border:2px dashed var(--border);border-radius:12px;
+  padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.qr-box h4{font-size:14px;color:var(--text);margin-bottom:4px;}
+.qr-id{font-size:18px;font-weight:700;color:var(--blue);letter-spacing:1px;font-family:monospace;}
 .url-box{background:#f1f5f9;border:1px solid var(--border);border-radius:8px;
-  padding:10px 14px;font-size:12px;word-break:break-all;color:var(--muted);width:100%;}
+  padding:10px 14px;font-size:11px;word-break:break-all;color:var(--muted);width:100%;text-align:left;}
 
 /* Timeline */
 .timeline{display:flex;flex-direction:column;gap:0;}
@@ -124,8 +127,8 @@ tr:hover td{background:#f8fafc;}
 .tl-item::before{content:'';position:absolute;left:15px;top:32px;bottom:-12px;
   width:2px;background:var(--border);}
 .tl-item:last-child::before{display:none;}
-.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--blue);
-  display:flex;align-items:center;justify-content:center;font-size:14px;
+.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
   flex-shrink:0;z-index:1;}
 .tl-content{flex:1;}
 .tl-status{font-size:14px;font-weight:600;margin-bottom:2px;}
@@ -141,7 +144,7 @@ tr:hover td{background:#f8fafc;}
 /* Search */
 .search-box{flex:1;min-width:200px;max-width:300px;position:relative;}
 .search-box input{width:100%;padding-left:36px;}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);width:16px;height:16px;}
 
 /* Hidden */
 .hidden{display:none!important;}
@@ -151,15 +154,18 @@ tr:hover td{background:#f8fafc;}
 /* Responsive */
 @media(max-width:768px){
   .sidebar{width:64px;}
-  .sidebar-logo,.nav-item span{display:none;}
+  .sidebar-logo div,.nav-item span{display:none;}
   .main{margin-left:64px;}
   .form-grid{grid-template-columns:1fr;}
   .stats{grid-template-columns:1fr 1fr;}
 }
 
-.loading{text-align:center;padding:48px;color:var(--muted);}
-.loading .spin{font-size:32px;display:block;margin-bottom:8px;animation:spin .8s linear infinite;}
+.loading{text-align:center;padding:48px;color:var(--muted);display:flex;flex-direction:column;align-items:center;}
+.loading .spin{display:block;margin-bottom:8px;animation:spin .8s linear infinite;color:var(--blue);}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+.site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
+.site-footer p{margin-bottom:4px;}
 </style>
 </head>
 <body>
@@ -167,18 +173,21 @@ tr:hover td{background:#f8fafc;}
 <!-- Sidebar -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <h1>📦 TrackAdmin</h1>
-    <p>ระบบจัดการจัดส่ง</p>
+    <i data-lucide="box" style="color:#fff;"></i>
+    <div>
+      <h1>TrackAdmin</h1>
+      <p>ระบบจัดการจัดส่ง</p>
+    </div>
   </div>
   <nav class="nav">
     <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="icon">📊</span><span>แดชบอร์ด</span>
+      <i data-lucide="bar-chart-2" class="icon"></i><span>แดชบอร์ด</span>
     </div>
     <div class="nav-item" onclick="showPage('orders')">
-      <span class="icon">📋</span><span>รายการสินค้า</span>
+      <i data-lucide="clipboard-list" class="icon"></i><span>รายการสินค้า</span>
     </div>
     <div class="nav-item" onclick="showPage('create')">
-      <span class="icon">➕</span><span>สร้างออเดอร์ใหม่</span>
+      <i data-lucide="plus-circle" class="icon"></i><span>สร้างออเดอร์ใหม่</span>
     </div>
   </nav>
 </aside>
@@ -188,7 +197,7 @@ tr:hover td{background:#f8fafc;}
   <div class="topbar">
     <h2 id="page-title">แดชบอร์ด</h2>
     <div class="topbar-right">
-      <span class="badge-user">👤 Admin</span>
+      <span class="badge-user"><i data-lucide="user" style="width:14px;height:14px;"></i> Admin</span>
     </div>
   </div>
 
@@ -208,11 +217,11 @@ tr:hover td{background:#f8fafc;}
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">ออเดอร์ล่าสุด</span>
-          <button class="btn btn-primary btn-sm" onclick="loadAllOrders()">🔄 รีเฟรช</button>
+          <span class="card-title"><i data-lucide="clock" style="width:18px;"></i> ออเดอร์ล่าสุด</span>
+          <button class="btn btn-primary btn-sm" onclick="loadAllOrders()"><i data-lucide="refresh-cw" style="width:14px;"></i> รีเฟรช</button>
         </div>
         <div class="card-body" style="padding:0;">
-          <div id="recent-orders"><div class="loading"><span class="spin">⏳</span>กำลังโหลด...</div></div>
+          <div id="recent-orders"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
         </div>
       </div>
     </div>
@@ -221,10 +230,10 @@ tr:hover td{background:#f8fafc;}
     <div id="page-orders" class="page">
       <div class="card">
         <div class="card-header" style="flex-wrap:wrap;gap:12px;">
-          <span class="card-title">รายการออเดอร์ทั้งหมด</span>
+          <span class="card-title"><i data-lucide="list" style="width:18px;"></i> รายการออเดอร์ทั้งหมด</span>
           <div class="filter-bar">
             <div class="search-box">
-              <span class="search-icon">🔍</span>
+              <i data-lucide="search" class="search-icon"></i>
               <input type="text" id="search-input" placeholder="ค้นหาเลขติดตาม / ชื่อลูกค้า" oninput="filterOrders()"/>
             </div>
             <button class="filter-btn active" data-filter="" onclick="setFilter(this,'')">ทั้งหมด</button>
@@ -237,7 +246,7 @@ tr:hover td{background:#f8fafc;}
           </div>
         </div>
         <div class="card-body" style="padding:0;">
-          <div id="orders-table"><div class="loading"><span class="spin">⏳</span>กำลังโหลด...</div></div>
+          <div id="orders-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
         </div>
       </div>
     </div>
@@ -246,7 +255,7 @@ tr:hover td{background:#f8fafc;}
     <div id="page-create" class="page">
       <div class="card" style="max-width:680px;margin:0 auto;">
         <div class="card-header">
-          <span class="card-title">➕ สร้างออเดอร์ใหม่</span>
+          <span class="card-title"><i data-lucide="plus-circle" style="width:18px;"></i> สร้างออเดอร์ใหม่</span>
         </div>
         <div class="card-body">
           <div class="form-grid">
@@ -264,14 +273,21 @@ tr:hover td{background:#f8fafc;}
             </div>
           </div>
           <div style="margin-top:20px;display:flex;gap:10px;">
-            <button class="btn btn-primary" onclick="createOrder()">✅ สร้างออเดอร์</button>
-            <button class="btn btn-outline" onclick="clearForm()">🗑 ล้างข้อมูล</button>
+            <button class="btn btn-primary" onclick="createOrder()"><i data-lucide="check" style="width:16px;"></i> สร้างออเดอร์</button>
+            <button class="btn btn-outline" onclick="clearForm()"><i data-lucide="trash-2" style="width:16px;"></i> ล้างข้อมูล</button>
           </div>
           <div id="create-msg" style="margin-top:16px;"></div>
         </div>
       </div>
     </div>
 
+  </div>
+
+  <!-- Footer -->
+  <div class="site-footer">
+    <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
+    <p>All rights reserved by wanflorist.net</p>
+    <p>Designed and co-developed by ponrakitt.site</p>
   </div>
 </div>
 
@@ -280,7 +296,7 @@ tr:hover td{background:#f8fafc;}
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">รายละเอียดออเดอร์</span>
-      <button class="close-btn" onclick="closeModal('modal-detail')">✕</button>
+      <button class="close-btn" onclick="closeModal('modal-detail')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
     <div class="modal-body" id="modal-detail-body">
     </div>
@@ -289,26 +305,35 @@ tr:hover td{background:#f8fafc;}
 
 <!-- QR MODAL -->
 <div id="modal-qr" class="modal-bg hidden">
-  <div class="modal">
+  <div class="modal" style="max-width:700px;">
     <div class="modal-header">
       <span class="modal-title">QR Code & ลิงก์ติดตาม</span>
-      <button class="close-btn" onclick="closeModal('modal-qr')">✕</button>
+      <button class="close-btn" onclick="closeModal('modal-qr')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
     <div class="modal-body">
-      <div class="qr-box">
-        <div class="qr-id" id="qr-tid"></div>
-        <div id="qr-canvas"></div>
-        <div style="width:100%;">
-          <p style="font-size:12px;color:var(--muted);margin-bottom:6px;">ลิงก์สำหรับลูกค้า:</p>
+      <div class="qr-dual-container">
+        
+        <!-- Customer QR -->
+        <div class="qr-box">
+          <h4>สำหรับลูกค้า (ติดตามสถานะ)</h4>
+          <div class="qr-id" id="qr-tid"></div>
+          <div id="qr-canvas-customer"></div>
           <div class="url-box" id="qr-url"></div>
-          <p style="font-size:12px;color:var(--muted);margin-top:10px;">ลิงก์สำหรับผู้จัดส่ง:</p>
+          <button class="btn btn-primary btn-sm" onclick="copyURL('qr-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์ลูกค้า</button>
+        </div>
+
+        <!-- Driver QR -->
+        <div class="qr-box">
+          <h4>สำหรับผู้จัดส่ง (อัปเดตสถานะ)</h4>
+          <div class="qr-id" id="qr-tid-driver"></div>
+          <div id="qr-canvas-driver"></div>
           <div class="url-box" id="qr-delivery-url"></div>
+          <button class="btn btn-outline btn-sm" onclick="copyURL('qr-delivery-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์จัดส่ง</button>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm" onclick="copyURL('qr-url')">📋 คัดลอกลิงก์ลูกค้า</button>
-          <button class="btn btn-outline btn-sm" onclick="copyURL('qr-delivery-url')">📋 คัดลอกลิงก์ผู้จัดส่ง</button>
-          <button class="btn btn-green btn-sm" onclick="printQR()">🖨 พิมพ์ QR</button>
-        </div>
+
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="btn btn-green" onclick="printQR()"><i data-lucide="printer" style="width:16px;"></i> พิมพ์ QR</button>
       </div>
     </div>
   </div>
@@ -318,8 +343,8 @@ tr:hover td{background:#f8fafc;}
 <div id="modal-cancel" class="modal-bg hidden">
   <div class="modal" style="max-width:400px;">
     <div class="modal-header">
-      <span class="modal-title">❌ ยืนยันการยกเลิก</span>
-      <button class="close-btn" onclick="closeModal('modal-cancel')">✕</button>
+      <span class="modal-title" style="color:var(--red);">ยืนยันการยกเลิก</span>
+      <button class="close-btn" onclick="closeModal('modal-cancel')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
     <div class="modal-body">
       <p style="color:var(--muted);margin-bottom:16px;">ระบุเหตุผลการยกเลิก (ไม่บังคับ)</p>
@@ -335,13 +360,15 @@ tr:hover td{background:#f8fafc;}
 
 <script>
 // ── CONFIG ──────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec'; // ← ใส่ URL ของ Apps Script
-const TRACKING_BASE = 'https://ponrakitt.site/tracking.html';
-const DELIVERY_BASE = 'https://ponrakitt.site/delivery.html';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
+const TRACKING_BASE = ('http://ponrakitt.site/admin.html', 'http://ponrakitt.site/tracking.html');
+const DELIVERY_BASE = ('http://ponrakitt.site/admin.html', 'http://ponrakitt.site/delivery.html');
 
 // ── State ────────────────────────────────────────────
 let allOrders = [];
 let currentFilter = '';
+
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
 
 // ── API ──────────────────────────────────────────────
 async function api(payload) {
@@ -359,12 +386,12 @@ const STATUS_TH = {
   out_for_delivery:'กำลังจัดส่ง', delivered:'จัดส่งสำเร็จ', cancelled:'ยกเลิก', confirmed:'ลูกค้ารับแล้ว'
 };
 const STATUS_ICON = {
-  pending:'🕐', preparing:'🔧', ready:'📦',
-  out_for_delivery:'🚚', delivered:'✅', cancelled:'❌', confirmed:'🎉'
+  pending:'clock', preparing:'wrench', ready:'package',
+  out_for_delivery:'truck', delivered:'check-circle', cancelled:'x-circle', confirmed:'party-popper'
 };
 
 function statusBadge(s) {
-  return `<span class="status s-${s}">${STATUS_ICON[s]||'📋'} ${STATUS_TH[s]||s}</span>`;
+  return `<span class="status s-${s}"><i data-lucide="${STATUS_ICON[s]||'clipboard-list'}" style="width:12px;height:12px;"></i> ${STATUS_TH[s]||s}</span>`;
 }
 
 function fmtDate(iso) {
@@ -441,8 +468,8 @@ function renderTable(list, containerId) {
       <td style="font-size:12px;color:var(--muted);">${fmtDate(o.created_at)}</td>
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <button class="btn btn-outline btn-sm" onclick="showDetail('${o.tracking_id}')">👁 ดู</button>
-          <button class="btn btn-sm" style="background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;" onclick="showQR('${o.tracking_id}')">QR</button>
+          <button class="btn btn-outline btn-sm" onclick="showDetail('${o.tracking_id}')"><i data-lucide="eye" style="width:14px;"></i> ดู</button>
+          <button class="btn btn-sm" style="background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;" onclick="showQR('${o.tracking_id}')"><i data-lucide="qr-code" style="width:14px;"></i> QR</button>
           ${o.status!=='cancelled'&&o.status!=='confirmed'?`<button class="btn btn-danger btn-sm" onclick="openCancel('${o.tracking_id}')">ยกเลิก</button>`:''}
         </div>
       </td>
@@ -450,6 +477,7 @@ function renderTable(list, containerId) {
     </tbody>
   </table>
   </div>`;
+  lucide.createIcons();
 }
 
 function setFilter(el, filter) {
@@ -468,13 +496,12 @@ async function showDetail(tid) {
   const o = res.order;
   const canConfirm = o.status === 'delivered';
   const canCancel  = !['cancelled','confirmed'].includes(o.status);
-  const canUpdateStatus = !['cancelled','confirmed'].includes(o.status);
 
   const nextStatuses = {
-    pending:    [['preparing','🔧 เริ่มเตรียมสินค้า']],
-    preparing:  [['ready','📦 เตรียมเสร็จ / รอจัดส่ง']],
-    ready:      [['out_for_delivery','🚚 ออกจัดส่งแล้ว']],
-    out_for_delivery: [['delivered','✅ จัดส่งสำเร็จ']],
+    pending:    [['preparing','เริ่มเตรียมสินค้า']],
+    preparing:  [['ready','เตรียมเสร็จ / รอจัดส่ง']],
+    ready:      [['out_for_delivery','ออกจัดส่งแล้ว']],
+    out_for_delivery: [['delivered','จัดส่งสำเร็จ']],
     delivered:  [],
   };
   const nexts = nextStatuses[o.status] || [];
@@ -503,25 +530,26 @@ async function showDetail(tid) {
       </div>
     </div>`:''}
 
-    ${canConfirm?`<button class="btn btn-green" style="margin-bottom:12px;width:100%;" onclick="doConfirmReceipt('${o.tracking_id}')">🎉 ยืนยันการรับสินค้า (Admin)</button>`:''}
-    ${canCancel?`<button class="btn btn-danger btn-sm" onclick="closeModal('modal-detail');openCancel('${o.tracking_id}')">❌ ยกเลิกออเดอร์</button>`:''}
+    ${canConfirm?`<button class="btn btn-green" style="margin-bottom:12px;width:100%;" onclick="doConfirmReceipt('${o.tracking_id}')"><i data-lucide="check" style="width:16px;"></i> ยืนยันการรับสินค้า (Admin)</button>`:''}
+    ${canCancel?`<button class="btn btn-danger btn-sm" onclick="closeModal('modal-detail');openCancel('${o.tracking_id}')">ยกเลิกออเดอร์</button>`:''}
 
     <hr style="margin:16px 0;border-color:var(--border);">
     <p style="font-weight:600;margin-bottom:12px;">ประวัติสถานะ</p>
     <div class="timeline">
       ${(o.history||[]).reverse().map(h=>`
         <div class="tl-item">
-          <div class="tl-dot">${STATUS_ICON[h.status]||'📋'}</div>
+          <div class="tl-dot"><i data-lucide="${STATUS_ICON[h.status]||'clipboard-list'}" style="width:16px;"></i></div>
           <div class="tl-content">
             <div class="tl-status">${STATUS_TH[h.status]||h.status}</div>
             <div class="tl-time">${fmtDate(h.timestamp)} ${h.updated_by?`• ${h.updated_by}`:''}</div>
             ${h.notes?`<div class="tl-note">${h.notes}</div>`:''}
-            ${h.gps_lat?`<div class="tl-note">📍 ${h.gps_lat}, ${h.gps_lng}</div>`:''}
+            ${h.gps_lat?`<div class="tl-note"><i data-lucide="map-pin" style="width:12px;"></i> ${h.gps_lat}, ${h.gps_lng}</div>`:''}
           </div>
         </div>`).join('')}
     </div>
   `;
   showModal('modal-detail');
+  lucide.createIcons();
 }
 
 async function changeStatus(tid, status) {
@@ -540,21 +568,40 @@ async function doConfirmReceipt(tid) {
 // ── QR Modal ──────────────────────────────────────────
 function showQR(tid) {
   document.getElementById('qr-tid').textContent = tid;
+  document.getElementById('qr-tid-driver').textContent = tid;
+  
   const trackingURL  = `${TRACKING_BASE}?id=${tid}`;
   const deliveryURL  = `${DELIVERY_BASE}?id=${tid}`;
+  
   document.getElementById('qr-url').textContent = trackingURL;
   document.getElementById('qr-delivery-url').textContent = deliveryURL;
-  document.getElementById('qr-canvas').innerHTML = '';
-  new QRCode(document.getElementById('qr-canvas'), {
+  
+  document.getElementById('qr-canvas-customer').innerHTML = '';
+  document.getElementById('qr-canvas-driver').innerHTML = '';
+  
+  new QRCode(document.getElementById('qr-canvas-customer'), {
     text: trackingURL, width:160, height:160, colorDark:'#0f172a', colorLight:'#ffffff',
     correctLevel: QRCode.CorrectLevel.M
   });
+  
+  new QRCode(document.getElementById('qr-canvas-driver'), {
+    text: deliveryURL, width:160, height:160, colorDark:'#1d4ed8', colorLight:'#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  
   showModal('modal-qr');
 }
 
 function copyURL(elId) {
   const text = document.getElementById(elId).textContent;
-  navigator.clipboard.writeText(text).then(()=>alert('คัดลอกแล้ว!'));
+  // Fallback for document.execCommand
+  const el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  alert('คัดลอกแล้ว!');
 }
 
 function printQR() {
@@ -584,23 +631,26 @@ async function createOrder() {
   if(!name||!product||!address){alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');return;}
 
   const msgEl = document.getElementById('create-msg');
-  msgEl.innerHTML = '<span style="color:var(--muted)">⏳ กำลังสร้างออเดอร์...</span>';
+  msgEl.innerHTML = '<span style="color:var(--muted);display:flex;align-items:center;gap:6px;"><i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังสร้างออเดอร์...</span>';
+  lucide.createIcons();
 
   const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address});
   if(res.success){
     msgEl.innerHTML = `
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;">
-        <p style="font-weight:600;color:var(--green);margin-bottom:8px;">✅ สร้างออเดอร์สำเร็จ!</p>
+        <p style="font-weight:600;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i data-lucide="check-circle" style="width:18px;"></i> สร้างออเดอร์สำเร็จ!</p>
         <p>เลขติดตาม: <strong style="font-family:monospace;font-size:18px;color:var(--blue);">${res.trackingId}</strong></p>
         <div style="display:flex;gap:8px;margin-top:12px;">
-          <button class="btn btn-primary btn-sm" onclick="showQR('${res.trackingId}')">🔲 ดู QR Code</button>
-          <button class="btn btn-outline btn-sm" onclick="showPage('orders')">📋 ดูรายการทั้งหมด</button>
+          <button class="btn btn-primary btn-sm" onclick="showQR('${res.trackingId}')"><i data-lucide="qr-code" style="width:14px;"></i> ดู QR Code</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('orders')"><i data-lucide="list" style="width:14px;"></i> ดูรายการทั้งหมด</button>
         </div>
       </div>`;
     clearForm();
     await loadAllOrders();
+    lucide.createIcons();
   } else {
-    msgEl.innerHTML = `<p style="color:var(--red);">❌ ${res.message||'เกิดข้อผิดพลาด'}</p>`;
+    msgEl.innerHTML = `<p style="color:var(--red);display:flex;align-items:center;gap:6px;"><i data-lucide="x-circle" style="width:16px;"></i> ${res.message||'เกิดข้อผิดพลาด'}</p>`;
+    lucide.createIcons();
   }
 }
 
