@@ -447,6 +447,16 @@ function stopScan(){
 
 // ── Depart Store ──────────────────────────────────────
 async function departStore() {
+  showLoading('กำลังตรวจสอบสถานะ...');
+  // ตรวจสอบก่อนเสมอ ป้องกัน Admin กดยกเลิกระหว่างทำงาน
+  const checkRes = await api({action:'getOrder', trackingId: currentOrder.tracking_id});
+  if(checkRes.success && checkRes.order.status === 'cancelled') {
+     hideLoading();
+     alert('ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
+     resetAll();
+     return;
+  }
+
   showLoading('กำลังอัปเดตสถานะ...');
   const gps    = await getGPS();
   const driver = document.getElementById('driver-name').value.trim();
@@ -559,10 +569,22 @@ function updatePhotoUI() {
 // ── Submit Delivery ───────────────────────────────────
 async function submitDelivery() {
   if(photos.length<1){alert('กรุณาถ่ายรูปอย่างน้อย 1 รูป');return;}
+  
+  showLoading('กำลังตรวจสอบสถานะ...');
+  deliveryTID = currentOrder.tracking_id;
+  
+  // ตรวจสอบสถานะก่อนเริ่มอัปโหลดรูปภาพเสมอ เพื่อตัดจบการทำงานหากโดน Cancel
+  const checkRes = await api({action:'getOrder', trackingId: deliveryTID});
+  if(checkRes.success && checkRes.order.status === 'cancelled') {
+     hideLoading();
+     alert('ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
+     resetAll();
+     return;
+  }
+
   showLoading('กำลังรวมรูปและอัปโหลด...');
   const gps = await getGPS();
   currentGPS = gps;
-  deliveryTID = currentOrder.tracking_id;
 
   // Combine photos
   const combinedBase64 = await combinePhotos(photos, deliveryTID, gps);
