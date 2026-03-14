@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
@@ -492,7 +493,7 @@ function filterOrders() { renderOrdersTable(); }
 // ── Detail Modal ──────────────────────────────────────
 async function showDetail(tid) {
   const res = await api({action:'getOrder', trackingId:tid});
-  if(!res.success) return alert(res.message);
+  if(!res.success) return Swal.fire('ข้อผิดพลาด', res.message, 'error');
   const o = res.order;
   const canConfirm = o.status === 'delivered';
   const canCancel  = !['cancelled','confirmed'].includes(o.status);
@@ -553,28 +554,48 @@ async function showDetail(tid) {
 }
 
 async function changeStatus(tid, status) {
-  if(!confirm(`เปลี่ยนสถานะเป็น "${STATUS_TH[status]}" ใช่ไหม?`)) return;
+  const result = await Swal.fire({
+    title: 'ยืนยันการเปลี่ยนสถานะ',
+    text: `เปลี่ยนสถานะเป็น "${STATUS_TH[status]}" ใช่ไหม?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: 'var(--blue)'
+  });
+  if(!result.isConfirmed) return;
+  
   const res = await api({action:'updateStatus', trackingId:tid, status, updatedBy:'admin'});
   if(res.success){
     closeModal('modal-detail'); 
     await loadAllOrders(); 
-    alert('อัปเดตสำเร็จ');
+    Swal.fire('สำเร็จ', 'อัปเดตสถานะสำเร็จ', 'success');
   } else { 
-    alert(res.message||'เกิดข้อผิดพลาด'); 
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error'); 
     closeModal('modal-detail'); 
     await loadAllOrders(); 
   }
 }
 
 async function doConfirmReceipt(tid) {
-  if(!confirm('ยืนยันว่าลูกค้ารับสินค้าแล้ว?')) return;
+  const result = await Swal.fire({
+    title: 'ยืนยันการรับสินค้า',
+    text: 'ยืนยันว่าลูกค้ารับสินค้าแล้ว?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: 'var(--green)'
+  });
+  if(!result.isConfirmed) return;
+
   const res = await api({action:'confirmReceipt', trackingId:tid, updatedBy:'admin'});
   if(res.success){
     closeModal('modal-detail'); 
     await loadAllOrders(); 
-    alert('ยืนยันสำเร็จ');
+    Swal.fire('สำเร็จ', 'ยืนยันการรับสินค้าสำเร็จ', 'success');
   } else {
-    alert(res.message||'เกิดข้อผิดพลาด'); 
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error'); 
     closeModal('modal-detail'); 
     await loadAllOrders(); 
   }
@@ -616,7 +637,7 @@ function copyURL(elId) {
   el.select();
   document.execCommand('copy');
   document.body.removeChild(el);
-  alert('คัดลอกแล้ว!');
+  Swal.fire({title: 'คัดลอกลิงก์แล้ว!', icon: 'success', timer: 1500, showConfirmButton: false});
 }
 
 function printQR() {
@@ -634,8 +655,12 @@ async function doCancel() {
   const tid    = document.getElementById('cancel-tid').value;
   const reason = document.getElementById('cancel-reason').value;
   const res    = await api({action:'cancelOrder', trackingId:tid, reason});
-  if(res.success){closeModal('modal-cancel'); await loadAllOrders(); alert('ยกเลิกออเดอร์แล้ว');}
-  else alert(res.message||'เกิดข้อผิดพลาด');
+  if(res.success){
+    closeModal('modal-cancel'); 
+    await loadAllOrders(); 
+    Swal.fire('สำเร็จ', 'ยกเลิกออเดอร์แล้ว', 'success');
+  }
+  else Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
 }
 
 // ── Create Order ──────────────────────────────────────
@@ -643,7 +668,7 @@ async function createOrder() {
   const name    = document.getElementById('f-name').value.trim();
   const product = document.getElementById('f-product').value.trim();
   const address = document.getElementById('f-address').value.trim();
-  if(!name||!product||!address){alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');return;}
+  if(!name||!product||!address){Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบทุกช่อง', 'warning');return;}
 
   const msgEl = document.getElementById('create-msg');
   msgEl.innerHTML = '<span style="color:var(--muted);display:flex;align-items:center;gap:6px;"><i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังสร้างออเดอร์...</span>';
