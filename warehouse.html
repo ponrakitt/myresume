@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>คลังสินค้า — ระบบติดตามสินค้า</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#0f172a;--orange:#f97316;--orange-light:#fff7ed;--orange-dark:#c2410c;
+  --green:#16a34a;--green-light:#f0fdf4;--blue:#2563eb;--blue-light:#eff6ff;
+  --yellow:#ca8a04;--yellow-light:#fefce8;--red:#dc2626;
+  --bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.header{background:var(--navy);color:#fff;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.header h1{font-size:18px;font-weight:700;}
+.header p{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
+.refresh-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:8px 16px;border-radius:8px;font-family:'Prompt',sans-serif;
+  font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
+.refresh-btn:hover{background:rgba(255,255,255,.2);}
+
+.main{padding:20px;max-width:1100px;margin:0 auto;}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;
+  font-size:14px;font-weight:500;color:var(--muted);transition:.2s;}
+.tab.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.tab-badge{display:inline-block;min-width:20px;height:20px;border-radius:10px;
+  background:var(--orange);color:#fff;font-size:11px;padding:0 6px;line-height:20px;margin-left:6px;}
+
+/* Cards Grid */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+
+/* Order Card */
+.order-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;border-top:4px solid var(--orange);transition:.2s;}
+.order-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.order-card.green-top{border-top-color:var(--green);}
+.order-card.yellow-top{border-top-color:var(--yellow);}
+
+.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.oc-tid{font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);
+  background:var(--blue-light);padding:4px 10px;border-radius:6px;}
+.oc-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;}
+.b-pending{background:var(--yellow-light);color:var(--yellow);}
+.b-preparing{background:var(--orange-light);color:var(--orange-dark);}
+.b-ready{background:var(--green-light);color:var(--green);}
+
+.oc-name{font-size:16px;font-weight:600;margin-bottom:4px;}
+.oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.oc-address{font-size:12px;color:var(--muted);background:#f8fafc;
+  padding:8px 10px;border-radius:8px;line-height:1.5;}
+.oc-time{font-size:11px;color:var(--muted);margin-top:8px;}
+
+.oc-actions{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.btn-action{width:100%;padding:11px;border-radius:10px;font-family:'Prompt',sans-serif;
+  font-size:14px;font-weight:600;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-start{background:var(--orange);color:#fff;}
+.btn-start:hover{background:var(--orange-dark);}
+.btn-done{background:var(--green);color:#fff;}
+.btn-done:hover{background:#15803d;}
+.btn-info{background:var(--blue-light);color:var(--blue);border:1.5px solid #bfdbfe;}
+.btn-info:hover{background:#dbeafe;}
+
+/* Empty State */
+.empty{text-align:center;padding:60px 24px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-text{font-size:16px;font-weight:500;}
+.empty-sub{font-size:13px;margin-top:4px;}
+
+/* Loading */
+.loading{text-align:center;padding:48px;color:var(--muted);}
+.spin{display:inline-block;animation:spin .8s linear infinite;font-size:32px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.2);}
+.modal-header{padding:20px 20px 0;text-align:center;}
+.modal-icon{font-size:48px;margin-bottom:8px;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);}
+.modal-body{padding:20px;}
+.modal-footer{padding:0 20px 20px;display:flex;gap:10px;}
+.modal-footer button{flex:1;padding:12px;border-radius:10px;font-family:'Prompt',sans-serif;
+  font-size:14px;font-weight:600;border:none;cursor:pointer;}
+.btn-confirm{background:var(--green);color:#fff;}
+.btn-confirm.orange{background:var(--orange);}
+.btn-cancel{background:#f1f5f9;color:var(--muted);}
+
+/* Order Info Box */
+.order-info-box{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;}
+.order-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:13px;}
+.order-info-row:last-child{border-bottom:none;}
+.order-info-label{color:var(--muted);}
+.order-info-value{font-weight:600;text-align:right;max-width:200px;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📦 คลังสินค้า</h1>
+    <p>จัดการการเตรียมสินค้า</p>
+  </div>
+  <button class="refresh-btn" onclick="loadOrders()">🔄 รีเฟรช</button>
+</div>
+
+<div class="main">
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" id="tab-pending" onclick="switchTab('pending')">
+      🕐 รอดำเนินการ <span class="tab-badge" id="cnt-pending">0</span>
+    </div>
+    <div class="tab" id="tab-preparing" onclick="switchTab('preparing')">
+      🔧 กำลังเตรียม <span class="tab-badge" id="cnt-preparing">0</span>
+    </div>
+    <div class="tab" id="tab-ready" onclick="switchTab('ready')">
+      📦 รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div id="tab-content">
+    <div class="loading"><span class="spin">⏳</span><br>กำลังโหลดข้อมูล...</div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="action-modal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon" id="modal-icon">🔧</div>
+      <div class="modal-title" id="modal-title">ยืนยัน</div>
+      <div class="modal-sub" id="modal-sub">กำลังดำเนินการ</div>
+    </div>
+    <div class="modal-body">
+      <div class="order-info-box" id="modal-order-info"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button id="modal-confirm-btn" class="btn-confirm orange" onclick="doAction()">✅ ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec'; // ← ใส่ URL ของ Apps Script
+
+let allOrders = [];
+let currentTab = 'pending';
+let pendingAction = null;
+
+async function api(payload) {
+  const res = await fetch(SCRIPT_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+async function loadOrders() {
+  document.getElementById('tab-content').innerHTML = '<div class="loading"><span class="spin">⏳</span><br>กำลังโหลด...</div>';
+  const res = await api({action:'getAllOrders'});
+  if(!res.success){
+    document.getElementById('tab-content').innerHTML='<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">โหลดข้อมูลไม่สำเร็จ</div></div>';
+    return;
+  }
+  allOrders = res.orders;
+  updateCounts();
+  renderTab(currentTab);
+}
+
+function updateCounts() {
+  ['pending','preparing','ready'].forEach(s=>{
+    document.getElementById('cnt-'+s).textContent = allOrders.filter(o=>o.status===s).length;
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  renderTab(tab);
+}
+
+function fmtDate(iso) {
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderTab(status) {
+  const list = allOrders.filter(o=>o.status===status);
+  const container = document.getElementById('tab-content');
+
+  if(!list.length){
+    const msgs = {
+      pending:'ไม่มีออเดอร์รอดำเนินการ',
+      preparing:'ไม่มีออเดอร์ที่กำลังเตรียม',
+      ready:'ไม่มีออเดอร์ที่รอจัดส่ง'
+    };
+    container.innerHTML = `<div class="empty"><div class="empty-icon">${status==='pending'?'🎉':'📭'}</div>
+      <div class="empty-text">${msgs[status]||'ไม่มีรายการ'}</div>
+      <div class="empty-sub">กดรีเฟรชเพื่ออัปเดตข้อมูล</div></div>`;
+    return;
+  }
+
+  const topColors = {pending:'yellow-top', preparing:'', ready:'green-top'};
+  const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready'};
+  const badgeText  = {pending:'🕐 รอดำเนินการ', preparing:'🔧 กำลังเตรียม', ready:'📦 รอจัดส่ง'};
+
+  container.innerHTML = `<div class="cards-grid">${list.map(o=>`
+    <div class="order-card ${topColors[o.status]||''}">
+      <div class="oc-header">
+        <span class="oc-tid">${o.tracking_id}</span>
+        <span class="oc-badge ${badgeClass[o.status]}">${badgeText[o.status]}</span>
+      </div>
+      <div class="oc-name">👤 ${o.customer_name}</div>
+      <div class="oc-product">📦 ${o.product_name}</div>
+      <div class="oc-address">📍 ${o.delivery_address}</div>
+      <div class="oc-time">⏰ สร้างเมื่อ: ${fmtDate(o.created_at)}</div>
+      <div class="oc-actions">
+        ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')">🔧 เริ่มเตรียมสินค้า</button>`:''}
+        ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')">✅ เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
+        ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;">📬 รอผู้จัดส่งรับงาน</button>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function openConfirm(tid, toStatus) {
+  const order = allOrders.find(o=>o.tracking_id===tid);
+  if(!order) return;
+
+  pendingAction = {trackingId:tid, status:toStatus};
+
+  const configs = {
+    preparing: {icon:'🔧', title:'เริ่มเตรียมสินค้า', sub:'ยืนยันว่าเริ่มจัดเตรียมสินค้าแล้ว', btnClass:'orange', btnText:'🔧 เริ่มเตรียมสินค้า'},
+    ready:     {icon:'✅', title:'เตรียมสินค้าเสร็จแล้ว', sub:'ยืนยันว่าสินค้าพร้อมสำหรับจัดส่ง', btnClass:'', btnText:'✅ ยืนยันเตรียมเสร็จ'},
+  };
+  const cfg = configs[toStatus];
+
+  document.getElementById('modal-icon').textContent  = cfg.icon;
+  document.getElementById('modal-title').textContent = cfg.title;
+  document.getElementById('modal-sub').textContent   = cfg.sub;
+
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.textContent = cfg.btnText;
+  btn.className = 'btn-confirm' + (cfg.btnClass?' '+cfg.btnClass:'');
+
+  document.getElementById('modal-order-info').innerHTML = `
+    <div class="order-info-row">
+      <span class="order-info-label">เลขติดตาม</span>
+      <span class="order-info-value" style="font-family:monospace;color:var(--blue);">${order.tracking_id}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">ชื่อลูกค้า</span>
+      <span class="order-info-value">${order.customer_name}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">สินค้า</span>
+      <span class="order-info-value">${order.product_name}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">ที่อยู่</span>
+      <span class="order-info-value">${order.delivery_address}</span>
+    </div>
+  `;
+  document.getElementById('action-modal').classList.remove('hidden');
+}
+
+async function doAction() {
+  if(!pendingAction) return;
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.textContent = '⏳ กำลังบันทึก...';
+  btn.disabled = true;
+
+  const statusNotes = {
+    preparing:'เริ่มจัดเตรียมสินค้าแล้ว',
+    ready:'เตรียมสินค้าเสร็จแล้ว รอการจัดส่ง'
+  };
+
+  const res = await api({
+    action:'updateStatus',
+    trackingId: pendingAction.trackingId,
+    status: pendingAction.status,
+    notes: statusNotes[pendingAction.status]||'',
+    updatedBy:'warehouse'
+  });
+
+  if(res.success){
+    closeModal();
+    await loadOrders();
+    showToast('✅ อัปเดตสถานะสำเร็จ!');
+  } else {
+    alert(res.message||'เกิดข้อผิดพลาด');
+    btn.textContent = 'ยืนยัน';
+    btn.disabled = false;
+  }
+}
+
+function closeModal(){
+  document.getElementById('action-modal').classList.add('hidden');
+  pendingAction = null;
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:40px;font-family:Prompt,sans-serif;font-size:14px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:fadeIn .3s';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+document.getElementById('action-modal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('action-modal')) closeModal();
+});
+
+loadOrders();
+</script>
+</body>
+</html>

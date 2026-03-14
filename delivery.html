@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ผู้จัดส่ง — ระบบติดตามสินค้า</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+:root{
+  --navy:#0f172a;--blue:#2563eb;--blue-light:#eff6ff;
+  --green:#16a34a;--green-light:#f0fdf4;
+  --orange:#f97316;--red:#dc2626;--yellow:#ca8a04;
+  --bg:#f1f5f9;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.header{background:var(--navy);color:#fff;padding:16px 20px;
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
+.header-icon{font-size:28px;}
+.header h1{font-size:18px;font-weight:700;}
+.header p{font-size:12px;color:rgba(255,255,255,.5);}
+
+.main{padding:20px;max-width:480px;margin:0 auto;}
+
+/* Card */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:22px;margin-bottom:16px;}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* Input row */
+.input-row{display:flex;gap:8px;}
+.input-row input{flex:1;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'Prompt',sans-serif;font-size:14px;outline:none;transition:.2s;}
+.input-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.btn{padding:12px 18px;border-radius:10px;font-family:'Prompt',sans-serif;font-size:14px;
+  font-weight:600;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:#1d4ed8;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:#15803d;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-full{width:100%;justify-content:center;margin-top:10px;}
+.btn-outline{background:#fff;color:var(--blue);border:1.5px solid var(--blue);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-sm{padding:8px 14px;font-size:13px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* QR Scanner */
+.scanner-box{position:relative;background:#000;border-radius:12px;overflow:hidden;
+  aspect-ratio:1;width:100%;max-width:320px;margin:0 auto;}
+#qr-video{width:100%;height:100%;object-fit:cover;}
+.scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.scan-frame{width:200px;height:200px;border:3px solid var(--blue);border-radius:12px;
+  box-shadow:0 0 0 999px rgba(0,0,0,.4);animation:scan-pulse 1.5s ease-in-out infinite;}
+@keyframes scan-pulse{0%,100%{border-color:var(--blue);}50%{border-color:var(--orange);}}
+.scan-line{position:absolute;left:10%;right:10%;height:2px;background:var(--orange);
+  animation:scan-line 2s linear infinite;}
+@keyframes scan-line{0%{top:20%;}100%{top:80%;}}
+
+/* Order Info */
+.order-box{background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:16px;}
+.order-field{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.order-field:last-child{border-bottom:none;}
+.of-label{color:var(--muted);flex-shrink:0;margin-right:12px;}
+.of-value{font-weight:600;text-align:right;}
+
+/* Status Pill */
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+  border-radius:20px;font-size:13px;font-weight:600;}
+.sp-ready{background:#f0fdf4;color:var(--green);}
+.sp-out{background:var(--blue-light);color:var(--blue);}
+
+/* Steps */
+.steps{display:flex;gap:0;margin-bottom:20px;}
+.step{flex:1;text-align:center;position:relative;}
+.step::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:var(--border);}
+.step:last-child::after{display:none;}
+.step-circle{width:32px;height:32px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  margin:0 auto 6px;position:relative;z-index:1;transition:.3s;}
+.step-circle.done{background:var(--green);color:#fff;}
+.step-circle.active{background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2);}
+.step-label{font-size:11px;color:var(--muted);}
+
+/* Photo Grid */
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.photo-slot{aspect-ratio:1;border-radius:10px;overflow:hidden;background:#f1f5f9;
+  border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:var(--muted);position:relative;}
+.photo-slot img{width:100%;height:100%;object-fit:cover;}
+.photo-slot .remove-photo{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;
+  border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;display:none;}
+.photo-slot:hover .remove-photo{display:block;}
+.photo-slot.filled{border-style:solid;border-color:var(--green);}
+
+/* Camera */
+.camera-wrap{border-radius:12px;overflow:hidden;background:#000;margin-bottom:10px;}
+#capture-video{width:100%;display:block;max-height:300px;object-fit:cover;}
+#capture-canvas{display:none;}
+#preview-canvas{display:none;}
+
+/* Name Input */
+.name-box{display:flex;gap:8px;align-items:center;background:#f8fafc;
+  border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.name-box input{flex:1;border:none;background:transparent;font-family:'Prompt',sans-serif;
+  font-size:14px;outline:none;}
+
+/* Sections */
+.section{display:none;}
+.section.active{display:block;}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.loading-overlay .spin{font-size:40px;animation:spin .8s linear infinite;}
+.loading-overlay p{font-size:15px;font-weight:500;color:var(--muted);}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(0);
+  background:var(--navy);color:#fff;padding:12px 24px;border-radius:40px;
+  font-size:14px;z-index:999;transition:.3s;white-space:nowrap;}
+
+/* Success */
+.success-banner{background:var(--green-light);border:2px solid #86efac;border-radius:12px;
+  padding:20px;text-align:center;}
+.success-icon{font-size:48px;margin-bottom:8px;}
+.success-title{font-size:18px;font-weight:700;color:var(--green);}
+.success-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🚚</div>
+  <div>
+    <h1>ผู้จัดส่งสินค้า</h1>
+    <p>สแกน QR หรือกรอกเลขติดตาม</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECTION: INPUT -->
+  <div id="sec-input" class="section active">
+    <div class="card">
+      <div class="card-title">📦 ค้นหาออเดอร์</div>
+
+      <!-- Manual Input -->
+      <div class="input-row" style="margin-bottom:12px;">
+        <input id="tid-input" type="text" placeholder="กรอกเลขติดตามสินค้า" style="text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()"/>
+        <button class="btn btn-primary" onclick="findOrder()">🔍 ค้นหา</button>
+      </div>
+
+      <!-- Divider -->
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin:12px 0;">— หรือ —</div>
+
+      <!-- QR Scanner -->
+      <div id="qr-section">
+        <button class="btn btn-outline btn-full" onclick="startScan()" id="scan-btn">📷 สแกน QR Code</button>
+        <div id="scanner-container" class="hidden" style="margin-top:12px;">
+          <div class="scanner-box">
+            <video id="qr-video" playsinline></video>
+            <div class="scan-overlay">
+              <div class="scan-frame">
+                <div class="scan-line"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-full" style="margin-top:10px;" onclick="stopScan()">✕ ยกเลิกสแกน</button>
+        </div>
+      </div>
+
+      <div id="search-msg" style="margin-top:12px;font-size:14px;color:var(--red);"></div>
+    </div>
+  </div>
+
+  <!-- SECTION: ACTION (scan 1 or 2) -->
+  <div id="sec-action" class="section">
+    <div class="card">
+      <!-- Steps indicator -->
+      <div class="steps" id="steps-indicator">
+        <div class="step">
+          <div class="step-circle active" id="step-1">1</div>
+          <div class="step-label">ออกจากร้าน</div>
+        </div>
+        <div class="step">
+          <div class="step-circle" id="step-2">2</div>
+          <div class="step-label">ถ่ายรูป</div>
+        </div>
+        <div class="step">
+          <div class="step-circle" id="step-3">✓</div>
+          <div class="step-label">สำเร็จ</div>
+        </div>
+      </div>
+
+      <!-- Order Info -->
+      <div class="order-box" id="action-order-info"></div>
+
+      <!-- Driver Name -->
+      <div class="name-box">
+        <span>👤</span>
+        <input id="driver-name" type="text" placeholder="ชื่อผู้จัดส่ง (ไม่บังคับ)"/>
+      </div>
+
+      <!-- Action Buttons -->
+      <div id="action-btn-area"></div>
+    </div>
+  </div>
+
+  <!-- SECTION: PHOTO CAPTURE -->
+  <div id="sec-photo" class="section">
+    <div class="card">
+      <div class="card-title">📸 ถ่ายรูปยืนยันการจัดส่ง</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+        ถ่ายอย่างน้อย 1 รูป สูงสุด 4 รูป<br>เมื่อถ่ายครบ 4 รูป ระบบจะรวมรูปอัตโนมัติ
+      </p>
+
+      <!-- Photo Grid Preview -->
+      <div class="photo-grid" id="photo-grid">
+        <div class="photo-slot" id="slot-0">📷</div>
+        <div class="photo-slot" id="slot-1">📷</div>
+        <div class="photo-slot" id="slot-2">📷</div>
+        <div class="photo-slot" id="slot-3">📷</div>
+      </div>
+
+      <!-- Camera Feed -->
+      <div class="camera-wrap" id="camera-wrap">
+        <video id="capture-video" playsinline autoplay></video>
+      </div>
+      <canvas id="capture-canvas"></canvas>
+      <canvas id="preview-canvas"></canvas>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" id="take-photo-btn" onclick="takePhoto()" style="flex:1;">📸 ถ่ายรูป</button>
+        <button class="btn btn-outline btn-sm" onclick="switchCamera()" title="เปลี่ยนกล้อง">🔄</button>
+      </div>
+      <div style="margin-top:8px;text-align:center;font-size:13px;color:var(--muted);" id="photo-count-label">0 / 4 รูป</div>
+
+      <button class="btn btn-green btn-full" id="submit-photos-btn" onclick="submitDelivery()" disabled
+        style="margin-top:12px;">
+        ✅ ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION: SUCCESS -->
+  <div id="sec-success" class="section">
+    <div class="card">
+      <div class="success-banner">
+        <div class="success-icon">✅</div>
+        <div class="success-title">จัดส่งสำเร็จ!</div>
+        <div class="success-sub" id="success-sub">อัปเดตสถานะเรียบร้อยแล้ว</div>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="resetAll()">
+        📦 ออเดอร์ถัดไป
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="spin">⏳</div>
+  <p id="loading-text">กำลังดำเนินการ...</p>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec'; // ← ใส่ URL ของ Apps Script
+
+let currentOrder  = null;
+let scanInterval  = null;
+let scanStream    = null;
+let photos        = [];           // Array of base64 strings
+let captureStream = null;
+let currentCamera = 'environment';
+let currentGPS    = null;
+let deliveryTID   = null;
+
+// ── API ───────────────────────────────────────────────
+async function api(payload) {
+  const res = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  return res.json();
+}
+
+// ── GPS ───────────────────────────────────────────────
+function getGPS() {
+  return new Promise((resolve)=>{
+    if(!navigator.geolocation){resolve(null);return;}
+    navigator.geolocation.getCurrentPosition(
+      p=>resolve({lat:p.coords.latitude.toFixed(5), lng:p.coords.longitude.toFixed(5)}),
+      ()=>resolve(null),
+      {timeout:8000}
+    );
+  });
+}
+
+// ── URL pre-fill ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if(id){document.getElementById('tid-input').value=id.toUpperCase(); findOrder();}
+});
+
+// ── Section helpers ───────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('id' in arguments?id:id).classList.add('active');
+  document.getElementById('sec-'+id).classList.add('active');
+}
+
+// ── Search ────────────────────────────────────────────
+async function findOrder() {
+  const tid = document.getElementById('tid-input').value.trim().toUpperCase();
+  if(!tid){document.getElementById('search-msg').textContent='กรุณากรอกเลขติดตาม';return;}
+
+  showLoading('กำลังค้นหาออเดอร์...');
+  const res = await api({action:'getOrder', trackingId:tid});
+  hideLoading();
+
+  if(!res.success){
+    document.getElementById('search-msg').textContent='❌ ' + res.message;
+    return;
+  }
+  stopScan();
+  handleFoundOrder(res.order);
+}
+
+function handleFoundOrder(order) {
+  currentOrder = order;
+  const validStatuses = ['ready','out_for_delivery'];
+  if(!validStatuses.includes(order.status)){
+    document.getElementById('search-msg').textContent = `❌ ออเดอร์นี้ไม่สามารถดำเนินการได้ (สถานะ: ${statusTH(order.status)})`;
+    return;
+  }
+  document.getElementById('search-msg').textContent='';
+  renderActionSection(order);
+  showSec('action');
+}
+
+function renderActionSection(order) {
+  document.getElementById('action-order-info').innerHTML = `
+    <div class="order-field">
+      <span class="of-label">เลขติดตาม</span>
+      <span class="of-value" style="font-family:monospace;color:var(--blue);">${order.tracking_id}</span>
+    </div>
+    <div class="order-field">
+      <span class="of-label">ลูกค้า</span>
+      <span class="of-value">${order.customer_name}</span>
+    </div>
+    <div class="order-field">
+      <span class="of-label">สินค้า</span>
+      <span class="of-value">${order.product_name}</span>
+    </div>
+    <div class="order-field">
+      <span class="of-label">ที่อยู่</span>
+      <span class="of-value">${order.delivery_address}</span>
+    </div>
+    <div class="order-field">
+      <span class="of-label">สถานะ</span>
+      <span class="of-value"><span class="status-pill ${order.status==='ready'?'sp-ready':'sp-out'}">${statusTH(order.status)}</span></span>
+    </div>
+  `;
+
+  const area = document.getElementById('action-btn-area');
+  if(order.status==='ready'){
+    setStep(1);
+    area.innerHTML=`
+      <button class="btn btn-orange btn-full" onclick="departStore()">
+        🚚 ออกจากร้านแล้ว — เปลี่ยนสถานะเป็นกำลังจัดส่ง
+      </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+  } else if(order.status==='out_for_delivery'){
+    setStep(2);
+    area.innerHTML=`
+      <button class="btn btn-green btn-full" onclick="startPhotoCapture()">
+        📸 ถ่ายรูปยืนยันการจัดส่ง
+      </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+  }
+}
+
+// ── QR Scanner ────────────────────────────────────────
+async function startScan() {
+  document.getElementById('scanner-container').classList.remove('hidden');
+  document.getElementById('scan-btn').classList.add('hidden');
+
+  const video = document.getElementById('qr-video');
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject = scanStream;
+    video.play();
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d');
+    scanInterval = setInterval(()=>{
+      if(video.readyState!==video.HAVE_ENOUGH_DATA) return;
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code    = jsQR(imgData.data,imgData.width,imgData.height);
+      if(code){
+        const url = code.data;
+        // Extract tracking ID from URL or use raw value
+        let tid = url;
+        try{const u=new URL(url); tid=u.searchParams.get('id')||url;}catch(e){tid=url;}
+        document.getElementById('tid-input').value = tid.toUpperCase();
+        stopScan();
+        findOrder();
+      }
+    },200);
+  } catch(e){
+    alert('ไม่สามารถเข้าถึงกล้องได้: '+e.message);
+    stopScan();
+  }
+}
+
+function stopScan(){
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}
+  document.getElementById('scanner-container').classList.add('hidden');
+  document.getElementById('scan-btn').classList.remove('hidden');
+}
+
+// ── Depart Store ──────────────────────────────────────
+async function departStore() {
+  showLoading('กำลังอัปเดตสถานะ...');
+  const gps    = await getGPS();
+  const driver = document.getElementById('driver-name').value.trim();
+  const res    = await api({
+    action:'updateStatus',
+    trackingId: currentOrder.tracking_id,
+    status:'out_for_delivery',
+    notes:'ผู้จัดส่งออกจากร้านแล้ว',
+    deliveryPersonName: driver||'ผู้จัดส่ง',
+    gpsLat: gps?.lat||'',
+    gpsLng: gps?.lng||'',
+    updatedBy: driver||'delivery'
+  });
+  hideLoading();
+  if(res.success){
+    currentOrder.status='out_for_delivery';
+    setStep(2);
+    document.getElementById('action-btn-area').innerHTML=`
+      <div style="background:var(--blue-light);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px;">
+        <div style="font-size:20px;">🚚</div>
+        <div style="font-size:14px;font-weight:600;color:var(--blue);">กำลังจัดส่ง</div>
+        ${gps?`<div style="font-size:11px;color:var(--muted);">📍 ${gps.lat}, ${gps.lng}</div>`:''}
+      </div>
+      <button class="btn btn-green btn-full" onclick="startPhotoCapture()">📸 ถ่ายรูปยืนยันการจัดส่ง</button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+  } else {
+    alert(res.message||'เกิดข้อผิดพลาด');
+  }
+}
+
+// ── Photo Capture ─────────────────────────────────────
+photos = [];
+
+async function startPhotoCapture() {
+  photos = [];
+  updatePhotoUI();
+  showSec('photo');
+  await openCamera();
+}
+
+async function openCamera() {
+  try {
+    if(captureStream) captureStream.getTracks().forEach(t=>t.stop());
+    captureStream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:currentCamera, width:{ideal:1280}, height:{ideal:720}}
+    });
+    document.getElementById('capture-video').srcObject = captureStream;
+  } catch(e) {
+    alert('ไม่สามารถเข้าถึงกล้องได้: '+e.message);
+  }
+}
+
+function switchCamera() {
+  currentCamera = currentCamera==='environment'?'user':'environment';
+  openCamera();
+}
+
+function takePhoto() {
+  if(photos.length>=4) return;
+  const video  = document.getElementById('capture-video');
+  const canvas = document.getElementById('capture-canvas');
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video,0,0);
+  const base64 = canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+  photos.push(base64);
+  updatePhotoUI();
+  if(photos.length===4){
+    // Stop camera preview after 4 shots
+    if(captureStream) captureStream.getTracks().forEach(t=>t.stop());
+    document.getElementById('camera-wrap').style.display='none';
+    document.getElementById('take-photo-btn').style.display='none';
+  }
+}
+
+function removePhoto(idx) {
+  photos.splice(idx,1);
+  if(photos.length<4 && !captureStream){
+    document.getElementById('camera-wrap').style.display='block';
+    document.getElementById('take-photo-btn').style.display='flex';
+    openCamera();
+  }
+  updatePhotoUI();
+}
+
+function updatePhotoUI() {
+  const slots = document.querySelectorAll('.photo-slot');
+  slots.forEach((slot,i)=>{
+    if(i<photos.length){
+      const img = `data:image/jpeg;base64,${photos[i]}`;
+      slot.innerHTML = `<img src="${img}" alt="photo ${i+1}"/>
+        <button class="remove-photo" onclick="removePhoto(${i})">✕</button>`;
+      slot.classList.add('filled');
+    } else {
+      slot.innerHTML='📷';
+      slot.classList.remove('filled');
+    }
+  });
+  const count = photos.length;
+  document.getElementById('photo-count-label').textContent = `${count} / 4 รูป`;
+  const submitBtn = document.getElementById('submit-photos-btn');
+  submitBtn.disabled = count < 1;
+  submitBtn.textContent = count>=1
+    ? `✅ ยืนยันการจัดส่ง (${count} รูป)`
+    : '✅ ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)';
+}
+
+// ── Submit Delivery ───────────────────────────────────
+async function submitDelivery() {
+  if(photos.length<1){alert('กรุณาถ่ายรูปอย่างน้อย 1 รูป');return;}
+  showLoading('กำลังรวมรูปและอัปโหลด...');
+  const gps = await getGPS();
+  currentGPS = gps;
+  deliveryTID = currentOrder.tracking_id;
+
+  // Combine photos
+  const combinedBase64 = await combinePhotos(photos, deliveryTID, gps);
+
+  // Upload
+  document.getElementById('loading-text').textContent='กำลังอัปโหลดรูป...';
+  const uploadRes = await api({action:'uploadPhoto', trackingId:deliveryTID, imageBase64:combinedBase64});
+
+  const photoUrl = uploadRes.success ? uploadRes.url : '';
+
+  // Update status
+  document.getElementById('loading-text').textContent='กำลังอัปเดตสถานะ...';
+  const driver = document.getElementById('driver-name').value.trim();
+  const res = await api({
+    action:'updateStatus',
+    trackingId: deliveryTID,
+    status:'delivered',
+    notes:`จัดส่งสำเร็จ${photos.length}รูป`,
+    photoUrl: photoUrl,
+    gpsLat: gps?.lat||'',
+    gpsLng: gps?.lng||'',
+    deliveryPersonName: driver||'ผู้จัดส่ง',
+    updatedBy: driver||'delivery'
+  });
+
+  hideLoading();
+
+  if(captureStream) captureStream.getTracks().forEach(t=>t.stop());
+
+  if(res.success){
+    setStep(3);
+    document.getElementById('success-sub').textContent = `จัดส่งสำเร็จแล้ว${gps?` ที่ ${gps.lat}, ${gps.lng}`:''}`;
+    showSec('success');
+  } else {
+    alert(res.message||'เกิดข้อผิดพลาด');
+  }
+}
+
+// ── Combine Photos ────────────────────────────────────
+function combinePhotos(photoArray, tid, gps) {
+  return new Promise((resolve)=>{
+    const SIZE   = 640;
+    const GRID   = 2;
+    const CELL   = SIZE;
+    const COLS   = Math.min(photoArray.length, 2);
+    const ROWS   = Math.ceil(photoArray.length / 2);
+    const W      = COLS * CELL;
+    const H      = ROWS * CELL + 80;  // 80px for info bar
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = W;
+    canvas.height = H;
+    const ctx    = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0,0,W,H);
+
+    let loaded = 0;
+    const imgs = photoArray.map((b64,i)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const col = i%2;
+        const row = Math.floor(i/2);
+        const x   = col*CELL;
+        const y   = row*CELL;
+
+        // Draw photo
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x+2, y+2, CELL-4, CELL-4);
+        ctx.clip();
+        // Cover fill
+        const scale = Math.max(CELL/img.width, CELL/img.height);
+        const sw    = img.width  * scale;
+        const sh    = img.height * scale;
+        const sx    = x + (CELL-sw)/2;
+        const sy    = y + (CELL-sh)/2;
+        ctx.drawImage(img, sx, sy, sw, sh);
+        ctx.restore();
+
+        // Photo number overlay
+        ctx.fillStyle = 'rgba(0,0,0,.5)';
+        ctx.fillRect(x+CELL-32, y, 32, 28);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Prompt, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${i+1}`, x+CELL-16, y+18);
+
+        loaded++;
+        if(loaded === photoArray.length){
+          // Info bar at bottom
+          const barY = ROWS * CELL;
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, barY, W, 80);
+
+          // Tracking ID
+          ctx.fillStyle = '#60a5fa';
+          ctx.font = 'bold 18px Courier New, monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`TID: ${tid}`, 14, barY+24);
+
+          // Date/Time
+          const now = new Date();
+          const dateStr = now.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})
+                        + ' ' + now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '13px Prompt, Arial';
+          ctx.fillText(`📅 ${dateStr}`, 14, barY+46);
+
+          // GPS
+          if(gps){
+            ctx.fillText(`📍 ${gps.lat}, ${gps.lng}`, 14, barY+66);
+          } else {
+            ctx.fillText('📍 ไม่สามารถรับ GPS ได้', 14, barY+66);
+          }
+
+          // Delivered stamp
+          ctx.fillStyle = '#22c55e';
+          ctx.font = 'bold 14px Prompt, Arial';
+          ctx.textAlign = 'right';
+          ctx.fillText('✓ DELIVERED', W-14, barY+44);
+
+          resolve(canvas.toDataURL('image/jpeg',0.88).split(',')[1]);
+        }
+      };
+      img.src = 'data:image/jpeg;base64,'+b64;
+      return img;
+    });
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────
+function showSec(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+}
+
+function showLoading(text='กำลังโหลด...'){
+  document.getElementById('loading-text').textContent=text;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading(){document.getElementById('loading-overlay').classList.add('hidden');}
+
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('step-'+i);
+    el.className='step-circle'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+function statusTH(s){
+  return {pending:'รอดำเนินการ',preparing:'กำลังเตรียม',ready:'รอจัดส่ง',
+    out_for_delivery:'กำลังจัดส่ง',delivered:'จัดส่งสำเร็จ',cancelled:'ยกเลิก',confirmed:'รับแล้ว'}[s]||s;
+}
+
+function resetAll(){
+  currentOrder=null; photos=[]; currentGPS=null; deliveryTID=null;
+  currentCamera='environment';
+  if(captureStream) captureStream.getTracks().forEach(t=>t.stop()); captureStream=null;
+  document.getElementById('camera-wrap').style.display='block';
+  document.getElementById('take-photo-btn').style.display='flex';
+  document.getElementById('tid-input').value='';
+  document.getElementById('search-msg').textContent='';
+  document.getElementById('driver-name').value='';
+  updatePhotoUI();
+  showSec('input');
+}
+</script>
+</body>
+</html>
