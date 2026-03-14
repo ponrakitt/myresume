@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#eff6ff;
@@ -433,7 +434,7 @@ async function startScan() {
       }
     },200);
   } catch(e){
-    alert('ไม่สามารถเข้าถึงกล้องได้: '+e.message);
+    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้: '+e.message, 'error');
     stopScan();
   }
 }
@@ -452,7 +453,7 @@ async function departStore() {
   const checkRes = await api({action:'getOrder', trackingId: currentOrder.tracking_id});
   if(checkRes.success && checkRes.order.status === 'cancelled') {
      hideLoading();
-     alert('ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
+     Swal.fire('ถูกยกเลิก', 'ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้', 'warning');
      resetAll();
      return;
   }
@@ -484,7 +485,7 @@ async function departStore() {
       <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()"><i data-lucide="arrow-left" style="width:16px;"></i> ย้อนกลับ</button>`;
     lucide.createIcons();
   } else {
-    alert(res.message||'เกิดข้อผิดพลาด');
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
   }
 }
 
@@ -506,7 +507,7 @@ async function openCamera() {
     });
     document.getElementById('capture-video').srcObject = captureStream;
   } catch(e) {
-    alert('ไม่สามารถเข้าถึงกล้องได้: '+e.message);
+    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้: '+e.message, 'error');
   }
 }
 
@@ -568,7 +569,7 @@ function updatePhotoUI() {
 
 // ── Submit Delivery ───────────────────────────────────
 async function submitDelivery() {
-  if(photos.length<1){alert('กรุณาถ่ายรูปอย่างน้อย 1 รูป');return;}
+  if(photos.length<1){Swal.fire('แจ้งเตือน', 'กรุณาถ่ายรูปอย่างน้อย 1 รูป', 'warning');return;}
   
   showLoading('กำลังตรวจสอบสถานะ...');
   deliveryTID = currentOrder.tracking_id;
@@ -577,7 +578,7 @@ async function submitDelivery() {
   const checkRes = await api({action:'getOrder', trackingId: deliveryTID});
   if(checkRes.success && checkRes.order.status === 'cancelled') {
      hideLoading();
-     alert('ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
+     Swal.fire('ถูกยกเลิก', 'ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้', 'warning');
      resetAll();
      return;
   }
@@ -619,7 +620,7 @@ async function submitDelivery() {
     document.getElementById('success-sub').textContent = `จัดส่งสำเร็จแล้ว${gps?` ที่ ${gps.lat}, ${gps.lng}`:''}`;
     showSec('success');
   } else {
-    alert(res.message||'เกิดข้อผิดพลาด');
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
   }
 }
 
