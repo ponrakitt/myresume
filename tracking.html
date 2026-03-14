@@ -3,546 +3,374 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ติดตามสินค้า | Track Order</title>
+<title>คลังสินค้า — ระบบติดตามสินค้า</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
-  --blue:#2563eb;--blue-light:#eff6ff;--blue-mid:#1d4ed8;
-  --green:#16a34a;--green-light:#f0fdf4;--green-border:#bbf7d0;
-  --orange:#f97316;--red:#dc2626;--yellow:#ca8a04;
-  --navy:#0f172a;--bg:#f1f5f9;--card:#fff;
-  --border:#e2e8f0;--text:#1e293b;--muted:#64748b;
-  --radius:16px;--shadow:0 4px 20px rgba(0,0,0,.08);
+  --navy:#0f172a;--orange:#f97316;--orange-light:#fff7ed;--orange-dark:#c2410c;
+  --green:#16a34a;--green-light:#f0fdf4;--blue:#2563eb;--blue-light:#eff6ff;
+  --yellow:#ca8a04;--yellow-light:#fefce8;--red:#dc2626;
+  --bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
-/* Language Toggle */
-.lang-toggle{position:absolute;top:20px;right:20px;display:flex;background:rgba(255,255,255,.2);border-radius:20px;padding:4px;backdrop-filter:blur(4px);z-index:20;}
-.lang-btn{background:transparent;border:none;color:#fff;padding:4px 12px;border-radius:16px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;}
-.lang-btn.active{background:#fff;color:var(--blue);}
+.header{background:var(--navy);color:#fff;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header h1{font-size:18px;font-weight:700;}
+.header p{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
+.refresh-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:8px 16px;border-radius:8px;font-family:'Prompt',sans-serif;
+  font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
+.refresh-btn:hover{background:rgba(255,255,255,.2);}
 
-/* Hero Header */
-.hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#2563eb 100%);
-  color:#fff;padding:40px 20px 80px;text-align:center;position:relative;overflow:hidden;}
-.hero-icon{width:48px;height:48px;margin-bottom:12px;display:inline-block;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));}
-.hero h1{font-size:26px;font-weight:700;margin-bottom:6px;}
-.hero p{font-size:14px;color:rgba(255,255,255,.7);}
+.main{padding:20px;max-width:1100px;margin:0 auto;flex:1;width:100%;}
 
-/* Search Card */
-.search-card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.12);
-  padding:24px;max-width:500px;margin:-48px auto 0;position:relative;z-index:10;}
-.search-label{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:6px;}
-.search-row{display:flex;gap:8px;}
-.search-row input{flex:1;padding:13px 16px;border:1.5px solid var(--border);border-radius:10px;
-  font-family:'Prompt',sans-serif;font-size:15px;outline:none;transition:.2s;color:var(--text);}
-.search-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
-.search-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;
-  padding:13px 20px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
-.search-btn:hover{background:var(--blue-mid);}
-.search-err{margin-top:10px;font-size:13px;color:var(--red);display:flex;align-items:center;gap:4px;}
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;
+  font-size:14px;font-weight:500;color:var(--muted);transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.tab.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.tab-badge{display:inline-block;min-width:20px;height:20px;border-radius:10px;
+  background:var(--orange);color:#fff;font-size:11px;padding:0 6px;line-height:20px;}
 
-/* Main content */
-.main{padding:20px;max-width:500px;margin:0 auto;flex:1;width:100%;}
+/* Cards Grid */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
 
-/* Order Header Card */
-.order-header-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  overflow:hidden;margin-bottom:16px;}
-.ohc-top{padding:20px 20px 14px;border-bottom:1px solid var(--border);}
-.ohc-tid{font-family:monospace;font-size:22px;font-weight:700;color:var(--blue);letter-spacing:2px;}
-.ohc-name{font-size:16px;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:6px;}
-.ohc-product{font-size:14px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px;}
-.ohc-info{padding:14px 20px;display:grid;grid-template-columns:1fr;gap:8px;}
-.ohc-row{display:flex;gap:8px;align-items:flex-start;font-size:14px;}
-.ohc-row-icon{flex-shrink:0;margin-top:2px;color:var(--muted);width:16px;height:16px;}
-.ohc-row-text{color:var(--muted);}
+/* Order Card */
+.order-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;border-top:4px solid var(--orange);transition:.2s;}
+.order-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.order-card.green-top{border-top-color:var(--green);}
+.order-card.yellow-top{border-top-color:var(--yellow);}
 
-/* Status Banner */
-.status-banner{border-radius:var(--radius);padding:20px;margin-bottom:16px;
-  display:flex;align-items:center;gap:16px;}
-.sb-pending{background:#fefce8;border:1.5px solid #fde68a;color:#854d0e;}
-.sb-preparing{background:#fff7ed;border:1.5px solid #fed7aa;color:#c2410c;}
-.sb-ready{background:#f0fdf4;border:1.5px solid #bbf7d0;color:#166534;}
-.sb-out_for_delivery{background:var(--blue-light);border:1.5px solid #bfdbfe;color:#1d4ed8;}
-.sb-delivered{background:#f0fdf4;border:1.5px solid #86efac;color:#15803d;}
-.sb-cancelled{background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;}
-.sb-confirmed{background:#f5f3ff;border:1.5px solid #ddd6fe;color:#6d28d9;}
+.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.oc-tid{font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);
+  background:var(--blue-light);padding:4px 10px;border-radius:6px;}
+.oc-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+.b-pending{background:var(--yellow-light);color:var(--yellow);}
+.b-preparing{background:var(--orange-light);color:var(--orange-dark);}
+.b-ready{background:var(--green-light);color:var(--green);}
 
-.sb-icon{flex-shrink:0;width:36px;height:36px;}
-.sb-status{font-size:16px;font-weight:700;}
-.sb-hint{font-size:13px;opacity:0.8;margin-top:3px;}
+.oc-name{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.oc-address{font-size:12px;color:var(--muted);background:#f8fafc;
+  padding:8px 10px;border-radius:8px;line-height:1.5;display:flex;align-items:flex-start;gap:6px;}
+.oc-time{font-size:11px;color:var(--muted);margin-top:8px;}
 
-/* Timeline */
-.timeline-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:20px;margin-bottom:16px;}
-.tc-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:6px;}
-.tl{display:flex;flex-direction:column;}
-.tl-item{display:flex;gap:14px;padding-bottom:16px;position:relative;}
-.tl-item::before{content:'';position:absolute;left:15px;top:34px;bottom:0;
-  width:2px;background:var(--border);}
-.tl-item:last-child{padding-bottom:0;}
-.tl-item:last-child::before{display:none;}
-.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--blue-light);color:var(--blue);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;z-index:1;border:2px solid #bfdbfe;}
-.tl-dot.done{background:var(--blue);border-color:var(--blue);color:#fff;}
-.tl-dot.green{background:var(--green);border-color:var(--green);color:#fff;}
-.tl-dot.red{background:var(--red);border-color:var(--red);color:#fff;}
-.tl-body{flex:1;padding-top:4px;}
-.tl-status{font-size:14px;font-weight:600;}
-.tl-time{font-size:12px;color:var(--muted);margin-top:2px;}
-.tl-note{font-size:12px;color:var(--muted);margin-top:3px;}
-.tl-gps{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-top:4px;}
+.oc-actions{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.btn-action{width:100%;padding:11px;border-radius:10px;font-family:'Prompt',sans-serif;
+  font-size:14px;font-weight:600;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-start{background:var(--orange);color:#fff;}
+.btn-start:hover{background:var(--orange-dark);}
+.btn-done{background:var(--green);color:#fff;}
+.btn-done:hover{background:#15803d;}
+.btn-info{background:var(--blue-light);color:var(--blue);border:1.5px solid #bfdbfe;}
+.btn-info:hover{background:#dbeafe;}
 
-/* Delivery Photo */
-.photo-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:20px;margin-bottom:16px;}
-.photo-card img{width:100%;border-radius:10px;margin-top:10px;}
-
-/* Email Subscribe */
-.email-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:20px;margin-bottom:16px;border-top:4px solid var(--blue);}
-.email-title{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
-.email-sub{font-size:13px;color:var(--muted);margin-bottom:14px;}
-.email-row{display:flex;gap:8px;}
-.email-row input{flex:1;padding:11px 14px;border:1.5px solid var(--border);
-  border-radius:10px;font-family:'Prompt',sans-serif;font-size:14px;outline:none;transition:.2s;}
-.email-row input:focus{border-color:var(--blue);}
-.email-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;
-  padding:11px 16px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.email-msg{font-size:13px;margin-top:8px;display:flex;align-items:center;gap:4px;}
-
-/* Confirm Receipt */
-.confirm-card{background:var(--green-light);border:2px solid var(--green-border);
-  border-radius:var(--radius);padding:20px;margin-bottom:16px;text-align:center;}
-.confirm-icon{color:var(--green);margin:0 auto 8px;width:36px;height:36px;}
-.confirm-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px;}
-.confirm-sub{font-size:13px;color:var(--muted);margin-bottom:14px;}
-.confirm-btn{background:var(--green);color:#fff;border:none;border-radius:10px;
-  padding:13px 28px;font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.2s;}
-.confirm-btn:hover{background:#15803d;}
-
-/* Cancelled */
-.cancelled-card{background:#fef2f2;border:1.5px solid #fecaca;border-radius:var(--radius);
-  padding:20px;margin-bottom:16px;text-align:center;}
-
-/* Auto refresh indicator */
-.auto-refresh{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
-  justify-content:center;margin-bottom:20px;}
-.refresh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-  animation:blink 1.5s infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
-
-/* Section display */
-.section{display:none;}
-.section.active{display:block;}
+/* Empty State */
+.empty{text-align:center;padding:60px 24px;color:var(--muted);}
+.empty-icon{margin-bottom:12px;display:inline-block;opacity:0.6;}
+.empty-text{font-size:16px;font-weight:500;}
+.empty-sub{font-size:13px;margin-top:4px;}
 
 /* Loading */
-.loading-box{text-align:center;padding:60px 20px;color:var(--muted);display:flex;flex-direction:column;align-items:center;}
-.loading-box .spin{animation:spin .8s linear infinite;margin-bottom:12px;color:var(--blue);}
+.loading{text-align:center;padding:48px;color:var(--muted);}
+.spin{display:inline-block;animation:spin .8s linear infinite;color:var(--blue);}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* Footer */
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.2);}
+.modal-header{padding:20px 20px 0;text-align:center;}
+.modal-icon{margin:0 auto 8px;display:block;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);}
+.modal-body{padding:20px;}
+.modal-footer{padding:0 20px 20px;display:flex;gap:10px;}
+.modal-footer button{flex:1;padding:12px;border-radius:10px;font-family:'Prompt',sans-serif;
+  font-size:14px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-confirm{background:var(--green);color:#fff;}
+.btn-confirm.orange{background:var(--orange);}
+.btn-cancel{background:#f1f5f9;color:var(--muted);}
+
+/* Order Info Box */
+.order-info-box{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;}
+.order-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:13px;}
+.order-info-row:last-child{border-bottom:none;}
+.order-info-label{color:var(--muted);}
+.order-info-value{font-weight:600;text-align:right;max-width:200px;}
+
+.hidden{display:none!important;}
 .site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
 .site-footer p{margin-bottom:4px;}
 </style>
 </head>
 <body>
 
-<!-- Language Toggle -->
-<div class="lang-toggle">
-  <button class="lang-btn active" onclick="setLang('th')" id="btn-th">TH</button>
-  <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
-</div>
-
-<!-- Hero -->
-<div class="hero">
-  <i data-lucide="package" class="hero-icon"></i>
-  <h1 data-i18n="hero_title">ติดตามสินค้า</h1>
-  <p data-i18n="hero_sub">ตรวจสอบสถานะการจัดส่งแบบเรียลไทม์</p>
-</div>
-
-<!-- Search Card -->
-<div style="padding:0 16px;">
-  <div class="search-card">
-    <div class="search-label"><i data-lucide="search" style="width:16px;height:16px;"></i> <span data-i18n="search_label">กรอกเลขติดตามสินค้า</span></div>
-    <div class="search-row">
-      <input id="tid-input" type="text" placeholder="TRKAB12CD34"
-        oninput="this.value=this.value.toUpperCase()"
-        onkeydown="if(event.key==='Enter')trackOrder()"/>
-      <button class="search-btn" onclick="trackOrder()"><span data-i18n="btn_track">ติดตาม</span></button>
+<div class="header">
+  <div class="header-left">
+    <i data-lucide="package" style="color:#fff;"></i>
+    <div>
+      <h1>คลังสินค้า</h1>
+      <p>จัดการการเตรียมสินค้า</p>
     </div>
-    <div id="search-err" class="search-err"></div>
   </div>
+  <button class="refresh-btn" onclick="loadOrders()">
+    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> รีเฟรช
+  </button>
 </div>
 
-<!-- Main Content -->
 <div class="main">
-
-  <!-- EMPTY STATE -->
-  <div id="sec-empty" class="section active" style="padding-top:32px;text-align:center;color:var(--muted);">
-    <i data-lucide="truck" style="width:60px;height:60px;margin-bottom:12px;opacity:0.5;"></i>
-    <p style="font-size:16px;font-weight:500;" data-i18n="empty_title">ค้นหาเลขติดตามสินค้าของคุณ</p>
-    <p style="font-size:13px;margin-top:6px;" data-i18n="empty_sub">ได้รับเลขติดตามจากอีเมลจากร้านค้า</p>
-  </div>
-
-  <!-- LOADING STATE -->
-  <div id="sec-loading" class="section">
-    <div class="loading-box">
-      <i data-lucide="loader-2" class="spin" style="width:36px;height:36px;"></i>
-      <span data-i18n="loading">กำลังโหลดข้อมูล...</span>
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" id="tab-pending" onclick="switchTab('pending')">
+      <i data-lucide="clock" style="width:16px;"></i> รอดำเนินการ <span class="tab-badge" id="cnt-pending">0</span>
+    </div>
+    <div class="tab" id="tab-preparing" onclick="switchTab('preparing')">
+      <i data-lucide="wrench" style="width:16px;"></i> กำลังเตรียม <span class="tab-badge" id="cnt-preparing">0</span>
+    </div>
+    <div class="tab" id="tab-ready" onclick="switchTab('ready')">
+      <i data-lucide="package" style="width:16px;"></i> รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
     </div>
   </div>
 
-  <!-- RESULT STATE -->
-  <div id="sec-result" class="section">
+  <!-- Content -->
+  <div id="tab-content">
+    <div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลดข้อมูล...</div>
+  </div>
+</div>
 
-    <!-- Auto refresh indicator -->
-    <div class="auto-refresh">
-      <div class="refresh-dot"></div>
-      <span data-i18n="auto_refresh">อัปเดตอัตโนมัติทุก 30 วินาที</span>
+<!-- Confirm Modal -->
+<div id="action-modal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <i data-lucide="wrench" class="modal-icon" id="modal-icon" style="width:48px;height:48px;color:var(--orange);"></i>
+      <div class="modal-title" id="modal-title">ยืนยัน</div>
+      <div class="modal-sub" id="modal-sub">กำลังดำเนินการ</div>
     </div>
-
-    <!-- Status Banner -->
-    <div class="status-banner" id="status-banner">
-      <i data-lucide="clipboard-list" class="sb-icon" id="sb-icon"></i>
-      <div class="sb-text">
-        <div class="sb-status" id="sb-status">—</div>
-        <div class="sb-hint" id="sb-hint">—</div>
-      </div>
+    <div class="modal-body">
+      <div class="order-info-box" id="modal-order-info"></div>
     </div>
-
-    <!-- Order Header -->
-    <div class="order-header-card">
-      <div class="ohc-top">
-        <div class="ohc-tid" id="res-tid"></div>
-        <div class="ohc-name"><i data-lucide="user" style="width:16px;height:16px;color:var(--muted);"></i> <span id="res-name"></span></div>
-        <div class="ohc-product"><i data-lucide="package" style="width:16px;height:16px;"></i> <span id="res-product"></span></div>
-      </div>
-      <div class="ohc-info">
-        <div class="ohc-row">
-          <i data-lucide="map-pin" class="ohc-row-icon"></i>
-          <span class="ohc-row-text" id="res-address"></span>
-        </div>
-        <div class="ohc-row" id="res-driver-row" style="display:none;">
-          <i data-lucide="truck" class="ohc-row-icon"></i>
-          <span class="ohc-row-text" id="res-driver"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONFIRM RECEIPT -->
-    <div id="confirm-receipt-card" class="confirm-card" style="display:none;">
-      <i data-lucide="gift" class="confirm-icon"></i>
-      <div class="confirm-title" data-i18n="confirm_title">สินค้ามาถึงแล้ว!</div>
-      <div class="confirm-sub" data-i18n="confirm_sub">กรุณายืนยันว่าได้รับสินค้าเรียบร้อยแล้ว</div>
-      <button class="confirm-btn" onclick="confirmReceipt()">
-        <i data-lucide="check-circle" style="width:18px;height:18px;"></i> <span data-i18n="btn_confirm">ยืนยันการรับสินค้า</span>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button id="modal-confirm-btn" class="btn-confirm orange" onclick="doAction()">
+        <i data-lucide="check" style="width:16px;"></i> ยืนยัน
       </button>
     </div>
-
-    <!-- ALREADY CONFIRMED -->
-    <div id="confirmed-card" class="confirm-card" style="display:none;background:#f5f3ff;border-color:#ddd6fe;">
-      <i data-lucide="party-popper" style="color:var(--blue);margin:0 auto 8px;width:36px;height:36px;display:block;"></i>
-      <div class="confirm-title" style="color:var(--blue);" data-i18n="confirmed_title">ยืนยันการรับสินค้าแล้ว</div>
-      <div class="confirm-sub" id="confirmed-time"></div>
-    </div>
-
-    <!-- CANCELLED NOTICE -->
-    <div id="cancelled-card" class="cancelled-card" style="display:none;">
-      <i data-lucide="x-circle" style="color:var(--red);margin:0 auto 8px;width:36px;height:36px;display:block;"></i>
-      <div style="font-size:16px;font-weight:700;color:var(--red);" data-i18n="cancelled_title">ออเดอร์ถูกยกเลิก</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px;" id="cancel-reason-text"></div>
-    </div>
-
-    <!-- Delivery Photo -->
-    <div id="photo-card" class="photo-card" style="display:none;">
-      <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;"><i data-lucide="camera" style="width:18px;height:18px;"></i> <span data-i18n="photo_title">รูปยืนยันการจัดส่ง</span></div>
-      <img id="delivery-photo" src="" alt="Photo"/>
-    </div>
-
-    <!-- Timeline -->
-    <div class="timeline-card">
-      <div class="tc-title"><i data-lucide="clock" style="width:18px;height:18px;"></i> <span data-i18n="history_title">ประวัติสถานะ</span></div>
-      <div class="tl" id="timeline"></div>
-    </div>
-
-    <!-- Email Subscribe -->
-    <div id="email-section" class="email-card">
-      <div class="email-title"><i data-lucide="bell" style="width:18px;height:18px;"></i> <span data-i18n="email_title">รับการแจ้งเตือน</span></div>
-      <div class="email-sub" data-i18n="email_sub">รับอัปเดตทุกครั้งที่มีการเปลี่ยนสถานะ</div>
-      <div class="email-row">
-        <input id="email-input" type="email" placeholder="your@email.com"/>
-        <button class="email-btn" onclick="subscribeEmail()"><span data-i18n="btn_subscribe">สมัครรับแจ้งเตือน</span></button>
-      </div>
-      <div id="email-msg" class="email-msg"></div>
-    </div>
-
   </div>
 </div>
 
 <!-- Footer -->
 <div class="site-footer">
-  <p data-i18n="footer_contact">หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
+  <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
   <p>All rights reserved by wanflorist.net</p>
   <p>Designed and co-developed by ponrakitt.site</p>
 </div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
-let currentTID    = null;
-let refreshTimer  = null;
-let currentLang   = 'th';
-let currentOrderData = null;
 
-// ── Dictionary ────────────────────────────────────────
-const DICT = {
-  hero_title: { th: 'ติดตามสินค้า', en: 'Track Order' },
-  hero_sub: { th: 'ตรวจสอบสถานะการจัดส่งแบบเรียลไทม์', en: 'Check your delivery status in real-time' },
-  search_label: { th: 'กรอกเลขติดตามสินค้า', en: 'Enter Tracking ID' },
-  btn_track: { th: 'ติดตาม', en: 'Track' },
-  empty_title: { th: 'ค้นหาเลขติดตามสินค้าของคุณ', en: 'Find your tracking number' },
-  empty_sub: { th: 'ได้รับเลขติดตามจากอีเมลจากร้านค้า', en: 'Received from store email' },
-  loading: { th: 'กำลังโหลดข้อมูล...', en: 'Loading data...' },
-  auto_refresh: { th: 'อัปเดตอัตโนมัติทุก 30 วินาที', en: 'Auto-refreshes every 30s' },
-  confirm_title: { th: 'สินค้ามาถึงแล้ว!', en: 'Order Arrived!' },
-  confirm_sub: { th: 'กรุณายืนยันว่าได้รับสินค้าเรียบร้อยแล้ว', en: 'Please confirm that you have received your order.' },
-  btn_confirm: { th: 'ยืนยันการรับสินค้า', en: 'Confirm Receipt' },
-  confirmed_title: { th: 'ยืนยันการรับสินค้าแล้ว', en: 'Receipt Confirmed' },
-  cancelled_title: { th: 'ออเดอร์ถูกยกเลิก', en: 'Order Cancelled' },
-  photo_title: { th: 'รูปยืนยันการจัดส่ง', en: 'Delivery Proof' },
-  history_title: { th: 'ประวัติสถานะ', en: 'Status History' },
-  email_title: { th: 'รับการแจ้งเตือน', en: 'Get Notifications' },
-  email_sub: { th: 'รับอัปเดตทุกครั้งที่มีการเปลี่ยนสถานะ', en: 'Get updates whenever status changes.' },
-  btn_subscribe: { th: 'สมัครรับแจ้งเตือน', en: 'Subscribe' },
-  footer_contact: { th: 'หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site', en: 'If you have any issues, contact contact@ponrakitt.site' }
-};
+let allOrders = [];
+let currentTab = 'pending';
+let pendingAction = null;
 
-const STATUS_TEXT = {
-  pending:          { th: 'รอดำเนินการ', en: 'Pending' },
-  preparing:        { th: 'กำลังเตรียมสินค้า', en: 'Preparing' },
-  ready:            { th: 'รอการจัดส่ง', en: 'Ready to Ship' },
-  out_for_delivery: { th: 'กำลังจัดส่ง', en: 'Out for Delivery' },
-  delivered:        { th: 'จัดส่งสำเร็จ', en: 'Delivered' },
-  cancelled:        { th: 'ยกเลิก', en: 'Cancelled' },
-  confirmed:        { th: 'ลูกค้ารับสินค้าแล้ว', en: 'Confirmed Receipt' }
-};
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
 
-const STATUS_HINT = {
-  pending:          { th: 'ออเดอร์ของคุณอยู่ในระบบแล้ว รอดำเนินการ', en: 'Order is in the system, pending processing.' },
-  preparing:        { th: 'ร้านค้ากำลังเตรียมสินค้าของคุณ', en: 'Store is preparing your items.' },
-  ready:            { th: 'สินค้าเตรียมพร้อมแล้ว รอผู้จัดส่งรับสินค้า', en: 'Items ready, waiting for driver.' },
-  out_for_delivery: { th: 'ผู้จัดส่งกำลังนำสินค้ามาส่งให้คุณ', en: 'Driver is on the way.' },
-  delivered:        { th: 'สินค้ามาถึงแล้ว กรุณายืนยันการรับ', en: 'Order arrived, please confirm receipt.' },
-  cancelled:        { th: 'ออเดอร์นี้ถูกยกเลิกแล้ว', en: 'This order has been cancelled.' },
-  confirmed:        { th: 'คุณได้รับสินค้าเรียบร้อยแล้ว ขอบคุณ!', en: 'You have received the items. Thank you!' }
-};
-
-const STATUS_ICON = {
-  pending:'clock', preparing:'wrench', ready:'package',
-  out_for_delivery:'truck', delivered:'check-circle', cancelled:'x-circle', confirmed:'party-popper'
-};
-const STATUS_CLASS = {
-  pending:'sb-pending', preparing:'sb-preparing', ready:'sb-ready',
-  out_for_delivery:'sb-out_for_delivery', delivered:'sb-delivered',
-  cancelled:'sb-cancelled', confirmed:'sb-confirmed'
-};
-
-// ── Language Toggle ───────────────────────────────────
-function setLang(lang) {
-  currentLang = lang;
-  document.getElementById('btn-th').classList.toggle('active', lang==='th');
-  document.getElementById('btn-en').classList.toggle('active', lang==='en');
-  
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if(DICT[key]) el.textContent = DICT[key][lang];
-  });
-  
-  if(currentOrderData) renderOrder(currentOrderData);
-}
-
-// ── Init ──────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', ()=>{
-  lucide.createIcons();
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  if(id){
-    document.getElementById('tid-input').value = id.toUpperCase();
-    trackOrder();
-  }
-});
-
-// ── API ───────────────────────────────────────────────
 async function api(payload) {
-  const res = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+  const res = await fetch(SCRIPT_URL, {
+    method:'POST', headers:{'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
   return res.json();
 }
 
-// ── Track ─────────────────────────────────────────────
-async function trackOrder() {
-  const tid = document.getElementById('tid-input').value.trim().toUpperCase();
-  if(!tid){
-    document.getElementById('search-err').innerHTML = `<i data-lucide="alert-circle" style="width:14px"></i> ${currentLang==='th'?'กรุณากรอกเลขติดตาม':'Please enter tracking ID'}`;
-    lucide.createIcons();
-    return;
-  }
-  document.getElementById('search-err').innerHTML='';
-  currentTID = tid;
-  showSec('loading');
-  await loadOrder(tid);
-  startAutoRefresh();
-}
-
-async function loadOrder(tid) {
-  const res = await api({action:'getOrder', trackingId:tid});
+async function loadOrders() {
+  document.getElementById('tab-content').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลด...</div>';
+  lucide.createIcons();
+  const res = await api({action:'getAllOrders'});
   if(!res.success){
-    document.getElementById('search-err').innerHTML = `<i data-lucide="x-circle" style="width:14px"></i> ${res.message}`;
-    lucide.createIcons();
-    showSec('empty');
-    return;
-  }
-  currentOrderData = res.order;
-  renderOrder(res.order);
-  showSec('result');
-}
-
-function renderOrder(order) {
-  const status = order.status;
-
-  // Status Banner
-  const banner = document.getElementById('status-banner');
-  banner.className = 'status-banner ' + (STATUS_CLASS[status]||'');
-  document.getElementById('sb-icon').setAttribute('data-lucide', STATUS_ICON[status]||'clipboard-list');
-  document.getElementById('sb-status').textContent  = STATUS_TEXT[status] ? STATUS_TEXT[status][currentLang] : status;
-  document.getElementById('sb-hint').textContent    = STATUS_HINT[status] ? STATUS_HINT[status][currentLang] : '';
-
-  // Order Info
-  document.getElementById('res-tid').textContent     = order.tracking_id;
-  document.getElementById('res-name').textContent    = order.customer_name;
-  document.getElementById('res-product').textContent = order.product_name;
-  document.getElementById('res-address').textContent = order.delivery_address;
-
-  if(order.delivery_person_name){
-    document.getElementById('res-driver').textContent = (currentLang==='th'?'ผู้จัดส่ง: ':'Driver: ') + order.delivery_person_name;
-    document.getElementById('res-driver-row').style.display='flex';
-  } else {
-    document.getElementById('res-driver-row').style.display='none';
-  }
-
-  // Confirm receipt card
-  document.getElementById('confirm-receipt-card').style.display = status==='delivered' ? 'block' : 'none';
-  document.getElementById('confirmed-card').style.display = status==='confirmed' ? 'block' : 'none';
-
-  if(status==='confirmed'){
-    const hist = order.history||[];
-    const confEntry = hist.filter(h=>h.status==='confirmed').pop();
-    const prefix = currentLang==='th'?'ยืนยันเมื่อ ':'Confirmed at ';
-    document.getElementById('confirmed-time').textContent = confEntry ? prefix+fmtDate(confEntry.timestamp) : '';
-  }
-
-  // Cancelled card
-  document.getElementById('cancelled-card').style.display = status==='cancelled' ? 'block' : 'none';
-  if(status==='cancelled'){
-    const prefix = currentLang==='th'?'เหตุผล: ':'Reason: ';
-    document.getElementById('cancel-reason-text').textContent = order.cancel_reason ? prefix+order.cancel_reason : '';
-  }
-
-  // Photo
-  if(order.photo_url && (status==='delivered'||status==='confirmed')){
-    document.getElementById('delivery-photo').src = order.photo_url;
-    document.getElementById('photo-card').style.display='block';
-  } else {
-    document.getElementById('photo-card').style.display='none';
-  }
-
-  // Timeline
-  const hist = (order.history||[]).slice().reverse();
-  document.getElementById('timeline').innerHTML = hist.map(h=>{
-    const isCancelled = h.status==='cancelled';
-    const isDone      = h.status==='delivered'||h.status==='confirmed';
-    const sText = STATUS_TEXT[h.status] ? STATUS_TEXT[h.status][currentLang] : h.status;
-    return `
-    <div class="tl-item">
-      <div class="tl-dot ${isCancelled?'red':isDone?'green':'done'}"><i data-lucide="${STATUS_ICON[h.status]||'clipboard-list'}" style="width:16px;"></i></div>
-      <div class="tl-body">
-        <div class="tl-status">${sText}</div>
-        <div class="tl-time">${fmtDate(h.timestamp)}</div>
-        ${h.notes?`<div class="tl-note">${h.notes}</div>`:''}
-        ${h.gps_lat?`<div class="tl-gps"><i data-lucide="map-pin" style="width:12px;"></i> ${h.gps_lat}, ${h.gps_lng}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Email section
-  const doneStatuses = ['delivered','confirmed','cancelled'];
-  document.getElementById('email-section').style.display = doneStatuses.includes(status) ? 'none' : 'block';
-  
-  lucide.createIcons();
-}
-
-// ── Confirm Receipt ───────────────────────────────────
-async function confirmReceipt() {
-  const msg = currentLang==='th' ? 'ยืนยันว่าได้รับสินค้าเรียบร้อยแล้ว?' : 'Confirm that you have received the order?';
-  if(!confirm(msg)) return;
-  const res = await api({action:'confirmReceipt', trackingId:currentTID, updatedBy:'customer'});
-  if(res.success){
-    await loadOrder(currentTID);
-  } else {
-    alert(res.message||'Error');
-  }
-}
-
-// ── Email Subscribe ───────────────────────────────────
-async function subscribeEmail() {
-  const email = document.getElementById('email-input').value.trim();
-  const msgEl = document.getElementById('email-msg');
-  if(!email||!email.includes('@')){
-    msgEl.style.color='var(--red)';
-    msgEl.innerHTML=`<i data-lucide="x-circle" style="width:14px"></i> ${currentLang==='th'?'กรุณากรอกอีเมลให้ถูกต้อง':'Invalid email'}`;
+    document.getElementById('tab-content').innerHTML='<div class="empty"><i data-lucide="x-circle" class="empty-icon" style="width:48px;height:48px;color:var(--red);"></i><div class="empty-text">โหลดข้อมูลไม่สำเร็จ</div></div>';
     lucide.createIcons();
     return;
   }
-  msgEl.style.color='var(--muted)';
-  msgEl.innerHTML=`<i data-lucide="loader-2" class="spin" style="width:14px"></i> ${currentLang==='th'?'กำลังลงทะเบียน...':'Subscribing...'}`;
-  lucide.createIcons();
-  
-  const res = await api({action:'subscribeEmail', trackingId:currentTID, email});
-  if(res.success){
-    msgEl.style.color='var(--green)';
-    msgEl.innerHTML=`<i data-lucide="check-circle" style="width:14px"></i> ${currentLang==='th'?'ลงทะเบียนสำเร็จ!':'Successfully subscribed!'}`;
-    document.getElementById('email-input').value='';
-  } else {
-    msgEl.style.color='var(--red)';
-    msgEl.innerHTML=`<i data-lucide="x-circle" style="width:14px"></i> ${res.message||'Error'}`;
-  }
-  lucide.createIcons();
+  allOrders = res.orders;
+  updateCounts();
+  renderTab(currentTab);
 }
 
-// ── Auto Refresh ──────────────────────────────────────
-function startAutoRefresh() {
-  if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(()=>{
-    if(currentTID) loadOrder(currentTID);
-  }, 30000);
+function updateCounts() {
+  ['pending','preparing','ready'].forEach(s=>{
+    document.getElementById('cnt-'+s).textContent = allOrders.filter(o=>o.status===s).length;
+  });
 }
 
-// ── Helpers ───────────────────────────────────────────
-function showSec(id) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  renderTab(tab);
 }
 
 function fmtDate(iso) {
-  if(!iso) return '—';
-  const d = new Date(iso);
-  const locale = currentLang === 'th' ? 'th-TH' : 'en-US';
-  return d.toLocaleDateString(locale,{day:'2-digit',month:'short',year:'numeric'})
-       + ' ' + d.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'});
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 }
+
+function renderTab(status) {
+  const list = allOrders.filter(o=>o.status===status);
+  const container = document.getElementById('tab-content');
+
+  if(!list.length){
+    const msgs = {
+      pending:'ไม่มีออเดอร์รอดำเนินการ',
+      preparing:'ไม่มีออเดอร์ที่กำลังเตรียม',
+      ready:'ไม่มีออเดอร์ที่รอจัดส่ง'
+    };
+    const icons = {
+      pending:'check-circle',
+      preparing:'mailbox',
+      ready:'mailbox'
+    };
+    container.innerHTML = `<div class="empty"><i data-lucide="${icons[status]}" class="empty-icon" style="width:48px;height:48px;"></i>
+      <div class="empty-text">${msgs[status]||'ไม่มีรายการ'}</div>
+      <div class="empty-sub">กดรีเฟรชเพื่ออัปเดตข้อมูล</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  const topColors = {pending:'yellow-top', preparing:'', ready:'green-top'};
+  const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready'};
+  
+  const bTexts = {
+    pending: '<i data-lucide="clock" style="width:12px;"></i> รอดำเนินการ',
+    preparing: '<i data-lucide="wrench" style="width:12px;"></i> กำลังเตรียม',
+    ready: '<i data-lucide="package" style="width:12px;"></i> รอจัดส่ง'
+  };
+
+  container.innerHTML = `<div class="cards-grid">${list.map(o=>`
+    <div class="order-card ${topColors[o.status]||''}">
+      <div class="oc-header">
+        <span class="oc-tid">${o.tracking_id}</span>
+        <span class="oc-badge ${badgeClass[o.status]}">${bTexts[o.status]}</span>
+      </div>
+      <div class="oc-name"><i data-lucide="user" style="width:14px;color:var(--muted);"></i> ${o.customer_name}</div>
+      <div class="oc-product"><i data-lucide="package" style="width:14px;color:var(--muted);"></i> ${o.product_name}</div>
+      <div class="oc-address"><i data-lucide="map-pin" style="width:14px;flex-shrink:0;margin-top:2px;"></i> <div>${o.delivery_address}</div></div>
+      <div class="oc-time">สร้างเมื่อ: ${fmtDate(o.created_at)}</div>
+      <div class="oc-actions">
+        ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')"><i data-lucide="wrench" style="width:16px;"></i> เริ่มเตรียมสินค้า</button>`:''}
+        ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')"><i data-lucide="check" style="width:16px;"></i> เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
+        ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;"><i data-lucide="truck" style="width:16px;"></i> รอผู้จัดส่งรับงาน</button>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+  lucide.createIcons();
+}
+
+function openConfirm(tid, toStatus) {
+  const order = allOrders.find(o=>o.tracking_id===tid);
+  if(!order) return;
+
+  pendingAction = {trackingId:tid, status:toStatus};
+
+  const configs = {
+    preparing: {icon:'wrench', color:'var(--orange)', title:'เริ่มเตรียมสินค้า', sub:'ยืนยันว่าเริ่มจัดเตรียมสินค้าแล้ว', btnClass:'orange', btnText:'เริ่มเตรียมสินค้า'},
+    ready:     {icon:'check-circle', color:'var(--green)', title:'เตรียมสินค้าเสร็จแล้ว', sub:'ยืนยันว่าสินค้าพร้อมสำหรับจัดส่ง', btnClass:'', btnText:'ยืนยันเตรียมเสร็จ'},
+  };
+  const cfg = configs[toStatus];
+
+  const iconEl = document.getElementById('modal-icon');
+  iconEl.setAttribute('data-lucide', cfg.icon);
+  iconEl.style.color = cfg.color;
+  
+  document.getElementById('modal-title').textContent = cfg.title;
+  document.getElementById('modal-sub').textContent   = cfg.sub;
+
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.innerHTML = `<i data-lucide="check" style="width:16px;"></i> ${cfg.btnText}`;
+  btn.className = 'btn-confirm' + (cfg.btnClass?' '+cfg.btnClass:'');
+
+  document.getElementById('modal-order-info').innerHTML = `
+    <div class="order-info-row">
+      <span class="order-info-label">เลขติดตาม</span>
+      <span class="order-info-value" style="font-family:monospace;color:var(--blue);">${order.tracking_id}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">ชื่อลูกค้า</span>
+      <span class="order-info-value">${order.customer_name}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">สินค้า</span>
+      <span class="order-info-value">${order.product_name}</span>
+    </div>
+    <div class="order-info-row">
+      <span class="order-info-label">ที่อยู่</span>
+      <span class="order-info-value">${order.delivery_address}</span>
+    </div>
+  `;
+  document.getElementById('action-modal').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+async function doAction() {
+  if(!pendingAction) return;
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังบันทึก...';
+  lucide.createIcons();
+  btn.disabled = true;
+
+  const statusNotes = {
+    preparing:'เริ่มจัดเตรียมสินค้าแล้ว',
+    ready:'เตรียมสินค้าเสร็จแล้ว รอการจัดส่ง'
+  };
+
+  const res = await api({
+    action:'updateStatus',
+    trackingId: pendingAction.trackingId,
+    status: pendingAction.status,
+    notes: statusNotes[pendingAction.status]||'',
+    updatedBy:'warehouse'
+  });
+
+  if(res.success){
+    closeModal();
+    await loadOrders();
+    showToast('อัปเดตสถานะสำเร็จ!');
+  } else {
+    alert(res.message||'เกิดข้อผิดพลาด');
+    btn.innerHTML = '<i data-lucide="check" style="width:16px;"></i> ยืนยัน';
+    lucide.createIcons();
+    btn.disabled = false;
+  }
+}
+
+function closeModal(){
+  document.getElementById('action-modal').classList.add('hidden');
+  pendingAction = null;
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:40px;font-family:Prompt,sans-serif;font-size:14px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:fadeIn .3s;display:flex;align-items:center;gap:8px;';
+  t.innerHTML = `<i data-lucide="check-circle" style="width:18px;color:var(--green);"></i> ${msg}`;
+  document.body.appendChild(t);
+  lucide.createIcons();
+  setTimeout(()=>t.remove(), 3000);
+}
+
+document.getElementById('action-modal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('action-modal')) closeModal();
+});
+
+loadOrders();
 </script>
 </body>
 </html>
