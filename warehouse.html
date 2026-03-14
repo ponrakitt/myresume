@@ -46,6 +46,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .order-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
 .order-card.green-top{border-top-color:var(--green);}
 .order-card.yellow-top{border-top-color:var(--yellow);}
+.order-card.red-top{border-top-color:var(--red);}
 
 .oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
 .oc-tid{font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);
@@ -54,6 +55,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .b-pending{background:var(--yellow-light);color:var(--yellow);}
 .b-preparing{background:var(--orange-light);color:var(--orange-dark);}
 .b-ready{background:var(--green-light);color:var(--green);}
+.b-cancelled{background:#fef2f2;color:var(--red);}
 
 .oc-name{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
 .oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
@@ -139,6 +141,9 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="tab" id="tab-ready" onclick="switchTab('ready')">
       <i data-lucide="package" style="width:16px;"></i> รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
     </div>
+    <div class="tab" id="tab-cancelled" onclick="switchTab('cancelled')">
+      <i data-lucide="x-circle" style="width:16px;"></i> ยกเลิก <span class="tab-badge" id="cnt-cancelled" style="background:var(--red);">0</span>
+    </div>
   </div>
 
   <!-- Content -->
@@ -206,7 +211,7 @@ async function loadOrders() {
 }
 
 function updateCounts() {
-  ['pending','preparing','ready'].forEach(s=>{
+  ['pending','preparing','ready','cancelled'].forEach(s=>{
     document.getElementById('cnt-'+s).textContent = allOrders.filter(o=>o.status===s).length;
   });
 }
@@ -232,12 +237,14 @@ function renderTab(status) {
     const msgs = {
       pending:'ไม่มีออเดอร์รอดำเนินการ',
       preparing:'ไม่มีออเดอร์ที่กำลังเตรียม',
-      ready:'ไม่มีออเดอร์ที่รอจัดส่ง'
+      ready:'ไม่มีออเดอร์ที่รอจัดส่ง',
+      cancelled:'ไม่มีออเดอร์ที่ถูกยกเลิก'
     };
     const icons = {
       pending:'check-circle',
       preparing:'mailbox',
-      ready:'mailbox'
+      ready:'mailbox',
+      cancelled:'x-circle'
     };
     container.innerHTML = `<div class="empty"><i data-lucide="${icons[status]}" class="empty-icon" style="width:48px;height:48px;"></i>
       <div class="empty-text">${msgs[status]||'ไม่มีรายการ'}</div>
@@ -246,13 +253,14 @@ function renderTab(status) {
     return;
   }
 
-  const topColors = {pending:'yellow-top', preparing:'', ready:'green-top'};
-  const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready'};
+  const topColors = {pending:'yellow-top', preparing:'', ready:'green-top', cancelled:'red-top'};
+  const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready', cancelled:'b-cancelled'};
   
   const bTexts = {
     pending: '<i data-lucide="clock" style="width:12px;"></i> รอดำเนินการ',
     preparing: '<i data-lucide="wrench" style="width:12px;"></i> กำลังเตรียม',
-    ready: '<i data-lucide="package" style="width:12px;"></i> รอจัดส่ง'
+    ready: '<i data-lucide="package" style="width:12px;"></i> รอจัดส่ง',
+    cancelled: '<i data-lucide="x-circle" style="width:12px;"></i> ยกเลิกแล้ว'
   };
 
   container.innerHTML = `<div class="cards-grid">${list.map(o=>`
@@ -269,6 +277,7 @@ function renderTab(status) {
         ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')"><i data-lucide="wrench" style="width:16px;"></i> เริ่มเตรียมสินค้า</button>`:''}
         ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')"><i data-lucide="check" style="width:16px;"></i> เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
         ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;"><i data-lucide="truck" style="width:16px;"></i> รอผู้จัดส่งรับงาน</button>`:''}
+        ${status==='cancelled'?`<div style="color:var(--red);font-size:13px;text-align:center;padding:10px;background:#fef2f2;border-radius:10px;font-weight:500;"><i data-lucide="alert-circle" style="width:16px;display:inline-block;vertical-align:text-bottom;"></i> ออเดอร์ถูกยกเลิกการทำงานแล้ว</div>`:''}
       </div>
     </div>`).join('')}
   </div>`;
@@ -323,9 +332,21 @@ function openConfirm(tid, toStatus) {
 async function doAction() {
   if(!pendingAction) return;
   const btn = document.getElementById('modal-confirm-btn');
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังบันทึก...';
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังตรวจสอบ...';
   lucide.createIcons();
   btn.disabled = true;
+
+  // ตรวจสอบสถานะล่าสุดจากเซิร์ฟเวอร์ก่อนเสมอ ป้องกันกรณี Admin กดยกเลิกไปแล้ว
+  const checkRes = await api({action:'getOrder', trackingId: pendingAction.trackingId});
+  if(checkRes.success && checkRes.order.status === 'cancelled') {
+     alert('❌ ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
+     closeModal();
+     await loadOrders(); // รีโหลดเพื่อดึงข้อมูลใหม่มาแสดง
+     return;
+  }
+
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังบันทึก...';
+  lucide.createIcons();
 
   const statusNotes = {
     preparing:'เริ่มจัดเตรียมสินค้าแล้ว',
@@ -346,9 +367,8 @@ async function doAction() {
     showToast('อัปเดตสถานะสำเร็จ!');
   } else {
     alert(res.message||'เกิดข้อผิดพลาด');
-    btn.innerHTML = '<i data-lucide="check" style="width:16px;"></i> ยืนยัน';
-    lucide.createIcons();
-    btn.disabled = false;
+    closeModal();
+    await loadOrders(); // โหลดข้อมูลใหม่เผื่อรายการถูก Cancel ไปแล้ว
   }
 }
 
