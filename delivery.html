@@ -6,6 +6,7 @@
 <title>ผู้จัดส่ง — ระบบติดตามสินค้า</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#eff6ff;
@@ -15,15 +16,15 @@
   --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
 .header{background:var(--navy);color:#fff;padding:16px 20px;
   display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
-.header-icon{font-size:28px;}
+.header-icon{width:28px;height:28px;}
 .header h1{font-size:18px;font-weight:700;}
 .header p{font-size:12px;color:rgba(255,255,255,.5);}
 
-.main{padding:20px;max-width:480px;margin:0 auto;}
+.main{padding:20px;max-width:480px;margin:0 auto;flex:1;width:100%;}
 
 /* Card */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
@@ -82,20 +83,20 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .step:last-child::after{display:none;}
 .step-circle{width:32px;height:32px;border-radius:50%;background:var(--border);
   display:flex;align-items:center;justify-content:center;font-size:14px;
-  margin:0 auto 6px;position:relative;z-index:1;transition:.3s;}
-.step-circle.done{background:var(--green);color:#fff;}
-.step-circle.active{background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2);}
+  margin:0 auto 6px;position:relative;z-index:1;transition:.3s;color:#fff;}
+.step-circle.done{background:var(--green);}
+.step-circle.active{background:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.2);}
 .step-label{font-size:11px;color:var(--muted);}
 
 /* Photo Grid */
 .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .photo-slot{aspect-ratio:1;border-radius:10px;overflow:hidden;background:#f1f5f9;
   border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;
-  font-size:28px;color:var(--muted);position:relative;}
+  color:var(--muted);position:relative;}
 .photo-slot img{width:100%;height:100%;object-fit:cover;}
 .photo-slot .remove-photo{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;
-  border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;display:none;}
-.photo-slot:hover .remove-photo{display:block;}
+  border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.photo-slot:hover .remove-photo{display:flex;}
 .photo-slot.filled{border-style:solid;border-color:var(--green);}
 
 /* Camera */
@@ -117,29 +118,27 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:200;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
-.loading-overlay .spin{font-size:40px;animation:spin .8s linear infinite;}
+.loading-overlay .spin{animation:spin .8s linear infinite;color:var(--blue);}
 .loading-overlay p{font-size:15px;font-weight:500;color:var(--muted);}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(0);
-  background:var(--navy);color:#fff;padding:12px 24px;border-radius:40px;
-  font-size:14px;z-index:999;transition:.3s;white-space:nowrap;}
 
 /* Success */
 .success-banner{background:var(--green-light);border:2px solid #86efac;border-radius:12px;
   padding:20px;text-align:center;}
-.success-icon{font-size:48px;margin-bottom:8px;}
+.success-icon{color:var(--green);margin:0 auto 8px;width:48px;height:48px;display:block;}
 .success-title{font-size:18px;font-weight:700;color:var(--green);}
 .success-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 
 .hidden{display:none!important;}
+
+.site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
+.site-footer p{margin-bottom:4px;}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-icon">🚚</div>
+  <i data-lucide="truck" class="header-icon"></i>
   <div>
     <h1>ผู้จัดส่งสินค้า</h1>
     <p>สแกน QR หรือกรอกเลขติดตาม</p>
@@ -151,13 +150,13 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   <!-- SECTION: INPUT -->
   <div id="sec-input" class="section active">
     <div class="card">
-      <div class="card-title">📦 ค้นหาออเดอร์</div>
+      <div class="card-title"><i data-lucide="package" style="width:20px;"></i> ค้นหาออเดอร์</div>
 
       <!-- Manual Input -->
       <div class="input-row" style="margin-bottom:12px;">
         <input id="tid-input" type="text" placeholder="กรอกเลขติดตามสินค้า" style="text-transform:uppercase;"
           oninput="this.value=this.value.toUpperCase()"/>
-        <button class="btn btn-primary" onclick="findOrder()">🔍 ค้นหา</button>
+        <button class="btn btn-primary" onclick="findOrder()"><i data-lucide="search" style="width:16px;"></i> ค้นหา</button>
       </div>
 
       <!-- Divider -->
@@ -165,7 +164,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 
       <!-- QR Scanner -->
       <div id="qr-section">
-        <button class="btn btn-outline btn-full" onclick="startScan()" id="scan-btn">📷 สแกน QR Code</button>
+        <button class="btn btn-outline btn-full" onclick="startScan()" id="scan-btn"><i data-lucide="camera" style="width:16px;"></i> สแกน QR Code</button>
         <div id="scanner-container" class="hidden" style="margin-top:12px;">
           <div class="scanner-box">
             <video id="qr-video" playsinline></video>
@@ -175,11 +174,11 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
               </div>
             </div>
           </div>
-          <button class="btn btn-danger btn-full" style="margin-top:10px;" onclick="stopScan()">✕ ยกเลิกสแกน</button>
+          <button class="btn btn-danger btn-full" style="margin-top:10px;" onclick="stopScan()"><i data-lucide="x" style="width:16px;"></i> ยกเลิกสแกน</button>
         </div>
       </div>
 
-      <div id="search-msg" style="margin-top:12px;font-size:14px;color:var(--red);"></div>
+      <div id="search-msg" style="margin-top:12px;font-size:14px;color:var(--red);display:flex;align-items:center;gap:4px;"></div>
     </div>
   </div>
 
@@ -197,7 +196,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
           <div class="step-label">ถ่ายรูป</div>
         </div>
         <div class="step">
-          <div class="step-circle" id="step-3">✓</div>
+          <div class="step-circle" id="step-3"><i data-lucide="check" style="width:16px;"></i></div>
           <div class="step-label">สำเร็จ</div>
         </div>
       </div>
@@ -207,7 +206,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 
       <!-- Driver Name -->
       <div class="name-box">
-        <span>👤</span>
+        <i data-lucide="user" style="width:16px;color:var(--muted);"></i>
         <input id="driver-name" type="text" placeholder="ชื่อผู้จัดส่ง (ไม่บังคับ)"/>
       </div>
 
@@ -219,17 +218,17 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   <!-- SECTION: PHOTO CAPTURE -->
   <div id="sec-photo" class="section">
     <div class="card">
-      <div class="card-title">📸 ถ่ายรูปยืนยันการจัดส่ง</div>
+      <div class="card-title"><i data-lucide="camera" style="width:20px;"></i> ถ่ายรูปยืนยันการจัดส่ง</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
         ถ่ายอย่างน้อย 1 รูป สูงสุด 4 รูป<br>เมื่อถ่ายครบ 4 รูป ระบบจะรวมรูปอัตโนมัติ
       </p>
 
       <!-- Photo Grid Preview -->
       <div class="photo-grid" id="photo-grid">
-        <div class="photo-slot" id="slot-0">📷</div>
-        <div class="photo-slot" id="slot-1">📷</div>
-        <div class="photo-slot" id="slot-2">📷</div>
-        <div class="photo-slot" id="slot-3">📷</div>
+        <div class="photo-slot" id="slot-0"><i data-lucide="camera" style="width:24px;height:24px;"></i></div>
+        <div class="photo-slot" id="slot-1"><i data-lucide="camera" style="width:24px;height:24px;"></i></div>
+        <div class="photo-slot" id="slot-2"><i data-lucide="camera" style="width:24px;height:24px;"></i></div>
+        <div class="photo-slot" id="slot-3"><i data-lucide="camera" style="width:24px;height:24px;"></i></div>
       </div>
 
       <!-- Camera Feed -->
@@ -240,14 +239,14 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
       <canvas id="preview-canvas"></canvas>
 
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-primary" id="take-photo-btn" onclick="takePhoto()" style="flex:1;">📸 ถ่ายรูป</button>
-        <button class="btn btn-outline btn-sm" onclick="switchCamera()" title="เปลี่ยนกล้อง">🔄</button>
+        <button class="btn btn-primary" id="take-photo-btn" onclick="takePhoto()" style="flex:1;"><i data-lucide="camera" style="width:16px;"></i> ถ่ายรูป</button>
+        <button class="btn btn-outline btn-sm" onclick="switchCamera()" title="เปลี่ยนกล้อง"><i data-lucide="refresh-cw" style="width:16px;"></i></button>
       </div>
       <div style="margin-top:8px;text-align:center;font-size:13px;color:var(--muted);" id="photo-count-label">0 / 4 รูป</div>
 
       <button class="btn btn-green btn-full" id="submit-photos-btn" onclick="submitDelivery()" disabled
         style="margin-top:12px;">
-        ✅ ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)
+        <i data-lucide="check" style="width:16px;"></i> ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)
       </button>
     </div>
   </div>
@@ -256,12 +255,12 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   <div id="sec-success" class="section">
     <div class="card">
       <div class="success-banner">
-        <div class="success-icon">✅</div>
+        <i data-lucide="check-circle" class="success-icon"></i>
         <div class="success-title">จัดส่งสำเร็จ!</div>
         <div class="success-sub" id="success-sub">อัปเดตสถานะเรียบร้อยแล้ว</div>
       </div>
       <button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="resetAll()">
-        📦 ออเดอร์ถัดไป
+        <i data-lucide="package" style="width:16px;"></i> ออเดอร์ถัดไป
       </button>
     </div>
   </div>
@@ -270,12 +269,19 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 
 <!-- Loading Overlay -->
 <div id="loading-overlay" class="loading-overlay hidden">
-  <div class="spin">⏳</div>
+  <i data-lucide="loader-2" class="spin" style="width:40px;height:40px;"></i>
   <p id="loading-text">กำลังดำเนินการ...</p>
 </div>
 
+<!-- Footer -->
+<div class="site-footer">
+  <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
+  <p>All rights reserved by wanflorist.net</p>
+  <p>Designed and co-developed by ponrakitt.site</p>
+</div>
+
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec'; // ← ใส่ URL ของ Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
 
 let currentOrder  = null;
 let scanInterval  = null;
@@ -285,6 +291,8 @@ let captureStream = null;
 let currentCamera = 'environment';
 let currentGPS    = null;
 let deliveryTID   = null;
+
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
 
 // ── API ───────────────────────────────────────────────
 async function api(payload) {
@@ -321,14 +329,19 @@ function showSection(id) {
 // ── Search ────────────────────────────────────────────
 async function findOrder() {
   const tid = document.getElementById('tid-input').value.trim().toUpperCase();
-  if(!tid){document.getElementById('search-msg').textContent='กรุณากรอกเลขติดตาม';return;}
+  if(!tid){
+    document.getElementById('search-msg').innerHTML='<i data-lucide="alert-circle" style="width:14px;"></i> กรุณากรอกเลขติดตาม';
+    lucide.createIcons();
+    return;
+  }
 
   showLoading('กำลังค้นหาออเดอร์...');
   const res = await api({action:'getOrder', trackingId:tid});
   hideLoading();
 
   if(!res.success){
-    document.getElementById('search-msg').textContent='❌ ' + res.message;
+    document.getElementById('search-msg').innerHTML=`<i data-lucide="x-circle" style="width:14px;"></i> ${res.message}`;
+    lucide.createIcons();
     return;
   }
   stopScan();
@@ -339,10 +352,11 @@ function handleFoundOrder(order) {
   currentOrder = order;
   const validStatuses = ['ready','out_for_delivery'];
   if(!validStatuses.includes(order.status)){
-    document.getElementById('search-msg').textContent = `❌ ออเดอร์นี้ไม่สามารถดำเนินการได้ (สถานะ: ${statusTH(order.status)})`;
+    document.getElementById('search-msg').innerHTML = `<i data-lucide="alert-circle" style="width:14px;"></i> ออเดอร์นี้ไม่สามารถดำเนินการได้ (สถานะ: ${statusTH(order.status)})`;
+    lucide.createIcons();
     return;
   }
-  document.getElementById('search-msg').textContent='';
+  document.getElementById('search-msg').innerHTML='';
   renderActionSection(order);
   showSec('action');
 }
@@ -376,17 +390,18 @@ function renderActionSection(order) {
     setStep(1);
     area.innerHTML=`
       <button class="btn btn-orange btn-full" onclick="departStore()">
-        🚚 ออกจากร้านแล้ว — เปลี่ยนสถานะเป็นกำลังจัดส่ง
+        <i data-lucide="truck" style="width:16px;"></i> ออกจากร้านแล้ว — กำลังจัดส่ง
       </button>
-      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()"><i data-lucide="arrow-left" style="width:16px;"></i> ย้อนกลับ</button>`;
   } else if(order.status==='out_for_delivery'){
     setStep(2);
     area.innerHTML=`
       <button class="btn btn-green btn-full" onclick="startPhotoCapture()">
-        📸 ถ่ายรูปยืนยันการจัดส่ง
+        <i data-lucide="camera" style="width:16px;"></i> ถ่ายรูปยืนยันการจัดส่ง
       </button>
-      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()"><i data-lucide="arrow-left" style="width:16px;"></i> ย้อนกลับ</button>`;
   }
+  lucide.createIcons();
 }
 
 // ── QR Scanner ────────────────────────────────────────
@@ -410,7 +425,6 @@ async function startScan() {
       const code    = jsQR(imgData.data,imgData.width,imgData.height);
       if(code){
         const url = code.data;
-        // Extract tracking ID from URL or use raw value
         let tid = url;
         try{const u=new URL(url); tid=u.searchParams.get('id')||url;}catch(e){tid=url;}
         document.getElementById('tid-input').value = tid.toUpperCase();
@@ -452,12 +466,13 @@ async function departStore() {
     setStep(2);
     document.getElementById('action-btn-area').innerHTML=`
       <div style="background:var(--blue-light);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px;">
-        <div style="font-size:20px;">🚚</div>
+        <i data-lucide="truck" style="width:24px;height:24px;color:var(--blue);margin-bottom:4px;"></i>
         <div style="font-size:14px;font-weight:600;color:var(--blue);">กำลังจัดส่ง</div>
-        ${gps?`<div style="font-size:11px;color:var(--muted);">📍 ${gps.lat}, ${gps.lng}</div>`:''}
+        ${gps?`<div style="font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;"><i data-lucide="map-pin" style="width:12px;"></i> ${gps.lat}, ${gps.lng}</div>`:''}
       </div>
-      <button class="btn btn-green btn-full" onclick="startPhotoCapture()">📸 ถ่ายรูปยืนยันการจัดส่ง</button>
-      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()">← ย้อนกลับ</button>`;
+      <button class="btn btn-green btn-full" onclick="startPhotoCapture()"><i data-lucide="camera" style="width:16px;"></i> ถ่ายรูปยืนยันการจัดส่ง</button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="resetAll()"><i data-lucide="arrow-left" style="width:16px;"></i> ย้อนกลับ</button>`;
+    lucide.createIcons();
   } else {
     alert(res.message||'เกิดข้อผิดพลาด');
   }
@@ -502,7 +517,6 @@ function takePhoto() {
   photos.push(base64);
   updatePhotoUI();
   if(photos.length===4){
-    // Stop camera preview after 4 shots
     if(captureStream) captureStream.getTracks().forEach(t=>t.stop());
     document.getElementById('camera-wrap').style.display='none';
     document.getElementById('take-photo-btn').style.display='none';
@@ -525,10 +539,10 @@ function updatePhotoUI() {
     if(i<photos.length){
       const img = `data:image/jpeg;base64,${photos[i]}`;
       slot.innerHTML = `<img src="${img}" alt="photo ${i+1}"/>
-        <button class="remove-photo" onclick="removePhoto(${i})">✕</button>`;
+        <button class="remove-photo" onclick="removePhoto(${i})"><i data-lucide="x" style="width:14px;"></i></button>`;
       slot.classList.add('filled');
     } else {
-      slot.innerHTML='📷';
+      slot.innerHTML='<i data-lucide="camera" style="width:24px;height:24px;"></i>';
       slot.classList.remove('filled');
     }
   });
@@ -536,9 +550,10 @@ function updatePhotoUI() {
   document.getElementById('photo-count-label').textContent = `${count} / 4 รูป`;
   const submitBtn = document.getElementById('submit-photos-btn');
   submitBtn.disabled = count < 1;
-  submitBtn.textContent = count>=1
-    ? `✅ ยืนยันการจัดส่ง (${count} รูป)`
-    : '✅ ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)';
+  submitBtn.innerHTML = count>=1
+    ? `<i data-lucide="check" style="width:16px;"></i> ยืนยันการจัดส่ง (${count} รูป)`
+    : '<i data-lucide="check" style="width:16px;"></i> ยืนยันการจัดส่ง (ต้องถ่ายอย่างน้อย 1 รูป)';
+  lucide.createIcons();
 }
 
 // ── Submit Delivery ───────────────────────────────────
@@ -590,12 +605,11 @@ async function submitDelivery() {
 function combinePhotos(photoArray, tid, gps) {
   return new Promise((resolve)=>{
     const SIZE   = 640;
-    const GRID   = 2;
-    const CELL   = SIZE;
     const COLS   = Math.min(photoArray.length, 2);
     const ROWS   = Math.ceil(photoArray.length / 2);
+    const CELL   = SIZE;
     const W      = COLS * CELL;
-    const H      = ROWS * CELL + 80;  // 80px for info bar
+    const H      = ROWS * CELL + 80;
 
     const canvas = document.createElement('canvas');
     canvas.width  = W;
@@ -620,7 +634,7 @@ function combinePhotos(photoArray, tid, gps) {
         ctx.beginPath();
         ctx.rect(x+2, y+2, CELL-4, CELL-4);
         ctx.clip();
-        // Cover fill
+        
         const scale = Math.max(CELL/img.width, CELL/img.height);
         const sw    = img.width  * scale;
         const sh    = img.height * scale;
@@ -639,33 +653,45 @@ function combinePhotos(photoArray, tid, gps) {
 
         loaded++;
         if(loaded === photoArray.length){
+          // --- Watermark (For wanflorist only) ---
+          ctx.save();
+          // แปลงจุดศูนย์กลางไปที่กึ่งกลางของพื้นที่รูปภาพ
+          ctx.translate(W/2, (ROWS*CELL)/2); 
+          ctx.rotate(-Math.PI / 6); // เอียง -30 องศา
+          ctx.font = "bold 60px Prompt, Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+          ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+          ctx.lineWidth = 4;
+          ctx.strokeText("For wanflorist only", 0, 0);
+          ctx.fillText("For wanflorist only", 0, 0);
+          ctx.restore();
+          // ---------------------------------------
+
           // Info bar at bottom
           const barY = ROWS * CELL;
           ctx.fillStyle = '#0f172a';
           ctx.fillRect(0, barY, W, 80);
 
-          // Tracking ID
           ctx.fillStyle = '#60a5fa';
           ctx.font = 'bold 18px Courier New, monospace';
           ctx.textAlign = 'left';
           ctx.fillText(`TID: ${tid}`, 14, barY+24);
 
-          // Date/Time
           const now = new Date();
           const dateStr = now.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})
                         + ' ' + now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
           ctx.fillStyle = '#94a3b8';
           ctx.font = '13px Prompt, Arial';
-          ctx.fillText(`📅 ${dateStr}`, 14, barY+46);
+          ctx.fillText(`Date: ${dateStr}`, 14, barY+46);
 
-          // GPS
           if(gps){
-            ctx.fillText(`📍 ${gps.lat}, ${gps.lng}`, 14, barY+66);
+            ctx.fillText(`GPS: ${gps.lat}, ${gps.lng}`, 14, barY+66);
           } else {
-            ctx.fillText('📍 ไม่สามารถรับ GPS ได้', 14, barY+66);
+            ctx.fillText('GPS: Not Available', 14, barY+66);
           }
 
-          // Delivered stamp
           ctx.fillStyle = '#22c55e';
           ctx.font = 'bold 14px Prompt, Arial';
           ctx.textAlign = 'right';
@@ -696,7 +722,9 @@ function setStep(n){
   [1,2,3].forEach(i=>{
     const el=document.getElementById('step-'+i);
     el.className='step-circle'+(i<n?' done':i===n?' active':'');
+    if(i===3 && n===3) el.innerHTML = '<i data-lucide="check" style="width:16px;"></i>';
   });
+  lucide.createIcons();
 }
 
 function statusTH(s){
@@ -711,7 +739,7 @@ function resetAll(){
   document.getElementById('camera-wrap').style.display='block';
   document.getElementById('take-photo-btn').style.display='flex';
   document.getElementById('tid-input').value='';
-  document.getElementById('search-msg').textContent='';
+  document.getElementById('search-msg').innerHTML='';
   document.getElementById('driver-name').value='';
   updatePhotoUI();
   showSec('input');
