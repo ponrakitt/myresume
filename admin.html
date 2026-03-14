@@ -555,14 +555,29 @@ async function showDetail(tid) {
 async function changeStatus(tid, status) {
   if(!confirm(`เปลี่ยนสถานะเป็น "${STATUS_TH[status]}" ใช่ไหม?`)) return;
   const res = await api({action:'updateStatus', trackingId:tid, status, updatedBy:'admin'});
-  if(res.success){closeModal('modal-detail'); await loadAllOrders(); alert('อัปเดตสำเร็จ');}
-  else alert(res.message||'เกิดข้อผิดพลาด');
+  if(res.success){
+    closeModal('modal-detail'); 
+    await loadAllOrders(); 
+    alert('อัปเดตสำเร็จ');
+  } else { 
+    alert(res.message||'เกิดข้อผิดพลาด'); 
+    closeModal('modal-detail'); 
+    await loadAllOrders(); 
+  }
 }
 
 async function doConfirmReceipt(tid) {
   if(!confirm('ยืนยันว่าลูกค้ารับสินค้าแล้ว?')) return;
   const res = await api({action:'confirmReceipt', trackingId:tid, updatedBy:'admin'});
-  if(res.success){closeModal('modal-detail'); await loadAllOrders(); alert('ยืนยันสำเร็จ');}
+  if(res.success){
+    closeModal('modal-detail'); 
+    await loadAllOrders(); 
+    alert('ยืนยันสำเร็จ');
+  } else {
+    alert(res.message||'เกิดข้อผิดพลาด'); 
+    closeModal('modal-detail'); 
+    await loadAllOrders(); 
+  }
 }
 
 // ── QR Modal ──────────────────────────────────────────
