@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>คลังสินค้า — ระบบติดตามสินค้า</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
   --navy:#0f172a;--orange:#f97316;--orange-light:#fff7ed;--orange-dark:#c2410c;
@@ -14,10 +15,11 @@
   --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
 .header{background:var(--navy);color:#fff;padding:16px 24px;
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.header-left{display:flex;align-items:center;gap:12px;}
 .header h1{font-size:18px;font-weight:700;}
 .header p{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
 .refresh-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
@@ -25,15 +27,15 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
 .refresh-btn:hover{background:rgba(255,255,255,.2);}
 
-.main{padding:20px;max-width:1100px;margin:0 auto;}
+.main{padding:20px;max-width:1100px;margin:0 auto;flex:1;width:100%;}
 
 /* Tabs */
 .tabs{display:flex;gap:4px;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;}
 .tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;
-  font-size:14px;font-weight:500;color:var(--muted);transition:.2s;}
+  font-size:14px;font-weight:500;color:var(--muted);transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .tab.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.1);}
 .tab-badge{display:inline-block;min-width:20px;height:20px;border-radius:10px;
-  background:var(--orange);color:#fff;font-size:11px;padding:0 6px;line-height:20px;margin-left:6px;}
+  background:var(--orange);color:#fff;font-size:11px;padding:0 6px;line-height:20px;}
 
 /* Cards Grid */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
@@ -48,15 +50,15 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
 .oc-tid{font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);
   background:var(--blue-light);padding:4px 10px;border-radius:6px;}
-.oc-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;}
+.oc-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;}
 .b-pending{background:var(--yellow-light);color:var(--yellow);}
 .b-preparing{background:var(--orange-light);color:var(--orange-dark);}
 .b-ready{background:var(--green-light);color:var(--green);}
 
-.oc-name{font-size:16px;font-weight:600;margin-bottom:4px;}
-.oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.oc-name{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .oc-address{font-size:12px;color:var(--muted);background:#f8fafc;
-  padding:8px 10px;border-radius:8px;line-height:1.5;}
+  padding:8px 10px;border-radius:8px;line-height:1.5;display:flex;align-items:flex-start;gap:6px;}
 .oc-time{font-size:11px;color:var(--muted);margin-top:8px;}
 
 .oc-actions{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
@@ -71,13 +73,13 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* Empty State */
 .empty{text-align:center;padding:60px 24px;color:var(--muted);}
-.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-icon{margin-bottom:12px;display:inline-block;opacity:0.6;}
 .empty-text{font-size:16px;font-weight:500;}
 .empty-sub{font-size:13px;margin-top:4px;}
 
 /* Loading */
 .loading{text-align:center;padding:48px;color:var(--muted);}
-.spin{display:inline-block;animation:spin .8s linear infinite;font-size:32px;}
+.spin{display:inline-block;animation:spin .8s linear infinite;color:var(--blue);}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* Modal */
@@ -86,13 +88,13 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .modal{background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;
   box-shadow:0 24px 64px rgba(0,0,0,.2);}
 .modal-header{padding:20px 20px 0;text-align:center;}
-.modal-icon{font-size:48px;margin-bottom:8px;}
+.modal-icon{margin:0 auto 8px;display:block;}
 .modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
 .modal-sub{font-size:13px;color:var(--muted);}
 .modal-body{padding:20px;}
 .modal-footer{padding:0 20px 20px;display:flex;gap:10px;}
 .modal-footer button{flex:1;padding:12px;border-radius:10px;font-family:'Prompt',sans-serif;
-  font-size:14px;font-weight:600;border:none;cursor:pointer;}
+  font-size:14px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-confirm{background:var(--green);color:#fff;}
 .btn-confirm.orange{background:var(--orange);}
 .btn-cancel{background:#f1f5f9;color:var(--muted);}
@@ -106,35 +108,42 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .order-info-value{font-weight:600;text-align:right;max-width:200px;}
 
 .hidden{display:none!important;}
+.site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
+.site-footer p{margin-bottom:4px;}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div>
-    <h1>📦 คลังสินค้า</h1>
-    <p>จัดการการเตรียมสินค้า</p>
+  <div class="header-left">
+    <i data-lucide="package" style="color:#fff;"></i>
+    <div>
+      <h1>คลังสินค้า</h1>
+      <p>จัดการการเตรียมสินค้า</p>
+    </div>
   </div>
-  <button class="refresh-btn" onclick="loadOrders()">🔄 รีเฟรช</button>
+  <button class="refresh-btn" onclick="loadOrders()">
+    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> รีเฟรช
+  </button>
 </div>
 
 <div class="main">
   <!-- Tabs -->
   <div class="tabs">
     <div class="tab active" id="tab-pending" onclick="switchTab('pending')">
-      🕐 รอดำเนินการ <span class="tab-badge" id="cnt-pending">0</span>
+      <i data-lucide="clock" style="width:16px;"></i> รอดำเนินการ <span class="tab-badge" id="cnt-pending">0</span>
     </div>
     <div class="tab" id="tab-preparing" onclick="switchTab('preparing')">
-      🔧 กำลังเตรียม <span class="tab-badge" id="cnt-preparing">0</span>
+      <i data-lucide="wrench" style="width:16px;"></i> กำลังเตรียม <span class="tab-badge" id="cnt-preparing">0</span>
     </div>
     <div class="tab" id="tab-ready" onclick="switchTab('ready')">
-      📦 รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
+      <i data-lucide="package" style="width:16px;"></i> รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
     </div>
   </div>
 
   <!-- Content -->
   <div id="tab-content">
-    <div class="loading"><span class="spin">⏳</span><br>กำลังโหลดข้อมูล...</div>
+    <div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลดข้อมูล...</div>
   </div>
 </div>
 
@@ -142,7 +151,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 <div id="action-modal" class="modal-bg hidden">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-icon" id="modal-icon">🔧</div>
+      <i data-lucide="wrench" class="modal-icon" id="modal-icon" style="width:48px;height:48px;color:var(--orange);"></i>
       <div class="modal-title" id="modal-title">ยืนยัน</div>
       <div class="modal-sub" id="modal-sub">กำลังดำเนินการ</div>
     </div>
@@ -151,17 +160,28 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button id="modal-confirm-btn" class="btn-confirm orange" onclick="doAction()">✅ ยืนยัน</button>
+      <button id="modal-confirm-btn" class="btn-confirm orange" onclick="doAction()">
+        <i data-lucide="check" style="width:16px;"></i> ยืนยัน
+      </button>
     </div>
   </div>
 </div>
 
+<!-- Footer -->
+<div class="site-footer">
+  <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
+  <p>All rights reserved by wanflorist.net</p>
+  <p>Designed and co-developed by ponrakitt.site</p>
+</div>
+
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec'; // ← ใส่ URL ของ Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
 
 let allOrders = [];
 let currentTab = 'pending';
 let pendingAction = null;
+
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
 
 async function api(payload) {
   const res = await fetch(SCRIPT_URL, {
@@ -172,10 +192,12 @@ async function api(payload) {
 }
 
 async function loadOrders() {
-  document.getElementById('tab-content').innerHTML = '<div class="loading"><span class="spin">⏳</span><br>กำลังโหลด...</div>';
+  document.getElementById('tab-content').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลด...</div>';
+  lucide.createIcons();
   const res = await api({action:'getAllOrders'});
   if(!res.success){
-    document.getElementById('tab-content').innerHTML='<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">โหลดข้อมูลไม่สำเร็จ</div></div>';
+    document.getElementById('tab-content').innerHTML='<div class="empty"><i data-lucide="x-circle" class="empty-icon" style="width:48px;height:48px;color:var(--red);"></i><div class="empty-text">โหลดข้อมูลไม่สำเร็จ</div></div>';
+    lucide.createIcons();
     return;
   }
   allOrders = res.orders;
@@ -212,33 +234,45 @@ function renderTab(status) {
       preparing:'ไม่มีออเดอร์ที่กำลังเตรียม',
       ready:'ไม่มีออเดอร์ที่รอจัดส่ง'
     };
-    container.innerHTML = `<div class="empty"><div class="empty-icon">${status==='pending'?'🎉':'📭'}</div>
+    const icons = {
+      pending:'check-circle',
+      preparing:'mailbox',
+      ready:'mailbox'
+    };
+    container.innerHTML = `<div class="empty"><i data-lucide="${icons[status]}" class="empty-icon" style="width:48px;height:48px;"></i>
       <div class="empty-text">${msgs[status]||'ไม่มีรายการ'}</div>
       <div class="empty-sub">กดรีเฟรชเพื่ออัปเดตข้อมูล</div></div>`;
+    lucide.createIcons();
     return;
   }
 
   const topColors = {pending:'yellow-top', preparing:'', ready:'green-top'};
   const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready'};
-  const badgeText  = {pending:'🕐 รอดำเนินการ', preparing:'🔧 กำลังเตรียม', ready:'📦 รอจัดส่ง'};
+  
+  const bTexts = {
+    pending: '<i data-lucide="clock" style="width:12px;"></i> รอดำเนินการ',
+    preparing: '<i data-lucide="wrench" style="width:12px;"></i> กำลังเตรียม',
+    ready: '<i data-lucide="package" style="width:12px;"></i> รอจัดส่ง'
+  };
 
   container.innerHTML = `<div class="cards-grid">${list.map(o=>`
     <div class="order-card ${topColors[o.status]||''}">
       <div class="oc-header">
         <span class="oc-tid">${o.tracking_id}</span>
-        <span class="oc-badge ${badgeClass[o.status]}">${badgeText[o.status]}</span>
+        <span class="oc-badge ${badgeClass[o.status]}">${bTexts[o.status]}</span>
       </div>
-      <div class="oc-name">👤 ${o.customer_name}</div>
-      <div class="oc-product">📦 ${o.product_name}</div>
-      <div class="oc-address">📍 ${o.delivery_address}</div>
-      <div class="oc-time">⏰ สร้างเมื่อ: ${fmtDate(o.created_at)}</div>
+      <div class="oc-name"><i data-lucide="user" style="width:14px;color:var(--muted);"></i> ${o.customer_name}</div>
+      <div class="oc-product"><i data-lucide="package" style="width:14px;color:var(--muted);"></i> ${o.product_name}</div>
+      <div class="oc-address"><i data-lucide="map-pin" style="width:14px;flex-shrink:0;margin-top:2px;"></i> <div>${o.delivery_address}</div></div>
+      <div class="oc-time">สร้างเมื่อ: ${fmtDate(o.created_at)}</div>
       <div class="oc-actions">
-        ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')">🔧 เริ่มเตรียมสินค้า</button>`:''}
-        ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')">✅ เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
-        ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;">📬 รอผู้จัดส่งรับงาน</button>`:''}
+        ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')"><i data-lucide="wrench" style="width:16px;"></i> เริ่มเตรียมสินค้า</button>`:''}
+        ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')"><i data-lucide="check" style="width:16px;"></i> เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
+        ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;"><i data-lucide="truck" style="width:16px;"></i> รอผู้จัดส่งรับงาน</button>`:''}
       </div>
     </div>`).join('')}
   </div>`;
+  lucide.createIcons();
 }
 
 function openConfirm(tid, toStatus) {
@@ -248,17 +282,20 @@ function openConfirm(tid, toStatus) {
   pendingAction = {trackingId:tid, status:toStatus};
 
   const configs = {
-    preparing: {icon:'🔧', title:'เริ่มเตรียมสินค้า', sub:'ยืนยันว่าเริ่มจัดเตรียมสินค้าแล้ว', btnClass:'orange', btnText:'🔧 เริ่มเตรียมสินค้า'},
-    ready:     {icon:'✅', title:'เตรียมสินค้าเสร็จแล้ว', sub:'ยืนยันว่าสินค้าพร้อมสำหรับจัดส่ง', btnClass:'', btnText:'✅ ยืนยันเตรียมเสร็จ'},
+    preparing: {icon:'wrench', color:'var(--orange)', title:'เริ่มเตรียมสินค้า', sub:'ยืนยันว่าเริ่มจัดเตรียมสินค้าแล้ว', btnClass:'orange', btnText:'เริ่มเตรียมสินค้า'},
+    ready:     {icon:'check-circle', color:'var(--green)', title:'เตรียมสินค้าเสร็จแล้ว', sub:'ยืนยันว่าสินค้าพร้อมสำหรับจัดส่ง', btnClass:'', btnText:'ยืนยันเตรียมเสร็จ'},
   };
   const cfg = configs[toStatus];
 
-  document.getElementById('modal-icon').textContent  = cfg.icon;
+  const iconEl = document.getElementById('modal-icon');
+  iconEl.setAttribute('data-lucide', cfg.icon);
+  iconEl.style.color = cfg.color;
+  
   document.getElementById('modal-title').textContent = cfg.title;
   document.getElementById('modal-sub').textContent   = cfg.sub;
 
   const btn = document.getElementById('modal-confirm-btn');
-  btn.textContent = cfg.btnText;
+  btn.innerHTML = `<i data-lucide="check" style="width:16px;"></i> ${cfg.btnText}`;
   btn.className = 'btn-confirm' + (cfg.btnClass?' '+cfg.btnClass:'');
 
   document.getElementById('modal-order-info').innerHTML = `
@@ -280,12 +317,14 @@ function openConfirm(tid, toStatus) {
     </div>
   `;
   document.getElementById('action-modal').classList.remove('hidden');
+  lucide.createIcons();
 }
 
 async function doAction() {
   if(!pendingAction) return;
   const btn = document.getElementById('modal-confirm-btn');
-  btn.textContent = '⏳ กำลังบันทึก...';
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังบันทึก...';
+  lucide.createIcons();
   btn.disabled = true;
 
   const statusNotes = {
@@ -304,10 +343,11 @@ async function doAction() {
   if(res.success){
     closeModal();
     await loadOrders();
-    showToast('✅ อัปเดตสถานะสำเร็จ!');
+    showToast('อัปเดตสถานะสำเร็จ!');
   } else {
     alert(res.message||'เกิดข้อผิดพลาด');
-    btn.textContent = 'ยืนยัน';
+    btn.innerHTML = '<i data-lucide="check" style="width:16px;"></i> ยืนยัน';
+    lucide.createIcons();
     btn.disabled = false;
   }
 }
@@ -319,9 +359,10 @@ function closeModal(){
 
 function showToast(msg) {
   const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:40px;font-family:Prompt,sans-serif;font-size:14px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:fadeIn .3s';
-  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:40px;font-family:Prompt,sans-serif;font-size:14px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:fadeIn .3s;display:flex;align-items:center;gap:8px;';
+  t.innerHTML = `<i data-lucide="check-circle" style="width:18px;color:var(--green);"></i> ${msg}`;
   document.body.appendChild(t);
+  lucide.createIcons();
   setTimeout(()=>t.remove(), 3000);
 }
 
