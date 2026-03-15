@@ -256,7 +256,7 @@ function renderTab(status) {
 
   const topColors = {pending:'yellow-top', preparing:'', ready:'green-top', cancelled:'red-top'};
   const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready', cancelled:'b-cancelled'};
-  
+ 
   const bTexts = {
     pending: '<i data-lucide="clock" style="width:12px;"></i> รอดำเนินการ',
     preparing: '<i data-lucide="wrench" style="width:12px;"></i> กำลังเตรียม',
@@ -300,7 +300,7 @@ function openConfirm(tid, toStatus) {
   const iconEl = document.getElementById('modal-icon');
   iconEl.setAttribute('data-lucide', cfg.icon);
   iconEl.style.color = cfg.color;
-  
+ 
   document.getElementById('modal-title').textContent = cfg.title;
   document.getElementById('modal-sub').textContent   = cfg.sub;
 
