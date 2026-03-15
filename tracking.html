@@ -43,7 +43,6 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
   padding:13px 20px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;
   cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
 .search-btn:hover{background:var(--blue-mid);}
-.search-err{margin-top:10px;font-size:13px;color:var(--red);display:flex;align-items:center;gap:4px;}
 
 /* Main content */
 .main{padding:20px;max-width:500px;margin:0 auto;flex:1;width:100%;}
@@ -109,25 +108,26 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .tl-status{font-size:14px;font-weight:600;}
 .tl-time{font-size:12px;color:var(--muted);margin-top:2px;}
 .tl-note{font-size:12px;color:var(--muted);margin-top:3px;}
-.tl-gps{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-top:4px;}
 
 /* Delivery Photo */
 .photo-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:20px;margin-bottom:16px;}
 .photo-card img{width:100%;border-radius:10px;margin-top:10px;}
 
-/* Email Subscribe */
+/* Subscriptions Cards (Email & Notify) */
 .email-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:20px;margin-bottom:16px;border-top:4px solid var(--blue);}
+  padding:20px;margin-bottom:16px;}
 .email-title{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
 .email-sub{font-size:13px;color:var(--muted);margin-bottom:14px;}
 .email-row{display:flex;gap:8px;}
 .email-row input{flex:1;padding:11px 14px;border:1.5px solid var(--border);
   border-radius:10px;font-family:'Prompt',sans-serif;font-size:14px;outline:none;transition:.2s;}
 .email-row input:focus{border-color:var(--blue);}
+.email-row select{flex:1;padding:11px 14px;border:1.5px solid var(--border);
+  border-radius:10px;font-family:'Prompt',sans-serif;font-size:13px;outline:none;background:#fff;}
+.email-row select:focus{border-color:var(--blue);}
 .email-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;
   padding:11px 16px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.email-msg{font-size:13px;margin-top:8px;display:flex;align-items:center;gap:4px;}
 
 /* Confirm Receipt */
 .confirm-card{background:var(--green-light);border:2px solid var(--green-border);
@@ -144,6 +144,9 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .cancelled-card{background:#fef2f2;border:1.5px solid #fecaca;border-radius:var(--radius);
   padding:20px;margin-bottom:16px;text-align:center;}
 
+/* SweetAlert custom image radius */
+.swal-img-radius { border-radius: 12px; border: 1.5px solid var(--border); }
+
 /* Auto refresh indicator */
 .auto-refresh{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
   justify-content:center;margin-bottom:20px;}
@@ -158,7 +161,6 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 /* Loading */
 .loading-box{text-align:center;padding:60px 20px;color:var(--muted);display:flex;flex-direction:column;align-items:center;}
 .loading-box .spin{animation:spin .8s linear infinite;margin-bottom:12px;color:var(--blue);}
-@keyframes spin{to{transform:rotate(360deg);}}
 
 /* Footer */
 .site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
@@ -190,7 +192,6 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
         onkeydown="if(event.key==='Enter')trackOrder()"/>
       <button class="search-btn" onclick="trackOrder()"><span data-i18n="btn_track">ติดตาม</span></button>
     </div>
-    <div id="search-err" class="search-err"></div>
   </div>
 </div>
 
@@ -277,26 +278,44 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
 
     <!-- Delivery Photo -->
-    <div id="photo-card" class="photo-card" style="display:none;">
-      <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;"><i data-lucide="camera" style="width:18px;height:18px;"></i> <span data-i18n="photo_title">รูปยืนยันการจัดส่ง</span></div>
-      <img id="delivery-photo" src="" alt="Photo"/>
+    <div id="photo-card" class="photo-card" style="display:none; text-align:center;">
+      <div style="font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;">
+        <i data-lucide="camera" style="width:18px;height:18px;"></i> <span data-i18n="photo_title">รูปยืนยันการจัดส่ง</span>
+      </div>
+      <button style="background:var(--blue-light);color:var(--blue);border:1.5px solid #bfdbfe;border-radius:10px;padding:12px 20px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.2s;width:100%;justify-content:center;" onclick="viewDeliveryPhoto()">
+        <i data-lucide="image" style="width:18px;height:18px;"></i> <span data-i18n="btn_view_photo">คลิกเพื่อดูรูปภาพ</span>
+      </button>
+    </div>
+
+    <!-- Browser Notify Card -->
+    <div id="browser-notify-card" class="email-card" style="display:none; border-top:4px solid var(--orange);">
+      <div class="email-title"><i data-lucide="bell-ring" style="width:18px;height:18px;"></i> <span data-i18n="notify_title">เปิดแจ้งเตือนบนอุปกรณ์นี้</span></div>
+      <div class="email-sub" data-i18n="notify_sub">รับ Pop-up แจ้งเตือนสถานะแม้จะพับเบราว์เซอร์ไว้</div>
+      <button style="width:100%; border-radius:10px; padding:11px; font-family:'Prompt',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; color:#fff; background:var(--orange);" onclick="enableNotifications()">
+        <span data-i18n="btn_enable_notify">🔔 เปิดการแจ้งเตือน</span>
+      </button>
+    </div>
+
+    <!-- Email Subscribe -->
+    <div id="email-section" class="email-card" style="border-top:4px solid var(--blue);">
+      <div class="email-title"><i data-lucide="mail" style="width:18px;height:18px;"></i> <span data-i18n="email_title">รับการแจ้งเตือนเมื่อปิดเว็บ</span></div>
+      <div class="email-sub" data-i18n="email_sub">รับอีเมลอัปเดตสถานะแบบ Offline ตลอดเวลา</div>
+      <div class="email-row" style="margin-bottom:8px;">
+        <input id="email-input" type="email" placeholder="your@email.com"/>
+      </div>
+      <div class="email-row">
+        <select id="email-pref">
+          <option value="all" data-i18n="pref_all">รับทุกการอัปเดตสถานะ</option>
+          <option value="delivered_only" data-i18n="pref_delivered">รับเฉพาะตอนส่งสำเร็จ</option>
+        </select>
+        <button class="email-btn" onclick="subscribeEmail()"><span data-i18n="btn_subscribe">สมัครรับแจ้งเตือน</span></button>
+      </div>
     </div>
 
     <!-- Timeline -->
     <div class="timeline-card">
       <div class="tc-title"><i data-lucide="clock" style="width:18px;height:18px;"></i> <span data-i18n="history_title">ประวัติสถานะ</span></div>
       <div class="tl" id="timeline"></div>
-    </div>
-
-    <!-- Email Subscribe -->
-    <div id="email-section" class="email-card">
-      <div class="email-title"><i data-lucide="bell" style="width:18px;height:18px;"></i> <span data-i18n="email_title">รับการแจ้งเตือน</span></div>
-      <div class="email-sub" data-i18n="email_sub">รับอัปเดตทุกครั้งที่มีการเปลี่ยนสถานะ</div>
-      <div class="email-row">
-        <input id="email-input" type="email" placeholder="your@email.com"/>
-        <button class="email-btn" onclick="subscribeEmail()"><span data-i18n="btn_subscribe">สมัครรับแจ้งเตือน</span></button>
-      </div>
-      <div id="email-msg" class="email-msg"></div>
     </div>
 
   </div>
@@ -315,6 +334,7 @@ let currentTID    = null;
 let refreshTimer  = null;
 let currentLang   = 'th';
 let currentOrderData = null;
+let previousStatus = null; // สำหรับเช็คการแจ้งเตือน Browser
 
 // ── Dictionary ────────────────────────────────────────
 const DICT = {
@@ -333,10 +353,16 @@ const DICT = {
   cancelled_title: { th: 'ออเดอร์ถูกยกเลิก', en: 'Order Cancelled' },
   photo_title: { th: 'รูปยืนยันการจัดส่ง', en: 'Delivery Proof' },
   history_title: { th: 'ประวัติสถานะ', en: 'Status History' },
-  email_title: { th: 'รับการแจ้งเตือน', en: 'Get Notifications' },
-  email_sub: { th: 'รับอัปเดตทุกครั้งที่มีการเปลี่ยนสถานะ', en: 'Get updates whenever status changes.' },
+  email_title: { th: 'รับการแจ้งเตือนเมื่อปิดเว็บ', en: 'Get Offline Notifications' },
+  email_sub: { th: 'รับอีเมลอัปเดตสถานะแบบ Offline ตลอดเวลา', en: 'Get email updates even when closed.' },
   btn_subscribe: { th: 'สมัครรับแจ้งเตือน', en: 'Subscribe' },
-  footer_contact: { th: 'หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site', en: 'If you have any issues, contact contact@ponrakitt.site' }
+  notify_title: { th: 'เปิดแจ้งเตือนบนอุปกรณ์นี้', en: 'Enable Device Notifications' },
+  notify_sub: { th: 'รับ Pop-up แจ้งเตือนสถานะแม้จะพับเบราว์เซอร์ไว้', en: 'Get pop-up alerts even if browser is minimized' },
+  btn_enable_notify: { th: '🔔 เปิดการแจ้งเตือน', en: '🔔 Enable Notifications' },
+  footer_contact: { th: 'หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site', en: 'If you have any issues, contact contact@ponrakitt.site' },
+  pref_all: { th: 'รับทุกการอัปเดตสถานะ', en: 'Receive all updates' },
+  pref_delivered: { th: 'รับเฉพาะตอนส่งสำเร็จ', en: 'Only when delivered' },
+  btn_view_photo: { th: 'คลิกเพื่อดูรูปภาพ', en: 'Click to view photo' }
 };
 
 const STATUS_TEXT = {
@@ -388,11 +414,51 @@ window.addEventListener('DOMContentLoaded', ()=>{
   lucide.createIcons();
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  if(id){
+  const action = params.get('action');
+  const email = params.get('email');
+  
+  // ตรวจสอบว่ามาจากการกดยกเลิกอีเมลหรือไม่
+  if(action === 'unsubscribe' && id && email) {
+    currentTID = id.toUpperCase();
+    document.getElementById('tid-input').value = currentTID;
+    doUnsubscribe(currentTID, email);
+    trackOrder(); 
+    // ทำความสะอาด URL (ลบ parameter action ออก)
+    window.history.replaceState({}, document.title, window.location.pathname + "?id=" + id);
+  } else if(id){
     document.getElementById('tid-input').value = id.toUpperCase();
     trackOrder();
   }
 });
+
+// ── Notification API ──────────────────────────────────
+function checkNotificationStatus() {
+   if (!("Notification" in window)) return;
+   const doneStatuses = ['delivered','confirmed','cancelled'];
+   if (currentOrderData && doneStatuses.includes(currentOrderData.status)) {
+       document.getElementById('browser-notify-card').style.display = 'none';
+       return;
+   }
+   if (Notification.permission === 'default') {
+       document.getElementById('browser-notify-card').style.display = 'block';
+   } else {
+       document.getElementById('browser-notify-card').style.display = 'none';
+   }
+}
+
+async function enableNotifications() {
+   if (!("Notification" in window)) {
+       Swal.fire(currentLang==='th'?'ไม่รองรับ':'Not Supported', currentLang==='th'?'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ Pop-up':'Browser does not support notifications', 'error');
+       return;
+   }
+   const perm = await Notification.requestPermission();
+   if (perm === 'granted') {
+       Swal.fire(currentLang==='th'?'สำเร็จ':'Success', currentLang==='th'?'เปิดการแจ้งเตือนบนอุปกรณ์นี้เรียบร้อยแล้ว':'Device notifications enabled successfully', 'success');
+       checkNotificationStatus();
+   } else {
+       Swal.fire(currentLang==='th'?'ถูกปฏิเสธ':'Denied', currentLang==='th'?'คุณไม่อนุญาตให้แสดงการแจ้งเตือน':'Notification permission denied', 'warning');
+   }
+}
 
 // ── API ───────────────────────────────────────────────
 async function api(payload) {
@@ -400,15 +466,33 @@ async function api(payload) {
   return res.json();
 }
 
+// ── Unsubscribe ───────────────────────────────────────
+async function doUnsubscribe(tid, email) {
+  Swal.fire({
+    title: currentLang==='th'?'กำลังดำเนินการ...':'Processing...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+  const res = await api({action:'unsubscribeEmail', trackingId:tid, email});
+  if(res.success){
+    localStorage.removeItem('email_sub_' + tid); // ลบ cache ทิ้งให้กล่องโชว์ใหม่ได้
+    Swal.fire({
+      title: currentLang==='th'?'สำเร็จ':'Success',
+      text: currentLang==='th'?'ยกเลิกการรับข่าวสารเรียบร้อยแล้ว':'Unsubscribed successfully',
+      icon: 'success'
+    });
+  } else {
+    Swal.fire('Error', res.message, 'error');
+  }
+}
+
 // ── Track ─────────────────────────────────────────────
 async function trackOrder() {
   const tid = document.getElementById('tid-input').value.trim().toUpperCase();
   if(!tid){
-    document.getElementById('search-err').innerHTML = `<i data-lucide="alert-circle" style="width:14px"></i> ${currentLang==='th'?'กรุณากรอกเลขติดตาม':'Please enter tracking ID'}`;
-    lucide.createIcons();
+    Swal.fire(currentLang==='th'?'แจ้งเตือน':'Warning', currentLang==='th'?'กรุณากรอกเลขติดตามสินค้า':'Please enter tracking ID', 'warning');
     return;
   }
-  document.getElementById('search-err').innerHTML='';
   currentTID = tid;
   showSec('loading');
   await loadOrder(tid);
@@ -418,8 +502,7 @@ async function trackOrder() {
 async function loadOrder(tid) {
   const res = await api({action:'getOrder', trackingId:tid});
   if(!res.success){
-    document.getElementById('search-err').innerHTML = `<i data-lucide="x-circle" style="width:14px"></i> ${res.message}`;
-    lucide.createIcons();
+    Swal.fire(currentLang==='th'?'ไม่พบข้อมูล':'Not Found', res.message, 'error');
     showSec('empty');
     return;
   }
@@ -430,6 +513,15 @@ async function loadOrder(tid) {
 
 function renderOrder(order) {
   const status = order.status;
+
+  // Browser Notification Trigger (If status changed)
+  if (previousStatus && previousStatus !== status && Notification.permission === 'granted') {
+      new Notification(currentLang === 'th' ? '📦 อัปเดตสถานะพัสดุ' : '📦 Order Update', {
+          body: `สถานะใหม่: ${STATUS_TEXT[status][currentLang]}`,
+          icon: 'https://cdn.jsdelivr.net/npm/lucide-static@0.344.0/icons/package.svg'
+      });
+  }
+  previousStatus = status;
 
   // Status Banner
   const banner = document.getElementById('status-banner');
@@ -471,7 +563,6 @@ function renderOrder(order) {
 
   // Photo
   if(order.photo_url && (status==='delivered'||status==='confirmed')){
-    document.getElementById('delivery-photo').src = order.photo_url;
     document.getElementById('photo-card').style.display='block';
   } else {
     document.getElementById('photo-card').style.display='none';
@@ -490,20 +581,20 @@ function renderOrder(order) {
         <div class="tl-status">${sText}</div>
         <div class="tl-time">${fmtDate(h.timestamp)}</div>
         ${h.notes?`<div class="tl-note">${h.notes}</div>`:''}
-        ${h.gps_lat?`<div class="tl-gps"><i data-lucide="map-pin" style="width:12px;"></i> ${h.gps_lat}, ${h.gps_lng}</div>`:''}
       </div>
     </div>`;
   }).join('');
 
-  // Email section
   const doneStatuses = ['delivered','confirmed','cancelled'];
   const hasSubscribed = localStorage.getItem('email_sub_' + order.tracking_id);
   
+  // ซ่อนกล่อง Email ทันทีถ้าเคยลงทะเบียนแล้ว
   document.getElementById('email-section').style.display = (doneStatuses.includes(status) || hasSubscribed) ? 'none' : 'block';
   
   // Toggle loading bar animation
   document.getElementById('status-loader').style.display = doneStatuses.includes(status) ? 'none' : 'block';
   
+  checkNotificationStatus();
   lucide.createIcons();
 }
 
@@ -530,26 +621,45 @@ async function confirmReceipt() {
   }
 }
 
+// ── View Photo ────────────────────────────────────────
+function viewDeliveryPhoto() {
+  if(!currentOrderData || !currentOrderData.photo_url) return;
+  Swal.fire({
+    title: currentLang === 'th' ? 'รูปยืนยันการจัดส่ง' : 'Delivery Proof',
+    imageUrl: currentOrderData.photo_url,
+    imageAlt: 'Delivery Photo',
+    confirmButtonText: currentLang === 'th' ? 'ปิด' : 'Close',
+    confirmButtonColor: 'var(--blue)',
+    customClass: {
+      image: 'swal-img-radius'
+    }
+  });
+}
+
 // ── Email Subscribe ───────────────────────────────────
 async function subscribeEmail() {
   const email = document.getElementById('email-input').value.trim();
-  const msgEl = document.getElementById('email-msg');
+  const pref = document.getElementById('email-pref').value;
+  
   if(!email||!email.includes('@')){
     Swal.fire(currentLang==='th'?'แจ้งเตือน':'Warning', currentLang==='th'?'กรุณากรอกอีเมลให้ถูกต้อง':'Invalid email', 'warning');
     return;
   }
-  msgEl.style.color='var(--muted)';
-  msgEl.innerHTML=`<i data-lucide="loader-2" class="spin" style="width:14px"></i> ${currentLang==='th'?'กำลังลงทะเบียน...':'Subscribing...'}`;
-  lucide.createIcons();
   
-  const res = await api({action:'subscribeEmail', trackingId:currentTID, email});
+  Swal.fire({
+    title: currentLang==='th'?'กำลังลงทะเบียน...':'Subscribing...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+  
+  const res = await api({action:'subscribeEmail', trackingId:currentTID, email:email, pref:pref});
   if(res.success){
     localStorage.setItem('email_sub_' + currentTID, 'true');
     // ซ่อนกล่องไปเลยเมื่อสำเร็จ
     document.getElementById('email-section').style.display = 'none';
     document.getElementById('email-input').value='';
+    Swal.fire(currentLang==='th'?'สำเร็จ':'Success', currentLang==='th'?'ลงทะเบียนสำเร็จ คุณจะได้รับอีเมลแจ้งเตือนตามที่คุณเลือก':'Subscribed successfully', 'success');
   } else {
-    msgEl.innerHTML='';
     Swal.fire(currentLang==='th'?'ข้อผิดพลาด':'Error', res.message||'Error', 'error');
   }
   lucide.createIcons();
