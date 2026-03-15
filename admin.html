@@ -198,7 +198,6 @@ tr:hover td{background:#f8fafc;}
   <div class="topbar">
     <h2 id="page-title">แดชบอร์ด</h2>
     <div class="topbar-right">
-      <button class="btn btn-outline btn-sm" onclick="promptTestEmail()"><i data-lucide="mail" style="width:14px;"></i> ทดสอบอีเมล</button>
       <span class="badge-user"><i data-lucide="user" style="width:14px;height:14px;"></i> Admin</span>
     </div>
   </div>
@@ -314,7 +313,7 @@ tr:hover td{background:#f8fafc;}
     </div>
     <div class="modal-body">
       <div class="qr-dual-container">
-        
+       
         <!-- Customer QR -->
         <div class="qr-box">
           <h4>สำหรับลูกค้า (ติดตามสถานะ)</h4>
@@ -521,9 +520,7 @@ async function showDetail(tid) {
       ${o.delivery_person_name?`<div><span style="font-size:12px;color:var(--muted);">ผู้จัดส่ง</span><div>${o.delivery_person_name}</div></div>`:''}
       ${o.cancel_reason?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--red);">เหตุผลยกเลิก</span><div>${o.cancel_reason}</div></div>`:''}
       ${o.photo_url?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--muted);">รูปยืนยันการจัดส่ง</span>
-        <div style="margin-top:6px; background:#f8fafc; border:1px dashed var(--border); padding:12px; border-radius:8px; text-align:center;">
-          <button class="btn btn-outline btn-sm" onclick="viewPhotoAdmin('${o.photo_url}')"><i data-lucide="image" style="width:14px;"></i> เปิดดูรูปภาพ (Pop-up)</button>
-        </div>
+        <div style="margin-top:6px;"><a href="${o.photo_url}" target="_blank"><img src="${o.photo_url}" style="max-width:100%;border-radius:8px;" alt="photo"/></a></div>
       </div>`:''}
     </div>
 
@@ -567,16 +564,16 @@ async function changeStatus(tid, status) {
     confirmButtonColor: 'var(--blue)'
   });
   if(!result.isConfirmed) return;
-  
+ 
   const res = await api({action:'updateStatus', trackingId:tid, status, updatedBy:'admin'});
   if(res.success){
-    closeModal('modal-detail'); 
-    await loadAllOrders(); 
+    closeModal('modal-detail');
+    await loadAllOrders();
     Swal.fire('สำเร็จ', 'อัปเดตสถานะสำเร็จ', 'success');
-  } else { 
-    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error'); 
-    closeModal('modal-detail'); 
-    await loadAllOrders(); 
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
+    closeModal('modal-detail');
+    await loadAllOrders();
   }
 }
 
@@ -594,62 +591,40 @@ async function doConfirmReceipt(tid) {
 
   const res = await api({action:'confirmReceipt', trackingId:tid, updatedBy:'admin'});
   if(res.success){
-    closeModal('modal-detail'); 
-    await loadAllOrders(); 
+    closeModal('modal-detail');
+    await loadAllOrders();
     Swal.fire('สำเร็จ', 'ยืนยันการรับสินค้าสำเร็จ', 'success');
   } else {
-    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error'); 
-    closeModal('modal-detail'); 
-    await loadAllOrders(); 
+    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
+    closeModal('modal-detail');
+    await loadAllOrders();
   }
-}
-
-function viewPhotoAdmin(imgUrl) {
-  let dlUrl = imgUrl;
-  const match = imgUrl.match(/id=([^&]+)/);
-  if(match) dlUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
-
-  Swal.fire({
-    title: 'รูปยืนยันการจัดส่ง',
-    imageUrl: imgUrl,
-    imageAlt: 'Delivery Photo',
-    showCancelButton: true,
-    confirmButtonText: '📥 โหลดรูปภาพ',
-    cancelButtonText: 'ปิด',
-    confirmButtonColor: 'var(--green)',
-    cancelButtonColor: 'var(--muted)',
-    customClass: { image: 'swal-img-radius' }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.open(dlUrl, '_blank');
-    }
-  });
 }
 
 // ── QR Modal ──────────────────────────────────────────
 function showQR(tid) {
   document.getElementById('qr-tid').textContent = tid;
   document.getElementById('qr-tid-driver').textContent = tid;
-  
+ 
   const trackingURL  = `${TRACKING_BASE}?id=${tid}`;
   const deliveryURL  = `${DELIVERY_BASE}?id=${tid}`;
-  
+ 
   document.getElementById('qr-url').textContent = trackingURL;
   document.getElementById('qr-delivery-url').textContent = deliveryURL;
-  
+ 
   document.getElementById('qr-canvas-customer').innerHTML = '';
   document.getElementById('qr-canvas-driver').innerHTML = '';
-  
+ 
   new QRCode(document.getElementById('qr-canvas-customer'), {
     text: trackingURL, width:160, height:160, colorDark:'#0f172a', colorLight:'#ffffff',
     correctLevel: QRCode.CorrectLevel.M
   });
-  
+ 
   new QRCode(document.getElementById('qr-canvas-driver'), {
     text: deliveryURL, width:160, height:160, colorDark:'#1d4ed8', colorLight:'#ffffff',
     correctLevel: QRCode.CorrectLevel.M
   });
-  
+ 
   showModal('modal-qr');
 }
 
@@ -681,8 +656,8 @@ async function doCancel() {
   const reason = document.getElementById('cancel-reason').value;
   const res    = await api({action:'cancelOrder', trackingId:tid, reason});
   if(res.success){
-    closeModal('modal-cancel'); 
-    await loadAllOrders(); 
+    closeModal('modal-cancel');
+    await loadAllOrders();
     Swal.fire('สำเร็จ', 'ยกเลิกออเดอร์แล้ว', 'success');
   }
   else Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
@@ -721,59 +696,6 @@ async function createOrder() {
 
 function clearForm() {
   ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
-}
-
-// ── Test Email ────────────────────────────────────────
-async function promptTestEmail() {
-  const { value: formValues } = await Swal.fire({
-    title: 'ทดสอบส่งอีเมล',
-    html:
-      '<div style="text-align:left; font-size:14px; font-family:\'Prompt\',sans-serif;">' +
-      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">ระบุอีเมลปลายทาง</label>' +
-      '<input id="test-email" class="swal2-input" style="margin: 0 0 16px 0; width:100%; box-sizing:border-box; font-size:14px;" placeholder="test@example.com">' +
-      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">เลือกสถานะที่ต้องการทดสอบ</label>' +
-      '<select id="test-status" class="swal2-select" style="margin: 0; width:100%; box-sizing:border-box; font-family:\'Prompt\',sans-serif; font-size:14px;">' +
-        '<option value="pending">ลงทะเบียนสำเร็จ (Pending)</option>' +
-        '<option value="preparing">กำลังเตรียมสินค้า (Preparing)</option>' +
-        '<option value="ready">รอการจัดส่ง (Ready)</option>' +
-        '<option value="out_for_delivery">กำลังจัดส่ง (Out for delivery)</option>' +
-        '<option value="delivered">จัดส่งสำเร็จ (Delivered - ทดสอบแนบรูป)</option>' +
-        '<option value="confirmed">ลูกค้ารับสินค้าแล้ว (Confirmed)</option>' +
-        '<option value="cancelled">ยกเลิกออเดอร์ (Cancelled - ทดสอบเหตุผลยกเลิก)</option>' +
-        '<option value="unsubscribe">ยืนยันการยกเลิกข่าวสาร (Unsubscribe)</option>' +
-      '</select>' +
-      '</div>',
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'ส่งอีเมลทดสอบ',
-    cancelButtonText: 'ยกเลิก',
-    confirmButtonColor: 'var(--blue)',
-    preConfirm: () => {
-      const email = document.getElementById('test-email').value.trim();
-      const status = document.getElementById('test-status').value;
-      if (!email || !email.includes('@')) {
-        Swal.showValidationMessage('กรุณากรอกอีเมลให้ถูกต้อง');
-        return false;
-      }
-      return { email, status };
-    }
-  });
-
-  if (formValues) {
-    Swal.fire({
-      title: 'กำลังส่งอีเมล...',
-      allowOutsideClick: false,
-      didOpen: () => { Swal.showLoading(); }
-    });
-
-    const res = await api({ action: 'testEmail', email: formValues.email, status: formValues.status });
-    
-    if (res.success) {
-      Swal.fire('สำเร็จ!', 'ส่งอีเมลทดสอบเรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของคุณ', 'success');
-    } else {
-      Swal.fire('ข้อผิดพลาด', res.message || 'ไม่สามารถส่งอีเมลได้', 'error');
-    }
-  }
 }
 
 // ── Modal helpers ─────────────────────────────────────
