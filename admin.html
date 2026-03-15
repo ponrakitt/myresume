@@ -198,6 +198,7 @@ tr:hover td{background:#f8fafc;}
   <div class="topbar">
     <h2 id="page-title">แดชบอร์ด</h2>
     <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="promptTestEmail()"><i data-lucide="mail" style="width:14px;"></i> ทดสอบอีเมล</button>
       <span class="badge-user"><i data-lucide="user" style="width:14px;height:14px;"></i> Admin</span>
     </div>
   </div>
@@ -720,6 +721,59 @@ async function createOrder() {
 
 function clearForm() {
   ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── Test Email ────────────────────────────────────────
+async function promptTestEmail() {
+  const { value: formValues } = await Swal.fire({
+    title: 'ทดสอบส่งอีเมล',
+    html:
+      '<div style="text-align:left; font-size:14px; font-family:\'Prompt\',sans-serif;">' +
+      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">ระบุอีเมลปลายทาง</label>' +
+      '<input id="test-email" class="swal2-input" style="margin: 0 0 16px 0; width:100%; box-sizing:border-box; font-size:14px;" placeholder="test@example.com">' +
+      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">เลือกสถานะที่ต้องการทดสอบ</label>' +
+      '<select id="test-status" class="swal2-select" style="margin: 0; width:100%; box-sizing:border-box; font-family:\'Prompt\',sans-serif; font-size:14px;">' +
+        '<option value="pending">ลงทะเบียนสำเร็จ (Pending)</option>' +
+        '<option value="preparing">กำลังเตรียมสินค้า (Preparing)</option>' +
+        '<option value="ready">รอการจัดส่ง (Ready)</option>' +
+        '<option value="out_for_delivery">กำลังจัดส่ง (Out for delivery)</option>' +
+        '<option value="delivered">จัดส่งสำเร็จ (Delivered - ทดสอบแนบรูป)</option>' +
+        '<option value="confirmed">ลูกค้ารับสินค้าแล้ว (Confirmed)</option>' +
+        '<option value="cancelled">ยกเลิกออเดอร์ (Cancelled - ทดสอบเหตุผลยกเลิก)</option>' +
+        '<option value="unsubscribe">ยืนยันการยกเลิกข่าวสาร (Unsubscribe)</option>' +
+      '</select>' +
+      '</div>',
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'ส่งอีเมลทดสอบ',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: 'var(--blue)',
+    preConfirm: () => {
+      const email = document.getElementById('test-email').value.trim();
+      const status = document.getElementById('test-status').value;
+      if (!email || !email.includes('@')) {
+        Swal.showValidationMessage('กรุณากรอกอีเมลให้ถูกต้อง');
+        return false;
+      }
+      return { email, status };
+    }
+  });
+
+  if (formValues) {
+    Swal.fire({
+      title: 'กำลังส่งอีเมล...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    const res = await api({ action: 'testEmail', email: formValues.email, status: formValues.status });
+    
+    if (res.success) {
+      Swal.fire('สำเร็จ!', 'ส่งอีเมลทดสอบเรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของคุณ', 'success');
+    } else {
+      Swal.fire('ข้อผิดพลาด', res.message || 'ไม่สามารถส่งอีเมลได้', 'error');
+    }
+  }
 }
 
 // ── Modal helpers ─────────────────────────────────────
