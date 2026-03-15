@@ -520,7 +520,9 @@ async function showDetail(tid) {
       ${o.delivery_person_name?`<div><span style="font-size:12px;color:var(--muted);">ผู้จัดส่ง</span><div>${o.delivery_person_name}</div></div>`:''}
       ${o.cancel_reason?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--red);">เหตุผลยกเลิก</span><div>${o.cancel_reason}</div></div>`:''}
       ${o.photo_url?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--muted);">รูปยืนยันการจัดส่ง</span>
-        <div style="margin-top:6px;"><a href="${o.photo_url}" target="_blank"><img src="${o.photo_url}" style="max-width:100%;border-radius:8px;" alt="photo"/></a></div>
+        <div style="margin-top:6px; background:#f8fafc; border:1px dashed var(--border); padding:12px; border-radius:8px; text-align:center;">
+          <button class="btn btn-outline btn-sm" onclick="viewPhotoAdmin('${o.photo_url}')"><i data-lucide="image" style="width:14px;"></i> เปิดดูรูปภาพ (Pop-up)</button>
+        </div>
       </div>`:''}
     </div>
 
@@ -599,6 +601,28 @@ async function doConfirmReceipt(tid) {
     closeModal('modal-detail'); 
     await loadAllOrders(); 
   }
+}
+
+function viewPhotoAdmin(imgUrl) {
+  let dlUrl = imgUrl;
+  const match = imgUrl.match(/id=([^&]+)/);
+  if(match) dlUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+
+  Swal.fire({
+    title: 'รูปยืนยันการจัดส่ง',
+    imageUrl: imgUrl,
+    imageAlt: 'Delivery Photo',
+    showCancelButton: true,
+    confirmButtonText: '📥 โหลดรูปภาพ',
+    cancelButtonText: 'ปิด',
+    confirmButtonColor: 'var(--green)',
+    cancelButtonColor: 'var(--muted)',
+    customClass: { image: 'swal-img-radius' }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.open(dlUrl, '_blank');
+    }
+  });
 }
 
 // ── QR Modal ──────────────────────────────────────────
