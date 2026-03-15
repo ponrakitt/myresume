@@ -624,14 +624,26 @@ async function confirmReceipt() {
 // ── View Photo ────────────────────────────────────────
 function viewDeliveryPhoto() {
   if(!currentOrderData || !currentOrderData.photo_url) return;
+  
+  let dlUrl = currentOrderData.photo_url;
+  const match = currentOrderData.photo_url.match(/id=([^&]+)/);
+  if(match) dlUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+
   Swal.fire({
     title: currentLang === 'th' ? 'รูปยืนยันการจัดส่ง' : 'Delivery Proof',
     imageUrl: currentOrderData.photo_url,
     imageAlt: 'Delivery Photo',
-    confirmButtonText: currentLang === 'th' ? 'ปิด' : 'Close',
-    confirmButtonColor: 'var(--blue)',
+    showCancelButton: true,
+    confirmButtonText: currentLang === 'th' ? '📥 โหลดรูปภาพ' : '📥 Download',
+    cancelButtonText: currentLang === 'th' ? 'ปิด' : 'Close',
+    confirmButtonColor: 'var(--green)',
+    cancelButtonColor: 'var(--muted)',
     customClass: {
       image: 'swal-img-radius'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.open(dlUrl, '_blank');
     }
   });
 }
