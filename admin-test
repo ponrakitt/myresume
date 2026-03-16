@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin — ระบบติดตามสินค้า</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/otplib@12.0.1/otplib-browser.js"></script>
+<style>
+:root{
+  --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
+  --orange:#f97316;--green:#16a34a;--red:#dc2626;--yellow:#ca8a04;
+  --bg:#f1f5f9;--card:#ffffff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --radius:12px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* 2FA Enforcer */
+.locked-content { filter: grayscale(100%); pointer-events: none; opacity: 0.4; user-select: none; }
+
+/* Login Overlay */
+#login-overlay { position:fixed; inset:0; background:var(--bg); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
+.login-box { background:#fff; border-radius:16px; padding:32px; width:100%; max-width:400px; box-shadow:0 12px 40px rgba(0,0,0,0.1); }
+.login-logo { text-align:center; margin-bottom:24px; color:var(--blue); }
+.login-input { width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:8px; font-family:'Prompt',sans-serif; margin-bottom:16px; outline:none; }
+.login-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+.login-btn { width:100%; background:var(--blue); color:#fff; padding:14px; border:none; border-radius:8px; font-family:'Prompt',sans-serif; font-weight:600; cursor:pointer; }
+.forgot-btn { text-align:center; display:block; margin-top:16px; color:var(--muted); font-size:13px; cursor:pointer; text-decoration:underline; }
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--navy);display:flex;flex-direction:column;z-index:100;overflow:hidden;}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.sidebar-logo h1{font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px;}
+.sidebar-logo p{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+.nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;font-weight:500;transition:.2s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.nav-item.active{background:rgba(37,99,235,.2);color:#fff;border-left-color:var(--blue);}
+.nav-item .icon{width:20px;height:20px;}
+
+/* Main */
+.main{margin-left:240px;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar h2{font-size:18px;font-weight:600;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.badge-user{background:var(--blue);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;}
+
+.content{padding:28px;flex:1;}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--blue);}
+.stat-card.orange{border-left-color:var(--orange);}
+.stat-card.green{border-left-color:var(--green);}
+.stat-card.red{border-left-color:var(--red);}
+.stat-card.yellow{border-left-color:var(--yellow);}
+.stat-num{font-size:32px;font-weight:700;color:var(--text);line-height:1;}
+.stat-label{font-size:13px;color:var(--muted);margin-top:4px;}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.card-body{padding:24px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.2s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue-mid);}
+.btn-outline{background:#fff;color:var(--blue);border:1.5px solid var(--blue);}
+.btn-outline:hover{background:var(--blue-light);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#b91c1c;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-green{background:var(--green);color:#fff;}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:13px;font-weight:500;color:var(--text);}
+input,select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Prompt',sans-serif;font-size:14px;color:var(--text);outline:none;background:#fff;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#f8fafc;}
+th{padding:12px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;}
+tr:hover td{background:#f8fafc;}
+.tid{font-family:monospace;font-weight:600;color:var(--blue);font-size:13px;}
+
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;}
+.s-pending{background:#fefce8;color:#854d0e;}
+.s-preparing{background:#fff7ed;color:#c2410c;}
+.s-ready{background:#f0fdf4;color:#166534;}
+.s-out_for_delivery{background:#eff6ff;color:#1d4ed8;}
+.s-delivered{background:#f0fdf4;color:#15803d;}
+.s-cancelled{background:#fef2f2;color:#991b1b;}
+.s-confirmed{background:#f5f3ff;color:#6d28d9;}
+
+/* SweetAlert custom image radius */
+.swal-img-radius { border-radius: 12px; border: 1.5px solid var(--border); }
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:17px;font-weight:600;}
+.modal-body{padding:24px;}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--muted);display:flex;}
+
+.qr-dual-container{display:flex;gap:16px;flex-wrap:wrap;}
+.qr-box{flex:1;min-width:240px;background:#f8fafc;border:2px dashed var(--border);border-radius:12px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.qr-box h4{font-size:14px;color:var(--text);margin-bottom:4px;}
+.qr-id{font-size:18px;font-weight:700;color:var(--blue);font-family:monospace;}
+.url-box{background:#f1f5f9;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;word-break:break-all;color:var(--muted);width:100%;text-align:left;}
+
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:14px;padding:12px 0;position:relative;}
+.tl-item::before{content:'';position:absolute;left:15px;top:32px;bottom:-12px;width:2px;background:var(--border);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;}
+.tl-content{flex:1;}
+.tl-status{font-size:14px;font-weight:600;margin-bottom:2px;}
+.tl-time{font-size:12px;color:var(--muted);}
+
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:.2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.search-box{flex:1;min-width:200px;max-width:300px;position:relative;}
+.search-box input{width:100%;padding-left:36px;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);width:16px;height:16px;}
+
+.hidden{display:none!important;}
+.page{display:none;}
+.page.active{display:block;}
+
+.loading{text-align:center;padding:48px;color:var(--muted);display:flex;flex-direction:column;align-items:center;}
+.loading .spin{display:block;margin-bottom:8px;animation:spin .8s linear infinite;color:var(--blue);}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:768px){
+  .sidebar{width:64px;}
+  .sidebar-logo div,.nav-item span{display:none;}
+  .main{margin-left:64px;}
+  .form-grid{grid-template-columns:1fr;}
+  .stats{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div id="login-overlay">
+  <div class="login-box" id="login-form-box">
+    <div class="login-logo">
+      <i data-lucide="shield-check" style="width:48px;height:48px;"></i>
+      <h2 style="margin-top:12px;">เข้าสู่ระบบจัดการ</h2>
+    </div>
+    <input id="login-email" type="email" class="login-input" placeholder="อีเมล (Email)"/>
+    <input id="login-password" type="password" class="login-input" placeholder="รหัสผ่าน (Password)"/>
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <a class="forgot-btn" onclick="requestReset()">ลืมรหัสผ่าน?</a>
+  </div>
+
+  <div class="login-box hidden" id="login-2fa-box">
+    <div class="login-logo"><i data-lucide="smartphone" style="width:48px;height:48px;"></i><h2 style="margin-top:12px;">ยืนยันตัวตน 2FA</h2></div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator</p>
+    <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;"/>
+    <button class="login-btn" onclick="verifyLogin2FA()">ยืนยัน</button>
+    <a class="forgot-btn" onclick="location.reload()">ยกเลิก</a>
+  </div>
+</div>
+
+<!-- 2FA Setup Modal (Force) -->
+<div id="setup-2fa-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:400px; text-align:center;">
+    <div class="modal-header" style="justify-content:center;"><span class="modal-title" style="color:var(--orange);">จำเป็นต้องเปิดใช้งาน 2FA</span></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">เพื่อความปลอดภัย 100% กรุณาสแกน QR Code ด้วย Google Authenticator</p>
+      <div id="setup-qr-canvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
+      <p style="font-family:monospace;font-size:12px;color:var(--blue);margin-bottom:16px;" id="setup-secret-text"></p>
+      <input id="setup-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;"/>
+      <button class="login-btn" onclick="confirmSetup2FA()">เปิดใช้งาน 2FA</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="change-pw-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">เปลี่ยนรหัสผ่าน</span>
+      <button class="close-btn" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body">
+      <input id="cpw-old" type="password" class="login-input" placeholder="รหัสผ่านเดิม"/>
+      <input id="cpw-new" type="password" class="login-input" placeholder="รหัสผ่านใหม่ (อักษรใหญ่,เล็ก,ตัวเลข, 8 ตัว)"/>
+      <input id="cpw-2fa" type="text" class="login-input" placeholder="รหัส 2FA (6 หลัก)" maxlength="6"/>
+      <button class="login-btn" onclick="submitChangePassword()">เปลี่ยนรหัสผ่าน</button>
+    </div>
+  </div>
+</div>
+
+<div id="app-content" class="locked-content">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <i data-lucide="box" style="color:#fff;"></i>
+      <div>
+        <h1>TrackAdmin</h1>
+        <p>ระบบจัดการจัดส่ง</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <i data-lucide="bar-chart-2" class="icon"></i><span>แดชบอร์ด</span>
+      </div>
+      <div class="nav-item" onclick="showPage('orders')">
+        <i data-lucide="clipboard-list" class="icon"></i><span>รายการสินค้า</span>
+      </div>
+      <div class="nav-item" onclick="showPage('create')">
+        <i data-lucide="plus-circle" class="icon"></i><span>สร้างออเดอร์ใหม่</span>
+      </div>
+      <div class="nav-item hidden" id="menu-users" onclick="showPage('users')">
+        <i data-lucide="users" class="icon"></i><span>จัดการผู้ใช้</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="page-title">แดชบอร์ด</h2>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="promptTestEmail()"><i data-lucide="mail" style="width:14px;"></i> ทดสอบอีเมล</button>
+        <button class="btn btn-outline btn-sm" onclick="showModal('change-pw-modal')"><i data-lucide="key" style="width:14px;"></i> เปลี่ยนรหัส</button>
+        <button class="btn btn-danger btn-sm" onclick="doLogout()"><i data-lucide="log-out" style="width:14px;"></i> ออกระบบ</button>
+        <span class="badge-user" id="user-badge"><i data-lucide="user" style="width:14px;height:14px;"></i> Admin</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats" id="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="s-total">—</div><div class="stat-label">ออเดอร์ทั้งหมด</div></div>
+          <div class="stat-card yellow"><div class="stat-num" id="s-pending">—</div><div class="stat-label">รอดำเนินการ</div></div>
+          <div class="stat-card orange"><div class="stat-num" id="s-preparing">—</div><div class="stat-label">กำลังเตรียม</div></div>
+          <div class="stat-card orange"><div class="stat-num" id="s-ready">—</div><div class="stat-label">รอจัดส่ง</div></div>
+          <div class="stat-card blue"><div class="stat-num" id="s-out">—</div><div class="stat-label">กำลังจัดส่ง</div></div>
+          <div class="stat-card green"><div class="stat-num" id="s-done">—</div><div class="stat-label">จัดส่งสำเร็จ</div></div>
+          <div class="stat-card red"><div class="stat-num" id="s-cancel">—</div><div class="stat-label">ยกเลิก</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i data-lucide="clock" style="width:18px;"></i> ออเดอร์ล่าสุด</span>
+            <button class="btn btn-primary btn-sm" onclick="loadAllOrders()"><i data-lucide="refresh-cw" style="width:14px;"></i> รีเฟรช</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div id="recent-orders"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDERS PAGE -->
+      <div id="page-orders" class="page">
+        <div class="card">
+          <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+            <span class="card-title"><i data-lucide="list" style="width:18px;"></i> รายการออเดอร์ทั้งหมด</span>
+            <div class="filter-bar">
+              <div class="search-box">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="search-input" placeholder="ค้นหาเลขติดตาม / ชื่อลูกค้า" oninput="filterOrders()"/>
+              </div>
+              <button class="filter-btn active" data-filter="" onclick="setFilter(this,'')">ทั้งหมด</button>
+              <button class="filter-btn" data-filter="pending" onclick="setFilter(this,'pending')">รอดำเนินการ</button>
+              <button class="filter-btn" data-filter="preparing" onclick="setFilter(this,'preparing')">เตรียมสินค้า</button>
+              <button class="filter-btn" data-filter="ready" onclick="setFilter(this,'ready')">รอจัดส่ง</button>
+              <button class="filter-btn" data-filter="out_for_delivery" onclick="setFilter(this,'out_for_delivery')">กำลังส่ง</button>
+              <button class="filter-btn" data-filter="delivered" onclick="setFilter(this,'delivered')">สำเร็จ</button>
+              <button class="filter-btn" data-filter="cancelled" onclick="setFilter(this,'cancelled')">ยกเลิก</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div id="orders-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE PAGE -->
+      <div id="page-create" class="page">
+        <div class="card" style="max-width:680px;margin:0 auto;">
+          <div class="card-header"><span class="card-title"><i data-lucide="plus-circle" style="width:18px;"></i> สร้างออเดอร์ใหม่</span></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group"><label>ชื่อลูกค้า *</label><input id="f-name" type="text" placeholder="กรอกชื่อลูกค้า"/></div>
+              <div class="form-group"><label>ชื่อสินค้า *</label><input id="f-product" type="text" placeholder="ชื่อสินค้า"/></div>
+              <div class="form-group full"><label>ที่อยู่จัดส่ง *</label><textarea id="f-address" rows="3" placeholder="ที่อยู่..."></textarea></div>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:10px;">
+              <button class="btn btn-primary" onclick="createOrder()"><i data-lucide="check" style="width:16px;"></i> สร้างออเดอร์</button>
+              <button class="btn btn-outline" onclick="clearForm()"><i data-lucide="trash-2" style="width:16px;"></i> ล้างข้อมูล</button>
+            </div>
+            <div id="create-msg" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS PAGE (Super Admin Only) -->
+      <div id="page-users" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i data-lucide="users" style="width:18px;"></i> จัดการผู้ใช้ระบบ</span>
+            <button class="btn btn-primary btn-sm" onclick="showModal('modal-add-user')"><i data-lucide="plus" style="width:14px;"></i> เพิ่มผู้ใช้</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div id="users-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="site-footer">
+      <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
+      <p>All rights reserved by wanflorist.net</p>
+      <p>Designed and co-developed by ponrakitt.site</p>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div id="modal-detail" class="modal-bg hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">รายละเอียดออเดอร์</span>
+      <button class="close-btn" onclick="closeModal('modal-detail')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body" id="modal-detail-body"></div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div id="modal-add-user" class="modal-bg hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">เพิ่มผู้ใช้งานใหม่</span>
+      <button class="close-btn" onclick="closeModal('modal-add-user')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body">
+      <input id="add-user-email" type="email" class="login-input" placeholder="อีเมล (Email)"/>
+      <select id="add-user-role" class="login-input">
+        <option value="admin">แอดมินระบบ (Admin)</option>
+        <option value="warehouse">คลังสินค้า (Warehouse)</option>
+      </select>
+      <button class="login-btn" onclick="adminCreateUser()">เพิ่มผู้ใช้</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div id="modal-qr" class="modal-bg hidden">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <span class="modal-title">QR Code & ลิงก์ติดตาม</span>
+      <button class="close-btn" onclick="closeModal('modal-qr')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="qr-dual-container">
+        <div class="qr-box">
+          <h4>สำหรับลูกค้า (ติดตามสถานะ)</h4>
+          <div class="qr-id" id="qr-tid"></div>
+          <div id="qr-canvas-customer"></div>
+          <div class="url-box" id="qr-url"></div>
+          <button class="btn btn-primary btn-sm" onclick="copyURL('qr-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์ลูกค้า</button>
+        </div>
+        <div class="qr-box">
+          <h4>สำหรับผู้จัดส่ง (อัปเดตสถานะ)</h4>
+          <div class="qr-id" id="qr-tid-driver"></div>
+          <div id="qr-canvas-driver"></div>
+          <div class="url-box" id="qr-delivery-url"></div>
+          <button class="btn btn-outline btn-sm" onclick="copyURL('qr-delivery-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์จัดส่ง</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="btn btn-green" onclick="printQR()"><i data-lucide="printer" style="width:16px;"></i> พิมพ์ QR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-cancel" class="modal-bg hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--red);">ยืนยันการยกเลิก</span>
+      <button class="close-btn" onclick="closeModal('modal-cancel')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);margin-bottom:16px;">ระบุเหตุผลการยกเลิก (ไม่บังคับ)</p>
+      <input id="cancel-reason" type="text" class="login-input" placeholder="เหตุผล..."/>
+      <input type="hidden" id="cancel-tid"/>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-danger" onclick="doCancel()">ยืนยันยกเลิก</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-cancel')">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
+const TRACKING_BASE = window.location.origin + window.location.pathname.replace('admin.html', 'tracking.html');
+const DELIVERY_BASE = window.location.origin + window.location.pathname.replace('admin.html', 'delivery.html');
+
+let allOrders = [];
+let currentFilter = '';
+let loginTempToken = '';
+let currentUser = { email: localStorage.getItem('userEmail'), token: localStorage.getItem('userToken'), role: localStorage.getItem('userRole') };
+
+document.addEventListener('DOMContentLoaded', () => { 
+  lucide.createIcons(); 
+  checkLoginState();
+});
+
+async function api(payload) {
+  if (currentUser.email) payload.email = currentUser.email;
+  if (currentUser.token) payload.token = currentUser.token;
+  const res = await fetch(SCRIPT_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
+  return res.json();
+}
+
+// ── Auth Logic ────────────────────────────────────────
+function checkLoginState() {
+  if (currentUser.token) {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('user-badge').innerHTML = `<i data-lucide="user" style="width:14px;height:14px;"></i> ${currentUser.role}`;
+    lucide.createIcons();
+    
+    if (localStorage.getItem('twoFactorEnabled') === 'true') {
+      document.getElementById('app-content').classList.remove('locked-content');
+      if(currentUser.role === 'superadmin') document.getElementById('menu-users').classList.remove('hidden');
+      loadAllOrders();
+    } else {
+      setup2FAFlow();
+    }
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value.trim();
+  if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
+
+  Swal.fire({ title: 'กำลังเข้าสู่ระบบ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const res = await api({ action: 'login', password: pass, email: email });
+  
+  if (res.success) {
+    Swal.close();
+    currentUser.email = email;
+    currentUser.role = res.role;
+    localStorage.setItem('userEmail', email);
+    localStorage.setItem('userRole', res.role);
+
+    if (res.require2FA) {
+      loginTempToken = res.tempToken;
+      document.getElementById('login-form-box').classList.add('hidden');
+      document.getElementById('login-2fa-box').classList.remove('hidden');
+    } else {
+      currentUser.token = res.token;
+      localStorage.setItem('userToken', res.token);
+      localStorage.setItem('twoFactorEnabled', 'false');
+      checkLoginState();
+    }
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+async function verifyLogin2FA() {
+  const code = document.getElementById('login-2fa-code').value.trim();
+  if(code.length !== 6) return Swal.fire('แจ้งเตือน', 'กรอกรหัส 6 หลัก', 'warning');
+  
+  Swal.fire({ title: 'กำลังตรวจสอบ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const res = await api({ action: 'verifyLogin2FA', tempToken: loginTempToken, code: code });
+  
+  if (res.success) {
+    Swal.close();
+    currentUser.token = res.token;
+    localStorage.setItem('userToken', res.token);
+    localStorage.setItem('twoFactorEnabled', 'true');
+    checkLoginState();
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+function doLogout() {
+  localStorage.clear();
+  location.reload();
+}
+
+async function requestReset() {
+  const { value: email } = await Swal.fire({
+    title: 'ลืมรหัสผ่าน',
+    input: 'email',
+    inputLabel: 'ใส่อีเมลของคุณเพื่อขอรีเซ็ตรหัสผ่าน',
+    showCancelButton: true,
+    confirmButtonText: 'ขอรหัสผ่านใหม่',
+    cancelButtonText: 'ยกเลิก'
+  });
+  if (email) {
+    Swal.fire({ title: 'กำลังส่งคำขอ', didOpen: () => Swal.showLoading() });
+    const res = await api({ action: 'requestPasswordReset', email: email });
+    if(res.success) Swal.fire('สำเร็จ', 'ส่งคำขอแล้ว กรุณารอ Super Admin ส่งรหัสผ่านใหม่ให้ทางอีเมล', 'success');
+    else Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+// ── 2FA Setup ────────────────────────────────────────
+async function setup2FAFlow() {
+  showModal('setup-2fa-modal');
+  const res = await api({ action: 'get2FASecret' });
+  if (res.success) {
+    document.getElementById('setup-qr-canvas').innerHTML = '';
+    new QRCode(document.getElementById('setup-qr-canvas'), { text: res.otpauth, width: 160, height: 160 });
+    document.getElementById('setup-secret-text').textContent = res.secret;
+  }
+}
+
+async function confirmSetup2FA() {
+  const code = document.getElementById('setup-2fa-code').value.trim();
+  if(code.length !== 6) return;
+  const res = await api({ action: 'enable2FA', code: code });
+  if (res.success) {
+    localStorage.setItem('twoFactorEnabled', 'true');
+    closeModal('setup-2fa-modal');
+    document.getElementById('app-content').classList.remove('locked-content');
+    Swal.fire('สำเร็จ', 'เปิดใช้งาน 2FA เรียบร้อยแล้ว', 'success');
+    checkLoginState();
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+async function submitChangePassword() {
+  const oldP = document.getElementById('cpw-old').value;
+  const newP = document.getElementById('cpw-new').value;
+  const code = document.getElementById('cpw-2fa').value;
+  
+  if(!oldP || !newP || !code) return Swal.fire('แจ้งเตือน', 'กรอกข้อมูลให้ครบ', 'warning');
+  if(newP.length < 8 || !/[a-z]/.test(newP) || !/[A-Z]/.test(newP) || !/[0-9]/.test(newP)) {
+    return Swal.fire('แจ้งเตือน', 'รหัสผ่านต้องมี 8 ตัวขึ้นไป และประกอบด้วยอักษรพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลข', 'warning');
+  }
+
+  Swal.fire({ title: 'กำลังดำเนินการ', didOpen: () => Swal.showLoading() });
+  const res = await api({ action: 'changePassword', oldPassword: oldP, newPassword: newP, code2fa: code });
+  if (res.success) {
+    closeModal('change-pw-modal');
+    Swal.fire('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', 'success');
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+// ── Super Admin Functions ─────────────────────────────
+async function loadAdminUsers() {
+  const res = await api({ action: 'adminGetUsers' });
+  if (!res.success) return;
+  const list = res.users;
+  let html = `<div class="table-wrap"><table><thead><tr><th>อีเมล</th><th>ระดับ</th><th>2FA</th><th>รีเซ็ตรหัส</th></tr></thead><tbody>`;
+  list.forEach(u => {
+    html += `<tr>
+      <td>${u.email}</td>
+      <td>${u.role}</td>
+      <td>${u.twoFactorEnabled ? '<span style="color:var(--green)">เปิด</span>' : '<span style="color:var(--red)">ปิด</span>'}</td>
+      <td>${u.resetRequested ? `<button class="btn btn-primary btn-sm" onclick="adminSendReset('${u.email}')">ส่งรหัสผ่านใหม่</button>` : '-'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  document.getElementById('users-table').innerHTML = html;
+}
+
+async function adminCreateUser() {
+  const email = document.getElementById('add-user-email').value;
+  const role = document.getElementById('add-user-role').value;
+  if(!email) return;
+  const res = await api({ action: 'adminCreateUser', newEmail: email, role: role });
+  if (res.success) {
+    closeModal('modal-add-user');
+    Swal.fire('สำเร็จ', 'เพิ่มผู้ใช้และส่งรหัสผ่านทางอีเมลแล้ว', 'success');
+    loadAdminUsers();
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+async function adminSendReset(email) {
+  const res = await api({ action: 'adminSendResetLink', targetEmail: email });
+  if (res.success) {
+    Swal.fire('สำเร็จ', 'ส่งรหัสผ่านใหม่เรียบร้อยแล้ว', 'success');
+    loadAdminUsers();
+  }
+}
+
+// ── Existing Admin Code ───────────────────────────────
+const STATUS_TH = { pending:'รอดำเนินการ', preparing:'กำลังเตรียมสินค้า', ready:'รอการจัดส่ง', out_for_delivery:'กำลังจัดส่ง', delivered:'จัดส่งสำเร็จ', cancelled:'ยกเลิก', confirmed:'ลูกค้ารับแล้ว' };
+const STATUS_ICON = { pending:'clock', preparing:'wrench', ready:'package', out_for_delivery:'truck', delivered:'check-circle', cancelled:'x-circle', confirmed:'party-popper' };
+function statusBadge(s) { return `<span class="status s-${s}"><i data-lucide="${STATUS_ICON[s]||'clipboard-list'}" style="width:12px;height:12px;"></i> ${STATUS_TH[s]||s}</span>`; }
+function fmtDate(iso) { if (!iso) return '—'; const d = new Date(iso); return d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  const idx = ['dashboard','orders','create','users'].indexOf(id);
+  if(items[idx]) items[idx].classList.add('active');
+  const titles = {dashboard:'แดชบอร์ด',orders:'รายการออเดอร์',create:'สร้างออเดอร์ใหม่',users:'จัดการผู้ใช้ระบบ'};
+  document.getElementById('page-title').textContent = titles[id]||id;
+  if(id==='orders') renderOrdersTable();
+  if(id==='dashboard') loadAllOrders();
+  if(id==='users') loadAdminUsers();
+}
+
+async function loadAllOrders() {
+  if(!currentUser.token) return;
+  const res = await api({action:'getAllOrders'});
+  if(!res.success) return;
+  allOrders = res.orders.reverse();
+  renderStats();
+  renderRecent();
+}
+
+function renderStats() {
+  const count = (s) => allOrders.filter(o=>o.status===s).length;
+  document.getElementById('s-total').textContent = allOrders.length;
+  document.getElementById('s-pending').textContent = count('pending');
+  document.getElementById('s-preparing').textContent= count('preparing');
+  document.getElementById('s-ready').textContent = count('ready');
+  document.getElementById('s-out').textContent = count('out_for_delivery');
+  document.getElementById('s-done').textContent = count('delivered') + count('confirmed');
+  document.getElementById('s-cancel').textContent = count('cancelled');
+}
+
+function renderRecent() { renderTable(allOrders.slice(0,10), 'recent-orders'); }
+function renderOrdersTable() {
+  let list = allOrders;
+  if(currentFilter) list = list.filter(o=>o.status===currentFilter);
+  const q = document.getElementById('search-input').value.toLowerCase();
+  if(q) list = list.filter(o=>(o.tracking_id||'').toLowerCase().includes(q) || (o.customer_name||'').toLowerCase().includes(q) || (o.product_name||'').toLowerCase().includes(q));
+  renderTable(list, 'orders-table');
+}
+
+function renderTable(list, containerId) {
+  const el = document.getElementById(containerId);
+  if(!list.length){el.innerHTML='<div class="loading">ไม่มีรายการ</div>';return;}
+  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>เลขติดตาม</th><th>ลูกค้า</th><th>สินค้า</th><th>สถานะ</th><th>วันที่</th><th>จัดการ</th></tr></thead><tbody>${list.map(o=>`
+    <tr><td><span class="tid">${o.tracking_id}</span></td><td>${o.customer_name||'—'}</td><td>${(o.product_name||'—').substring(0,30)}</td><td>${statusBadge(o.status)}</td><td style="font-size:12px;color:var(--muted);">${fmtDate(o.created_at)}</td>
+    <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn btn-outline btn-sm" onclick="showDetail('${o.tracking_id}')"><i data-lucide="eye" style="width:14px;"></i> ดู</button>
+    <button class="btn btn-sm" style="background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;" onclick="showQR('${o.tracking_id}')"><i data-lucide="qr-code" style="width:14px;"></i> QR</button>
+    ${o.status!=='cancelled'&&o.status!=='confirmed'?`<button class="btn btn-danger btn-sm" onclick="openCancel('${o.tracking_id}')">ยกเลิก</button>`:''}</div></td></tr>`).join('')}</tbody></table></div>`;
+  lucide.createIcons();
+}
+
+function setFilter(el, filter) { currentFilter = filter; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); renderOrdersTable(); }
+function filterOrders() { renderOrdersTable(); }
+
+async function showDetail(tid) {
+  const res = await api({action:'getOrder', trackingId:tid});
+  if(!res.success) return;
+  const o = res.order;
+  const canConfirm = o.status === 'delivered';
+  const canCancel  = !['cancelled','confirmed'].includes(o.status);
+  const nextStatuses = { pending:[['preparing','เริ่มเตรียมสินค้า']], preparing:[['ready','เตรียมเสร็จ / รอจัดส่ง']], ready:[['out_for_delivery','ออกจัดส่งแล้ว']], out_for_delivery:[['delivered','จัดส่งสำเร็จ']], delivered:[] };
+  const nexts = nextStatuses[o.status] || [];
+
+  document.getElementById('modal-detail-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div><span style="font-size:12px;color:var(--muted);">เลขติดตาม</span><div style="font-size:18px;font-weight:700;color:var(--blue);font-family:monospace;">${o.tracking_id}</div></div>
+      <div><span style="font-size:12px;color:var(--muted);">สถานะ</span><div style="margin-top:4px;">${statusBadge(o.status)}</div></div>
+      <div><span style="font-size:12px;color:var(--muted);">ลูกค้า</span><div style="font-weight:600;">${o.customer_name}</div></div>
+      <div><span style="font-size:12px;color:var(--muted);">สินค้า</span><div style="font-weight:600;">${o.product_name}</div></div>
+      <div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--muted);">ที่อยู่จัดส่ง</span><div>${o.delivery_address}</div></div>
+      ${o.delivery_person_name?`<div><span style="font-size:12px;color:var(--muted);">ผู้จัดส่ง</span><div>${o.delivery_person_name}</div></div>`:''}
+      ${o.cancel_reason?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--red);">เหตุผลยกเลิก</span><div>${o.cancel_reason}</div></div>`:''}
+      ${o.photo_url?`<div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--muted);">รูปยืนยันการจัดส่ง</span>
+        <div style="margin-top:6px; background:#f8fafc; border:1px dashed var(--border); padding:12px; border-radius:8px; text-align:center;">
+          <button class="btn btn-outline btn-sm" onclick="viewPhotoAdmin('${o.photo_url}')"><i data-lucide="image" style="width:14px;"></i> เปิดดูรูปภาพ (Pop-up)</button>
+        </div></div>`:''}
+    </div>
+    ${nexts.length?`<div style="margin-bottom:16px;"><p style="font-size:13px;color:var(--muted);margin-bottom:8px;">เปลี่ยนสถานะ:</p><div style="display:flex;gap:8px;flex-wrap:wrap;">${nexts.map(([s,label])=>`<button class="btn btn-primary btn-sm" onclick="changeStatus('${o.tracking_id}','${s}')">${label}</button>`).join('')}</div></div>`:''}
+    ${canConfirm?`<button class="btn btn-green" style="margin-bottom:12px;width:100%;" onclick="doConfirmReceipt('${o.tracking_id}')"><i data-lucide="check" style="width:16px;"></i> ยืนยันการรับสินค้า (Admin)</button>`:''}
+    ${canCancel?`<button class="btn btn-danger btn-sm" onclick="closeModal('modal-detail');openCancel('${o.tracking_id}')">ยกเลิกออเดอร์</button>`:''}
+    <hr style="margin:16px 0;border-color:var(--border);"><p style="font-weight:600;margin-bottom:12px;">ประวัติสถานะ</p>
+    <div class="timeline">${(o.history||[]).reverse().map(h=>`<div class="tl-item"><div class="tl-dot"><i data-lucide="${STATUS_ICON[h.status]||'clipboard-list'}" style="width:16px;"></i></div><div class="tl-content"><div class="tl-status">${STATUS_TH[h.status]||h.status}</div><div class="tl-time">${fmtDate(h.timestamp)} ${h.updated_by?`• ${h.updated_by}`:''}</div>${h.notes?`<div class="tl-note">${h.notes}</div>`:''}${h.gps_lat?`<div class="tl-note"><i data-lucide="map-pin" style="width:12px;"></i> ${h.gps_lat}, ${h.gps_lng}</div>`:''}</div></div>`).join('')}</div>
+  `;
+  showModal('modal-detail');
+  lucide.createIcons();
+}
+
+async function changeStatus(tid, status) {
+  const res = await Swal.fire({ title: 'ยืนยัน', text: `เปลี่ยนสถานะเป็น "${STATUS_TH[status]}"?`, icon: 'question', showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก' });
+  if(!res.isConfirmed) return;
+  const result = await api({action:'updateStatus', trackingId:tid, status, updatedBy:'admin'});
+  if(result.success){ closeModal('modal-detail'); await loadAllOrders(); Swal.fire('สำเร็จ', '', 'success'); }
+  else { Swal.fire('ข้อผิดพลาด', result.message, 'error'); }
+}
+
+async function doConfirmReceipt(tid) {
+  const res = await Swal.fire({ title: 'ยืนยัน', text: 'ลูกค้ารับสินค้าแล้ว?', icon: 'question', showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก' });
+  if(!res.isConfirmed) return;
+  const result = await api({action:'confirmReceipt', trackingId:tid, updatedBy:'admin'});
+  if(result.success){ closeModal('modal-detail'); await loadAllOrders(); Swal.fire('สำเร็จ', '', 'success'); }
+}
+
+function viewPhotoAdmin(imgUrl) {
+  let dlUrl = imgUrl;
+  const match = imgUrl.match(/id=([^&]+)/);
+  if(match) dlUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  Swal.fire({ title: 'รูปยืนยัน', imageUrl: imgUrl, imageAlt: 'Delivery Photo', showCancelButton: true, confirmButtonText: 'โหลดรูปภาพ', cancelButtonText: 'ปิด', confirmButtonColor: 'var(--green)', customClass: { image: 'swal-img-radius' } }).then((r) => { if (r.isConfirmed) window.open(dlUrl, '_blank'); });
+}
+
+function showQR(tid) {
+  document.getElementById('qr-tid').textContent = tid; document.getElementById('qr-tid-driver').textContent = tid;
+  const tUrl = `${TRACKING_BASE}?id=${tid}`; const dUrl = `${DELIVERY_BASE}?id=${tid}`;
+  document.getElementById('qr-url').textContent = tUrl; document.getElementById('qr-delivery-url').textContent = dUrl;
+  document.getElementById('qr-canvas-customer').innerHTML = ''; document.getElementById('qr-canvas-driver').innerHTML = '';
+  new QRCode(document.getElementById('qr-canvas-customer'), { text: tUrl, width:160, height:160, colorDark:'#0f172a' });
+  new QRCode(document.getElementById('qr-canvas-driver'), { text: dUrl, width:160, height:160, colorDark:'#1d4ed8' });
+  showModal('modal-qr');
+}
+function copyURL(elId) {
+  const el = document.createElement('textarea'); el.value = document.getElementById(elId).textContent; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+  Swal.fire({title: 'คัดลอกแล้ว', icon: 'success', timer: 1500, showConfirmButton: false});
+}
+function printQR() { window.print(); }
+
+function openCancel(tid) { document.getElementById('cancel-tid').value = tid; document.getElementById('cancel-reason').value = ''; showModal('modal-cancel'); }
+async function doCancel() {
+  const tid = document.getElementById('cancel-tid').value; const reason = document.getElementById('cancel-reason').value;
+  const res = await api({action:'cancelOrder', trackingId:tid, reason});
+  if(res.success){ closeModal('modal-cancel'); await loadAllOrders(); Swal.fire('สำเร็จ', '', 'success'); }
+}
+
+async function promptTestEmail() {
+  const { value: formValues } = await Swal.fire({
+    title: 'ทดสอบส่งอีเมล',
+    html:
+      '<div style="text-align:left; font-size:14px; font-family:\'Prompt\',sans-serif;">' +
+      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">ระบุอีเมลปลายทาง</label>' +
+      '<input id="test-email" class="swal2-input" style="margin: 0 0 16px 0; width:100%; box-sizing:border-box; font-size:14px;" placeholder="test@example.com">' +
+      '<label style="display:block; margin-bottom:6px; font-weight:500; color:var(--text);">เลือกสถานะที่ต้องการทดสอบ</label>' +
+      '<select id="test-status" class="swal2-select" style="margin: 0; width:100%; box-sizing:border-box; font-family:\'Prompt\',sans-serif; font-size:14px;">' +
+        '<option value="pending">ลงทะเบียนสำเร็จ (Pending)</option>' +
+        '<option value="preparing">กำลังเตรียมสินค้า (Preparing)</option>' +
+        '<option value="ready">รอการจัดส่ง (Ready)</option>' +
+        '<option value="out_for_delivery">กำลังจัดส่ง (Out for delivery)</option>' +
+        '<option value="delivered">จัดส่งสำเร็จ (Delivered - ทดสอบแนบรูป)</option>' +
+        '<option value="confirmed">ลูกค้ารับสินค้าแล้ว (Confirmed)</option>' +
+        '<option value="cancelled">ยกเลิกออเดอร์ (Cancelled - ทดสอบเหตุผลยกเลิก)</option>' +
+        '<option value="unsubscribe">ยืนยันการยกเลิกข่าวสาร (Unsubscribe)</option>' +
+      '</select>' +
+      '</div>',
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'ส่งอีเมลทดสอบ',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: 'var(--blue)',
+    preConfirm: () => {
+      const email = document.getElementById('test-email').value.trim();
+      const status = document.getElementById('test-status').value;
+      if (!email || !email.includes('@')) {
+        Swal.showValidationMessage('กรุณากรอกอีเมลให้ถูกต้อง');
+        return false;
+      }
+      return { email, status };
+    }
+  });
+
+  if (formValues) {
+    Swal.fire({
+      title: 'กำลังส่งอีเมล...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    const res = await api({ action: 'testEmail', email: formValues.email, status: formValues.status });
+    
+    if (res.success) {
+      Swal.fire('สำเร็จ!', 'ส่งอีเมลทดสอบเรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของคุณ', 'success');
+    } else {
+      Swal.fire('ข้อผิดพลาด', res.message || 'ไม่สามารถส่งอีเมลได้', 'error');
+    }
+  }
+}
+
+// ── Create Order ──────────────────────────────────────
+async function createOrder() {
+  const name    = document.getElementById('f-name').value.trim();
+  const product = document.getElementById('f-product').value.trim();
+  const address = document.getElementById('f-address').value.trim();
+  if(!name||!product||!address){Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบทุกช่อง', 'warning');return;}
+
+  const msgEl = document.getElementById('create-msg');
+  msgEl.innerHTML = '<span style="color:var(--muted);display:flex;align-items:center;gap:6px;"><i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังสร้างออเดอร์...</span>';
+  lucide.createIcons();
+
+  const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address});
+  if(res.success){
+    msgEl.innerHTML = `
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;">
+        <p style="font-weight:600;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i data-lucide="check-circle" style="width:18px;"></i> สร้างออเดอร์สำเร็จ!</p>
+        <p>เลขติดตาม: <strong style="font-family:monospace;font-size:18px;color:var(--blue);">${res.trackingId}</strong></p>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-primary btn-sm" onclick="showQR('${res.trackingId}')"><i data-lucide="qr-code" style="width:14px;"></i> ดู QR Code</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('orders')"><i data-lucide="list" style="width:14px;"></i> ดูรายการทั้งหมด</button>
+        </div>
+      </div>`;
+    clearForm();
+    await loadAllOrders();
+    lucide.createIcons();
+  } else {
+    msgEl.innerHTML = `<p style="color:var(--red);display:flex;align-items:center;gap:6px;"><i data-lucide="x-circle" style="width:16px;"></i> ${res.message||'เกิดข้อผิดพลาด'}</p>`;
+    lucide.createIcons();
+  }
+}
+
+function clearForm() {
+  ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
+}
+
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+document.querySelectorAll('.modal-bg').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
+});
+
+</script>
+</body>
+</html>
