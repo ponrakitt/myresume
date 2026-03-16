@@ -22,6 +22,10 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 /* 2FA Enforcer */
 .locked-content { filter: grayscale(100%); pointer-events: none; opacity: 0.4; user-select: none; }
 
+/* Locked Overlay */
+#locked-overlay { position:fixed; inset:0; background:rgba(241,245,249,0.8); z-index:900; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.locked-box { background:#fff; border:2px solid var(--orange); border-radius:16px; padding:40px; text-align:center; width:100%; max-width:400px; box-shadow:0 20px 40px rgba(0,0,0,0.1); }
+
 /* Login Overlay */
 #login-overlay { position:fixed; inset:0; background:var(--bg); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
 .login-box { background:#fff; border-radius:16px; padding:32px; width:100%; max-width:400px; box-shadow:0 12px 40px rgba(0,0,0,0.1); }
@@ -171,16 +175,30 @@ tr:hover td{background:#f8fafc;}
   </div>
 </div>
 
-<!-- 2FA Setup Modal (Force) -->
+<!-- Locked Overlay -->
+<div id="locked-overlay" class="hidden">
+  <div class="locked-box">
+    <i data-lucide="lock" style="width:48px;height:48px;color:var(--orange);margin:0 auto 16px;display:block;"></i>
+    <h2 style="margin-bottom:8px;">ระบบถูกล็อค</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">บัญชีของคุณยังไม่ได้ตั้งค่าการยืนยันตัวตนแบบ 2 ขั้นตอน (2FA) กรุณาตั้งค่าเพื่อเข้าใช้งานระบบ</p>
+    <button class="login-btn" style="background:var(--orange); width:100%;" onclick="setup2FAFlow()">ตั้งค่า 2FA ตอนนี้</button>
+    <button class="btn btn-outline" style="width:100%; margin-top:12px; justify-content:center;" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</div>
+
+<!-- 2FA Setup Modal -->
 <div id="setup-2fa-modal" class="modal-bg hidden">
   <div class="modal" style="max-width:400px; text-align:center;">
-    <div class="modal-header" style="justify-content:center;"><span class="modal-title" style="color:var(--orange);">จำเป็นต้องเปิดใช้งาน 2FA</span></div>
+    <div class="modal-header" style="justify-content:center; position:relative;">
+      <span class="modal-title" style="color:var(--orange);">ตั้งค่า 2FA</span>
+      <button class="close-btn" style="position:absolute; right:20px; top:50%; transform:translateY(-50%);" onclick="closeModal('setup-2fa-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">เพื่อความปลอดภัย 100% กรุณาสแกน QR Code ด้วย Google Authenticator</p>
       <div id="setup-qr-canvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
-      <p style="font-family:monospace;font-size:12px;color:var(--blue);margin-bottom:16px;" id="setup-secret-text"></p>
+      <p style="font-family:monospace;font-size:16px;color:var(--blue);margin-bottom:16px;letter-spacing:1px;" id="setup-secret-text"></p>
       <input id="setup-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;"/>
-      <button class="login-btn" onclick="confirmSetup2FA()">เปิดใช้งาน 2FA</button>
+      <button class="login-btn" style="background:var(--orange);" onclick="confirmSetup2FA()">ยืนยันและเปิดใช้งาน</button>
     </div>
   </div>
 </div>
@@ -441,10 +459,12 @@ function checkLoginState() {
     
     if (localStorage.getItem('twoFactorEnabled') === 'true') {
       document.getElementById('app-content').classList.remove('locked-content');
+      document.getElementById('locked-overlay').classList.add('hidden');
       if(currentUser.role === 'superadmin') document.getElementById('menu-users').classList.remove('hidden');
       loadAllOrders();
     } else {
-      setup2FAFlow();
+      document.getElementById('app-content').classList.add('locked-content');
+      document.getElementById('locked-overlay').classList.remove('hidden');
     }
   }
 }
@@ -537,6 +557,7 @@ async function confirmSetup2FA() {
   if (res.success) {
     localStorage.setItem('twoFactorEnabled', 'true');
     closeModal('setup-2fa-modal');
+    document.getElementById('locked-overlay').classList.add('hidden');
     document.getElementById('app-content').classList.remove('locked-content');
     Swal.fire('สำเร็จ', 'เปิดใช้งาน 2FA เรียบร้อยแล้ว', 'success');
     checkLoginState();
