@@ -495,6 +495,20 @@ function checkLoginState() {
       localStorage.setItem('userRole', 'superadmin');
     }
     
+    // บล็อกสิทธิ์ Warehouse ไม่ให้เข้าหน้า Admin
+    if (currentUser.role === 'warehouse') {
+      Swal.fire({
+        title: 'ปฏิเสธการเข้าถึง',
+        text: 'สิทธิ์การใช้งานไม่เพียงพอ (เฉพาะ Admin และ Super Admin เท่านั้น)',
+        icon: 'error',
+        allowOutsideClick: false,
+        confirmButtonText: 'ตกลง'
+      }).then(() => {
+        doLogout();
+      });
+      return;
+    }
+    
     document.getElementById('user-badge').innerHTML = `<i data-lucide="user" style="width:14px;height:14px;"></i> ${currentUser.role}`;
     lucide.createIcons();
     
@@ -515,7 +529,7 @@ async function doLogin() {
   const pass = document.getElementById('login-password').value.trim();
   if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
 
-  // แอนิเมชันปุ่มโหลดกำลังตรวจสอบ
+  // Animation ปุ่มกดกำลังตรวจสอบ
   const btn = document.getElementById('btn-login-submit');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบรหัสผ่าน...';
@@ -531,6 +545,13 @@ async function doLogin() {
   
   if (res.success) {
     if (email === 'ponrakitt@outlook.co.th') res.role = 'superadmin';
+    
+    // ดักจับและปฏิเสธสิทธิ์ Warehouse ทันที
+    if (res.role === 'warehouse') {
+      Swal.fire('ปฏิเสธการเข้าถึง', 'สิทธิ์การใช้งานไม่เพียงพอ (เฉพาะ Admin และ Super Admin เท่านั้น)', 'error');
+      return;
+    }
+
     currentUser.email = email;
     currentUser.role = res.role;
     localStorage.setItem('userEmail', email);
