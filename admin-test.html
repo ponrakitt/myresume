@@ -818,41 +818,11 @@ async function promptTestEmail() {
   }
 }
 
-// ── Create Order ──────────────────────────────────────
-async function createOrder() {
-  const name    = document.getElementById('f-name').value.trim();
-  const product = document.getElementById('f-product').value.trim();
-  const address = document.getElementById('f-address').value.trim();
-  if(!name||!product||!address){Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบทุกช่อง', 'warning');return;}
-
-  const msgEl = document.getElementById('create-msg');
-  msgEl.innerHTML = '<span style="color:var(--muted);display:flex;align-items:center;gap:6px;"><i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังสร้างออเดอร์...</span>';
-  lucide.createIcons();
-
-  const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address});
-  if(res.success){
-    msgEl.innerHTML = `
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;">
-        <p style="font-weight:600;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i data-lucide="check-circle" style="width:18px;"></i> สร้างออเดอร์สำเร็จ!</p>
-        <p>เลขติดตาม: <strong style="font-family:monospace;font-size:18px;color:var(--blue);">${res.trackingId}</strong></p>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-          <button class="btn btn-primary btn-sm" onclick="showQR('${res.trackingId}')"><i data-lucide="qr-code" style="width:14px;"></i> ดู QR Code</button>
-          <button class="btn btn-outline btn-sm" onclick="showPage('orders')"><i data-lucide="list" style="width:14px;"></i> ดูรายการทั้งหมด</button>
-        </div>
-      </div>`;
-    clearForm();
-    await loadAllOrders();
-    lucide.createIcons();
-  } else {
-    msgEl.innerHTML = `<p style="color:var(--red);display:flex;align-items:center;gap:6px;"><i data-lucide="x-circle" style="width:16px;"></i> ${res.message||'เกิดข้อผิดพลาด'}</p>`;
-    lucide.createIcons();
-  }
-}
-
 function clearForm() {
   ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
 }
 
+function showModal(id){document.getElementById(id).classList.remove('hidden');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.modal-bg').forEach(el=>{
   el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
