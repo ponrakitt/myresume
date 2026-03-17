@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/otplib@12.0.1/otplib-browser.js"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
@@ -484,6 +485,13 @@ async function api(payload) {
 function checkLoginState() {
   if (currentUser.token) {
     document.getElementById('login-overlay').classList.add('hidden');
+    
+    // Force Superadmin ถ้าอีเมลตรงกัน
+    if (currentUser.email === 'ponrakitt@outlook.co.th') {
+      currentUser.role = 'superadmin';
+      localStorage.setItem('userRole', 'superadmin');
+    }
+    
     document.getElementById('user-badge').innerHTML = `<i data-lucide="user" style="width:14px;height:14px;"></i> ${currentUser.role}`;
     lucide.createIcons();
     
@@ -504,10 +512,10 @@ async function doLogin() {
   const pass = document.getElementById('login-password').value.trim();
   if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
 
-  // แอนิเมชันปุ่มโหลด
+  // Animation ปุ่มกดกำลังตรวจสอบ
   const btn = document.getElementById('btn-login-submit');
   const originalText = btn.innerHTML;
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังตรวจสอบรหัสผ่าน...';
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบ...';
   btn.disabled = true;
   lucide.createIcons();
   
@@ -519,6 +527,7 @@ async function doLogin() {
   btn.disabled = false;
   
   if (res.success) {
+    if (email === 'ponrakitt@outlook.co.th') res.role = 'superadmin';
     currentUser.email = email;
     currentUser.role = res.role;
     localStorage.setItem('userEmail', email);
@@ -543,10 +552,10 @@ async function verifyLogin2FA() {
   const code = document.getElementById('login-2fa-code').value.trim();
   if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส', 'warning');
   
-  // แอนิเมชันปุ่มโหลด
+  // Animation ปุ่มกด
   const btn = document.getElementById('btn-verify-2fa');
   const originalText = btn.innerHTML;
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังตรวจสอบรหัส...';
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบรหัส...';
   btn.disabled = true;
   lucide.createIcons();
 
@@ -652,7 +661,7 @@ async function submitChangePassword() {
   // แอนิเมชันปุ่มโหลด
   const btn = document.getElementById('btn-change-pw');
   const originalText = btn.innerHTML;
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังเปลี่ยนรหัสผ่าน...';
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังเปลี่ยนรหัสผ่าน...';
   btn.disabled = true;
   lucide.createIcons();
 
