@@ -8,7 +8,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://unpkg.com/otplib@12.0.1/otplib-browser.js"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
@@ -265,6 +264,10 @@ tr:hover td{background:#f8fafc;}
       <div class="nav-item hidden" id="menu-users" onclick="showPage('users')">
         <i data-lucide="users" class="icon"></i><span>จัดการผู้ใช้</span>
       </div>
+      <!-- NEW: เมนูเช็คประวัติการล็อกอิน -->
+      <div class="nav-item hidden" id="menu-logs" onclick="showPage('logs')">
+        <i data-lucide="activity" class="icon"></i><span>ประวัติการเข้าระบบ</span>
+      </div>
     </nav>
   </aside>
 
@@ -358,6 +361,19 @@ tr:hover td{background:#f8fafc;}
           </div>
           <div class="card-body" style="padding:0;">
             <div id="users-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: LOGS PAGE (Super Admin Only) -->
+      <div id="page-logs" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i data-lucide="activity" style="width:18px;"></i> ประวัติการเข้าสู่ระบบ</span>
+            <button class="btn btn-primary btn-sm" onclick="loadLoginLogs()"><i data-lucide="refresh-cw" style="width:14px;"></i> รีเฟรช</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div id="logs-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลด...</div></div>
           </div>
         </div>
       </div>
@@ -515,7 +531,13 @@ function checkLoginState() {
     if (localStorage.getItem('twoFactorEnabled') === 'true') {
       document.getElementById('app-content').classList.remove('locked-content');
       document.getElementById('locked-overlay').classList.add('hidden');
-      if(currentUser.role === 'superadmin') document.getElementById('menu-users').classList.remove('hidden');
+      
+      // แสดงเมนูจัดการผู้ใช้ และประวัติการเข้าระบบ ให้ Superadmin
+      if(currentUser.role === 'superadmin') {
+        document.getElementById('menu-users').classList.remove('hidden');
+        document.getElementById('menu-logs').classList.remove('hidden');
+      }
+      
       loadAllOrders();
     } else {
       document.getElementById('app-content').classList.add('locked-content');
@@ -538,7 +560,8 @@ async function doLogin() {
   
   await new Promise(r => setTimeout(r, 600));
 
-  const res = await api({ action: 'login', password: pass, email: email });
+  // ส่ง parameter page เพื่อระบุว่าล็อกอินจากหน้าไหน
+  const res = await api({ action: 'login', password: pass, email: email, page: 'Admin Panel' });
   
   btn.innerHTML = originalText;
   btn.disabled = false;
@@ -576,7 +599,7 @@ async function verifyLogin2FA() {
   const code = document.getElementById('login-2fa-code').value.trim();
   if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส', 'warning');
   
-  // แอนิเมชันปุ่มโหลด
+  // Animation ปุ่มกด
   const btn = document.getElementById('btn-verify-2fa');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบรหัส...';
@@ -585,7 +608,8 @@ async function verifyLogin2FA() {
 
   await new Promise(r => setTimeout(r, 600));
 
-  const res = await api({ action: 'verifyLogin2FA', tempToken: loginTempToken, code: code });
+  // ส่ง parameter page เพื่อระบุว่าล็อกอินจากหน้าไหน
+  const res = await api({ action: 'verifyLogin2FA', tempToken: loginTempToken, code: code, page: 'Admin Panel' });
   
   btn.innerHTML = originalText;
   btn.disabled = false;
@@ -816,6 +840,43 @@ async function adminDeleteUser(targetEmail) {
   }
 }
 
+// ── Login Logs Function ─────────────────────────────
+async function loadLoginLogs() {
+  document.getElementById('logs-table').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:24px;height:24px;margin-bottom:8px;"></i><br>กำลังดึงข้อมูลประวัติ...</div>';
+  lucide.createIcons();
+
+  const res = await api({ action: 'adminGetLogs' });
+  
+  if (!res.success) {
+    document.getElementById('logs-table').innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--red);">${res.message || 'ไม่มีสิทธิ์เข้าถึง'}</div>`;
+    return;
+  }
+
+  let list = res.logs || [];
+  let html = `<div class="table-wrap"><table><thead><tr><th>วัน-เวลา</th><th>อีเมล</th><th>ระดับ</th><th>หน้าเว็บ</th><th>รายละเอียด</th></tr></thead><tbody>`;
+  
+  if (list.length === 0) {
+    html += `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">ยังไม่มีประวัติการเข้าระบบ</td></tr>`;
+  } else {
+    list.forEach(l => {
+      let statusColor = 'var(--muted)';
+      if(l.detail.includes('สำเร็จ')) statusColor = 'var(--green)';
+      else if(l.detail.includes('ผิด')) statusColor = 'var(--red)';
+
+      html += `<tr>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(l.timestamp)}</td>
+        <td style="font-weight:500;">${l.email}</td>
+        <td><span style="background:var(--blue-light);color:var(--blue);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${l.role || '-'}</span></td>
+        <td style="font-size:13px;">${l.page || '-'}</td>
+        <td style="font-size:13px;color:${statusColor};font-weight:500;">${l.detail}</td>
+      </tr>`;
+    });
+  }
+  
+  html += `</tbody></table></div>`;
+  document.getElementById('logs-table').innerHTML = html;
+}
+
 // ── Existing Admin Code ───────────────────────────────
 const STATUS_TH = { pending:'รอดำเนินการ', preparing:'กำลังเตรียมสินค้า', ready:'รอการจัดส่ง', out_for_delivery:'กำลังจัดส่ง', delivered:'จัดส่งสำเร็จ', cancelled:'ยกเลิก', confirmed:'ลูกค้ารับแล้ว' };
 const STATUS_ICON = { pending:'clock', preparing:'wrench', ready:'package', out_for_delivery:'truck', delivered:'check-circle', cancelled:'x-circle', confirmed:'party-popper' };
@@ -827,13 +888,14 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   const items = document.querySelectorAll('.nav-item');
-  const idx = ['dashboard','orders','create','users'].indexOf(id);
+  const idx = ['dashboard','orders','create','users','logs'].indexOf(id);
   if(items[idx]) items[idx].classList.add('active');
-  const titles = {dashboard:'แดชบอร์ด',orders:'รายการออเดอร์',create:'สร้างออเดอร์ใหม่',users:'จัดการผู้ใช้ระบบ'};
+  const titles = {dashboard:'แดชบอร์ด',orders:'รายการออเดอร์',create:'สร้างออเดอร์ใหม่',users:'จัดการผู้ใช้ระบบ',logs:'ประวัติการเข้าระบบ'};
   document.getElementById('page-title').textContent = titles[id]||id;
   if(id==='orders') renderOrdersTable();
   if(id==='dashboard') loadAllOrders();
   if(id==='users') loadAdminUsers();
+  if(id==='logs') loadLoginLogs();
 }
 
 async function loadAllOrders() {
