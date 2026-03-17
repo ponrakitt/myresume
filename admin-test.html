@@ -103,8 +103,9 @@ tr:hover td{background:#f8fafc;}
 .s-cancelled{background:#fef2f2;color:#991b1b;}
 .s-confirmed{background:#f5f3ff;color:#6d28d9;}
 
-/* SweetAlert custom image radius */
+/* SweetAlert custom image radius & Z-Index Fix */
 .swal-img-radius { border-radius: 12px; border: 1.5px solid var(--border); }
+.swal2-container { z-index: 10000 !important; }
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal{background:#fff;border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
@@ -165,7 +166,7 @@ tr:hover td{background:#f8fafc;}
     <input id="login-email" type="email" class="login-input" placeholder="อีเมล (Email)"/>
     <input id="login-password" type="password" class="login-input" placeholder="รหัสผ่าน (Password)"/>
     <button class="login-btn" id="btn-login-submit" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <a class="forgot-btn" onclick="requestReset()">ลืมรหัสผ่าน? คลิกที่นี่</a>
+    <a href="javascript:void(0);" class="forgot-btn" onclick="requestReset()">ลืมรหัสผ่าน? คลิกที่นี่</a>
   </div>
 
   <div class="login-box hidden" id="login-2fa-box">
@@ -173,7 +174,7 @@ tr:hover td{background:#f8fafc;}
     <p style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator<br>หรือกรอกรหัสกู้คืน (8 หลัก)</p>
     <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก หรือ รหัสกู้คืน" maxlength="8" style="text-align:center;letter-spacing:2px;font-size:16px;font-weight:700;"/>
     <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยัน</button>
-    <a class="forgot-btn" onclick="location.reload()">ยกเลิก</a>
+    <a href="javascript:void(0);" class="forgot-btn" onclick="location.reload()">ยกเลิก</a>
   </div>
 </div>
 
