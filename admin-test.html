@@ -8,7 +8,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://unpkg.com/otplib@12.0.1/otplib-browser.js"></script>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--blue-light:#dbeafe;--blue-mid:#1d4ed8;
@@ -32,7 +31,8 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .login-logo { text-align:center; margin-bottom:24px; color:var(--blue); }
 .login-input { width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:8px; font-family:'Prompt',sans-serif; margin-bottom:16px; outline:none; }
 .login-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
-.login-btn { width:100%; background:var(--blue); color:#fff; padding:14px; border:none; border-radius:8px; font-family:'Prompt',sans-serif; font-weight:600; cursor:pointer; }
+.login-btn { width:100%; background:var(--blue); color:#fff; padding:14px; border:none; border-radius:8px; font-family:'Prompt',sans-serif; font-weight:600; cursor:pointer; transition: .2s; display:flex; align-items:center; justify-content:center; gap:8px;}
+.login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 .forgot-btn { text-align:center; display:block; margin-top:16px; color:var(--muted); font-size:13px; cursor:pointer; text-decoration:underline; }
 
 /* Sidebar */
@@ -68,7 +68,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 .card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
 .card-body{padding:24px;}
 
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.2s;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.2s;}
 .btn-primary{background:var(--blue);color:#fff;}
 .btn-primary:hover{background:var(--blue-mid);}
 .btn-outline{background:#fff;color:var(--blue);border:1.5px solid var(--blue);}
@@ -162,15 +162,15 @@ tr:hover td{background:#f8fafc;}
     </div>
     <input id="login-email" type="email" class="login-input" placeholder="อีเมล (Email)"/>
     <input id="login-password" type="password" class="login-input" placeholder="รหัสผ่าน (Password)"/>
-    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <button class="login-btn" id="btn-login-submit" onclick="doLogin()">เข้าสู่ระบบ</button>
     <a class="forgot-btn" onclick="requestReset()">ลืมรหัสผ่าน?</a>
   </div>
 
   <div class="login-box hidden" id="login-2fa-box">
     <div class="login-logo"><i data-lucide="smartphone" style="width:48px;height:48px;"></i><h2 style="margin-top:12px;">ยืนยันตัวตน 2FA</h2></div>
-    <p style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator</p>
-    <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;"/>
-    <button class="login-btn" onclick="verifyLogin2FA()">ยืนยัน</button>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator<br>หรือกรอกรหัสกู้คืน (8 หลัก)</p>
+    <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก หรือ รหัสกู้คืน" maxlength="8" style="text-align:center;letter-spacing:2px;font-size:16px;font-weight:700;"/>
+    <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยัน</button>
     <a class="forgot-btn" onclick="location.reload()">ยกเลิก</a>
   </div>
 </div>
@@ -194,11 +194,31 @@ tr:hover td{background:#f8fafc;}
       <button class="close-btn" style="position:absolute; right:20px; top:50%; transform:translateY(-50%);" onclick="closeModal('setup-2fa-modal')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">เพื่อความปลอดภัย 100% กรุณาสแกน QR Code ด้วย Google Authenticator</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">สแกน QR Code ด้วย Google Authenticator<br>รหัสจะเปลี่ยนทุกๆ 30 วินาที</p>
       <div id="setup-qr-canvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
       <p style="font-family:monospace;font-size:16px;color:var(--blue);margin-bottom:16px;letter-spacing:1px;" id="setup-secret-text"></p>
       <input id="setup-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;"/>
       <button class="login-btn" style="background:var(--orange);" onclick="confirmSetup2FA()">ยืนยันและเปิดใช้งาน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Backup Codes Modal -->
+<div id="backup-codes-modal" class="modal-bg hidden" style="z-index:9999;">
+  <div class="modal" style="max-width:500px; text-align:center;">
+    <div class="modal-header" style="justify-content:center; position:relative;">
+      <span class="modal-title" style="color:var(--green);">รหัสกู้คืน (Backup Codes)</span>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--red);margin-bottom:16px; font-weight:500;">
+        <i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> กรุณาบันทึกรหัสเหล่านี้ไว้ในที่ปลอดภัย!<br>หากคุณไม่สามารถใช้แอป 2FA ได้ สามารถใช้รหัสเหล่านี้ล็อกอินแทนได้ (1 รหัสต่อ 1 ครั้ง)
+      </p>
+      <div id="backup-codes-list" style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:16px; max-height:200px; overflow-y:auto; font-family:monospace; font-size:14px; text-align:left; letter-spacing:1px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="copyBackupCodes()"><i data-lucide="copy" style="width:16px;"></i> คัดลอกรหัสทั้งหมด</button>
+        <button class="login-btn" style="flex:1; background:var(--green);" onclick="finish2FASetup()">บันทึกแล้ว & ปิด</button>
+      </div>
     </div>
   </div>
 </div>
@@ -213,8 +233,8 @@ tr:hover td{background:#f8fafc;}
     <div class="modal-body">
       <input id="cpw-old" type="password" class="login-input" placeholder="รหัสผ่านเดิม"/>
       <input id="cpw-new" type="password" class="login-input" placeholder="รหัสผ่านใหม่ (อักษรใหญ่,เล็ก,ตัวเลข, 8 ตัว)"/>
-      <input id="cpw-2fa" type="text" class="login-input" placeholder="รหัส 2FA (6 หลัก)" maxlength="6"/>
-      <button class="login-btn" onclick="submitChangePassword()">เปลี่ยนรหัสผ่าน</button>
+      <input id="cpw-2fa" type="text" class="login-input" placeholder="รหัส 2FA 6 หลัก หรือ รหัสกู้คืน" maxlength="8"/>
+      <button class="login-btn" id="btn-change-pw" onclick="submitChangePassword()">เปลี่ยนรหัสผ่าน</button>
     </div>
   </div>
 </div>
@@ -429,6 +449,10 @@ tr:hover td{background:#f8fafc;}
 </div>
 
 <script>
+// ย้ายฟังก์ชัน Modal ขึ้นมาไว้ด้านบนสุดเพื่อให้เรียกใช้งานได้ไม่มีปัญหา
+function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
 const TRACKING_BASE = window.location.origin + window.location.pathname.replace('admin.html', 'tracking.html');
 const DELIVERY_BASE = window.location.origin + window.location.pathname.replace('admin.html', 'delivery.html');
@@ -437,10 +461,16 @@ let allOrders = [];
 let currentFilter = '';
 let loginTempToken = '';
 let currentUser = { email: localStorage.getItem('userEmail'), token: localStorage.getItem('userToken'), role: localStorage.getItem('userRole') };
+let generatedBackupCodes = [];
 
 document.addEventListener('DOMContentLoaded', () => { 
   lucide.createIcons(); 
   checkLoginState();
+  
+  // Event listener สำหรับคลิกพื้นที่ด้านนอก Modal เพื่อปิด
+  document.querySelectorAll('.modal-bg').forEach(el=>{
+    el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
+  });
 });
 
 async function api(payload) {
@@ -474,11 +504,21 @@ async function doLogin() {
   const pass = document.getElementById('login-password').value.trim();
   if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
 
-  Swal.fire({ title: 'กำลังเข้าสู่ระบบ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  // แอนิเมชันปุ่มโหลด
+  const btn = document.getElementById('btn-login-submit');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังตรวจสอบรหัสผ่าน...';
+  btn.disabled = true;
+  lucide.createIcons();
+  
+  await new Promise(r => setTimeout(r, 600));
+
   const res = await api({ action: 'login', password: pass, email: email });
   
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+  
   if (res.success) {
-    Swal.close();
     currentUser.email = email;
     currentUser.role = res.role;
     localStorage.setItem('userEmail', email);
@@ -501,13 +541,23 @@ async function doLogin() {
 
 async function verifyLogin2FA() {
   const code = document.getElementById('login-2fa-code').value.trim();
-  if(code.length !== 6) return Swal.fire('แจ้งเตือน', 'กรอกรหัส 6 หลัก', 'warning');
+  if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส', 'warning');
   
-  Swal.fire({ title: 'กำลังตรวจสอบ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  // แอนิเมชันปุ่มโหลด
+  const btn = document.getElementById('btn-verify-2fa');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังตรวจสอบรหัส...';
+  btn.disabled = true;
+  lucide.createIcons();
+
+  await new Promise(r => setTimeout(r, 600));
+
   const res = await api({ action: 'verifyLogin2FA', tempToken: loginTempToken, code: code });
   
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+
   if (res.success) {
-    Swal.close();
     currentUser.token = res.token;
     localStorage.setItem('userToken', res.token);
     localStorage.setItem('twoFactorEnabled', 'true');
@@ -552,18 +602,41 @@ async function setup2FAFlow() {
 
 async function confirmSetup2FA() {
   const code = document.getElementById('setup-2fa-code').value.trim();
-  if(code.length !== 6) return;
+  if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส 6 หลัก', 'warning');
+  
   const res = await api({ action: 'enable2FA', code: code });
   if (res.success) {
     localStorage.setItem('twoFactorEnabled', 'true');
     closeModal('setup-2fa-modal');
-    document.getElementById('locked-overlay').classList.add('hidden');
-    document.getElementById('app-content').classList.remove('locked-content');
-    Swal.fire('สำเร็จ', 'เปิดใช้งาน 2FA เรียบร้อยแล้ว', 'success');
-    checkLoginState();
+    
+    // โชว์ Backup Codes 50 ชุด
+    generatedBackupCodes = res.backupCodes || [];
+    const listEl = document.getElementById('backup-codes-list');
+    listEl.innerHTML = generatedBackupCodes.map(c => `<div>${c}</div>`).join('');
+    showModal('backup-codes-modal');
+
   } else {
     Swal.fire('ข้อผิดพลาด', res.message, 'error');
   }
+}
+
+function copyBackupCodes() {
+  const text = generatedBackupCodes.join('\n');
+  const el = document.createElement('textarea'); 
+  el.value = text; 
+  document.body.appendChild(el); 
+  el.select(); 
+  document.execCommand('copy'); 
+  document.body.removeChild(el);
+  Swal.fire({title: 'คัดลอกแล้ว', icon: 'success', timer: 1500, showConfirmButton: false});
+}
+
+function finish2FASetup() {
+  closeModal('backup-codes-modal');
+  document.getElementById('locked-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('locked-content');
+  Swal.fire('สำเร็จ', 'เปิดใช้งาน 2FA และบันทึกรหัสกู้คืนเรียบร้อยแล้ว', 'success');
+  checkLoginState();
 }
 
 async function submitChangePassword() {
@@ -576,8 +649,20 @@ async function submitChangePassword() {
     return Swal.fire('แจ้งเตือน', 'รหัสผ่านต้องมี 8 ตัวขึ้นไป และประกอบด้วยอักษรพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลข', 'warning');
   }
 
-  Swal.fire({ title: 'กำลังดำเนินการ', didOpen: () => Swal.showLoading() });
+  // แอนิเมชันปุ่มโหลด
+  const btn = document.getElementById('btn-change-pw');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังเปลี่ยนรหัสผ่าน...';
+  btn.disabled = true;
+  lucide.createIcons();
+
+  await new Promise(r => setTimeout(r, 600));
+
   const res = await api({ action: 'changePassword', oldPassword: oldP, newPassword: newP, code2fa: code });
+  
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+
   if (res.success) {
     closeModal('change-pw-modal');
     Swal.fire('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', 'success');
@@ -822,11 +907,35 @@ function clearForm() {
   ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
 }
 
-function showModal(id){document.getElementById(id).classList.remove('hidden');}
-function closeModal(id){document.getElementById(id).classList.add('hidden');}
-document.querySelectorAll('.modal-bg').forEach(el=>{
-  el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
-});
+async function createOrder() {
+  const name    = document.getElementById('f-name').value.trim();
+  const product = document.getElementById('f-product').value.trim();
+  const address = document.getElementById('f-address').value.trim();
+  if(!name||!product||!address){Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบทุกช่อง', 'warning');return;}
+
+  const msgEl = document.getElementById('create-msg');
+  msgEl.innerHTML = '<span style="color:var(--muted);display:flex;align-items:center;gap:6px;"><i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังสร้างออเดอร์...</span>';
+  lucide.createIcons();
+
+  const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address});
+  if(res.success){
+    msgEl.innerHTML = `
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;">
+        <p style="font-weight:600;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i data-lucide="check-circle" style="width:18px;"></i> สร้างออเดอร์สำเร็จ!</p>
+        <p>เลขติดตาม: <strong style="font-family:monospace;font-size:18px;color:var(--blue);">${res.trackingId}</strong></p>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-primary btn-sm" onclick="showQR('${res.trackingId}')"><i data-lucide="qr-code" style="width:14px;"></i> ดู QR Code</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('orders')"><i data-lucide="list" style="width:14px;"></i> ดูรายการทั้งหมด</button>
+        </div>
+      </div>`;
+    clearForm();
+    await loadAllOrders();
+    lucide.createIcons();
+  } else {
+    msgEl.innerHTML = `<p style="color:var(--red);display:flex;align-items:center;gap:6px;"><i data-lucide="x-circle" style="width:16px;"></i> ${res.message||'เกิดข้อผิดพลาด'}</p>`;
+    lucide.createIcons();
+  }
+}
 
 </script>
 </body>
