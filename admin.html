@@ -191,6 +191,23 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
 .swal-img-radius { border-radius: 12px; border: 1.5px solid var(--border); }
 .swal2-container { z-index: 10000 !important; }
 
+/* Footer Centering Fix */
+.site-footer {
+  text-align: center;
+  padding: 32px 20px 24px;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.site-footer p { 
+  margin-bottom: 6px; 
+  color: var(--muted); 
+  font-size: 13.5px; 
+}
+
 /* Responsive */
 @media(max-width: 768px) {
   .sidebar { width: 72px; }
@@ -517,9 +534,9 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
 
     <!-- Footer -->
     <div class="site-footer">
-      <p style="font-weight:500;">ระบบติดตามสถานะการจัดส่ง (Tracking System v2.0)</p>
-      <p>หากพบปัญหาในการใช้งาน กรุณาติดต่อ <a href="mailto:contact@ponrakitt.site" style="color:var(--blue);text-decoration:none;">contact@ponrakitt.site</a></p>
-      <p style="margin-top:8px; opacity:0.7;">&copy; All rights reserved by wanflorist.net | Designed by ponrakitt.site</p>
+      <p style="font-weight:600; color:var(--text-light);">ระบบติดตามสถานะการจัดส่ง (Tracking System v2.0)</p>
+      <p>หากพบปัญหาในการใช้งาน กรุณาติดต่อ <a href="mailto:contact@ponrakitt.site" style="color:var(--blue);text-decoration:none;font-weight:500;">contact@ponrakitt.site</a></p>
+      <p style="margin-top:8px; opacity:0.6; font-size:12px;">&copy; All rights reserved by wanflorist.net | Designed by ponrakitt.site</p>
     </div>
   </div>
 </div>
@@ -642,7 +659,20 @@ async function api(payload) {
   if (currentUser.email) payload.email = currentUser.email;
   if (currentUser.token) payload.token = currentUser.token;
   const res = await fetch(SCRIPT_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
-  return res.json();
+  const data = await res.json();
+  
+  // หาก Backend ตอบกลับมาว่า Unauthorized และไม่ใช่ตอนกำลังล็อกอิน ให้เด้งออกทันที
+  if (data.message === 'Unauthorized' && payload.action !== 'login' && payload.action !== 'verifyLogin2FA') {
+    Swal.fire({
+      title: 'เซสชันหมดอายุ',
+      text: 'ระบบความปลอดภัยตัดการเชื่อมต่อของคุณ กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
+      icon: 'warning',
+      allowOutsideClick: false
+    }).then(() => {
+      doLogout();
+    });
+  }
+  return data;
 }
 
 // ── Auth Logic ────────────────────────────────────────
@@ -1010,10 +1040,10 @@ async function loadActivityLogs() {
   }
 
   let list = res.logs || [];
-  let html = `<div class="table-wrap"><table><thead><tr><th style="width:140px;">วัน-เวลา</th><th>ผู้ทำรายการ</th><th>หน้าที่ใช้งาน</th><th>รายละเอียด</th><th style="width:100px;text-align:center;">สถานะ</th></tr></thead><tbody>`;
+  let html = `<div class="table-wrap"><table><thead><tr><th style="width:160px;">รหัสอ้างอิง (Log ID)</th><th style="width:140px;">วัน-เวลา</th><th>ผู้ทำรายการ</th><th>หน้าที่ใช้งาน</th><th>รายละเอียด</th><th style="width:100px;text-align:center;">สถานะ</th></tr></thead><tbody>`;
   
   if (list.length === 0) {
-    html += `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);">ยังไม่มีการบันทึกประวัติการใช้งานระบบ</td></tr>`;
+    html += `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">ยังไม่มีการบันทึกประวัติการใช้งานระบบ</td></tr>`;
   } else {
     list.forEach(l => {
       let statusHtml = l.status === 'SUCCESS' 
@@ -1021,6 +1051,7 @@ async function loadActivityLogs() {
         : '<div style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;"><i data-lucide="x" style="width:12px;vertical-align:bottom;margin-right:2px;"></i> FAILED</div>';
 
       html += `<tr>
+        <td style="font-family:monospace;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.5px;">${l.logId || '-'}</td>
         <td style="font-size:12.5px;color:var(--muted);white-space:nowrap;">${fmtDate(l.timestamp)}</td>
         <td>
           <div style="font-weight:600;color:var(--text);font-size:13.5px;">${l.email}</div>
