@@ -3,386 +3,837 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>คลังสินค้า — ระบบติดตามสินค้า</title>
+<title>Warehouse — ระบบจัดการคลังสินค้า</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-:root{
-  --navy:#0f172a;--orange:#f97316;--orange-light:#fff7ed;--orange-dark:#c2410c;
-  --green:#16a34a;--green-light:#f0fdf4;--blue:#2563eb;--blue-light:#eff6ff;
-  --yellow:#ca8a04;--yellow-light:#fefce8;--red:#dc2626;
-  --bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
-  --radius:14px;--shadow:0 4px 16px rgba(0,0,0,.08);
+:root {
+  --navy: #0f172a; --navy-light: #1e293b;
+  --blue: #2563eb; --blue-light: #eff6ff; --blue-mid: #1d4ed8;
+  --orange: #f97316; --orange-light: #fff7ed;
+  --green: #10b981; --green-light: #ecfdf5;
+  --red: #ef4444; --red-light: #fef2f2;
+  --yellow: #f59e0b; --yellow-light: #fffbeb;
+  --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0;
+  --text: #0f172a; --text-light: #334155; --muted: #64748b;
+  --radius: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08);
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
 
-.header{background:var(--navy);color:#fff;padding:16px 24px;
-  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.header-left{display:flex;align-items:center;gap:12px;}
-.header h1{font-size:18px;font-weight:700;}
-.header p{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
-.refresh-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-  color:#fff;padding:8px 16px;border-radius:8px;font-family:'Prompt',sans-serif;
-  font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
-.refresh-btn:hover{background:rgba(255,255,255,.2);}
+/* 2FA Enforcer */
+.locked-content { filter: grayscale(100%) blur(2px); pointer-events: none; opacity: 0.4; user-select: none; transition: 0.3s; }
 
-.main{padding:20px;max-width:1100px;margin:0 auto;flex:1;width:100%;}
+/* Overlays */
+#locked-overlay { position: fixed; inset: 0; background: rgba(241,245,249,0.85); z-index: 900; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+.locked-box { background: var(--card); border-radius: 20px; padding: 40px; text-align: center; width: 100%; max-width: 420px; box-shadow: var(--shadow-lg); }
 
-/* Tabs */
-.tabs{display:flex;gap:4px;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;}
-.tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;
-  font-size:14px;font-weight:500;color:var(--muted);transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
-.tab.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.1);}
-.tab-badge{display:inline-block;min-width:20px;height:20px;border-radius:10px;
-  background:var(--orange);color:#fff;font-size:11px;padding:0 6px;line-height:20px;}
+/* --- MODERN LOGIN UI --- */
+.login-wrapper {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.login-card {
+  background: #ffffff;
+  width: 100%; max-width: 400px;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(249,115,22,0.2);
+  border: 1px solid rgba(255,255,255,0.8);
+  position: relative;
+  overflow: hidden;
+  min-height: 480px; 
+}
+.login-step {
+  padding: 40px;
+  width: 100%; height: 100%;
+  position: absolute; top: 0; left: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* Cards Grid */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+/* Fix CSS Slide Animation */
+.step-active { opacity: 1; transform: translateX(0); visibility: visible; pointer-events: auto; }
+.step-left { opacity: 0; transform: translateX(-50px); visibility: hidden; pointer-events: none; }
+.step-right { opacity: 0; transform: translateX(50px); visibility: hidden; pointer-events: none; }
 
-/* Order Card */
-.order-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:20px;border-top:4px solid var(--orange);transition:.2s;}
-.order-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
-.order-card.green-top{border-top-color:var(--green);}
-.order-card.yellow-top{border-top-color:var(--yellow);}
-.order-card.red-top{border-top-color:var(--red);}
+.icon-circle {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 10px 25px rgba(249,115,22,0.3);
+  color: white;
+}
+.login-title { text-align: center; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.login-subtitle { text-align: center; font-size: 13.5px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
 
-.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
-.oc-tid{font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);
-  background:var(--blue-light);padding:4px 10px;border-radius:6px;}
-.oc-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;}
-.b-pending{background:var(--yellow-light);color:var(--yellow);}
-.b-preparing{background:var(--orange-light);color:var(--orange-dark);}
-.b-ready{background:var(--green-light);color:var(--green);}
-.b-cancelled{background:#fef2f2;color:var(--red);}
+.input-group { position: relative; margin-bottom: 16px; }
+.input-group i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 18px; }
+.modern-input { width: 100%; padding: 14px 16px 14px 44px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Prompt', sans-serif; font-size: 15px; color: var(--text); transition: 0.2s; background: #f8fafc; }
+.modern-input:focus { background: #fff; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(249,115,22,0.1); outline: none; }
 
-.oc-name{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
-.oc-product{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.oc-address{font-size:12px;color:var(--muted);background:#f8fafc;
-  padding:8px 10px;border-radius:8px;line-height:1.5;display:flex;align-items:flex-start;gap:6px;}
-.oc-time{font-size:11px;color:var(--muted);margin-top:8px;}
+.btn-login { width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(249,115,22,0.2); margin-top: 8px; }
+.btn-login:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(249,115,22,0.3); }
+.btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+.forgot-btn { text-align: center; display: block; margin-top: 20px; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: none; transition: 0.2s; font-weight: 500; }
+.forgot-btn:hover { color: var(--orange); }
+/* ------------------------ */
 
-.oc-actions{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
-.btn-action{width:100%;padding:11px;border-radius:10px;font-family:'Prompt',sans-serif;
-  font-size:14px;font-weight:600;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-start{background:var(--orange);color:#fff;}
-.btn-start:hover{background:var(--orange-dark);}
-.btn-done{background:var(--green);color:#fff;}
-.btn-done:hover{background:#15803d;}
-.btn-info{background:var(--blue-light);color:var(--blue);border:1.5px solid #bfdbfe;}
-.btn-info:hover{background:#dbeafe;}
+/* Main Layout */
+.topbar { background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 72px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
+.topbar-brand .icon-box { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 8px; border-radius: 10px; color: #fff; box-shadow: 0 4px 12px rgba(249,115,22,0.3); }
+.topbar-brand h1 { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.badge-user { background: var(--orange-light); color: var(--orange); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(249,115,22,0.1); text-transform: uppercase; }
 
-/* Empty State */
-.empty{text-align:center;padding:60px 24px;color:var(--muted);}
-.empty-icon{margin-bottom:12px;display:inline-block;opacity:0.6;}
-.empty-text{font-size:16px;font-weight:500;}
-.empty-sub{font-size:13px;margin-top:4px;}
+.content { padding: 24px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; }
 
-/* Loading */
-.loading{text-align:center;padding:48px;color:var(--muted);}
-.spin{display:inline-block;animation:spin .8s linear infinite;color:var(--blue);}
-@keyframes spin{to{transform:rotate(360deg);}}
+/* Stat Cards */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(0,0,0,0.02); }
+.stat-info { display: flex; flex-direction: column; }
+.stat-label { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.stat-num { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
+.stat-icon-wrap { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.sc-orange .stat-icon-wrap { background: var(--orange-light); color: var(--orange); }
+.sc-yellow .stat-icon-wrap { background: var(--yellow-light); color: var(--yellow); }
+.sc-green .stat-icon-wrap { background: var(--green-light); color: var(--green); }
 
-/* Modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
-  display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal{background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;
-  box-shadow:0 24px 64px rgba(0,0,0,.2);}
-.modal-header{padding:20px 20px 0;text-align:center;}
-.modal-icon{margin:0 auto 8px;display:block;}
-.modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
-.modal-sub{font-size:13px;color:var(--muted);}
-.modal-body{padding:20px;}
-.modal-footer{padding:0 20px 20px;display:flex;gap:10px;}
-.modal-footer button{flex:1;padding:12px;border-radius:10px;font-family:'Prompt',sans-serif;
-  font-size:14px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn-confirm{background:var(--green);color:#fff;}
-.btn-confirm.orange{background:var(--orange);}
-.btn-cancel{background:#f1f5f9;color:var(--muted);}
+/* Main Cards */
+.card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid rgba(0,0,0,0.03); margin-bottom: 24px; }
+.card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #fff; flex-wrap: wrap; gap: 12px; }
+.card-title { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 10px; color: var(--text); }
+.card-body { padding: 24px; }
 
-/* Order Info Box */
-.order-info-box{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;}
-.order-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
-  border-bottom:1px solid var(--border);font-size:13px;}
-.order-info-row:last-child{border-bottom:none;}
-.order-info-label{color:var(--muted);}
-.order-info-value{font-weight:600;text-align:right;max-width:200px;}
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 10px; font-family: 'Prompt', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--orange); color: #fff; box-shadow: 0 4px 12px rgba(249,115,22,0.2); }
+.btn-primary:hover { background: #ea580c; }
+.btn-outline { background: #fff; color: var(--text-light); border: 1.5px solid var(--border); }
+.btn-outline:hover { background: var(--bg); border-color: #cbd5e1; }
+.btn-green { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
+.btn-green:hover { background: #059669; }
+.btn-danger { background: var(--red-light); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
 
-.hidden{display:none!important;}
-.site-footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:auto;}
-.site-footer p{margin-bottom:4px;}
+/* Search & Filters */
+.filter-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+.search-box { flex: 1; min-width: 250px; position: relative; }
+.search-box input { width: 100%; padding: 10px 14px 10px 36px; border-radius: 30px; border: 1.5px solid var(--border); font-family: 'Prompt'; font-size: 14px; outline: none; transition: 0.2s; }
+.search-box input:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(249,115,22,0.1); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 16px; height: 16px; }
+.filter-btn { padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); background: #fff; color: var(--muted); transition: 0.2s; }
+.filter-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+thead tr { background: #f8fafc; border-bottom: 1px solid var(--border); }
+th { padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; color: var(--text-light); }
+tr:hover td { background: #f8fafc; }
+.tid { font-family: monospace; font-weight: 700; color: var(--orange); font-size: 15px; background: var(--orange-light); padding: 4px 8px; border-radius: 6px; }
+
+/* Badges */
+.status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 30px; font-size: 12px; font-weight: 600; }
+.s-pending { background: var(--yellow-light); color: #b45309; }
+.s-preparing { background: var(--orange-light); color: var(--orange-dark); }
+.s-ready { background: var(--green-light); color: #047857; }
+
+/* Modals & Loaders */
+.modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); transition: 0.3s; opacity: 1; }
+.modal-bg.hidden { opacity: 0; pointer-events: none; }
+.modal { background: #fff; border-radius: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 32px; text-align: center; transform: translateY(0); transition: 0.3s; }
+.modal-bg.hidden .modal { transform: translateY(20px); }
+.modal-header { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; text-align: left;}
+.modal-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.close-btn { background: #f1f5f9; border: none; cursor: pointer; color: var(--muted); display: flex; padding: 8px; border-radius: 50%; transition: 0.2s; }
+.close-btn:hover { background: #e2e8f0; color: var(--text); }
+.form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.form-group label { font-size: 13.5px; font-weight: 500; color: var(--text-light); }
+
+.loading { text-align: center; padding: 40px; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 14px; }
+.loading .spin { display: block; margin-bottom: 12px; animation: spin 1s linear infinite; color: var(--orange); width: 28px; height: 28px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Footer Centering */
+.site-footer { text-align: center; padding: 32px 20px; margin-top: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+.site-footer p { margin-bottom: 6px; color: var(--muted); font-size: 13.5px; }
+
+/* Label Print Area */
+@media screen { #print-area { display: none; } }
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+  .print-card { border: 2px solid #000; border-radius: 16px; padding: 30px; margin-bottom: 20px; page-break-inside: avoid; }
+  .print-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
+  .print-qr { width: 120px; height: 120px; }
+  .print-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+  .print-tid { font-family: monospace; font-size: 28px; font-weight: bold; }
+  .print-label { font-size: 14px; color: #555; margin-bottom: 4px; font-weight: bold; }
+  .print-value { font-size: 18px; margin-bottom: 16px; }
+}
+
+.hidden { display: none !important; }
+
+div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+.swal2-container { z-index: 10000 !important; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-left">
-    <i data-lucide="package" style="color:#fff;"></i>
-    <div>
-      <h1>คลังสินค้า</h1>
-      <p>จัดการการเตรียมสินค้า</p>
-    </div>
-  </div>
-  <button class="refresh-btn" onclick="loadOrders()">
-    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> รีเฟรช
-  </button>
-</div>
+<!-- Modern Single-Card Login Overlay -->
+<div id="login-overlay" class="login-wrapper">
+  <div class="login-card">
+    
+    <!-- Step 1: Login Form -->
+    <div id="login-form-box" class="login-step step-active">
+      <div class="icon-circle">
+        <i data-lucide="package" style="width:36px;height:36px;"></i>
+      </div>
+      <div class="login-title">ระบบคลังสินค้า</div>
+      <div class="login-subtitle">เข้าสู่ระบบเพื่อจัดการคลังและการจัดส่ง</div>
 
-<div class="main">
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" id="tab-pending" onclick="switchTab('pending')">
-      <i data-lucide="clock" style="width:16px;"></i> รอดำเนินการ <span class="tab-badge" id="cnt-pending">0</span>
-    </div>
-    <div class="tab" id="tab-preparing" onclick="switchTab('preparing')">
-      <i data-lucide="wrench" style="width:16px;"></i> กำลังเตรียม <span class="tab-badge" id="cnt-preparing">0</span>
-    </div>
-    <div class="tab" id="tab-ready" onclick="switchTab('ready')">
-      <i data-lucide="package" style="width:16px;"></i> รอจัดส่ง <span class="tab-badge" id="cnt-ready">0</span>
-    </div>
-    <div class="tab" id="tab-cancelled" onclick="switchTab('cancelled')">
-      <i data-lucide="x-circle" style="width:16px;"></i> ยกเลิก <span class="tab-badge" id="cnt-cancelled" style="background:var(--red);">0</span>
-    </div>
-  </div>
+      <div class="input-group">
+        <i data-lucide="mail"></i>
+        <!-- เพิ่ม event onkeydown ให้รองรับการกด Enter -->
+        <input id="login-email" type="email" class="modern-input" placeholder="อีเมลผู้ใช้งาน" onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus();"/>
+      </div>
+      <div class="input-group">
+        <i data-lucide="lock"></i>
+        <!-- เพิ่ม event onkeydown ให้กด Enter แล้วล็อกอินทันที -->
+        <input id="login-password" type="password" class="modern-input" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter') doLogin();"/>
+      </div>
 
-  <!-- Content -->
-  <div id="tab-content">
-    <div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลดข้อมูล...</div>
-  </div>
-</div>
+      <button class="btn-login" id="btn-login-submit" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <a href="javascript:void(0);" class="forgot-btn" onclick="requestReset()">ลืมรหัสผ่าน? คลิกที่นี่</a>
+    </div>
 
-<!-- Confirm Modal -->
-<div id="action-modal" class="modal-bg hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <i data-lucide="wrench" class="modal-icon" id="modal-icon" style="width:48px;height:48px;color:var(--orange);"></i>
-      <div class="modal-title" id="modal-title">ยืนยัน</div>
-      <div class="modal-sub" id="modal-sub">กำลังดำเนินการ</div>
+    <!-- Step 2: 2FA Form -->
+    <div id="login-2fa-box" class="login-step step-right">
+      <div class="icon-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 10px 25px rgba(245,158,11,0.3);">
+        <i data-lucide="smartphone" style="width:36px;height:36px;"></i>
+      </div>
+      <div class="login-title">ยืนยันตัวตน 2FA</div>
+      <div class="login-subtitle">กรุณากรอกรหัส 6 หลักจากแอป Authenticator<br>หรือใช้รหัสกู้คืน (8 หลัก)</div>
+
+      <div class="input-group">
+        <i data-lucide="shield-check"></i>
+        <!-- เพิ่ม event onkeydown ให้กด Enter แล้วยืนยันทันที -->
+        <input id="login-2fa-code" type="text" class="modern-input" placeholder="รหัส 6 หลัก" maxlength="8" style="text-align:center;letter-spacing:4px;font-size:18px;font-weight:700;padding-left:20px;" onkeydown="if(event.key==='Enter') verifyLogin2FA();"/>
+      </div>
+
+      <button class="btn-login" id="btn-verify-2fa" style="background:#f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.2);" onclick="verifyLogin2FA()">ยืนยันการเข้าสู่ระบบ</button>
+      <a href="javascript:void(0);" class="forgot-btn" onclick="location.reload()">ยกเลิก / กลับไปหน้าแรก</a>
     </div>
-    <div class="modal-body">
-      <div class="order-info-box" id="modal-order-info"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button id="modal-confirm-btn" class="btn-confirm orange" onclick="doAction()">
-        <i data-lucide="check" style="width:16px;"></i> ยืนยัน
-      </button>
-    </div>
+
   </div>
 </div>
 
-<!-- Footer -->
-<div class="site-footer">
-  <p>หากมีปัญหาอะไรสามารถติดต่อ contact@ponrakitt.site</p>
-  <p>All rights reserved by wanflorist.net</p>
-  <p>Designed and co-developed by ponrakitt.site</p>
+<!-- Locked Overlay (2FA Setup Prompt) -->
+<div id="locked-overlay" class="hidden">
+  <!-- กล่องเตือนสำหรับบัญชีระดับ Warehouse (ให้ตั้งค่า 2FA ได้เลย) -->
+  <div class="locked-box" id="locked-box-warehouse" style="border: 1px solid rgba(249,115,22,0.3); border-top: 4px solid var(--orange);">
+    <div style="background: #fff7ed; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+      <i data-lucide="lock" style="width:40px;height:40px;color:var(--orange);"></i>
+    </div>
+    <h2 style="margin-bottom:12px;font-size:22px;font-weight:700;color:var(--text);">ระบบถูกล็อค</h2>
+    <p style="color:var(--text-light);font-size:14.5px;margin-bottom:32px;line-height:1.6;">บัญชีของคุณยังไม่ได้ตั้งค่าการยืนยันตัวตนแบบ 2 ขั้นตอน (2FA) <br>กรุณาตั้งค่าเพื่อความปลอดภัยในการเข้าใช้งานระบบ</p>
+    <button class="btn-login" style="background:var(--orange); box-shadow:0 4px 12px rgba(249,115,22,0.2);" onclick="setup2FAFlow()">ตั้งค่า 2FA ตอนนี้</button>
+    <button class="btn btn-outline" style="width:100%; margin-top:16px; justify-content:center; padding:12px; border-radius:12px;" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+
+  <!-- กล่องเตือนสำหรับบัญชีระดับ Admin/Superadmin (บังคับให้กลับไปตั้ง 2FA ที่หน้า Admin) -->
+  <div class="locked-box hidden" id="locked-box-admin" style="border: 1px solid rgba(37,99,235,0.3); border-top: 4px solid var(--blue);">
+    <div style="background: #eff6ff; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+      <i data-lucide="shield-alert" style="width:40px;height:40px;color:var(--blue);"></i>
+    </div>
+    <h2 style="margin-bottom:12px;font-size:22px;font-weight:700;color:var(--text);">ระบบถูกล็อค (บัญชีผู้ดูแล)</h2>
+    <p style="color:var(--text-light);font-size:14.5px;margin-bottom:32px;line-height:1.6;">บัญชีระดับแอดมินของคุณยังไม่ได้ตั้งค่าความปลอดภัย 2FA<br>กรุณากลับไปตั้งค่าที่ <b>หน้าจัดการ Admin Panel</b></p>
+    <button class="btn-login" style="background:var(--blue); box-shadow:0 4px 12px rgba(37,99,235,0.2);" onclick="window.location.href='admin.html'">ไปที่หน้า Admin Panel</button>
+    <button class="btn btn-outline" style="width:100%; margin-top:16px; justify-content:center; padding:12px; border-radius:12px;" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</div>
+
+<!-- 2FA Setup Modal -->
+<div id="setup-2fa-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:440px; text-align:center;">
+    <div class="modal-header" style="justify-content:center; position:relative; padding:0 0 16px;">
+      <span class="modal-title" style="color:var(--orange);">ตั้งค่าความปลอดภัย (2FA)</span>
+      <button class="close-btn" style="position:absolute; right:0; top:-10px;" onclick="closeModal('setup-2fa-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body" style="padding:16px 0 0;">
+      <p style="font-size:14px;color:var(--text-light);margin-bottom:24px;line-height:1.6;">สแกน QR Code ด้วย Google Authenticator<br><span style="color:var(--muted);font-size:13px;">รหัสจะเปลี่ยนใหม่ทุกๆ 30 วินาที</span></p>
+      <div id="setup-qr-canvas" style="display:flex;justify-content:center;margin-bottom:20px; padding:16px; background:#f8fafc; border-radius:16px; border:1px dashed var(--border); display:inline-block;"></div>
+      <p style="font-family:monospace;font-size:16px;font-weight:700;color:var(--blue);margin-bottom:20px;letter-spacing:1.5px;background:var(--blue-light);padding:8px;border-radius:8px;" id="setup-secret-text"></p>
+      <input id="setup-2fa-code" type="text" class="modern-input" placeholder="กรอกรหัส 6 หลัก" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:20px;font-weight:700; margin-bottom:16px;"/>
+      <button class="btn-login" style="background:var(--orange); box-shadow:0 4px 12px rgba(249,115,22,0.2);" onclick="confirmSetup2FA()">ยืนยันและเปิดใช้งาน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Backup Codes Modal -->
+<div id="backup-codes-modal" class="modal-bg hidden" style="z-index:9999;">
+  <div class="modal" style="max-width:540px; text-align:center;">
+    <div class="modal-header" style="justify-content:center; position:relative; background:#f0fdf4; border-bottom-color:#bbf7d0; padding:20px; margin:-32px -32px 20px; border-radius:24px 24px 0 0;">
+      <span class="modal-title" style="color:var(--green); display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check"></i> รหัสกู้คืน (Backup Codes)
+      </span>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="background:#fef2f2; border:1px solid #fecaca; padding:16px; border-radius:12px; margin-bottom:20px;">
+        <p style="font-size:13.5px;color:var(--red); font-weight:600; line-height:1.6;">
+          <i data-lucide="alert-triangle" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i> สำคัญมาก! กรุณาบันทึกรหัสเหล่านี้ไว้ในที่ปลอดภัย
+        </p>
+        <p style="font-size:12.5px; color:#991b1b; margin-top:4px;">หากคุณไม่สามารถใช้แอป 2FA ได้ สามารถใช้รหัสเหล่านี้ล็อกอินแทนได้ (1 รหัสต่อ 1 ครั้ง)</p>
+      </div>
+      <div id="backup-codes-list" style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:20px; max-height:220px; overflow-y:auto; font-family:'Courier New', monospace; font-size:15px; font-weight:600; text-align:left; letter-spacing:2px; display:grid; grid-template-columns:1fr 1fr; gap:12px; color:var(--text);">
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <button class="btn btn-outline" style="flex:1; justify-content:center; padding:12px;" onclick="copyBackupCodes()"><i data-lucide="copy" style="width:18px;"></i> คัดลอกรหัสทั้งหมด</button>
+        <button class="btn-login" style="flex:1; background:var(--green); box-shadow:0 4px 12px rgba(16,185,129,0.2);" onclick="finish2FASetup()">ฉันบันทึกแล้ว ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="change-pw-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:440px; text-align:left;">
+    <div class="modal-header" style="padding:0 0 16px;">
+      <span class="modal-title">เปลี่ยนรหัสผ่าน</span>
+      <button class="close-btn" style="position:relative; top:-5px;" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+    </div>
+    <div class="modal-body" style="padding:16px 0 0;">
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>รหัสผ่านเดิม</label>
+        <input id="cpw-old" type="password" class="modern-input" placeholder="กรอกรหัสผ่านปัจจุบัน"/>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>รหัสผ่านใหม่ <span style="font-size:11px;color:var(--muted);font-weight:normal;">(อักษรใหญ่, เล็ก, ตัวเลข, 8 ตัวอักษรขึ้นไป)</span></label>
+        <input id="cpw-new" type="password" class="modern-input" placeholder="กรอกรหัสผ่านใหม่"/>
+      </div>
+      <div class="form-group" style="margin-bottom:24px;">
+        <label>รหัสยืนยัน 2FA / รหัสกู้คืน</label>
+        <input id="cpw-2fa" type="text" class="modern-input" placeholder="รหัส 6 หลัก หรือ รหัส 8 หลัก" maxlength="8" style="letter-spacing:1px;"/>
+      </div>
+      <button class="btn-login" id="btn-change-pw" onclick="submitChangePassword()">อัปเดตรหัสผ่าน</button>
+    </div>
+  </div>
+</div>
+
+<div id="app-content" class="locked-content">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="icon-box"><i data-lucide="package" style="width:20px;height:20px;"></i></div>
+      <h1>Warehouse Panel</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" id="btn-change-pw-top" onclick="showModal('change-pw-modal')"><i data-lucide="key" style="width:14px;"></i> เปลี่ยนรหัส</button>
+      <button class="btn btn-outline btn-sm" onclick="loadAllOrders()"><i data-lucide="refresh-cw" style="width:14px;"></i> โหลดข้อมูล</button>
+      <button class="btn btn-danger btn-sm" onclick="doLogout()"><i data-lucide="log-out" style="width:14px;"></i></button>
+      <div style="width:1px; height:24px; background:var(--border); margin:0 4px;"></div>
+      <span class="badge-user" id="user-badge"><i data-lucide="user" style="width:14px;height:14px;"></i> Role</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats" id="stats-grid">
+      <div class="stat-card sc-yellow">
+        <div class="stat-info">
+          <div class="stat-label">ออเดอร์เข้าใหม่ (รอเริ่มงาน)</div>
+          <div class="stat-num" id="s-pending">—</div>
+        </div>
+        <div class="stat-icon-wrap"><i data-lucide="clock" style="width:24px;height:24px;"></i></div>
+      </div>
+      <div class="stat-card sc-orange">
+        <div class="stat-info">
+          <div class="stat-label">กำลังจัดเตรียมสินค้า</div>
+          <div class="stat-num" id="s-preparing">—</div>
+        </div>
+        <div class="stat-icon-wrap"><i data-lucide="wrench" style="width:24px;height:24px;"></i></div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-info">
+          <div class="stat-label">แพ็คเสร็จแล้ว (รอส่ง)</div>
+          <div class="stat-num" id="s-ready">—</div>
+        </div>
+        <div class="stat-icon-wrap"><i data-lucide="package-check" style="width:24px;height:24px;"></i></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i data-lucide="clipboard-list" style="width:20px;color:var(--orange);"></i> งานคลังสินค้าวันนี้</span>
+        <div class="filter-bar">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="search-input" placeholder="สแกน หรือ พิมพ์รหัส Tracking / สินค้า..." oninput="filterOrders()"/>
+          </div>
+          <button class="filter-btn active" data-filter="all_active" onclick="setFilter(this,'all_active')">งานทั้งหมด</button>
+          <button class="filter-btn" data-filter="pending" onclick="setFilter(this,'pending')">รอเริ่มงาน</button>
+          <button class="filter-btn" data-filter="preparing" onclick="setFilter(this,'preparing')">กำลังเตรียม</button>
+          <button class="filter-btn" data-filter="ready" onclick="setFilter(this,'ready')">รอส่ง</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div id="orders-table"><div class="loading"><i data-lucide="loader-2" class="spin"></i>กำลังโหลดข้อมูลคลังสินค้า...</div></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="site-footer">
+      <p style="font-weight:600; color:var(--text-light);">ระบบจัดการคลังสินค้า (Warehouse System v2.0)</p>
+      <p>หากพบปัญหาในการใช้งาน กรุณาติดต่อ <a href="mailto:contact@ponrakitt.site" style="color:var(--orange);text-decoration:none;font-weight:500;">contact@ponrakitt.site</a></p>
+      <p style="margin-top:8px; opacity:0.6; font-size:12px;">&copy; All rights reserved by wanflorist.net | Designed by ponrakitt.site</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT AREA (ใบปะหน้า) -->
+<div id="print-area">
+  <div class="print-card" id="print-card-content">
+    <!-- Content injected via JS -->
+  </div>
 </div>
 
 <script>
+function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
+const TRACKING_BASE = window.location.origin + window.location.pathname.replace('warehouse.html', 'tracking.html');
+const DELIVERY_BASE = window.location.origin + window.location.pathname.replace('warehouse.html', 'delivery.html');
 
 let allOrders = [];
-let currentTab = 'pending';
-let pendingAction = null;
+let currentFilter = 'all_active';
+let loginTempToken = '';
+let currentUser = { email: localStorage.getItem('userEmail'), token: localStorage.getItem('userToken'), role: localStorage.getItem('userRole') };
+let generatedBackupCodes = [];
 
-document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+document.addEventListener('DOMContentLoaded', () => { 
+  lucide.createIcons(); 
+  checkLoginState();
 
-async function api(payload) {
-  const res = await fetch(SCRIPT_URL, {
-    method:'POST', headers:{'Content-Type': 'text/plain;charset=utf-8'},
-    body: JSON.stringify(payload)
+  document.querySelectorAll('.modal-bg').forEach(el=>{
+    el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
   });
-  return res.json();
-}
-
-async function loadOrders() {
-  document.getElementById('tab-content').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:8px;"></i><br>กำลังโหลด...</div>';
-  lucide.createIcons();
-  const res = await api({action:'getAllOrders'});
-  if(!res.success){
-    document.getElementById('tab-content').innerHTML='<div class="empty"><i data-lucide="x-circle" class="empty-icon" style="width:48px;height:48px;color:var(--red);"></i><div class="empty-text">โหลดข้อมูลไม่สำเร็จ</div></div>';
-    lucide.createIcons();
-    return;
-  }
-  allOrders = res.orders;
-  updateCounts();
-  renderTab(currentTab);
-}
-
-function updateCounts() {
-  ['pending','preparing','ready','cancelled'].forEach(s=>{
-    document.getElementById('cnt-'+s).textContent = allOrders.filter(o=>o.status===s).length;
-  });
-}
-
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  renderTab(tab);
-}
-
-function fmtDate(iso) {
-  if(!iso)return'—';
-  const d=new Date(iso);
-  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-}
-
-function renderTab(status) {
-  const list = allOrders.filter(o=>o.status===status);
-  const container = document.getElementById('tab-content');
-
-  if(!list.length){
-    const msgs = {
-      pending:'ไม่มีออเดอร์รอดำเนินการ',
-      preparing:'ไม่มีออเดอร์ที่กำลังเตรียม',
-      ready:'ไม่มีออเดอร์ที่รอจัดส่ง',
-      cancelled:'ไม่มีออเดอร์ที่ถูกยกเลิก'
-    };
-    const icons = {
-      pending:'check-circle',
-      preparing:'mailbox',
-      ready:'mailbox',
-      cancelled:'x-circle'
-    };
-    container.innerHTML = `<div class="empty"><i data-lucide="${icons[status]}" class="empty-icon" style="width:48px;height:48px;"></i>
-      <div class="empty-text">${msgs[status]||'ไม่มีรายการ'}</div>
-      <div class="empty-sub">กดรีเฟรชเพื่ออัปเดตข้อมูล</div></div>`;
-    lucide.createIcons();
-    return;
-  }
-
-  const topColors = {pending:'yellow-top', preparing:'', ready:'green-top', cancelled:'red-top'};
-  const badgeClass = {pending:'b-pending', preparing:'b-preparing', ready:'b-ready', cancelled:'b-cancelled'};
- 
-  const bTexts = {
-    pending: '<i data-lucide="clock" style="width:12px;"></i> รอดำเนินการ',
-    preparing: '<i data-lucide="wrench" style="width:12px;"></i> กำลังเตรียม',
-    ready: '<i data-lucide="package" style="width:12px;"></i> รอจัดส่ง',
-    cancelled: '<i data-lucide="x-circle" style="width:12px;"></i> ยกเลิกแล้ว'
-  };
-
-  container.innerHTML = `<div class="cards-grid">${list.map(o=>`
-    <div class="order-card ${topColors[o.status]||''}">
-      <div class="oc-header">
-        <span class="oc-tid">${o.tracking_id}</span>
-        <span class="oc-badge ${badgeClass[o.status]}">${bTexts[o.status]}</span>
-      </div>
-      <div class="oc-name"><i data-lucide="user" style="width:14px;color:var(--muted);"></i> ${o.customer_name}</div>
-      <div class="oc-product"><i data-lucide="package" style="width:14px;color:var(--muted);"></i> ${o.product_name}</div>
-      <div class="oc-address"><i data-lucide="map-pin" style="width:14px;flex-shrink:0;margin-top:2px;"></i> <div>${o.delivery_address}</div></div>
-      <div class="oc-time">สร้างเมื่อ: ${fmtDate(o.created_at)}</div>
-      <div class="oc-actions">
-        ${status==='pending'?`<button class="btn-action btn-start" onclick="openConfirm('${o.tracking_id}','preparing')"><i data-lucide="wrench" style="width:16px;"></i> เริ่มเตรียมสินค้า</button>`:''}
-        ${status==='preparing'?`<button class="btn-action btn-done" onclick="openConfirm('${o.tracking_id}','ready')"><i data-lucide="check" style="width:16px;"></i> เตรียมเสร็จแล้ว — รอจัดส่ง</button>`:''}
-        ${status==='ready'?`<button class="btn-action btn-info" disabled style="opacity:.6;cursor:not-allowed;"><i data-lucide="truck" style="width:16px;"></i> รอผู้จัดส่งรับงาน</button>`:''}
-        ${status==='cancelled'?`<div style="color:var(--red);font-size:13px;text-align:center;padding:10px;background:#fef2f2;border-radius:10px;font-weight:500;"><i data-lucide="alert-circle" style="width:16px;display:inline-block;vertical-align:text-bottom;"></i> ออเดอร์ถูกยกเลิกการทำงานแล้ว</div>`:''}
-      </div>
-    </div>`).join('')}
-  </div>`;
-  lucide.createIcons();
-}
-
-function openConfirm(tid, toStatus) {
-  const order = allOrders.find(o=>o.tracking_id===tid);
-  if(!order) return;
-
-  pendingAction = {trackingId:tid, status:toStatus};
-
-  const configs = {
-    preparing: {icon:'wrench', color:'var(--orange)', title:'เริ่มเตรียมสินค้า', sub:'ยืนยันว่าเริ่มจัดเตรียมสินค้าแล้ว', btnClass:'orange', btnText:'เริ่มเตรียมสินค้า'},
-    ready:     {icon:'check-circle', color:'var(--green)', title:'เตรียมสินค้าเสร็จแล้ว', sub:'ยืนยันว่าสินค้าพร้อมสำหรับจัดส่ง', btnClass:'', btnText:'ยืนยันเตรียมเสร็จ'},
-  };
-  const cfg = configs[toStatus];
-
-  const iconEl = document.getElementById('modal-icon');
-  iconEl.setAttribute('data-lucide', cfg.icon);
-  iconEl.style.color = cfg.color;
- 
-  document.getElementById('modal-title').textContent = cfg.title;
-  document.getElementById('modal-sub').textContent   = cfg.sub;
-
-  const btn = document.getElementById('modal-confirm-btn');
-  btn.innerHTML = `<i data-lucide="check" style="width:16px;"></i> ${cfg.btnText}`;
-  btn.className = 'btn-confirm' + (cfg.btnClass?' '+cfg.btnClass:'');
-
-  document.getElementById('modal-order-info').innerHTML = `
-    <div class="order-info-row">
-      <span class="order-info-label">เลขติดตาม</span>
-      <span class="order-info-value" style="font-family:monospace;color:var(--blue);">${order.tracking_id}</span>
-    </div>
-    <div class="order-info-row">
-      <span class="order-info-label">ชื่อลูกค้า</span>
-      <span class="order-info-value">${order.customer_name}</span>
-    </div>
-    <div class="order-info-row">
-      <span class="order-info-label">สินค้า</span>
-      <span class="order-info-value">${order.product_name}</span>
-    </div>
-    <div class="order-info-row">
-      <span class="order-info-label">ที่อยู่</span>
-      <span class="order-info-value">${order.delivery_address}</span>
-    </div>
-  `;
-  document.getElementById('action-modal').classList.remove('hidden');
-  lucide.createIcons();
-}
-
-async function doAction() {
-  if(!pendingAction) return;
-  const btn = document.getElementById('modal-confirm-btn');
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังตรวจสอบ...';
-  lucide.createIcons();
-  btn.disabled = true;
-
-  // ตรวจสอบสถานะล่าสุดจากเซิร์ฟเวอร์ก่อนเสมอ ป้องกันกรณี Admin กดยกเลิกไปแล้ว
-  const checkRes = await api({action:'getOrder', trackingId: pendingAction.trackingId});
-  if(checkRes.success && checkRes.order.status === 'cancelled') {
-     alert('❌ ออเดอร์นี้ถูกยกเลิกโดย Admin ไปแล้ว! ระบบจะตัดจบการทำงานของรายการนี้');
-     closeModal();
-     await loadOrders(); // รีโหลดเพื่อดึงข้อมูลใหม่มาแสดง
-     return;
-  }
-
-  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:16px;"></i> กำลังบันทึก...';
-  lucide.createIcons();
-
-  const statusNotes = {
-    preparing:'เริ่มจัดเตรียมสินค้าแล้ว',
-    ready:'เตรียมสินค้าเสร็จแล้ว รอการจัดส่ง'
-  };
-
-  const res = await api({
-    action:'updateStatus',
-    trackingId: pendingAction.trackingId,
-    status: pendingAction.status,
-    notes: statusNotes[pendingAction.status]||'',
-    updatedBy:'warehouse'
-  });
-
-  if(res.success){
-    closeModal();
-    await loadOrders();
-    Swal.fire({title: 'อัปเดตสถานะสำเร็จ!', icon: 'success', timer: 1500, showConfirmButton: false});
-  } else {
-    Swal.fire('ข้อผิดพลาด', res.message||'เกิดข้อผิดพลาด', 'error');
-    closeModal();
-    await loadOrders(); // โหลดข้อมูลใหม่เผื่อรายการถูก Cancel ไปแล้ว
-  }
-}
-
-function closeModal(){
-  document.getElementById('action-modal').classList.add('hidden');
-  pendingAction = null;
-}
-
-document.getElementById('action-modal').addEventListener('click', e=>{
-  if(e.target===document.getElementById('action-modal')) closeModal();
 });
 
-loadOrders();
+async function api(payload) {
+  if (currentUser.email) payload.email = currentUser.email;
+  if (currentUser.token) payload.token = currentUser.token;
+  const res = await fetch(SCRIPT_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if (data.message === 'Unauthorized' && payload.action !== 'login' && payload.action !== 'verifyLogin2FA') {
+    Swal.fire({ title: 'เซสชันหมดอายุ', text: 'กรุณาเข้าสู่ระบบใหม่อีกครั้ง', icon: 'warning', allowOutsideClick: false }).then(() => doLogout());
+  }
+  return data;
+}
+
+// ฟังก์ชันตรวจสอบสิทธิ์ก่อนแก้ไขข้อมูล (Admin ต้องไปทำที่ admin.html)
+function checkWarehouseSettingPermission() {
+  const role = currentUser.role || '';
+  if (role === 'admin' || role === 'superadmin') {
+      Swal.fire('ข้อจำกัดสิทธิ์', 'บัญชีระดับ Admin กรุณาตั้งค่ารหัสผ่านและ 2FA ที่หน้าจัดการ Admin Panel หลัก', 'warning');
+      return false;
+  }
+  return true;
+}
+
+function checkLoginState() {
+  if (currentUser.token) {
+    document.getElementById('login-overlay').classList.add('hidden');
+    
+    const role = currentUser.role || '';
+    if (!['warehouse', 'admin', 'superadmin'].includes(role)) {
+      Swal.fire({ title: 'ปฏิเสธการเข้าถึง', text: 'คุณไม่มีสิทธิ์เข้าใช้งานหน้าคลังสินค้า', icon: 'error', allowOutsideClick: false }).then(() => doLogout());
+      return;
+    }
+    
+    document.getElementById('user-badge').innerHTML = `<i data-lucide="user" style="width:14px;height:14px;"></i> ${role.toUpperCase()}`;
+    
+    // ซ่อนปุ่มเปลี่ยนรหัส หากเป็นแอดมิน
+    if (role === 'admin' || role === 'superadmin') {
+       document.getElementById('btn-change-pw-top').style.display = 'none';
+    } else {
+       document.getElementById('btn-change-pw-top').style.display = 'inline-flex';
+    }
+
+    lucide.createIcons();
+    
+    if (localStorage.getItem('twoFactorEnabled') === 'true') {
+      document.getElementById('app-content').classList.remove('locked-content');
+      document.getElementById('locked-overlay').classList.add('hidden');
+      loadAllOrders();
+    } else {
+      document.getElementById('app-content').classList.add('locked-content');
+      document.getElementById('locked-overlay').classList.remove('hidden');
+
+      // ปรับ UI หน้า Locked ตาม Role
+      if (role === 'admin' || role === 'superadmin') {
+        document.getElementById('locked-box-warehouse').classList.add('hidden');
+        document.getElementById('locked-box-admin').classList.remove('hidden');
+      } else {
+        document.getElementById('locked-box-warehouse').classList.remove('hidden');
+        document.getElementById('locked-box-admin').classList.add('hidden');
+      }
+    }
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value.trim();
+  if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
+
+  const btn = document.getElementById('btn-login-submit');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;"></i> กำลังตรวจสอบ...';
+  btn.disabled = true; lucide.createIcons();
+  
+  await new Promise(r => setTimeout(r, 600));
+  
+  try {
+    const res = await api({ action: 'login', password: pass, email: email, page: 'Warehouse Panel' });
+    btn.innerHTML = originalText; btn.disabled = false;
+    
+    if (res.success) {
+      if (email === 'ponrakitt@outlook.co.th') res.role = 'superadmin';
+      if (!['warehouse', 'admin', 'superadmin'].includes(res.role)) {
+        Swal.fire('ปฏิเสธการเข้าถึง', 'คุณไม่มีสิทธิ์เข้าใช้งานหน้าคลังสินค้า', 'error'); return;
+      }
+
+      currentUser.email = email; currentUser.role = res.role;
+      localStorage.setItem('userEmail', email); localStorage.setItem('userRole', res.role);
+
+      if (res.require2FA) {
+        loginTempToken = res.tempToken;
+        // ทำ Animation Slide เปลี่ยนหน้าแบบไร้รอยต่อ
+        document.getElementById('login-form-box').classList.remove('step-active');
+        document.getElementById('login-form-box').classList.add('step-left');
+        document.getElementById('login-2fa-box').classList.remove('hidden'); // ลบ hidden ก่อนให้ transition ทำงาน
+        document.getElementById('login-2fa-box').classList.remove('step-right');
+        document.getElementById('login-2fa-box').classList.add('step-active');
+      } else {
+        currentUser.token = res.token; localStorage.setItem('userToken', res.token);
+        localStorage.setItem('twoFactorEnabled', 'false');
+        checkLoginState();
+      }
+    } else {
+      Swal.fire('ข้อผิดพลาด', res.message, 'error');
+    }
+  } catch (error) {
+      btn.innerHTML = originalText; btn.disabled = false;
+      Swal.fire('ข้อผิดพลาดในการเชื่อมต่อ', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ โปรดลองอีกครั้ง', 'error');
+  }
+}
+
+async function verifyLogin2FA() {
+  const code = document.getElementById('login-2fa-code').value.trim();
+  if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส', 'warning');
+  
+  const btn = document.getElementById('btn-verify-2fa');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:6px;"></i> กำลังยืนยันความถูกต้อง...';
+  btn.disabled = true; lucide.createIcons();
+
+  await new Promise(r => setTimeout(r, 600));
+  
+  try {
+    const res = await api({ action: 'verifyLogin2FA', tempToken: loginTempToken, code: code, page: 'Warehouse Panel' });
+    btn.innerHTML = originalText; btn.disabled = false;
+
+    if (res.success) {
+      currentUser.token = res.token; localStorage.setItem('userToken', res.token);
+      localStorage.setItem('twoFactorEnabled', 'true');
+      checkLoginState();
+    } else {
+      Swal.fire('ข้อผิดพลาด', res.message, 'error');
+    }
+  } catch (error) {
+      btn.innerHTML = originalText; btn.disabled = false;
+      Swal.fire('ข้อผิดพลาดในการเชื่อมต่อ', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ โปรดลองอีกครั้ง', 'error');
+  }
+}
+
+function doLogout() { localStorage.clear(); location.reload(); }
+
+async function requestReset() {
+  const { value: email } = await Swal.fire({
+    title: 'ลืมรหัสผ่าน',
+    input: 'email',
+    inputLabel: 'ใส่อีเมลของคุณเพื่อขอรีเซ็ตรหัสผ่าน',
+    showCancelButton: true,
+    confirmButtonColor: 'var(--orange)',
+    confirmButtonText: 'ส่งคำขอรหัสผ่านใหม่',
+    cancelButtonText: 'ยกเลิก'
+  });
+  if (email) {
+    Swal.fire({ title: 'กำลังส่งคำขอ', didOpen: () => Swal.showLoading() });
+    const res = await api({ action: 'requestPasswordReset', email: email });
+    if(res.success) Swal.fire('ส่งคำขอสำเร็จ', 'ระบบส่งคำขอแล้ว กรุณารอ Super Admin รีเซ็ตรหัสผ่านให้และจะแจ้งเตือนทางอีเมล', 'success');
+    else Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+// ── 2FA Setup & Settings ────────────────────────────────────────
+async function setup2FAFlow() {
+  if (!checkWarehouseSettingPermission()) return;
+  showModal('setup-2fa-modal');
+  const res = await api({ action: 'get2FASecret' });
+  if (res.success) {
+    document.getElementById('setup-qr-canvas').innerHTML = '';
+    new QRCode(document.getElementById('setup-qr-canvas'), { text: res.otpauth, width: 160, height: 160 });
+    document.getElementById('setup-secret-text').textContent = res.secret;
+  }
+}
+
+async function confirmSetup2FA() {
+  const code = document.getElementById('setup-2fa-code').value.trim();
+  if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส 6 หลัก', 'warning');
+  
+  const btn = document.querySelector('#setup-2fa-modal .login-btn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:6px;"></i> กำลังยืนยันความถูกต้อง...';
+  btn.disabled = true; lucide.createIcons();
+  
+  const res = await api({ action: 'enable2FA', code: code });
+  
+  btn.innerHTML = originalText; btn.disabled = false;
+  
+  if (res.success) {
+    localStorage.setItem('twoFactorEnabled', 'true');
+    closeModal('setup-2fa-modal');
+    
+    generatedBackupCodes = res.backupCodes || [];
+    const listEl = document.getElementById('backup-codes-list');
+    listEl.innerHTML = generatedBackupCodes.map(c => `<div><span style="opacity:0.5;margin-right:6px;">•</span>${c}</div>`).join('');
+    showModal('backup-codes-modal');
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+function copyBackupCodes() {
+  const text = generatedBackupCodes.join('\n');
+  const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+  Swal.fire({title: 'คัดลอกสำเร็จ', text: 'บันทึกรหัสไว้ในที่ปลอดภัยแล้วใช่ไหม?', icon: 'success', timer: 2000, showConfirmButton: false});
+}
+
+function finish2FASetup() {
+  closeModal('backup-codes-modal');
+  document.getElementById('locked-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('locked-content');
+  Swal.fire('ยินดีต้อนรับ', 'เปิดใช้งาน 2FA เสร็จสมบูรณ์', 'success');
+  checkLoginState();
+}
+
+async function submitChangePassword() {
+  if (!checkWarehouseSettingPermission()) return;
+  const oldP = document.getElementById('cpw-old').value;
+  const newP = document.getElementById('cpw-new').value;
+  const code = document.getElementById('cpw-2fa').value;
+  
+  if(!oldP || !newP || !code) return Swal.fire('แจ้งเตือน', 'กรอกข้อมูลให้ครบทุกช่อง', 'warning');
+  if(newP.length < 8 || !/[a-z]/.test(newP) || !/[A-Z]/.test(newP) || !/[0-9]/.test(newP)) {
+    return Swal.fire('แจ้งเตือน', 'รหัสผ่านต้องมี 8 ตัวขึ้นไป และประกอบด้วยอักษรพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลขอย่างน้อย 1 ตัว', 'warning');
+  }
+
+  const btn = document.getElementById('btn-change-pw');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังเปลี่ยนรหัสผ่าน...';
+  btn.disabled = true; lucide.createIcons();
+
+  await new Promise(r => setTimeout(r, 600));
+
+  const res = await api({ action: 'changePassword', oldPassword: oldP, newPassword: newP, code2fa: code });
+  
+  btn.innerHTML = originalText; btn.disabled = false;
+
+  if (res.success) {
+    closeModal('change-pw-modal');
+    Swal.fire('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', 'success');
+    document.getElementById('cpw-old').value = ''; document.getElementById('cpw-new').value = ''; document.getElementById('cpw-2fa').value = '';
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
+}
+
+// ── Warehouse Functions ───────────────────────────────
+const STATUS_TH = { pending:'รอเริ่มงาน', preparing:'กำลังเตรียมสินค้า', ready:'เตรียมเสร็จ รอจัดส่ง' };
+const STATUS_ICON = { pending:'clock', preparing:'wrench', ready:'package-check' };
+
+function statusBadge(s) { 
+  const classes = { pending:'s-pending', preparing:'s-preparing', ready:'s-ready' };
+  return `<span class="status ${classes[s]||''}"><i data-lucide="${STATUS_ICON[s]||'package'}" style="width:14px;height:14px;"></i> ${STATUS_TH[s]||s}</span>`; 
+}
+function fmtDate(iso) { 
+  if (!iso) return '—'; const d = new Date(iso); 
+  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); 
+}
+
+async function loadAllOrders() {
+  if(!currentUser.token) return;
+  const res = await api({action:'getAllOrders'});
+  if(!res.success) return;
+  allOrders = res.orders.reverse();
+  renderStats();
+  renderOrdersTable();
+}
+
+function renderStats() {
+  const count = (s) => allOrders.filter(o=>o.status===s).length;
+  document.getElementById('s-pending').textContent = count('pending');
+  document.getElementById('s-preparing').textContent= count('preparing');
+  document.getElementById('s-ready').textContent = count('ready');
+}
+
+function renderOrdersTable() {
+  let list = allOrders;
+  
+  if(currentFilter === 'all_active') {
+    list = list.filter(o => ['pending', 'preparing', 'ready'].includes(o.status));
+  } else if (currentFilter) {
+    list = list.filter(o => o.status === currentFilter);
+  }
+
+  const q = document.getElementById('search-input').value.toLowerCase();
+  if(q) list = list.filter(o=>(o.tracking_id||'').toLowerCase().includes(q) || (o.product_name||'').toLowerCase().includes(q) || (o.customer_name||'').toLowerCase().includes(q));
+  
+  const el = document.getElementById('orders-table');
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:50px;color:var(--muted);"><i data-lucide="package-open" style="width:48px;height:48px;margin-bottom:16px;opacity:0.5;"></i><br>ไม่มีงานคลังสินค้าในขณะนี้</div>'; 
+    lucide.createIcons(); 
+    return;
+  }
+  
+  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>รหัสอ้างอิง / Tracking</th><th>รายการสินค้า</th><th>ลูกค้า</th><th>สถานะงาน</th><th style="text-align:right;">การทำงาน</th></tr></thead><tbody>${list.map(o=>{
+    
+    let actionBtn = '';
+    if (o.status === 'pending') {
+      actionBtn = `<button class="btn btn-outline" style="padding:8px 16px; color:var(--orange); border-color:var(--orange);" onclick="changeStatus('${o.tracking_id}','preparing')"><i data-lucide="play-circle" style="width:16px;"></i> เริ่มจัดเตรียมของ</button>`;
+    } else if (o.status === 'preparing') {
+      actionBtn = `<button class="btn btn-green" style="padding:8px 16px;" onclick="changeStatus('${o.tracking_id}','ready')"><i data-lucide="check-circle" style="width:16px;"></i> แพ็คเสร็จสิ้น</button>`;
+    } else if (o.status === 'ready') {
+      actionBtn = `<button class="btn btn-primary" style="padding:8px 16px; background:var(--navy);" onclick="generateLabel('${o.tracking_id}')"><i data-lucide="printer" style="width:16px;"></i> พิมพ์ใบปะหน้า</button>`;
+    } else {
+      actionBtn = `<span style="font-size:13px;color:var(--muted);">ส่งต่อแล้ว</span>`;
+    }
+
+    return `<tr>
+      <td><span class="tid">${o.tracking_id}</span><div style="font-size:11px;color:var(--muted);margin-top:4px;">${fmtDate(o.created_at)}</div></td>
+      <td style="font-weight:600; color:var(--text); font-size:15px; max-width:250px;">${o.product_name||'—'}</td>
+      <td style="font-size:13.5px; color:var(--text-light);">${o.customer_name||'—'}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="text-align:right;">${actionBtn}</td>
+    </tr>`;
+  }).join('')}</tbody></table></div>`;
+  lucide.createIcons();
+}
+
+function setFilter(el, filter) { 
+  currentFilter = filter; 
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); 
+  el.classList.add('active'); 
+  renderOrdersTable(); 
+}
+function filterOrders() { renderOrdersTable(); }
+
+async function changeStatus(tid, status) {
+  const statusNames = { preparing: 'กำลังเตรียมสินค้า', ready: 'เตรียมเสร็จ รอจัดส่ง' };
+  const actionNames = { preparing: 'เริ่มจัดเตรียม', ready: 'แพ็คเสร็จสิ้น' };
+  
+  const res = await Swal.fire({ 
+    title: actionNames[status], 
+    html: `ยืนยันการเปลี่ยนสถานะออเดอร์<br><b style="font-family:monospace;font-size:18px;color:var(--orange);">${tid}</b><br>เป็น <b>${statusNames[status]}</b>?`, 
+    icon: 'question', showCancelButton: true, confirmButtonColor: 'var(--orange)', confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก' 
+  });
+  if(!res.isConfirmed) return;
+  
+  Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+  const result = await api({action:'updateStatus', trackingId:tid, status, updatedBy: currentUser.role});
+  
+  if(result.success){ 
+    await loadAllOrders(); 
+    Swal.fire({title:'บันทึกสำเร็จ', icon:'success', timer: 1500, showConfirmButton: false});
+    
+    // หากแพ็คเสร็จ ถามว่าต้องการพิมพ์ใบปะหน้าเลยหรือไม่
+    if (status === 'ready') {
+      setTimeout(() => {
+        Swal.fire({
+          title: 'แพ็คเสร็จเรียบร้อย',
+          text: 'ต้องการพิมพ์ใบปะหน้ากล่อง (Label) ทันทีหรือไม่?',
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonColor: 'var(--navy)',
+          confirmButtonText: '<i class="lucide-printer"></i> พิมพ์ใบปะหน้า',
+          cancelButtonText: 'ไว้ทีหลัง'
+        }).then((r) => {
+          if(r.isConfirmed) generateLabel(tid);
+        });
+      }, 1600);
+    }
+  } else { 
+    Swal.fire('ข้อผิดพลาด', result.message, 'error'); 
+  }
+}
+
+// ฟังก์ชันสร้างและพิมพ์ใบปะหน้า (Shipping Label)
+function generateLabel(tid) {
+  const order = allOrders.find(o => o.tracking_id === tid);
+  if(!order) return Swal.fire('Error', 'ไม่พบข้อมูลออเดอร์', 'error');
+
+  const dUrl = `${DELIVERY_BASE}?id=${tid}`;
+  
+  // สร้าง QR ใหม่ที่ถูกซ่อนไว้สำหรับดึงไปพิมพ์
+  const tempDiv = document.createElement('div');
+  new QRCode(tempDiv, { text: dUrl, width: 120, height: 120, colorDark: '#000000', correctLevel: QRCode.CorrectLevel.H });
+  
+  // รอให้ QR Code Gen เสร็จ
+  setTimeout(() => {
+    const qrImg = tempDiv.querySelector('img').src;
+    
+    const printHtml = `
+      <div class="print-header">
+        <div>
+          <div class="print-title">TRACKING LABEL</div>
+          <div class="print-tid">${order.tracking_id}</div>
+          <div style="margin-top:10px; font-size:12px; color:#666;">Date: ${new Date().toLocaleDateString('en-GB')}</div>
+        </div>
+        <img src="${qrImg}" class="print-qr" />
+      </div>
+      <div>
+        <div class="print-label">CUSTOMER NAME:</div>
+        <div class="print-value" style="font-weight:bold; font-size:22px;">${order.customer_name}</div>
+        
+        <div class="print-label">DELIVERY ADDRESS:</div>
+        <div class="print-value" style="border:1px solid #ccc; padding:10px; border-radius:8px;">${order.delivery_address}</div>
+        
+        <div class="print-label">PRODUCT / DETAILS:</div>
+        <div class="print-value" style="font-weight:bold;">${order.product_name}</div>
+      </div>
+      <div style="border-top:2px dashed #000; margin-top:30px; padding-top:20px; text-align:center; font-size:12px;">
+        <p><b>สำหรับคนขับรถ (Driver):</b> สแกน QR Code มุมขวาบนเพื่อยืนยันการรับและจัดส่งพัสดุ</p>
+      </div>
+    `;
+
+    document.getElementById('print-card-content').innerHTML = printHtml;
+    window.print();
+  }, 300);
+}
+
 </script>
 </body>
 </html>
