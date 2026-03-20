@@ -418,6 +418,23 @@
             radio.addEventListener('change', updateUI);
         });
 
+        // ==========================================
+        // เพิ่มระบบ Magic Link ตรงนี้
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const magicEmail = urlParams.get('magic_email');
+
+        if (magicEmail) {
+            // แสดงแบนเนอร์ข้อความต้อนรับด้านบน
+            const headerSection = document.querySelector('.px-6.py-5');
+            const welcomeBanner = document.createElement('div');
+            welcomeBanner.className = 'bg-[#fdfaf8] text-[#c19b84] text-center text-xs sm:text-sm py-2 px-4 border-b border-[#e6dcd5] font-medium';
+            welcomeBanner.innerHTML = `🌟 ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
+            
+            // แทรกไว้ใต้ Header
+            headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
+        }
+
         function validateStep() {
             const steps = document.querySelectorAll('.step');
             const currentStepEl = steps[currentStep];
@@ -492,6 +509,13 @@
                 }
             }
             formData.delete('subscribe'); // เอา array ออก
+            
+            // ==========================================
+            // แนบอีเมลจาก Magic Link ส่งกลับไปบันทึก
+            // ==========================================
+            if (magicEmail) {
+                formData.append('magic_email', magicEmail);
+            }
             
             // ส่งข้อมูลไปยัง Google Sheets
             fetch(SCRIPT_URL, { 
