@@ -103,8 +103,8 @@ body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--te
 .btn:hover { transform: translateY(-1px); }
 .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
 .btn-primary:hover { background: var(--blue-mid); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
-.btn-outline { background: #fff; color: var(--text-light); border: 1.5px solid var(--border); }
-.btn-outline:hover { background: var(--bg); color: var(--text); border-color: #cbd5e1; }
+.btn-outline { background: #fff; color: var(--text-light); border: 1.5px solid var(--blue); }
+.btn-outline:hover { background: var(--blue-light); color: var(--blue); }
 .btn-danger { background: var(--red-light); color: var(--red); }
 .btn-danger:hover { background: var(--red); color: #fff; }
 .btn-green { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
@@ -152,10 +152,10 @@ tr:hover td { background: #f8fafc; }
 
 /* Custom Details */
 .qr-dual-container { display: flex; gap: 20px; flex-wrap: wrap; }
-.qr-box { flex: 1; min-width: 240px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-.qr-box h4 { font-size: 15px; color: var(--text); font-weight: 600; }
-.qr-id { font-size: 20px; font-weight: 800; color: var(--blue); font-family: monospace; background: var(--blue-light); padding: 4px 12px; border-radius: 8px; }
-.url-box { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 12px; word-break: break-all; color: var(--muted); width: 100%; text-align: left; }
+.qr-box { flex: 1; min-width: 240px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.qr-box h4 { font-size: 15px; color: var(--text); font-weight: 600; margin-bottom: 8px; }
+.qr-id { font-size: 18px; font-weight: 800; color: var(--blue); font-family: monospace; background: var(--blue-light); padding: 4px 12px; border-radius: 8px; }
+.url-box { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 11px; word-break: break-all; color: var(--muted); width: 100%; text-align: left; }
 
 .timeline { display: flex; flex-direction: column; gap: 0; }
 .tl-item { display: flex; gap: 16px; padding: 16px 0; position: relative; }
@@ -184,14 +184,13 @@ tr:hover td { background: #f8fafc; }
 .loading { text-align: center; padding: 60px; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 14px; }
 .loading .spin { display: block; margin-bottom: 12px; animation: spin 1s linear infinite; color: var(--blue); width: 28px; height: 28px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
 /* SweetAlert overrides for modern look */
 div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
 .swal-img-radius { border-radius: 12px; border: 1.5px solid var(--border); }
 .swal2-container { z-index: 10000 !important; }
 
-/* Footer Centering Fix */
+/* Footer */
 .site-footer {
   text-align: center;
   padding: 32px 20px 24px;
@@ -202,10 +201,24 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
   justify-content: center;
   width: 100%;
 }
-.site-footer p { 
-  margin-bottom: 6px; 
-  color: var(--muted); 
-  font-size: 13.5px; 
+.site-footer p { margin-bottom: 6px; color: var(--muted); font-size: 13.5px; }
+
+/* Print Label Area styles */
+@media screen { #print-area { display: none; } }
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+  .print-label-card { border: 2px solid #000; border-radius: 16px; padding: 24px; max-width: 500px; margin: 0 auto; color: #000; font-family: 'Prompt', sans-serif; page-break-inside: avoid; }
+  .print-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 16px; }
+  .print-qr-code { width: 120px; height: 120px; }
+  .print-title { font-size: 22px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;}
+  .print-tid { font-family: monospace; font-size: 24px; font-weight: bold; }
+  .print-row { margin-bottom: 12px; }
+  .print-label-text { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 4px; text-transform: uppercase; }
+  .print-value-text { font-size: 18px; margin-bottom: 16px; }
+  .print-value-address { border: 1px solid #000; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: normal; margin-bottom: 16px; }
+  .print-footer { text-align: center; border-top: 2px dashed #000; padding-top: 16px; margin-top: 16px; font-size: 14px; font-weight: bold; text-transform: uppercase;}
 }
 
 /* Responsive */
@@ -253,7 +266,7 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
     </div>
     <p style="text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.6;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator<br>หรือกรอกรหัสกู้คืน (8 หลัก)</p>
     <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก หรือ รหัสกู้คืน" maxlength="8" style="text-align:center;letter-spacing:3px;font-size:18px;font-weight:700;"/>
-    <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยันการเข้าสู่ระบบ</button>
+    <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยัน</button>
     <a href="javascript:void(0);" class="forgot-btn" onclick="location.reload()">ยกเลิก / กลับไปหน้าแรก</a>
   </div>
 </div>
@@ -321,17 +334,17 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
       <button class="close-btn" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-group" style="margin-bottom:16px;">
+      <div class="form-group">
         <label>รหัสผ่านเดิม</label>
-        <input id="cpw-old" type="password" placeholder="กรอกรหัสผ่านปัจจุบัน"/>
+        <input id="cpw-old" type="password" class="login-input" placeholder="กรอกรหัสผ่านปัจจุบัน"/>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
+      <div class="form-group">
         <label>รหัสผ่านใหม่ <span style="font-size:11px;color:var(--muted);font-weight:normal;">(อักษรใหญ่, เล็ก, ตัวเลข, 8 ตัวอักษรขึ้นไป)</span></label>
-        <input id="cpw-new" type="password" placeholder="กรอกรหัสผ่านใหม่"/>
+        <input id="cpw-new" type="password" class="login-input" placeholder="กรอกรหัสผ่านใหม่"/>
       </div>
       <div class="form-group" style="margin-bottom:24px;">
         <label>รหัสยืนยัน 2FA / รหัสกู้คืน</label>
-        <input id="cpw-2fa" type="text" placeholder="รหัส 6 หลัก หรือ รหัส 8 หลัก" maxlength="8" style="letter-spacing:1px;"/>
+        <input id="cpw-2fa" type="text" class="login-input" placeholder="รหัส 6 หลัก หรือ รหัส 8 หลัก" maxlength="8" style="letter-spacing:1px;"/>
       </div>
       <button class="login-btn" id="btn-change-pw" onclick="submitChangePassword()">อัปเดตรหัสผ่าน</button>
     </div>
@@ -562,11 +575,11 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
     <div class="modal-body">
       <div class="form-group" style="margin-bottom:16px;">
         <label>อีเมลผู้ใช้งาน</label>
-        <input id="add-user-email" type="email" placeholder="example@email.com"/>
+        <input id="add-user-email" type="email" class="login-input" placeholder="example@email.com"/>
       </div>
       <div class="form-group" style="margin-bottom:24px;">
         <label>ระดับสิทธิ์ (Role)</label>
-        <select id="add-user-role">
+        <select id="add-user-role" class="login-input">
           <option value="admin">พนักงานแอดมิน (Admin)</option>
           <option value="warehouse">พนักงานคลังสินค้า (Warehouse)</option>
         </select>
@@ -576,34 +589,42 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
   </div>
 </div>
 
-<!-- QR MODAL -->
+<!-- QR MODAL (UPDATED FOR PRINTING SEPARATE LABELS) -->
 <div id="modal-qr" class="modal-bg hidden">
   <div class="modal" style="max-width:750px;">
     <div class="modal-header">
-      <span class="modal-title">QR Code & ลิงก์สำหรับการจัดส่ง</span>
+      <span class="modal-title">QR Code & พิมพ์ใบปะหน้า</span>
       <button class="close-btn" onclick="closeModal('modal-qr')"><i data-lucide="x" style="width:24px;"></i></button>
     </div>
     <div class="modal-body">
       <div class="qr-dual-container">
+        <!-- ลูกค้า -->
         <div class="qr-box">
           <h4 style="color:var(--blue);"><i data-lucide="user" style="width:18px;vertical-align:bottom;margin-right:4px;"></i> สำหรับลูกค้า</h4>
-          <p style="font-size:12px;color:var(--muted);margin-top:-10px;">สแกนเพื่อตรวจสอบสถานะ</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:-10px;">(สำหรับเช็คสถานะพัสดุ)</p>
           <div class="qr-id" id="qr-tid"></div>
           <div id="qr-canvas-customer" style="padding:10px; background:#fff; border-radius:12px; box-shadow:var(--shadow-sm);"></div>
           <div class="url-box" id="qr-url"></div>
-          <button class="btn btn-primary btn-sm" style="width:100%;" onclick="copyURL('qr-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์ส่งให้ลูกค้า</button>
+          
+          <div style="display:flex; gap:8px; width:100%; margin-top:8px;">
+            <button class="btn btn-outline btn-sm" style="flex:1;" onclick="copyURL('qr-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="printLabel('customer')"><i data-lucide="printer" style="width:14px;"></i> พิมพ์ใบปะหน้า</button>
+          </div>
         </div>
+
+        <!-- คนส่ง -->
         <div class="qr-box" style="border-color:#bbf7d0; background:#f0fdf4;">
-          <h4 style="color:var(--green);"><i data-lucide="truck" style="width:18px;vertical-align:bottom;margin-right:4px;"></i> สำหรับคนขับรถ</h4>
-          <p style="font-size:12px;color:var(--muted);margin-top:-10px;">สแกนเพื่ออัปเดตสถานะจัดส่ง</p>
+          <h4 style="color:var(--green);"><i data-lucide="truck" style="width:18px;vertical-align:bottom;margin-right:4px;"></i> สำหรับคนจัดส่ง</h4>
+          <p style="font-size:12px;color:var(--muted);margin-top:-10px;">(สำหรับอัปเดตสถานะจัดส่ง)</p>
           <div class="qr-id" id="qr-tid-driver" style="background:#dcfce7; color:var(--green);"></div>
           <div id="qr-canvas-driver" style="padding:10px; background:#fff; border-radius:12px; box-shadow:var(--shadow-sm);"></div>
           <div class="url-box" id="qr-delivery-url"></div>
-          <button class="btn btn-green btn-sm" style="width:100%;" onclick="copyURL('qr-delivery-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์ให้คนขับ</button>
+          
+          <div style="display:flex; gap:8px; width:100%; margin-top:8px;">
+            <button class="btn btn-outline btn-sm" style="flex:1; border-color:var(--green); color:var(--green);" onclick="copyURL('qr-delivery-url')"><i data-lucide="copy" style="width:14px;"></i> คัดลอกลิงก์</button>
+            <button class="btn btn-green btn-sm" style="flex:1;" onclick="printLabel('driver')"><i data-lucide="printer" style="width:14px;"></i> พิมพ์ใบสั่งงาน</button>
+          </div>
         </div>
-      </div>
-      <div style="text-align:center;margin-top:28px; padding-top:24px; border-top:1px solid var(--border);">
-        <button class="btn btn-outline" style="padding:10px 32px;" onclick="printQR()"><i data-lucide="printer" style="width:18px;"></i> พิมพ์เอกสารนี้</button>
       </div>
     </div>
   </div>
@@ -619,7 +640,7 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
     <div class="modal-body">
       <div class="form-group">
         <label>ระบุเหตุผลการยกเลิก (ไม่บังคับ แต่ควรระบุเพื่อเก็บประวัติ)</label>
-        <input id="cancel-reason" type="text" placeholder="เช่น ลูกค้าขอเปลี่ยนสินค้า, ของหมด..."/>
+        <input id="cancel-reason" type="text" class="login-input" placeholder="เช่น ลูกค้าขอเปลี่ยนสินค้า, ของหมด..."/>
         <input type="hidden" id="cancel-tid"/>
       </div>
       <div style="display:flex;gap:12px;margin-top:24px;">
@@ -629,6 +650,9 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
     </div>
   </div>
 </div>
+
+<!-- PRINT AREA (Hidden on screen, visible on print) -->
+<div id="print-area"></div>
 
 <script>
 // ย้ายฟังก์ชัน Modal ขึ้นมาไว้ด้านบนสุดเพื่อให้เรียกใช้งานได้ไม่มีปัญหา
@@ -1050,9 +1074,13 @@ async function loadActivityLogs() {
         ? '<div style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;"><i data-lucide="check" style="width:12px;vertical-align:bottom;margin-right:2px;"></i> SUCCESS</div>'
         : '<div style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;"><i data-lucide="x" style="width:12px;vertical-align:bottom;margin-right:2px;"></i> FAILED</div>';
 
-      html += `<tr>
+      // Check for tampering
+      const rowStyle = l.isTampered ? 'background:#fef2f2; border-left: 4px solid var(--red);' : '';
+      const tamperedWarning = l.isTampered ? '<br><span style="color:var(--red); font-size:10px; font-weight:700;"><i data-lucide="alert-triangle" style="width:10px;height:10px;"></i> ข้อมูลถูกดัดแปลง!</span>' : '';
+
+      html += `<tr style="${rowStyle}">
         <td style="font-family:monospace;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.5px;">${l.logId || '-'}</td>
-        <td style="font-size:12.5px;color:var(--muted);white-space:nowrap;">${fmtDate(l.timestamp)}</td>
+        <td style="font-size:12.5px;color:var(--muted);white-space:nowrap;">${fmtDate(l.timestamp)}${tamperedWarning}</td>
         <td>
           <div style="font-weight:600;color:var(--text);font-size:13.5px;">${l.email}</div>
           <div style="font-size:11px;color:var(--blue);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;">${l.role || '-'}</div>
@@ -1067,6 +1095,15 @@ async function loadActivityLogs() {
   html += `</tbody></table></div>`;
   document.getElementById('logs-table').innerHTML = html;
   lucide.createIcons();
+
+  if(res.hasTamperedData) {
+    Swal.fire({
+      title: 'พบความผิดปกติ!',
+      text: 'ตรวจพบประวัติการใช้งานบางรายการถูกดัดแปลงแก้ไขจากฐานข้อมูลโดยตรง (แถบสีแดง)',
+      icon: 'error',
+      confirmButtonColor: 'var(--red)'
+    });
+  }
 }
 
 // ── Existing Admin Code ───────────────────────────────
@@ -1109,7 +1146,7 @@ async function loadAllOrders() {
 
 function renderStats() {
   const count = (s) => allOrders.filter(o=>o.status===s).length;
-  // Animate numbers (simple visual update)
+  // Animate numbers
   ['total','pending','preparing','ready','out','done','cancel'].forEach(id => {
     const el = document.getElementById('s-'+id);
     el.style.opacity = '0';
@@ -1148,7 +1185,7 @@ function renderTable(list, containerId) {
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end;">
           <button class="btn btn-outline btn-sm" style="padding:6px 10px;" onclick="showDetail('${o.tracking_id}')" title="ดูรายละเอียด"><i data-lucide="eye" style="width:14px;margin:0;"></i></button>
-          <button class="btn btn-sm" style="background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;padding:6px 10px;" onclick="showQR('${o.tracking_id}')" title="แสดง QR Code"><i data-lucide="qr-code" style="width:14px;margin:0;"></i></button>
+          <button class="btn btn-sm" style="background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;padding:6px 10px;" onclick="showQR('${o.tracking_id}')" title="แสดง QR Code & พิมพ์ใบปะหน้า"><i data-lucide="qr-code" style="width:14px;margin:0;"></i></button>
           ${o.status!=='cancelled'&&o.status!=='confirmed'?`<button class="btn btn-danger btn-sm" style="padding:6px 10px;" onclick="openCancel('${o.tracking_id}')" title="ยกเลิกออเดอร์"><i data-lucide="x" style="width:14px;margin:0;"></i></button>`:''}
         </div>
       </td>
@@ -1260,20 +1297,81 @@ function viewPhotoAdmin(imgUrl) {
   Swal.fire({ title: 'รูปภาพหลักฐานการจัดส่ง', imageUrl: imgUrl, imageAlt: 'Delivery Photo', showCancelButton: true, confirmButtonText: '<i data-lucide="download" style="width:16px;vertical-align:bottom;margin-right:4px;"></i> ดาวน์โหลดรูปภาพ', cancelButtonText: 'ปิดหน้าต่าง', confirmButtonColor: 'var(--green)', customClass: { image: 'swal-img-radius' }, didRender: () => { lucide.createIcons(); } }).then((r) => { if (r.isConfirmed) window.open(dlUrl, '_blank'); });
 }
 
+// ── NEW SEPARATE PRINT FUNCTION ──
+function printLabel(type) {
+  const tid = document.getElementById('qr-tid').textContent;
+  const order = allOrders.find(o => o.tracking_id === tid);
+  if (!order) return Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลออเดอร์ในระบบ', 'error');
+
+  const tUrl = `${TRACKING_BASE}?id=${tid}`;
+  const dUrl = `${DELIVERY_BASE}?id=${tid}`;
+  const targetUrl = type === 'customer' ? tUrl : dUrl;
+  
+  const titleText = type === 'customer' ? 'SHIPPING LABEL' : 'DELIVERY TASK';
+  const subTitleText = type === 'customer' ? 'FOR CUSTOMER' : 'FOR DRIVER ONLY';
+  const footerText = type === 'customer' ? 'สแกน QR Code เพื่อตรวจสอบสถานะพัสดุ' : 'สแกน QR Code นี้เพื่อเข้าสู่ระบบอัปเดตสถานะจัดส่ง';
+
+  const tempDiv = document.createElement('div');
+  new QRCode(tempDiv, { text: targetUrl, width: 140, height: 140, colorDark: '#000000', correctLevel: QRCode.CorrectLevel.H });
+
+  Swal.fire({ title: 'กำลังเตรียมเอกสารพิมพ์...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+  setTimeout(() => {
+    const qrImg = tempDiv.querySelector('img').src;
+    
+    const printHtml = `
+      <div class="print-label-card">
+        <div class="print-header">
+          <div>
+            <div class="print-title">${titleText}</div>
+            <div style="font-size:12px; color:#555; margin-bottom:8px; font-weight:bold;">${subTitleText}</div>
+            <div class="print-tid">${order.tracking_id}</div>
+            <div style="font-size:13px; margin-top:8px;">Date: ${new Date().toLocaleDateString('en-GB')}</div>
+          </div>
+          <img src="${qrImg}" class="print-qr-code" />
+        </div>
+        
+        <div class="print-row">
+          <div class="print-label-text">Recipient / ผู้รับ</div>
+          <div class="print-value-text" style="font-size:22px;">${order.customer_name || '-'}</div>
+        </div>
+        
+        <div class="print-row">
+          <div class="print-label-text">Destination / ที่อยู่จัดส่ง</div>
+          <div class="print-value-address">${order.delivery_address || '-'}</div>
+        </div>
+        
+        <div class="print-row">
+          <div class="print-label-text">Product / สินค้า</div>
+          <div class="print-value-text">${order.product_name || '-'}</div>
+        </div>
+        
+        <div class="print-footer">${footerText}</div>
+      </div>
+    `;
+    
+    document.getElementById('print-area').innerHTML = printHtml;
+    Swal.close();
+    window.print();
+  }, 400);
+}
+
 function showQR(tid) {
   document.getElementById('qr-tid').textContent = tid; document.getElementById('qr-tid-driver').textContent = tid;
   const tUrl = `${TRACKING_BASE}?id=${tid}`; const dUrl = `${DELIVERY_BASE}?id=${tid}`;
   document.getElementById('qr-url').textContent = tUrl; document.getElementById('qr-delivery-url').textContent = dUrl;
+  
   document.getElementById('qr-canvas-customer').innerHTML = ''; document.getElementById('qr-canvas-driver').innerHTML = '';
-  new QRCode(document.getElementById('qr-canvas-customer'), { text: tUrl, width:180, height:180, colorDark:'#0f172a' });
-  new QRCode(document.getElementById('qr-canvas-driver'), { text: dUrl, width:180, height:180, colorDark:'#166534' });
+  new QRCode(document.getElementById('qr-canvas-customer'), { text: tUrl, width:140, height:140, colorDark:'#0f172a' });
+  new QRCode(document.getElementById('qr-canvas-driver'), { text: dUrl, width:140, height:140, colorDark:'#166534' });
+  
   showModal('modal-qr');
 }
+
 function copyURL(elId) {
   const el = document.createElement('textarea'); el.value = document.getElementById(elId).textContent; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
   Swal.fire({title: 'คัดลอกลิงก์สำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false});
 }
-function printQR() { window.print(); }
 
 function openCancel(tid) { document.getElementById('cancel-tid').value = tid; document.getElementById('cancel-reason').value = ''; showModal('modal-cancel'); }
 async function doCancel() {
@@ -1375,7 +1473,6 @@ async function createOrder() {
         </div>
       </div>`;
     
-    // รีเซ็ตเฉพาะฟอร์ม แต่คงข้อความสำเร็จไว้
     ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
     await loadAllOrders();
     lucide.createIcons();
