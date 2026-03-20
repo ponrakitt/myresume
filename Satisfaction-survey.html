@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanflorist Customer Survey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #c19b84; /* Soft elegant mocha/rose */
+            --primary-light: #e6dcd5;
+        }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f7f5f2; /* Soft warm neutral */
+            color: #4a4a4a;
+        }
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .step.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom Radio Button Style - Softer elegant look */
+        .rating-label {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: white;
+            border: 2px solid #eaeaea;
+        }
+        .rating-label:hover {
+            border-color: var(--primary-light);
+            background-color: #faf8f7;
+        }
+        input[type="radio"]:checked + .rating-label {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(193, 155, 132, 0.3);
+        }
+
+        /* Opt-in Radio Style */
+        .optin-label {
+            transition: all 0.25s ease;
+        }
+        .optin-label:hover {
+            border-color: var(--primary-light);
+        }
+        input[type="radio"][name="optin"]:checked + .radio-indicator {
+            border-color: var(--primary);
+        }
+        input[type="radio"][name="optin"]:checked + .radio-indicator .inner-circle {
+            display: block;
+        }
+
+        /* Language Toggle Switch */
+        .lang-btn {
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background-color: white;
+            color: #4a4a4a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-3 sm:p-8">
+
+    <!-- Main Content Container -->
+    <div class="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden mt-2 sm:mt-8 border border-gray-100">
+        
+        <!-- Header & Language Switcher -->
+        <div class="px-5 py-4 sm:px-8 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-white">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-medium" style="font-family: 'Lora', serif; color: var(--primary);">Wanflorist</h1>
+                <p id="t-subtitle" class="text-xs sm:text-sm text-gray-500 mt-1">แบบประเมินความพึงพอใจและข้อเสนอแนะ</p>
+            </div>
+            
+            <!-- Language Toggle -->
+            <div class="flex bg-gray-100 p-1 rounded-full">
+                <button type="button" onclick="setLang('th')" id="btn-th" class="lang-btn active px-3 py-1.5 text-xs sm:text-sm rounded-full text-gray-500">TH</button>
+                <button type="button" onclick="setLang('en')" id="btn-en" class="lang-btn px-3 py-1.5 text-xs sm:text-sm rounded-full text-gray-500">EN</button>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-50 h-1.5">
+            <div id="progressBar" class="h-1.5 transition-all duration-500 ease-out" style="width: 10%; background-color: var(--primary);"></div>
+        </div>
+
+        <div class="p-5 sm:p-10">
+            <!-- Error Message Box -->
+            <div id="errorBox" class="hidden mb-6 p-3 bg-red-50 text-red-500 rounded-xl text-sm text-center border border-red-100">
+                <span id="t-error">กรุณาเลือกคำตอบก่อนดำเนินการต่อค่ะ</span>
+            </div>
+
+            <!-- Survey Form -->
+            <form id="surveyForm">
+                
+                <div id="questionsContainer">
+                    <!-- Questions will be injected here by JavaScript -->
+                </div>
+
+                <!-- Opt-In Step (Step 11) -->
+                <div class="step" data-step="11" id="optInStep">
+                    <h2 id="t-optin-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
+                    <div class="space-y-3 mb-6">
+                        <label class="flex items-center space-x-3 p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors optin-label">
+                            <input type="radio" name="optin" value="yes" class="hidden">
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator bg-white">
+                                <div class="w-2.5 h-2.5 rounded-full bg-[#c19b84] hidden inner-circle"></div>
+                            </div>
+                            <span id="t-optin-yes" class="text-sm sm:text-base text-gray-700"></span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors optin-label">
+                            <input type="radio" name="optin" value="no" class="hidden">
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator bg-white">
+                                <div class="w-2.5 h-2.5 rounded-full bg-[#c19b84] hidden inner-circle"></div>
+                            </div>
+                            <span id="t-optin-no" class="text-sm sm:text-base text-gray-700"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Subscription Step (Step 12) -->
+                <div class="step" data-step="12" id="subscriptionStep">
+                    <h2 id="t-sub-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
+                    <p id="t-sub-desc" class="text-sm text-gray-500 mb-4"></p>
+                    <div class="space-y-3 mb-6">
+                        <label class="flex items-center space-x-3 p-3 sm:p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" name="subscribe" value="Promotions" class="w-5 h-5 text-[#c19b84] border-gray-300 rounded focus:ring-[#c19b84]">
+                            <span id="t-sub-promo" class="text-sm sm:text-base text-gray-700"></span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 sm:p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" name="subscribe" value="New Collections" class="w-5 h-5 text-[#c19b84] border-gray-300 rounded focus:ring-[#c19b84]">
+                            <span id="t-sub-new" class="text-sm sm:text-base text-gray-700"></span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 sm:p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" name="subscribe" value="Floral Tips" class="w-5 h-5 text-[#c19b84] border-gray-300 rounded focus:ring-[#c19b84]">
+                            <span id="t-sub-tips" class="text-sm sm:text-base text-gray-700"></span>
+                        </label>
+                    </div>
+                    <div class="mt-4">
+                        <input type="email" id="emailInput" name="email" class="w-full text-base sm:text-lg border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors text-gray-700" placeholder="">
+                    </div>
+                </div>
+
+                <!-- Success State (Hidden initially) -->
+                <div id="successStep" class="hidden text-center py-10">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style="background-color: var(--primary-light);">
+                        <svg class="w-10 h-10" style="color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 id="t-success-title" class="text-2xl font-medium text-gray-800 mb-3">ขอบคุณสำหรับความคิดเห็นค่ะ!</h2>
+                    <p id="t-success-desc" class="text-gray-500 text-sm sm:text-base">ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว เราจะนำไปพัฒนาบริการให้ดียิ่งขึ้นค่ะ</p>
+                </div>
+
+                <!-- Loading State (Hidden initially) -->
+                <div id="loadingStep" class="hidden text-center py-16">
+                    <svg class="animate-spin h-10 w-10 mx-auto mb-4" style="color: var(--primary);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p id="t-loading" class="text-gray-500 text-sm">กำลังบันทึกข้อมูล...</p>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 sm:mt-10" id="navButtons">
+                    <button type="button" id="prevBtn" class="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors hidden font-medium text-sm border border-gray-100">ย้อนกลับ</button>
+                    <div class="flex-grow"></div>
+                    <button type="button" id="nextBtn" class="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-white transition-colors font-medium text-sm shadow-sm hover:shadow-md" style="background-color: var(--primary);">ถัดไป</button>
+                    <button type="submit" id="submitBtn" class="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-white transition-colors hidden font-medium text-sm shadow-sm hover:shadow-md" style="background-color: var(--primary);">ส่งแบบสอบถาม</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Text -->
+    <div class="text-center text-xs text-gray-400 mt-12 mb-6 max-w-lg leading-relaxed px-4 font-light tracking-wide">
+        This survey is for wanflorist only, created by ponrakitt.site.<br>
+        For further information, please contact <a href="mailto:contact@ponrakitt.site" class="hover:text-gray-600 transition-colors" style="color: var(--primary);">contact@ponrakitt.site</a> 24/7.<br>
+        All rights reserved. wanflorist<br>
+        powered by Ponrakitt.site
+    </div>
+
+    <script>
+        // --- การตั้งค่า Google Sheets API ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCL_VYErxDPgAERCPfIcT9L3D9EJCT-YOEFGKa_4pXo5cTEnrOpykdx_t8BXfMsqHe/exec';
+
+        // --- Data & Translations ---
+        let currentLang = 'th';
+        
+        const translations = {
+            th: {
+                subtitle: "แบบประเมินความพึงพอใจและข้อเสนอแนะ",
+                error: "กรุณาเลือกคำตอบก่อนดำเนินการต่อค่ะ",
+                btnPrev: "ย้อนกลับ",
+                btnNext: "ถัดไป",
+                btnSubmit: "ส่งแบบสอบถาม",
+                loading: "กำลังบันทึกข้อมูล...",
+                successTitle: "ขอบคุณสำหรับความคิดเห็นค่ะ!",
+                successDesc: "ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว เราจะนำไปพัฒนาบริการให้ดียิ่งขึ้นค่ะ",
+                scaleLow: "1 = น้อยที่สุด",
+                scaleHigh: "10 = มากที่สุด",
+                placeholderText: "พิมพ์ข้อความของคุณที่นี่...",
+                questions: [
+                    "1. ความพึงพอใจในคุณภาพและความสดของดอกไม้",
+                    "2. ความสวยงามและความคิดสร้างสรรค์ของการจัดดอกไม้",
+                    "3. ความตรงต่อเวลาในการจัดส่งสินค้า",
+                    "4. ความสุภาพและการให้บริการของพนักงาน",
+                    "5. ความคุ้มค่าของราคาเมื่อเทียบกับคุณภาพ",
+                    "6. ความสะดวกและง่ายดายในการสั่งซื้อสินค้า",
+                    "7. ความถูกต้องของสินค้าที่ได้รับตรงตามที่สั่ง",
+                    "8. ความพึงพอใจในภาพรวมต่อร้าน Wanflorist",
+                    "9. สิ่งที่คุณประทับใจที่สุดในการใช้บริการครั้งนี้",
+                    "10. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนา (ถ้ามี)"
+                ],
+                optInTitle: "11. คุณต้องการรับข่าวสารและโปรโมชั่นพิเศษทางอีเมลหรือไม่?",
+                optInYes: "ใช่, ฉันต้องการรับข่าวสาร",
+                optInNo: "ไม่, ขอบคุณ",
+                subTitle: "12. ตั้งค่าการรับข่าวสาร",
+                subDesc: "เลือกข้อมูลที่คุณสนใจรับแจ้งเตือนทางอีเมล",
+                subPromo: "โปรโมชั่นและส่วนลดพิเศษ",
+                subNew: "คอลเลกชันดอกไม้ใหม่ล่าสุด",
+                subTips: "เกร็ดความรู้และวิธีดูแลดอกไม้",
+                subEmailPlaceholder: "อีเมลของคุณ...",
+                subError: "กรุณาระบุอีเมลให้ถูกต้องเพื่อรับข่าวสารค่ะ"
+            },
+            en: {
+                subtitle: "Customer Satisfaction Survey",
+                error: "Please select an answer before proceeding.",
+                btnPrev: "Back",
+                btnNext: "Next",
+                btnSubmit: "Submit Survey",
+                loading: "Saving your response...",
+                successTitle: "Thank you for your feedback!",
+                successDesc: "Your response has been successfully recorded. We will use it to improve our services.",
+                scaleLow: "1 = Lowest",
+                scaleHigh: "10 = Highest",
+                placeholderText: "Type your answer here...",
+                questions: [
+                    "1. Satisfaction with the quality and freshness of the flowers",
+                    "2. Beauty and creativity of the floral arrangement",
+                    "3. Punctuality of the delivery",
+                    "4. Politeness and service of the staff",
+                    "5. Value for money compared to quality",
+                    "6. Convenience and ease of ordering",
+                    "7. Accuracy of the received products as ordered",
+                    "8. Overall satisfaction with Wanflorist",
+                    "9. What impressed you the most about our service?",
+                    "10. Additional suggestions for improvement (if any)"
+                ],
+                optInTitle: "11. Would you like to receive news and special promotions via email?",
+                optInYes: "Yes, I want to subscribe",
+                optInNo: "No, thank you",
+                subTitle: "12. Subscription Settings",
+                subDesc: "Select the topics you would like to receive via email.",
+                subPromo: "Promotions & Special Discounts",
+                subNew: "New Floral Collections",
+                subTips: "Flower Care Tips & Tricks",
+                subEmailPlaceholder: "Your email address...",
+                subError: "Please enter a valid email address to subscribe."
+            }
+        };
+
+        let currentStep = 0;
+        const totalSteps = 12; // ปรับเป็น 12 ขั้นตอน
+        const container = document.getElementById('questionsContainer');
+
+        // --- Build DOM ---
+        function buildQuestions() {
+            container.innerHTML = ''; // Clear container
+            
+            for(let i = 0; i < 10; i++) {
+                const stepNum = i + 1;
+                const isRating = i < 8; // Q1-8 are ratings
+                
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `step ${i === 0 ? 'active' : ''}`;
+                stepDiv.setAttribute('data-step', stepNum);
+                
+                let contentHTML = `<h2 class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed q-title" id="q-title-${i}"></h2>`;
+
+                if (isRating) {
+                    contentHTML += `
+                        <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3 mb-6">
+                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => `
+                                <div class="relative">
+                                    <input type="radio" name="q${stepNum}" id="q${stepNum}_${score}" value="${score}" class="hidden">
+                                    <label for="q${stepNum}_${score}" class="rating-label cursor-pointer flex items-center justify-center w-full aspect-square rounded-xl text-sm sm:text-lg text-gray-600 font-medium">
+                                        ${score}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex justify-between text-xs sm:text-sm text-gray-400 mb-2 px-1 font-light">
+                            <span class="t-scale-low"></span>
+                            <span class="t-scale-high"></span>
+                        </div>
+                    `;
+                } else {
+                    contentHTML += `
+                        <textarea name="q${stepNum}" rows="4" class="w-full text-base sm:text-lg border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors resize-none text-gray-700 q-placeholder" placeholder=""></textarea>
+                    `;
+                }
+
+                stepDiv.innerHTML = contentHTML;
+                container.appendChild(stepDiv);
+            }
+        }
+
+        // --- Language Switcher ---
+        function setLang(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            // Update Toggle Buttons
+            document.getElementById('btn-th').classList.toggle('active', lang === 'th');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+            // Update Static Texts
+            document.getElementById('t-subtitle').innerText = t.subtitle;
+            document.getElementById('t-error').innerText = t.error;
+            document.getElementById('prevBtn').innerText = t.btnPrev;
+            document.getElementById('nextBtn').innerText = t.btnNext;
+            document.getElementById('submitBtn').innerText = t.btnSubmit;
+            document.getElementById('t-loading').innerText = t.loading;
+            document.getElementById('t-success-title').innerText = t.successTitle;
+            document.getElementById('t-success-desc').innerText = t.successDesc;
+
+            // Update Dynamic Generated Texts
+            for(let i = 0; i < 10; i++) { // 10 คำถามแรกสร้างผ่าน Loop
+                const titleEl = document.getElementById(`q-title-${i}`);
+                if(titleEl) titleEl.innerText = t.questions[i];
+            }
+
+            // Update Opt-in & Subscription Texts
+            document.getElementById('t-optin-title').innerText = t.optInTitle;
+            document.getElementById('t-optin-yes').innerText = t.optInYes;
+            document.getElementById('t-optin-no').innerText = t.optInNo;
+
+            document.getElementById('t-sub-title').innerText = t.subTitle;
+            document.getElementById('t-sub-desc').innerText = t.subDesc;
+            document.getElementById('t-sub-promo').innerText = t.subPromo;
+            document.getElementById('t-sub-new').innerText = t.subNew;
+            document.getElementById('t-sub-tips').innerText = t.subTips;
+            document.getElementById('emailInput').placeholder = t.subEmailPlaceholder;
+
+            document.querySelectorAll('.t-scale-low').forEach(el => el.innerText = t.scaleLow);
+            document.querySelectorAll('.t-scale-high').forEach(el => el.innerText = t.scaleHigh);
+            document.querySelectorAll('.q-placeholder').forEach(el => el.placeholder = t.placeholderText);
+        }
+
+        // --- UI Logic ---
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const errorBox = document.getElementById('errorBox');
+        const navButtons = document.getElementById('navButtons');
+
+        function updateUI() {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                if(index === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+
+            // Update progress bar
+            const progress = ((currentStep + 1) / totalSteps) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Update buttons
+            if (currentStep === 0) {
+                prevBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+            }
+
+            // Logic สำหรับปุ่มในหน้า Opt-in (Step 11 - index 10)
+            if (currentStep === 10) {
+                const optinVal = document.querySelector('input[name="optin"]:checked')?.value;
+                if (optinVal === 'no') {
+                    nextBtn.classList.add('hidden');
+                    submitBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.remove('hidden');
+                    submitBtn.classList.add('hidden');
+                }
+            } 
+            // Logic สำหรับหน้า Subscription (Step 12 - index 11)
+            else if (currentStep === 11) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } 
+            // หน้าอื่นๆ
+            else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+
+            errorBox.classList.add('hidden');
+        }
+
+        // Add event listener to Opt-in radios so buttons update instantly
+        document.querySelectorAll('input[name="optin"]').forEach(radio => {
+            radio.addEventListener('change', updateUI);
+        });
+
+        function validateStep() {
+            const steps = document.querySelectorAll('.step');
+            const currentStepEl = steps[currentStep];
+            const isRatingStep = currentStep < 8;
+            const isOptInStep = currentStep === 10;
+            const isSubscriptionStep = currentStep === 11;
+
+            if (isRatingStep) {
+                const checkedRadio = currentStepEl.querySelector('input[type="radio"]:checked');
+                if (!checkedRadio) {
+                    document.getElementById('t-error').innerText = translations[currentLang].error;
+                    errorBox.classList.remove('hidden');
+                    return false;
+                }
+            } else if (isOptInStep) {
+                const checkedRadio = currentStepEl.querySelector('input[name="optin"]:checked');
+                if (!checkedRadio) {
+                    document.getElementById('t-error').innerText = translations[currentLang].error;
+                    errorBox.classList.remove('hidden');
+                    return false;
+                }
+            } else if (isSubscriptionStep) {
+                const emailInput = document.getElementById('emailInput');
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    document.getElementById('t-error').innerText = translations[currentLang].subError;
+                    errorBox.classList.remove('hidden');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (validateStep()) {
+                currentStep++;
+                updateUI();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentStep--;
+            updateUI();
+        });
+
+        document.getElementById('surveyForm').addEventListener('submit', e => {
+            e.preventDefault();
+            
+            // Validate step ก่อน Submit เผื่อมี Error ตอนอยู่หน้า Subscription
+            if (!validateStep()) {
+                return;
+            }
+            
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => step.classList.remove('active'));
+            navButtons.classList.add('hidden');
+            document.getElementById('loadingStep').classList.remove('hidden');
+
+            const formData = new FormData(e.target);
+            
+            // จัดการข้อมูลตามตัวเลือก Opt-in
+            const optinVal = formData.get('optin');
+            if (optinVal === 'no') {
+                formData.set('email', '');
+                formData.set('subscriptions', 'None');
+            } else {
+                const subs = formData.getAll('subscribe');
+                if(subs.length > 0) {
+                    formData.set('subscriptions', subs.join(', '));
+                } else {
+                    formData.set('subscriptions', 'General News'); // กรณีไม่ได้ติ๊กอะไรเลยแต่สมัครใจรับ
+                }
+            }
+            formData.delete('subscribe'); // เอา array ออก
+            
+            // ส่งข้อมูลไปยัง Google Sheets
+            fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: formData
+            })
+            .then(response => {
+                document.getElementById('loadingStep').classList.add('hidden');
+                document.getElementById('successStep').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                document.getElementById('loadingStep').classList.add('hidden');
+                document.getElementById('successStep').classList.remove('hidden');
+                console.log("หมายเหตุ: ต้องตั้งค่า SCRIPT_URL ด้วย Google Apps Script");
+            });
+        });
+
+        // Initialize
+        buildQuestions();
+        setLang('th'); // Set default language
+        updateUI();
+
+    </script>
+</body>
+</html>
