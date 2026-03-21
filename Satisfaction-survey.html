@@ -103,8 +103,8 @@
                 <span id="t-error">กรุณาเลือกคำตอบก่อนดำเนินการต่อค่ะ</span>
             </div>
 
-            <!-- Survey Form -->
-            <form id="surveyForm">
+            <!-- Survey Form: เพิ่ม novalidate เพื่อไม่ให้ browser เช็ค field ที่ถูกซ่อน -->
+            <form id="surveyForm" novalidate>
                 
                 <div id="questionsContainer">
                     <!-- Loading State (Initial) -->
@@ -308,7 +308,7 @@
                 const headerSection = document.querySelector('.px-5.py-4');
                 const welcomeBanner = document.createElement('div');
                 welcomeBanner.className = 'bg-[#fdfaf8] text-[#c19b84] text-center text-xs sm:text-sm py-2 px-4 border-b border-[#e6dcd5] font-medium';
-                welcomeBanner.innerHTML = ` ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
+                welcomeBanner.innerHTML = `🌟 ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
                 headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
                 renderSurveyUI();
             } else {
