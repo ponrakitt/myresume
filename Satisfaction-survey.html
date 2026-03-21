@@ -227,9 +227,10 @@
                 questions: [
                     "1. ความพึงพอใจในคุณภาพและความสดของดอกไม้", "2. ความสวยงามและความคิดสร้างสรรค์ของการจัดดอกไม้", "3. ความตรงต่อเวลาในการจัดส่งสินค้า", "4. ความสุภาพและการให้บริการของพนักงาน", "5. ความคุ้มค่าของราคาเมื่อเทียบกับคุณภาพ", "6. ความสะดวกและง่ายดายในการสั่งซื้อสินค้า", "7. ความถูกต้องของสินค้าที่ได้รับตรงตามที่สั่ง", "8. ความพึงพอใจในภาพรวมต่อร้าน Wanflorist", "9. สิ่งที่คุณประทับใจที่สุดในการใช้บริการครั้งนี้", "10. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนา (ถ้ามี)"
                 ],
-                emailTitle: "11. กรุณากรอกอีเมลของคุณ",
+                emailTitle: "11. กรุณากรอกอีเมลของคุณ (ไม่บังคับ)",
                 emailPlaceholder: "อีเมลของคุณ...",
-                emailError: "กรุณาระบุอีเมลให้ถูกต้องค่ะ",
+                emailError: "กรุณาระบุรูปแบบอีเมลให้ถูกต้องค่ะ",
+                optInEmailError: "กรุณาย้อนกลับไปกรอกอีเมลให้ถูกต้องเพื่อรับข่าวสารค่ะ",
                 optInTitle: "12. คุณต้องการรับข่าวสารและโปรโมชั่นพิเศษทางอีเมลหรือไม่?",
                 optInYes: "ใช่, ฉันต้องการรับข่าวสาร",
                 optInNo: "ไม่, ขอบคุณ",
@@ -255,9 +256,10 @@
                 questions: [
                     "1. Satisfaction with the quality and freshness of the flowers", "2. Beauty and creativity of the floral arrangement", "3. Punctuality of the delivery", "4. Politeness and service of the staff", "5. Value for money compared to quality", "6. Convenience and ease of ordering", "7. Accuracy of the received products as ordered", "8. Overall satisfaction with Wanflorist", "9. What impressed you the most about our service?", "10. Additional suggestions for improvement (if any)"
                 ],
-                emailTitle: "11. Please enter your email address",
+                emailTitle: "11. Please enter your email address (Optional)",
                 emailPlaceholder: "Your email address...",
                 emailError: "Please enter a valid email address.",
+                optInEmailError: "Please go back and enter a valid email to subscribe.",
                 optInTitle: "12. Would you like to receive news and special promotions via email?",
                 optInYes: "Yes, I want to subscribe",
                 optInNo: "No, thank you",
@@ -319,7 +321,6 @@
                 headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
                 renderSurveyUI(magicEmail);
             } else {
-                // หากเข้าลิงก์ปกติ โดยไม่มี token และไม่มี magicEmail ให้แสดงหน้าจอแจ้งเตือน
                 showErrorState('NO_TOKEN');
             }
         }
@@ -377,7 +378,6 @@
                 const emailInput = document.getElementById('emailInput');
                 if(emailInput) {
                     emailInput.value = prefillEmail;
-                    // ไม่ซ่อนช่องแล้ว เพื่อให้ลูกค้าเห็นอีเมลตัวเอง และสามารถแก้ไขได้
                 }
             }
         }
@@ -474,12 +474,14 @@
 
             if (currentStep === 11) { // Opt-in Step (index 11 = ข้อ 12)
                 const optinVal = document.querySelector('input[name="optin"]:checked')?.value;
-                if (optinVal === 'no') {
-                    nextBtn.classList.add('hidden');
-                    submitBtn.classList.remove('hidden');
-                } else {
+                if (optinVal === 'yes') {
+                    // ถ้าตอบตกลงรับข่าวสาร ค่อยปุ่มถัดไปทำงาน
                     nextBtn.classList.remove('hidden');
                     submitBtn.classList.add('hidden');
+                } else {
+                    // ถ้าไม่เลือก หรือ เลือกตอบปฏิเสธ สามารถกดส่งแบบสอบถามได้เลย
+                    nextBtn.classList.add('hidden');
+                    submitBtn.classList.remove('hidden');
                 }
             } else if (currentStep === 12) { // Subscription Step (index 12 = ข้อ 13)
                 nextBtn.classList.add('hidden');
@@ -512,19 +514,28 @@
                 }
             } else if (isEmailStep) {
                 const emailInput = document.getElementById('emailInput');
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailPattern.test(emailInput.value)) {
-                    document.getElementById('t-error').innerText = translations[currentLang].emailError;
-                    errorBox.classList.remove('hidden');
-                    return false;
+                // เปลี่ยนเป็นตรวจสอบเฉพาะตอนที่ผู้ใช้กรอกข้อความมาเท่านั้น (ไม่บังคับ)
+                if(!document.getElementById('emailInputContainer').classList.contains('hidden')){
+                   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                   if (emailInput.value.trim() !== "" && !emailPattern.test(emailInput.value)) {
+                       document.getElementById('t-error').innerText = translations[currentLang].emailError;
+                       errorBox.classList.remove('hidden');
+                       return false;
+                   }
                 }
             } else if (isOptInStep) {
                 const checkedRadio = currentStepEl.querySelector('input[name="optin"]:checked');
-                if (!checkedRadio) {
-                    document.getElementById('t-error').innerText = translations[currentLang].error;
-                    errorBox.classList.remove('hidden');
-                    return false;
+                // ถ้าเลือก "ใช่" (ต้องการรับข่าวสาร) จะบังคับให้ต้องมีอีเมล
+                if (checkedRadio && checkedRadio.value === 'yes') {
+                    const emailInput = document.getElementById('emailInput');
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(emailInput.value)) {
+                        document.getElementById('t-error').innerText = translations[currentLang].optInEmailError;
+                        errorBox.classList.remove('hidden');
+                        return false;
+                    }
                 }
+                // ถ้าไม่ได้เลือกตัวเลือกใดๆ เลย ก็สามารถกดข้าม (Submit) ได้ ถือว่าไม่รับข่าวสาร
             }
             return true;
         }
@@ -555,8 +566,8 @@
             const formData = new FormData(e.target);
             
             const optinVal = formData.get('optin');
-            if (optinVal === 'no') {
-                // หากไม่รับข่าวสาร เราจะไม่ส่งค่าล้างอีเมลแล้ว เพื่อให้อีเมลที่กรอกในข้อ 11 ถูกส่งไปยังฐานข้อมูล
+            // หากไม่ได้กดเลือก (optinVal จะเป็น null) หรือ กด 'no' จะถือว่าไม่รับข่าวสาร
+            if (optinVal !== 'yes') {
                 formData.set('subscriptions', 'None');
             } else {
                 const subs = formData.getAll('subscribe');
