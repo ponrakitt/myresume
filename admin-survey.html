@@ -50,11 +50,29 @@
                     </button>
                 </form>
 
-                <div id="resultBox" class="hidden mt-8 p-5 bg-[#fdfaf8] border border-[#e6dcd5] rounded-xl text-center max-w-md mx-auto">
-                    <p class="text-sm text-gray-600 mb-2">ลิงก์ของคุณพร้อมแล้ว ส่งให้ลูกค้าได้เลย:</p>
-                    <input type="text" id="generatedLink" class="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded p-2 mb-3 text-center" readonly>
-                    <p id="expireText" class="text-xs text-red-400 mb-3 font-medium"></p>
-                    <button onclick="copyLink()" id="copyBtn" class="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 w-full">คัดลอกลิงก์ (Copy Link)</button>
+                <div id="resultBox" class="hidden mt-8 p-5 bg-[#fdfaf8] border border-[#e6dcd5] rounded-xl text-left max-w-md mx-auto space-y-5">
+                    
+                    <!-- ส่วนที่ 1: ลิงก์ -->
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">1. ลิงก์สำหรับส่งให้ลูกค้า:</p>
+                        <div class="flex space-x-2">
+                            <input type="text" id="generatedLink" class="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded-lg p-2" readonly>
+                            <button onclick="copyLink()" id="copyBtn" class="px-4 py-2 bg-gray-800 text-white text-xs rounded-lg hover:bg-gray-700 whitespace-nowrap transition-colors">คัดลอก</button>
+                        </div>
+                        <p id="expireText" class="text-xs text-red-400 mt-2 font-medium"></p>
+                    </div>
+
+                    <!-- ส่วนที่ 2: ข้อความ LINE -->
+                    <div class="border-t border-[#e6dcd5] pt-4">
+                        <p class="text-sm font-medium text-gray-700 mb-2">2. ข้อความพร้อมส่งใน LINE:</p>
+                        <textarea id="lineMessage" rows="8" class="w-full text-xs text-gray-600 bg-white border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:border-[#00B900] transition-colors" readonly></textarea>
+                        
+                        <button onclick="copyLineMessage()" id="copyLineBtn" class="mt-3 w-full py-2.5 bg-[#00B900] text-white text-sm font-medium rounded-lg hover:bg-[#009900] transition-colors flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.122.303.04.708.019.923l-.155 1.025c-.039.243-.177.893.774.494.952-.398 5.127-3.021 7.218-5.313C22.247 15.58 24 13.067 24 10.304z"/></svg>
+                            <span id="lineBtnText">คัดลอกข้อความ LINE</span>
+                        </button>
+                    </div>
+
                 </div>
             </div>
 
@@ -175,11 +193,11 @@
             .catch(err => alert("Error: " + err));
         });
 
-        // --- Generate Link Logic (จากของเดิม) ---
+        // --- Generate Link & LINE Message Logic ---
         document.getElementById('adminForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('genBtn');
-            const email = document.getElementById('targetEmail').value;
+            const emailOrName = document.getElementById('targetEmail').value;
             const expireHours = document.getElementById('expireHours').value;
             
             btn.innerText = 'กำลังสร้าง...';
@@ -187,7 +205,7 @@
 
             const formData = new URLSearchParams();
             formData.append('action', 'generateToken');
-            formData.append('targetEmail', email);
+            formData.append('targetEmail', emailOrName);
             formData.append('expireHours', expireHours);
 
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
@@ -197,11 +215,28 @@
                 btn.disabled = false;
                 if(data.success) {
                     const finalUrl = FRONTEND_URL + '?token=' + data.token;
+                    
+                    // 1. ตั้งค่า Link
                     document.getElementById('generatedLink').value = finalUrl;
                     document.getElementById('expireText').innerText = data.expireAt === "ไม่มีหมดอายุ" ? "* ลิงก์นี้ไม่มีวันหมดอายุ" : `* ลิงก์นี้จะหมดอายุในวันที่: ${data.expireAt}`;
+                    
+                    // 2. ตั้งค่าข้อความ LINE
+                    const customerName = emailOrName.trim() === '' ? 'ลูกค้าคนพิเศษ' : emailOrName;
+                    const expireNote = data.expireAt === "ไม่มีหมดอายุ" ? "" : `\n(ลิงก์นี้จะสามารถใช้งานได้ถึง: ${data.expireAt})`;
+                    const lineMessageTemplate = `🌸 สวัสดีค่ะคุณ ${customerName} 🌸\n\nWanflorist ขอรบกวนเวลาสักครู่ เพื่อประเมินความพึงพอใจและข้อเสนอแนะในการใช้บริการค่ะ\n\nคลิกที่ลิงก์ด้านล่างเพื่อเริ่มทำแบบสอบถามได้เลยค่ะ 👇\n${finalUrl}\n${expireNote}\n\nขอบคุณที่ไว้วางใจใช้บริการ Wanflorist นะคะ 💖`;
+                    
+                    document.getElementById('lineMessage').value = lineMessageTemplate;
+
+                    // แสดงผลกล่อง
                     document.getElementById('resultBox').classList.remove('hidden');
-                    document.getElementById('copyBtn').innerText = 'คัดลอกลิงก์ (Copy Link)';
-                    document.getElementById('copyBtn').classList.replace('bg-green-600', 'bg-gray-800');
+                    
+                    // รีเซ็ตปุ่มก๊อปปี้
+                    const copyBtn = document.getElementById('copyBtn');
+                    copyBtn.innerText = 'คัดลอก';
+                    copyBtn.classList.replace('bg-green-600', 'bg-gray-800');
+                    
+                    const lineBtnText = document.getElementById('lineBtnText');
+                    lineBtnText.innerText = 'คัดลอกข้อความ LINE';
                 }
             });
         });
@@ -210,8 +245,21 @@
             const copyText = document.getElementById("generatedLink");
             copyText.select(); document.execCommand("copy");
             const btn = document.getElementById('copyBtn');
-            btn.innerText = 'คัดลอกสำเร็จแล้ว!';
+            btn.innerText = 'คัดลอกแล้ว!';
             btn.classList.replace('bg-gray-800', 'bg-green-600');
+        }
+
+        function copyLineMessage() {
+            const copyText = document.getElementById("lineMessage");
+            copyText.select(); document.execCommand("copy");
+            
+            const lineBtnText = document.getElementById('lineBtnText');
+            lineBtnText.innerText = 'คัดลอกข้อความเรียบร้อย!';
+            
+            // เปลี่ยนข้อความกลับหลังจาก 2 วินาที
+            setTimeout(() => {
+                lineBtnText.innerText = 'คัดลอกข้อความ LINE';
+            }, 2500);
         }
     </script>
 </body>
