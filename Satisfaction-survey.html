@@ -312,7 +312,8 @@
                 headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
                 renderSurveyUI();
             } else {
-                renderSurveyUI();
+                // หากเข้าลิงก์ปกติ โดยไม่มี token และไม่มี magicEmail ให้แสดงหน้าจอแจ้งเตือน
+                showErrorState('NO_TOKEN');
             }
         }
 
@@ -374,14 +375,18 @@
         }
 
         function showErrorState(reason) {
-            let errorTitle = "ลิงก์นี้ไม่สามารถใช้งานได้";
-            let errorMsg = "ลิงก์แบบสอบถามนี้ถูกใช้ไปแล้ว หรือไม่ถูกต้องค่ะ";
-            let iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>`; 
+            let errorTitle = "ไม่พบแบบสอบถาม";
+            let errorMsg = "ไม่พบข้อมูลแบบสอบถามที่คุณต้องการ กรุณาติดต่อทีมงานเพื่อขอรับลิงก์ค่ะ";
+            let iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>`; // รูปไอคอนตกใจ
 
             if (reason === 'EXPIRED') {
                 errorTitle = "ลิงก์แบบสอบถามหมดอายุแล้ว";
                 errorMsg = "ลิงก์นี้หมดอายุการใช้งานตามเวลาที่กำหนดแล้วค่ะ กรุณาติดต่อทีมงานเพื่อขอลิงก์ใหม่";
-                iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>`; 
+                iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>`; // รูปนาฬิกา
+            } else if (reason !== 'NO_TOKEN') {
+                errorTitle = "ลิงก์นี้ไม่สามารถใช้งานได้";
+                errorMsg = "ลิงก์แบบสอบถามนี้ถูกใช้ไปแล้ว หรือไม่ถูกต้องค่ะ";
+                iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>`; // รูปกากบาท
             }
 
             document.getElementById('questionsContainer').innerHTML = `
