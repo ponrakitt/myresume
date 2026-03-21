@@ -103,7 +103,7 @@
                 <span id="t-error">กรุณาเลือกคำตอบก่อนดำเนินการต่อค่ะ</span>
             </div>
 
-            <!-- Survey Form: เพิ่ม novalidate เพื่อไม่ให้ browser เช็ค field ที่ถูกซ่อน -->
+            <!-- Survey Form -->
             <form id="surveyForm" novalidate>
                 
                 <div id="questionsContainer">
@@ -117,8 +117,16 @@
                     </div>
                 </div>
 
-                <!-- Opt-In Step (Step 11) - Hidden from JS initially -->
-                <div class="step" data-step="11" id="optInStep">
+                <!-- Email Step (Step 11) - Hidden from JS initially -->
+                <div class="step" data-step="11" id="emailStep">
+                    <h2 id="t-email-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
+                    <div class="mt-4" id="emailInputContainer">
+                        <input type="email" id="emailInput" name="email" class="w-full text-base border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors text-gray-700" placeholder="">
+                    </div>
+                </div>
+
+                <!-- Opt-In Step (Step 12) - Hidden from JS initially -->
+                <div class="step" data-step="12" id="optInStep">
                     <h2 id="t-optin-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
                     <div class="space-y-3 mb-6">
                         <label class="flex items-center space-x-3 p-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors optin-label">
@@ -138,8 +146,8 @@
                     </div>
                 </div>
 
-                <!-- Subscription Step (Step 12) - Hidden from JS initially -->
-                <div class="step" data-step="12" id="subscriptionStep">
+                <!-- Subscription Step (Step 13) - Hidden from JS initially -->
+                <div class="step" data-step="13" id="subscriptionStep">
                     <h2 id="t-sub-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
                     <p id="t-sub-desc" class="text-sm text-gray-500 mb-4"></p>
                     <div class="space-y-3 mb-6">
@@ -155,9 +163,6 @@
                             <input type="checkbox" name="subscribe" value="Floral Tips" class="w-5 h-5 text-[#c19b84] border-gray-300 rounded focus:ring-[#c19b84]">
                             <span id="t-sub-tips" class="text-sm sm:text-base text-gray-700"></span>
                         </label>
-                    </div>
-                    <div class="mt-4" id="emailInputContainer">
-                        <input type="email" id="emailInput" name="email" class="w-full text-base border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors text-gray-700" placeholder="">
                     </div>
                 </div>
 
@@ -222,16 +227,17 @@
                 questions: [
                     "1. ความพึงพอใจในคุณภาพและความสดของดอกไม้", "2. ความสวยงามและความคิดสร้างสรรค์ของการจัดดอกไม้", "3. ความตรงต่อเวลาในการจัดส่งสินค้า", "4. ความสุภาพและการให้บริการของพนักงาน", "5. ความคุ้มค่าของราคาเมื่อเทียบกับคุณภาพ", "6. ความสะดวกและง่ายดายในการสั่งซื้อสินค้า", "7. ความถูกต้องของสินค้าที่ได้รับตรงตามที่สั่ง", "8. ความพึงพอใจในภาพรวมต่อร้าน Wanflorist", "9. สิ่งที่คุณประทับใจที่สุดในการใช้บริการครั้งนี้", "10. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนา (ถ้ามี)"
                 ],
-                optInTitle: "11. คุณต้องการรับข่าวสารและโปรโมชั่นพิเศษทางอีเมลหรือไม่?",
+                emailTitle: "11. กรุณากรอกอีเมลของคุณ",
+                emailPlaceholder: "อีเมลของคุณ...",
+                emailError: "กรุณาระบุอีเมลให้ถูกต้องค่ะ",
+                optInTitle: "12. คุณต้องการรับข่าวสารและโปรโมชั่นพิเศษทางอีเมลหรือไม่?",
                 optInYes: "ใช่, ฉันต้องการรับข่าวสาร",
                 optInNo: "ไม่, ขอบคุณ",
-                subTitle: "12. ตั้งค่าการรับข่าวสาร",
+                subTitle: "13. ตั้งค่าการรับข่าวสาร",
                 subDesc: "เลือกข้อมูลที่คุณสนใจรับแจ้งเตือนทางอีเมล",
                 subPromo: "โปรโมชั่นและส่วนลดพิเศษ",
                 subNew: "คอลเลกชันดอกไม้ใหม่ล่าสุด",
-                subTips: "เกร็ดความรู้และวิธีดูแลดอกไม้",
-                subEmailPlaceholder: "อีเมลของคุณ...",
-                subError: "กรุณาระบุอีเมลให้ถูกต้องเพื่อรับข่าวสารค่ะ"
+                subTips: "เกร็ดความรู้และวิธีดูแลดอกไม้"
             },
             en: {
                 subtitle: "Customer Satisfaction Survey",
@@ -249,21 +255,22 @@
                 questions: [
                     "1. Satisfaction with the quality and freshness of the flowers", "2. Beauty and creativity of the floral arrangement", "3. Punctuality of the delivery", "4. Politeness and service of the staff", "5. Value for money compared to quality", "6. Convenience and ease of ordering", "7. Accuracy of the received products as ordered", "8. Overall satisfaction with Wanflorist", "9. What impressed you the most about our service?", "10. Additional suggestions for improvement (if any)"
                 ],
-                optInTitle: "11. Would you like to receive news and special promotions via email?",
+                emailTitle: "11. Please enter your email address",
+                emailPlaceholder: "Your email address...",
+                emailError: "Please enter a valid email address.",
+                optInTitle: "12. Would you like to receive news and special promotions via email?",
                 optInYes: "Yes, I want to subscribe",
                 optInNo: "No, thank you",
-                subTitle: "12. Subscription Settings",
+                subTitle: "13. Subscription Settings",
                 subDesc: "Select the topics you would like to receive via email.",
                 subPromo: "Promotions & Special Discounts",
                 subNew: "New Floral Collections",
-                subTips: "Flower Care Tips & Tricks",
-                subEmailPlaceholder: "Your email address...",
-                subError: "Please enter a valid email address to subscribe."
+                subTips: "Flower Care Tips & Tricks"
             }
         };
 
         let currentStep = 0;
-        const totalSteps = 12; // 10 questions + optin + subscription
+        const totalSteps = 13; // 10 questions + email + optin + subscription
         const container = document.getElementById('questionsContainer');
 
         // ==========================================
@@ -310,7 +317,7 @@
                 welcomeBanner.className = 'bg-[#fdfaf8] text-[#c19b84] text-center text-xs sm:text-sm py-2 px-4 border-b border-[#e6dcd5] font-medium';
                 welcomeBanner.innerHTML = `🌟 ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
                 headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
-                renderSurveyUI();
+                renderSurveyUI(magicEmail);
             } else {
                 // หากเข้าลิงก์ปกติ โดยไม่มี token และไม่มี magicEmail ให้แสดงหน้าจอแจ้งเตือน
                 showErrorState('NO_TOKEN');
@@ -357,7 +364,8 @@
                 container.appendChild(stepDiv);
             }
 
-            // ย้าย Step 11 และ 12 เข้าไปใน Container
+            // นำ Step 11 (อีเมล), 12 (Opt-in) และ 13 (Subscription) เข้าไปใน Container
+            container.appendChild(document.getElementById('emailStep'));
             container.appendChild(document.getElementById('optInStep'));
             container.appendChild(document.getElementById('subscriptionStep'));
 
@@ -369,7 +377,7 @@
                 const emailInput = document.getElementById('emailInput');
                 if(emailInput) {
                     emailInput.value = prefillEmail;
-                    document.getElementById('emailInputContainer').classList.add('hidden'); 
+                    // ไม่ซ่อนช่องแล้ว เพื่อให้ลูกค้าเห็นอีเมลตัวเอง และสามารถแก้ไขได้
                 }
             }
         }
@@ -425,6 +433,9 @@
                 if(titleEl) titleEl.innerText = t.questions[i];
             }
 
+            document.getElementById('t-email-title').innerText = t.emailTitle;
+            document.getElementById('emailInput').placeholder = t.emailPlaceholder;
+
             document.getElementById('t-optin-title').innerText = t.optInTitle;
             document.getElementById('t-optin-yes').innerText = t.optInYes;
             document.getElementById('t-optin-no').innerText = t.optInNo;
@@ -434,7 +445,6 @@
             document.getElementById('t-sub-promo').innerText = t.subPromo;
             document.getElementById('t-sub-new').innerText = t.subNew;
             document.getElementById('t-sub-tips').innerText = t.subTips;
-            document.getElementById('emailInput').placeholder = t.subEmailPlaceholder;
 
             document.querySelectorAll('.t-scale-low').forEach(el => el.innerText = t.scaleLow);
             document.querySelectorAll('.t-scale-high').forEach(el => el.innerText = t.scaleHigh);
@@ -462,7 +472,7 @@
             if (currentStep === 0) prevBtn.classList.add('hidden');
             else prevBtn.classList.remove('hidden');
 
-            if (currentStep === 10) { // Opt-in Step
+            if (currentStep === 11) { // Opt-in Step (index 11 = ข้อ 12)
                 const optinVal = document.querySelector('input[name="optin"]:checked')?.value;
                 if (optinVal === 'no') {
                     nextBtn.classList.add('hidden');
@@ -471,7 +481,7 @@
                     nextBtn.classList.remove('hidden');
                     submitBtn.classList.add('hidden');
                 }
-            } else if (currentStep === 11) { // Sub Step
+            } else if (currentStep === 12) { // Subscription Step (index 12 = ข้อ 13)
                 nextBtn.classList.add('hidden');
                 submitBtn.classList.remove('hidden');
             } else {
@@ -490,13 +500,21 @@
             const steps = document.querySelectorAll('.step');
             const currentStepEl = steps[currentStep];
             const isRatingStep = currentStep < 8;
-            const isOptInStep = currentStep === 10;
-            const isSubscriptionStep = currentStep === 11;
+            const isEmailStep = currentStep === 10;
+            const isOptInStep = currentStep === 11;
 
             if (isRatingStep) {
                 const checkedRadio = currentStepEl.querySelector('input[type="radio"]:checked');
                 if (!checkedRadio) {
                     document.getElementById('t-error').innerText = translations[currentLang].error;
+                    errorBox.classList.remove('hidden');
+                    return false;
+                }
+            } else if (isEmailStep) {
+                const emailInput = document.getElementById('emailInput');
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    document.getElementById('t-error').innerText = translations[currentLang].emailError;
                     errorBox.classList.remove('hidden');
                     return false;
                 }
@@ -506,17 +524,6 @@
                     document.getElementById('t-error').innerText = translations[currentLang].error;
                     errorBox.classList.remove('hidden');
                     return false;
-                }
-            } else if (isSubscriptionStep) {
-                const emailInput = document.getElementById('emailInput');
-                // หากถูกซ่อนอยู่ (prefilled by token) ไม่ต้อง validate 
-                if(!document.getElementById('emailInputContainer').classList.contains('hidden')){
-                   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                   if (!emailPattern.test(emailInput.value)) {
-                       document.getElementById('t-error').innerText = translations[currentLang].subError;
-                       errorBox.classList.remove('hidden');
-                       return false;
-                   }
                 }
             }
             return true;
@@ -549,7 +556,7 @@
             
             const optinVal = formData.get('optin');
             if (optinVal === 'no') {
-                formData.set('email', '');
+                // หากไม่รับข่าวสาร เราจะไม่ส่งค่าล้างอีเมลแล้ว เพื่อให้อีเมลที่กรอกในข้อ 11 ถูกส่งไปยังฐานข้อมูล
                 formData.set('subscriptions', 'None');
             } else {
                 const subs = formData.getAll('subscribe');
