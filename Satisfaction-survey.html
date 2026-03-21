@@ -2,18 +2,18 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wanflorist Customer Survey</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #c19b84; /* Soft elegant mocha/rose */
+            --primary: #c19b84; 
             --primary-light: #e6dcd5;
         }
         body {
             font-family: 'Prompt', sans-serif;
-            background-color: #f7f5f2; /* Soft warm neutral */
+            background-color: #f7f5f2; 
             color: #4a4a4a;
         }
         .step {
@@ -29,7 +29,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Custom Radio Button Style - Softer elegant look */
+        /* Custom Radio Button Style */
         .rating-label {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: white;
@@ -94,7 +94,7 @@
 
         <!-- Progress Bar -->
         <div class="w-full bg-gray-50 h-1.5">
-            <div id="progressBar" class="h-1.5 transition-all duration-500 ease-out" style="width: 10%; background-color: var(--primary);"></div>
+            <div id="progressBar" class="h-1.5 transition-all duration-500 ease-out" style="width: 0%; background-color: var(--primary);"></div>
         </div>
 
         <div class="p-5 sm:p-10">
@@ -107,10 +107,17 @@
             <form id="surveyForm">
                 
                 <div id="questionsContainer">
-                    <!-- Questions will be injected here by JavaScript -->
+                    <!-- Loading State (Initial) -->
+                    <div class="text-center py-12" id="initialLoading">
+                        <svg class="animate-spin h-10 w-10 mx-auto mb-4" style="color: var(--primary);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="text-gray-500" id="t-init-loading">กำลังโหลดข้อมูลระบบ...</p>
+                    </div>
                 </div>
 
-                <!-- Opt-In Step (Step 11) -->
+                <!-- Opt-In Step (Step 11) - Hidden from JS initially -->
                 <div class="step" data-step="11" id="optInStep">
                     <h2 id="t-optin-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
                     <div class="space-y-3 mb-6">
@@ -131,7 +138,7 @@
                     </div>
                 </div>
 
-                <!-- Subscription Step (Step 12) -->
+                <!-- Subscription Step (Step 12) - Hidden from JS initially -->
                 <div class="step" data-step="12" id="subscriptionStep">
                     <h2 id="t-sub-title" class="text-base sm:text-xl font-medium mb-6 sm:mb-8 text-gray-800 leading-relaxed"></h2>
                     <p id="t-sub-desc" class="text-sm text-gray-500 mb-4"></p>
@@ -149,8 +156,8 @@
                             <span id="t-sub-tips" class="text-sm sm:text-base text-gray-700"></span>
                         </label>
                     </div>
-                    <div class="mt-4">
-                        <input type="email" id="emailInput" name="email" class="w-full text-base sm:text-lg border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors text-gray-700" placeholder="">
+                    <div class="mt-4" id="emailInputContainer">
+                        <input type="email" id="emailInput" name="email" class="w-full text-base border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors text-gray-700" placeholder="">
                     </div>
                 </div>
 
@@ -173,7 +180,7 @@
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="flex justify-between mt-8 sm:mt-10" id="navButtons">
+                <div class="flex justify-between mt-8 sm:mt-10 hidden" id="navButtons">
                     <button type="button" id="prevBtn" class="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors hidden font-medium text-sm border border-gray-100">ย้อนกลับ</button>
                     <div class="flex-grow"></div>
                     <button type="button" id="nextBtn" class="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-white transition-colors font-medium text-sm shadow-sm hover:shadow-md" style="background-color: var(--primary);">ถัดไป</button>
@@ -193,35 +200,27 @@
 
     <script>
         // --- การตั้งค่า Google Sheets API ---
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCL_VYErxDPgAERCPfIcT9L3D9EJCT-YOEFGKa_4pXo5cTEnrOpykdx_t8BXfMsqHe/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCL_VYErxDPgAERCPfIcT9L3D9EJCT-YOEFGKa_4pXo5cTEnrOpykdx_t8BXfMsqHe/exec'; 
 
-        // --- Data & Translations ---
+        // --- Data & Translations (Default) ---
         let currentLang = 'th';
         
-        const translations = {
+        let translations = {
             th: {
                 subtitle: "แบบประเมินความพึงพอใจและข้อเสนอแนะ",
                 error: "กรุณาเลือกคำตอบก่อนดำเนินการต่อค่ะ",
                 btnPrev: "ย้อนกลับ",
                 btnNext: "ถัดไป",
                 btnSubmit: "ส่งแบบสอบถาม",
-                loading: "กำลังบันทึกข้อมูล...",
+                loading: "กำลังโหลดข้อมูล...",
+                saving: "กำลังบันทึกข้อมูล...",
                 successTitle: "ขอบคุณสำหรับความคิดเห็นค่ะ!",
                 successDesc: "ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว เราจะนำไปพัฒนาบริการให้ดียิ่งขึ้นค่ะ",
                 scaleLow: "1 = น้อยที่สุด",
                 scaleHigh: "10 = มากที่สุด",
                 placeholderText: "พิมพ์ข้อความของคุณที่นี่...",
                 questions: [
-                    "1. ความพึงพอใจในคุณภาพและความสดของดอกไม้",
-                    "2. ความสวยงามและความคิดสร้างสรรค์ของการจัดดอกไม้",
-                    "3. ความตรงต่อเวลาในการจัดส่งสินค้า",
-                    "4. ความสุภาพและการให้บริการของพนักงาน",
-                    "5. ความคุ้มค่าของราคาเมื่อเทียบกับคุณภาพ",
-                    "6. ความสะดวกและง่ายดายในการสั่งซื้อสินค้า",
-                    "7. ความถูกต้องของสินค้าที่ได้รับตรงตามที่สั่ง",
-                    "8. ความพึงพอใจในภาพรวมต่อร้าน Wanflorist",
-                    "9. สิ่งที่คุณประทับใจที่สุดในการใช้บริการครั้งนี้",
-                    "10. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนา (ถ้ามี)"
+                    "1. ความพึงพอใจในคุณภาพและความสดของดอกไม้", "2. ความสวยงามและความคิดสร้างสรรค์ของการจัดดอกไม้", "3. ความตรงต่อเวลาในการจัดส่งสินค้า", "4. ความสุภาพและการให้บริการของพนักงาน", "5. ความคุ้มค่าของราคาเมื่อเทียบกับคุณภาพ", "6. ความสะดวกและง่ายดายในการสั่งซื้อสินค้า", "7. ความถูกต้องของสินค้าที่ได้รับตรงตามที่สั่ง", "8. ความพึงพอใจในภาพรวมต่อร้าน Wanflorist", "9. สิ่งที่คุณประทับใจที่สุดในการใช้บริการครั้งนี้", "10. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนา (ถ้ามี)"
                 ],
                 optInTitle: "11. คุณต้องการรับข่าวสารและโปรโมชั่นพิเศษทางอีเมลหรือไม่?",
                 optInYes: "ใช่, ฉันต้องการรับข่าวสาร",
@@ -240,23 +239,15 @@
                 btnPrev: "Back",
                 btnNext: "Next",
                 btnSubmit: "Submit Survey",
-                loading: "Saving your response...",
+                loading: "Loading data...",
+                saving: "Saving your response...",
                 successTitle: "Thank you for your feedback!",
-                successDesc: "Your response has been successfully recorded. We will use it to improve our services.",
+                successDesc: "Your response has been successfully recorded.",
                 scaleLow: "1 = Lowest",
                 scaleHigh: "10 = Highest",
                 placeholderText: "Type your answer here...",
                 questions: [
-                    "1. Satisfaction with the quality and freshness of the flowers",
-                    "2. Beauty and creativity of the floral arrangement",
-                    "3. Punctuality of the delivery",
-                    "4. Politeness and service of the staff",
-                    "5. Value for money compared to quality",
-                    "6. Convenience and ease of ordering",
-                    "7. Accuracy of the received products as ordered",
-                    "8. Overall satisfaction with Wanflorist",
-                    "9. What impressed you the most about our service?",
-                    "10. Additional suggestions for improvement (if any)"
+                    "1. Satisfaction with the quality and freshness of the flowers", "2. Beauty and creativity of the floral arrangement", "3. Punctuality of the delivery", "4. Politeness and service of the staff", "5. Value for money compared to quality", "6. Convenience and ease of ordering", "7. Accuracy of the received products as ordered", "8. Overall satisfaction with Wanflorist", "9. What impressed you the most about our service?", "10. Additional suggestions for improvement (if any)"
                 ],
                 optInTitle: "11. Would you like to receive news and special promotions via email?",
                 optInYes: "Yes, I want to subscribe",
@@ -272,12 +263,62 @@
         };
 
         let currentStep = 0;
-        const totalSteps = 12; // ปรับเป็น 12 ขั้นตอน
+        const totalSteps = 12; // 10 questions + optin + subscription
         const container = document.getElementById('questionsContainer');
 
-        // --- Build DOM ---
-        function buildQuestions() {
-            container.innerHTML = ''; // Clear container
+        // ==========================================
+        // Initialization (โหลด Config & เช็ค Token)
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const magicEmail = urlParams.get('magic_email');
+        const token = urlParams.get('token'); 
+
+        // Fetch Config จากหน้า Admin
+        fetch(SCRIPT_URL + '?action=getConfig')
+            .then(res => res.json())
+            .then(config => {
+                if (config && config.th_sub) {
+                    translations.th.subtitle = config.th_sub;
+                    translations.en.subtitle = config.en_sub;
+                    translations.th.questions = config.th_q;
+                    translations.en.questions = config.en_q;
+                }
+                continueInitialization();
+            })
+            .catch(err => {
+                continueInitialization(); // ใช้ค่า Default 
+            });
+
+        function continueInitialization() {
+            if (token) {
+                document.getElementById('t-init-loading').innerText = "กำลังตรวจสอบสิทธิ์การเข้าถึง...";
+                fetch(SCRIPT_URL + '?action=checkToken&token=' + token)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid) {
+                            renderSurveyUI(data.email);
+                        } else {
+                            showErrorState(data.reason);
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('questionsContainer').innerHTML = `<p class="text-red-500 text-center">เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณารีเฟรชหน้าเว็บ</p>`;
+                    });
+            } else if (magicEmail) {
+                const headerSection = document.querySelector('.px-5.py-4');
+                const welcomeBanner = document.createElement('div');
+                welcomeBanner.className = 'bg-[#fdfaf8] text-[#c19b84] text-center text-xs sm:text-sm py-2 px-4 border-b border-[#e6dcd5] font-medium';
+                welcomeBanner.innerHTML = ` ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
+                headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
+                renderSurveyUI();
+            } else {
+                renderSurveyUI();
+            }
+        }
+
+        // --- สร้างและแสดงผลแบบสอบถาม ---
+        function renderSurveyUI(prefillEmail = null) {
+            container.innerHTML = ''; // Clear Loading
             
             for(let i = 0; i < 10; i++) {
                 const stepNum = i + 1;
@@ -308,13 +349,51 @@
                     `;
                 } else {
                     contentHTML += `
-                        <textarea name="q${stepNum}" rows="4" class="w-full text-base sm:text-lg border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors resize-none text-gray-700 q-placeholder" placeholder=""></textarea>
+                        <textarea name="q${stepNum}" rows="4" class="w-full text-base border-2 border-gray-100 bg-gray-50 rounded-2xl p-4 focus:outline-none focus:bg-white focus:border-[#c19b84] transition-colors resize-none text-gray-700 q-placeholder" placeholder=""></textarea>
                     `;
                 }
-
                 stepDiv.innerHTML = contentHTML;
                 container.appendChild(stepDiv);
             }
+
+            // ย้าย Step 11 และ 12 เข้าไปใน Container
+            container.appendChild(document.getElementById('optInStep'));
+            container.appendChild(document.getElementById('subscriptionStep'));
+
+            setLang(currentLang);
+            updateUI();
+            document.getElementById('navButtons').classList.remove('hidden');
+
+            if (prefillEmail && prefillEmail !== 'ไม่ระบุอีเมล') {
+                const emailInput = document.getElementById('emailInput');
+                if(emailInput) {
+                    emailInput.value = prefillEmail;
+                    document.getElementById('emailInputContainer').classList.add('hidden'); 
+                }
+            }
+        }
+
+        function showErrorState(reason) {
+            let errorTitle = "ลิงก์นี้ไม่สามารถใช้งานได้";
+            let errorMsg = "ลิงก์แบบสอบถามนี้ถูกใช้ไปแล้ว หรือไม่ถูกต้องค่ะ";
+            let iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>`; 
+
+            if (reason === 'EXPIRED') {
+                errorTitle = "ลิงก์แบบสอบถามหมดอายุแล้ว";
+                errorMsg = "ลิงก์นี้หมดอายุการใช้งานตามเวลาที่กำหนดแล้วค่ะ กรุณาติดต่อทีมงานเพื่อขอลิงก์ใหม่";
+                iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>`; 
+            }
+
+            document.getElementById('questionsContainer').innerHTML = `
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">${iconSvg}</svg>
+                    </div>
+                    <h2 class="text-xl font-medium text-gray-800 mb-2">${errorTitle}</h2>
+                    <p class="text-gray-500">${errorMsg}</p>
+                </div>
+            `;
+            document.getElementById('navButtons').classList.add('hidden');
         }
 
         // --- Language Switcher ---
@@ -322,27 +401,25 @@
             currentLang = lang;
             const t = translations[lang];
 
-            // Update Toggle Buttons
             document.getElementById('btn-th').classList.toggle('active', lang === 'th');
             document.getElementById('btn-en').classList.toggle('active', lang === 'en');
 
-            // Update Static Texts
             document.getElementById('t-subtitle').innerText = t.subtitle;
             document.getElementById('t-error').innerText = t.error;
             document.getElementById('prevBtn').innerText = t.btnPrev;
             document.getElementById('nextBtn').innerText = t.btnNext;
             document.getElementById('submitBtn').innerText = t.btnSubmit;
-            document.getElementById('t-loading').innerText = t.loading;
+            if(document.getElementById('t-init-loading')) {
+               document.getElementById('t-init-loading').innerText = t.loading;
+            }
             document.getElementById('t-success-title').innerText = t.successTitle;
             document.getElementById('t-success-desc').innerText = t.successDesc;
 
-            // Update Dynamic Generated Texts
-            for(let i = 0; i < 10; i++) { // 10 คำถามแรกสร้างผ่าน Loop
+            for(let i = 0; i < 10; i++) {
                 const titleEl = document.getElementById(`q-title-${i}`);
                 if(titleEl) titleEl.innerText = t.questions[i];
             }
 
-            // Update Opt-in & Subscription Texts
             document.getElementById('t-optin-title').innerText = t.optInTitle;
             document.getElementById('t-optin-yes').innerText = t.optInYes;
             document.getElementById('t-optin-no').innerText = t.optInNo;
@@ -370,26 +447,17 @@
         function updateUI() {
             const steps = document.querySelectorAll('.step');
             steps.forEach((step, index) => {
-                if(index === currentStep) {
-                    step.classList.add('active');
-                } else {
-                    step.classList.remove('active');
-                }
+                if(index === currentStep) step.classList.add('active');
+                else step.classList.remove('active');
             });
 
-            // Update progress bar
             const progress = ((currentStep + 1) / totalSteps) * 100;
             progressBar.style.width = `${progress}%`;
 
-            // Update buttons
-            if (currentStep === 0) {
-                prevBtn.classList.add('hidden');
-            } else {
-                prevBtn.classList.remove('hidden');
-            }
+            if (currentStep === 0) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
 
-            // Logic สำหรับปุ่มในหน้า Opt-in (Step 11 - index 10)
-            if (currentStep === 10) {
+            if (currentStep === 10) { // Opt-in Step
                 const optinVal = document.querySelector('input[name="optin"]:checked')?.value;
                 if (optinVal === 'no') {
                     nextBtn.classList.add('hidden');
@@ -398,14 +466,10 @@
                     nextBtn.classList.remove('hidden');
                     submitBtn.classList.add('hidden');
                 }
-            } 
-            // Logic สำหรับหน้า Subscription (Step 12 - index 11)
-            else if (currentStep === 11) {
+            } else if (currentStep === 11) { // Sub Step
                 nextBtn.classList.add('hidden');
                 submitBtn.classList.remove('hidden');
-            } 
-            // หน้าอื่นๆ
-            else {
+            } else {
                 nextBtn.classList.remove('hidden');
                 submitBtn.classList.add('hidden');
             }
@@ -413,27 +477,9 @@
             errorBox.classList.add('hidden');
         }
 
-        // Add event listener to Opt-in radios so buttons update instantly
         document.querySelectorAll('input[name="optin"]').forEach(radio => {
             radio.addEventListener('change', updateUI);
         });
-
-        // ==========================================
-        // เพิ่มระบบ Magic Link ตรงนี้
-        // ==========================================
-        const urlParams = new URLSearchParams(window.location.search);
-        const magicEmail = urlParams.get('magic_email');
-
-        if (magicEmail) {
-            // แสดงแบนเนอร์ข้อความต้อนรับด้านบน
-            const headerSection = document.querySelector('.px-6.py-5');
-            const welcomeBanner = document.createElement('div');
-            welcomeBanner.className = 'bg-[#fdfaf8] text-[#c19b84] text-center text-xs sm:text-sm py-2 px-4 border-b border-[#e6dcd5] font-medium';
-            welcomeBanner.innerHTML = `🌟 ยินดีต้อนรับกลับมาค่ะ! กำลังอัปเดตข้อมูลสำหรับ: <span class="text-gray-700">${magicEmail}</span>`;
-            
-            // แทรกไว้ใต้ Header
-            headerSection.parentNode.insertBefore(welcomeBanner, headerSection.nextSibling);
-        }
 
         function validateStep() {
             const steps = document.querySelectorAll('.step');
@@ -458,11 +504,14 @@
                 }
             } else if (isSubscriptionStep) {
                 const emailInput = document.getElementById('emailInput');
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailPattern.test(emailInput.value)) {
-                    document.getElementById('t-error').innerText = translations[currentLang].subError;
-                    errorBox.classList.remove('hidden');
-                    return false;
+                // หากถูกซ่อนอยู่ (prefilled by token) ไม่ต้อง validate 
+                if(!document.getElementById('emailInputContainer').classList.contains('hidden')){
+                   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                   if (!emailPattern.test(emailInput.value)) {
+                       document.getElementById('t-error').innerText = translations[currentLang].subError;
+                       errorBox.classList.remove('hidden');
+                       return false;
+                   }
                 }
             }
             return true;
@@ -482,46 +531,32 @@
 
         document.getElementById('surveyForm').addEventListener('submit', e => {
             e.preventDefault();
-            
-            // Validate step ก่อน Submit เผื่อมี Error ตอนอยู่หน้า Subscription
-            if (!validateStep()) {
-                return;
-            }
+            if (!validateStep()) return;
             
             const steps = document.querySelectorAll('.step');
             steps.forEach(step => step.classList.remove('active'));
             navButtons.classList.add('hidden');
+            
+            document.getElementById('t-loading').innerText = translations[currentLang].saving;
             document.getElementById('loadingStep').classList.remove('hidden');
 
             const formData = new FormData(e.target);
             
-            // จัดการข้อมูลตามตัวเลือก Opt-in
             const optinVal = formData.get('optin');
             if (optinVal === 'no') {
                 formData.set('email', '');
                 formData.set('subscriptions', 'None');
             } else {
                 const subs = formData.getAll('subscribe');
-                if(subs.length > 0) {
-                    formData.set('subscriptions', subs.join(', '));
-                } else {
-                    formData.set('subscriptions', 'General News'); // กรณีไม่ได้ติ๊กอะไรเลยแต่สมัครใจรับ
-                }
+                if(subs.length > 0) formData.set('subscriptions', subs.join(', '));
+                else formData.set('subscriptions', 'General News');
             }
-            formData.delete('subscribe'); // เอา array ออก
+            formData.delete('subscribe'); 
             
-            // ==========================================
-            // แนบอีเมลจาก Magic Link ส่งกลับไปบันทึก
-            // ==========================================
-            if (magicEmail) {
-                formData.append('magic_email', magicEmail);
-            }
+            if (token) formData.append('token', token);
+            if (magicEmail) formData.append('magic_email', magicEmail);
             
-            // ส่งข้อมูลไปยัง Google Sheets
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: formData
-            })
+            fetch(SCRIPT_URL, { method: 'POST', body: formData })
             .then(response => {
                 document.getElementById('loadingStep').classList.add('hidden');
                 document.getElementById('successStep').classList.remove('hidden');
@@ -530,15 +565,8 @@
                 console.error('Error!', error.message);
                 document.getElementById('loadingStep').classList.add('hidden');
                 document.getElementById('successStep').classList.remove('hidden');
-                console.log("หมายเหตุ: ต้องตั้งค่า SCRIPT_URL ด้วย Google Apps Script");
             });
         });
-
-        // Initialize
-        buildQuestions();
-        setLang('th'); // Set default language
-        updateUI();
-
     </script>
 </body>
 </html>
