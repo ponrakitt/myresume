@@ -862,7 +862,18 @@ async function doLogin() {
       checkLoginState();
     }
   } else {
-    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+    // เช็คกรณีอีเมลไม่มีในระบบ (unregistered)
+    if (res.errorType === 'unregistered') {
+      Swal.fire({
+        title: 'ไม่พบข้อมูลในระบบ',
+        html: '<p style="margin-bottom:16px;">อีเมลนี้ยังไม่ได้ลงทะเบียนเข้าใช้งานในระบบ</p><p style="font-size:14px;color:var(--muted);">คิดว่าระบบทำงานผิดพลาดรึป่าว?</p><a href="http://ponrakitt.site/ticket.html" target="_blank" style="display:inline-block;background:var(--blue);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px;box-shadow:0 4px 12px rgba(37,99,235,0.2);">ติดต่อผู้ดูแลระบบทันที</a>',
+        icon: 'error',
+        showConfirmButton: false,
+        showCloseButton: true
+      });
+    } else {
+      Swal.fire('ข้อผิดพลาด', res.message, 'error');
+    }
   }
 }
 
