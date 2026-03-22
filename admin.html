@@ -203,10 +203,24 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
   justify-content: center;
   width: 100%;
 }
-.site-footer p { 
-  margin-bottom: 6px; 
-  color: var(--muted); 
-  font-size: 13.5px; 
+.site-footer p { margin-bottom: 6px; color: var(--muted); font-size: 13.5px; }
+
+/* Print Label Area styles */
+@media screen { #print-area { display: none; } }
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+  .print-label-card { border: 2px solid #000; border-radius: 16px; padding: 24px; max-width: 500px; margin: 0 auto; color: #000; font-family: 'Prompt', sans-serif; page-break-inside: avoid; }
+  .print-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 16px; }
+  .print-qr-code { width: 120px; height: 120px; }
+  .print-title { font-size: 22px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;}
+  .print-tid { font-family: monospace; font-size: 24px; font-weight: bold; }
+  .print-row { margin-bottom: 12px; }
+  .print-label-text { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 4px; text-transform: uppercase; }
+  .print-value-text { font-size: 18px; margin-bottom: 16px; }
+  .print-value-address { border: 1px solid #000; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: normal; margin-bottom: 16px; }
+  .print-footer { text-align: center; border-top: 2px dashed #000; padding-top: 16px; margin-top: 16px; font-size: 14px; font-weight: bold; text-transform: uppercase;}
 }
 
 /* Responsive */
@@ -330,17 +344,17 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
 
 <!-- Change Password Modal -->
 <div id="change-pw-modal" class="modal-bg hidden">
-  <div class="modal" style="max-width:440px; text-align:left;">
-    <div class="modal-header" style="padding:0 0 16px;">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
       <span class="modal-title">เปลี่ยนรหัสผ่าน</span>
-      <button class="close-btn" style="position:relative; top:-5px;" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+      <button class="close-btn" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
-    <div class="modal-body" style="padding:16px 0 0;">
-      <div class="form-group" style="margin-bottom:16px;">
+    <div class="modal-body">
+      <div class="form-group">
         <label>รหัสผ่านเดิม</label>
         <input id="cpw-old" type="password" class="login-input" placeholder="กรอกรหัสผ่านปัจจุบัน"/>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
+      <div class="form-group">
         <label>รหัสผ่านใหม่ <span style="font-size:11px;color:var(--muted);font-weight:normal;">(อักษรใหญ่, เล็ก, ตัวเลข, 8 ตัวอักษรขึ้นไป)</span></label>
         <input id="cpw-new" type="password" class="login-input" placeholder="กรอกรหัสผ่านใหม่"/>
       </div>
@@ -653,8 +667,10 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
   </div>
 </div>
 
+<!-- PRINT AREA (Hidden on screen, visible on print) -->
+<div id="print-area"></div>
+
 <script>
-// ย้ายฟังก์ชัน Modal ขึ้นมาไว้ด้านบนสุดเพื่อให้เรียกใช้งานได้ไม่มีปัญหา
 function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -672,7 +688,6 @@ document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons(); 
   checkUrlForReset();
   
-  // Event listener สำหรับคลิกพื้นที่ด้านนอก Modal เพื่อปิด
   document.querySelectorAll('.modal-bg').forEach(el=>{
     el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
   });
@@ -684,7 +699,6 @@ async function api(payload) {
   const res = await fetch(SCRIPT_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
   const data = await res.json();
   
-  // หาก Backend ตอบกลับมาว่า Unauthorized และไม่ใช่ตอนกำลังล็อกอิน ให้เด้งออกทันที
   if (data.message === 'Unauthorized' && payload.action !== 'login' && payload.action !== 'verifyLogin2FA') {
     Swal.fire({
       title: 'เซสชันหมดอายุ',
@@ -698,14 +712,40 @@ async function api(payload) {
   return data;
 }
 
-function checkUrlForReset() {
+async function checkUrlForReset() {
   const urlParams = new URLSearchParams(window.location.search);
   const resetToken = urlParams.get('reset_token');
+  
   if (resetToken) {
-    document.getElementById('login-form-box').classList.add('hidden');
-    document.getElementById('login-2fa-box').classList.add('hidden');
-    document.getElementById('reset-pw-box').classList.remove('hidden');
-    window.currentResetToken = resetToken;
+    Swal.fire({ title: 'กำลังตรวจสอบลิงก์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    try {
+      const res = await fetch(SCRIPT_URL, { 
+        method: 'POST', 
+        headers: {'Content-Type': 'text/plain'}, 
+        body: JSON.stringify({ action: 'verifyResetToken', resetToken: resetToken }) 
+      }).then(r => r.json());
+      
+      Swal.close();
+
+      if (res.valid) {
+        document.getElementById('login-form-box').classList.add('hidden');
+        document.getElementById('login-2fa-box').classList.add('hidden');
+        document.getElementById('reset-pw-box').classList.remove('hidden');
+        window.currentResetToken = resetToken;
+      } else {
+        Swal.fire({
+          title: 'ลิงก์ไม่ถูกต้อง',
+          text: res.message,
+          icon: 'error',
+          confirmButtonColor: 'var(--blue)'
+        }).then(() => {
+          window.location.href = window.location.pathname;
+        });
+      }
+    } catch (e) {
+      Swal.fire('ข้อผิดพลาด', 'ไม่สามารถตรวจสอบลิงก์ได้ โปรดตรวจสอบอินเทอร์เน็ต', 'error');
+    }
   } else {
     checkLoginState();
   }
@@ -731,25 +771,22 @@ async function submitNewPasswordFromLink() {
 
   if (res.success) {
     Swal.fire('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่', 'success').then(() => {
-      window.location.href = window.location.pathname; // ล้าง Token ออกจาก URL
+      window.location.href = window.location.pathname; 
     });
   } else {
     Swal.fire('ข้อผิดพลาด', res.message, 'error');
   }
 }
 
-// ── Auth Logic ────────────────────────────────────────
 function checkLoginState() {
   if (currentUser.token) {
     document.getElementById('login-overlay').classList.add('hidden');
     
-    // Force Superadmin ถ้าอีเมลตรงกัน
     if (currentUser.email === 'ponrakitt@outlook.co.th') {
       currentUser.role = 'superadmin';
       localStorage.setItem('userRole', 'superadmin');
     }
     
-    // บล็อกสิทธิ์ Warehouse ไม่ให้เข้าหน้า Admin
     if (currentUser.role === 'warehouse') {
       Swal.fire({
         title: 'ปฏิเสธการเข้าถึง',
@@ -770,7 +807,6 @@ function checkLoginState() {
       document.getElementById('app-content').classList.remove('locked-content');
       document.getElementById('locked-overlay').classList.add('hidden');
       
-      // แสดงเมนูจัดการผู้ใช้ และประวัติการเข้าระบบ ให้ Superadmin
       if(currentUser.role === 'superadmin') {
         document.getElementById('menu-users').classList.remove('hidden');
         document.getElementById('menu-logs').classList.remove('hidden');
@@ -789,7 +825,6 @@ async function doLogin() {
   const pass = document.getElementById('login-password').value.trim();
   if(!email || !pass) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
 
-  // Animation ปุ่มกดกำลังตรวจสอบ
   const btn = document.getElementById('btn-login-submit');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบรหัสผ่าน...';
@@ -806,7 +841,6 @@ async function doLogin() {
   if (res.success) {
     if (email === 'ponrakitt@outlook.co.th') res.role = 'superadmin';
     
-    // ดักจับและปฏิเสธสิทธิ์ Warehouse ทันที
     if (res.role === 'warehouse') {
       Swal.fire('ปฏิเสธการเข้าถึง', 'สิทธิ์การใช้งานไม่เพียงพอ (เฉพาะ Admin และ Super Admin เท่านั้น)', 'error');
       return;
@@ -836,7 +870,6 @@ async function verifyLogin2FA() {
   const code = document.getElementById('login-2fa-code').value.trim();
   if(!code) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส', 'warning');
   
-  // Animation ปุ่มกด
   const btn = document.getElementById('btn-verify-2fa');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังตรวจสอบรหัส...';
@@ -883,7 +916,6 @@ async function requestReset() {
   }
 }
 
-// ── 2FA Setup ────────────────────────────────────────
 async function setup2FAFlow() {
   showModal('setup-2fa-modal');
   const res = await api({ action: 'get2FASecret' });
@@ -903,7 +935,6 @@ async function confirmSetup2FA() {
     localStorage.setItem('twoFactorEnabled', 'true');
     closeModal('setup-2fa-modal');
     
-    // โชว์ Backup Codes 50 ชุด
     generatedBackupCodes = res.backupCodes || [];
     const listEl = document.getElementById('backup-codes-list');
     listEl.innerHTML = generatedBackupCodes.map(c => `<div><span style="opacity:0.5;margin-right:6px;">•</span>${c}</div>`).join('');
@@ -943,7 +974,6 @@ async function submitChangePassword() {
     return Swal.fire('แจ้งเตือน', 'รหัสผ่านต้องมี 8 ตัวขึ้นไป และประกอบด้วยอักษรพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลขอย่างน้อย 1 ตัว', 'warning');
   }
 
-  // แอนิเมชันปุ่มโหลด
   const btn = document.getElementById('btn-change-pw');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;color:#fff;"></i> กำลังเปลี่ยนรหัสผ่าน...';
@@ -968,7 +998,6 @@ async function submitChangePassword() {
   }
 }
 
-// ── Super Admin Functions ─────────────────────────────
 async function loadAdminUsers() {
   document.getElementById('users-table').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:12px;"></i><br>กำลังดึงข้อมูลผู้ใช้งาน...</div>';
   lucide.createIcons();
@@ -1089,7 +1118,6 @@ async function adminDeleteUser(targetEmail) {
   }
 }
 
-// ── Activity Logs Function ─────────────────────────────
 async function loadActivityLogs() {
   document.getElementById('logs-table').innerHTML = '<div class="loading"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px;margin-bottom:12px;"></i><br>กำลังโหลดประวัติการใช้งาน...</div>';
   lucide.createIcons();
@@ -1113,7 +1141,6 @@ async function loadActivityLogs() {
         ? '<div style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;"><i data-lucide="check" style="width:12px;vertical-align:bottom;margin-right:2px;"></i> SUCCESS</div>'
         : '<div style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;"><i data-lucide="x" style="width:12px;vertical-align:bottom;margin-right:2px;"></i> FAILED</div>';
 
-      // Check for tampering
       const rowStyle = l.isTampered ? 'background:#fef2f2; border-left: 4px solid var(--red);' : '';
       const tamperedWarning = l.isTampered ? '<br><span style="color:var(--red); font-size:10px; font-weight:700;"><i data-lucide="alert-triangle" style="width:10px;height:10px;"></i> ข้อมูลถูกดัดแปลง!</span>' : '';
 
@@ -1145,7 +1172,6 @@ async function loadActivityLogs() {
   }
 }
 
-// ── Existing Admin Code ───────────────────────────────
 const STATUS_TH = { pending:'รอเริ่มงาน', preparing:'กำลังเตรียมสินค้า', ready:'เตรียมเสร็จ รอจัดส่ง', out_for_delivery:'กำลังนำส่งลูกค้า', delivered:'จัดส่งสำเร็จ', cancelled:'ยกเลิกออเดอร์', confirmed:'ลูกค้ารับของแล้ว' };
 const STATUS_ICON = { pending:'clock', preparing:'wrench', ready:'package', out_for_delivery:'truck', delivered:'check-circle', cancelled:'x-circle', confirmed:'party-popper' };
 function statusBadge(s) { 
@@ -1185,7 +1211,6 @@ async function loadAllOrders() {
 
 function renderStats() {
   const count = (s) => allOrders.filter(o=>o.status===s).length;
-  // Animate numbers
   ['total','pending','preparing','ready','out','done','cancel'].forEach(id => {
     const el = document.getElementById('s-'+id);
     el.style.opacity = '0';
@@ -1336,7 +1361,6 @@ function viewPhotoAdmin(imgUrl) {
   Swal.fire({ title: 'รูปภาพหลักฐานการจัดส่ง', imageUrl: imgUrl, imageAlt: 'Delivery Photo', showCancelButton: true, confirmButtonText: '<i data-lucide="download" style="width:16px;vertical-align:bottom;margin-right:4px;"></i> ดาวน์โหลดรูปภาพ', cancelButtonText: 'ปิดหน้าต่าง', confirmButtonColor: 'var(--green)', customClass: { image: 'swal-img-radius' }, didRender: () => { lucide.createIcons(); } }).then((r) => { if (r.isConfirmed) window.open(dlUrl, '_blank'); });
 }
 
-// ── NEW SEPARATE PRINT FUNCTION ──
 function printLabel(type) {
   const tid = document.getElementById('qr-tid').textContent;
   const order = allOrders.find(o => o.tracking_id === tid);
@@ -1358,7 +1382,6 @@ function printLabel(type) {
   setTimeout(() => {
     const qrImg = tempDiv.querySelector('img').src;
     
-    // Create a specific container for the PDF generation
     const pdfContainer = document.createElement('div');
     pdfContainer.innerHTML = `
       <div style="font-family: 'Prompt', sans-serif; color: #000; padding: 20px; max-width: 500px; margin: 0 auto; border: 2px solid #000; border-radius: 12px; background: #fff;">
@@ -1393,7 +1416,6 @@ function printLabel(type) {
       </div>
     `;
 
-    // HTML2PDF options
     const opt = {
       margin:       10,
       filename:     `${titleText.replace(' ', '_')}_${order.tracking_id}.pdf`,
@@ -1402,7 +1424,6 @@ function printLabel(type) {
       jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
     };
 
-    // Generate PDF
     html2pdf().set(opt).from(pdfContainer).save().then(() => {
       Swal.close();
       Swal.fire({title: 'บันทึก PDF สำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false});
