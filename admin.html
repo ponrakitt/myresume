@@ -254,8 +254,22 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
     </div>
     <p style="text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.6;">กรุณากรอกรหัส 6 หลักจากแอป Authenticator<br>หรือกรอกรหัสกู้คืน (8 หลัก)</p>
     <input id="login-2fa-code" type="text" class="login-input" placeholder="รหัส 6 หลัก หรือ รหัสกู้คืน" maxlength="8" style="text-align:center;letter-spacing:3px;font-size:18px;font-weight:700;"/>
-    <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยันการเข้าสู่ระบบ</button>
+    <button class="login-btn" id="btn-verify-2fa" onclick="verifyLogin2FA()">ยืนยัน</button>
     <a href="javascript:void(0);" class="forgot-btn" onclick="location.reload()">ยกเลิก / กลับไปหน้าแรก</a>
+  </div>
+
+  <div class="login-box hidden" id="reset-pw-box">
+    <div class="login-logo">
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 10px 25px rgba(16,185,129,0.3);">
+        <i data-lucide="key" style="width:32px;height:32px;color:#fff;"></i>
+      </div>
+      <h2>ตั้งรหัสผ่านใหม่</h2>
+    </div>
+    <p style="text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.6;">กรุณากำหนดรหัสผ่านใหม่ของคุณ<br>(อักษรใหญ่, เล็ก, ตัวเลข, 8 ตัวขึ้นไป)</p>
+    <input id="reset-new-pw" type="password" class="login-input" placeholder="รหัสผ่านใหม่ (New Password)"/>
+    <input id="reset-confirm-pw" type="password" class="login-input" placeholder="ยืนยันรหัสผ่านใหม่ (Confirm)"/>
+    <button class="login-btn" style="background:var(--green); box-shadow: 0 4px 12px rgba(16,185,129,0.2);" onclick="submitNewPasswordFromLink()">บันทึกรหัสผ่านใหม่</button>
+    <a href="admin.html" class="forgot-btn">กลับไปหน้าเข้าสู่ระบบ</a>
   </div>
 </div>
 
@@ -656,7 +670,7 @@ let generatedBackupCodes = [];
 
 document.addEventListener('DOMContentLoaded', () => { 
   lucide.createIcons(); 
-  checkLoginState();
+  checkUrlForReset();
   
   // Event listener สำหรับคลิกพื้นที่ด้านนอก Modal เพื่อปิด
   document.querySelectorAll('.modal-bg').forEach(el=>{
@@ -682,6 +696,46 @@ async function api(payload) {
     });
   }
   return data;
+}
+
+function checkUrlForReset() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get('reset_token');
+  if (resetToken) {
+    document.getElementById('login-form-box').classList.add('hidden');
+    document.getElementById('login-2fa-box').classList.add('hidden');
+    document.getElementById('reset-pw-box').classList.remove('hidden');
+    window.currentResetToken = resetToken;
+  } else {
+    checkLoginState();
+  }
+}
+
+async function submitNewPasswordFromLink() {
+  const pw1 = document.getElementById('reset-new-pw').value;
+  const pw2 = document.getElementById('reset-confirm-pw').value;
+  
+  if (!pw1 || !pw2) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่านให้ครบ', 'warning');
+  if (pw1 !== pw2) return Swal.fire('แจ้งเตือน', 'รหัสผ่านไม่ตรงกัน', 'error');
+  if (pw1.length < 8 || !/[a-z]/.test(pw1) || !/[A-Z]/.test(pw1) || !/[0-9]/.test(pw1)) {
+    return Swal.fire('แจ้งเตือน', 'รหัสผ่านต้องมี 8 ตัวขึ้นไป และประกอบด้วยอักษรพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลข', 'warning');
+  }
+
+  Swal.fire({ title: 'กำลังบันทึกรหัสผ่าน...', didOpen: () => Swal.showLoading() });
+  
+  const res = await fetch(SCRIPT_URL, { 
+    method: 'POST', 
+    headers: {'Content-Type': 'text/plain'}, 
+    body: JSON.stringify({ action: 'executeResetPassword', resetToken: window.currentResetToken, newPassword: pw1 }) 
+  }).then(r => r.json());
+
+  if (res.success) {
+    Swal.fire('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่', 'success').then(() => {
+      window.location.href = window.location.pathname; // ล้าง Token ออกจาก URL
+    });
+  } else {
+    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+  }
 }
 
 // ── Auth Logic ────────────────────────────────────────
@@ -991,10 +1045,10 @@ async function adminCreateUser() {
 async function adminSendReset(email) {
   const confirm = await Swal.fire({
     title: 'ยืนยันการส่งรหัสผ่านใหม่',
-    text: `ระบบจะสุ่มรหัสผ่านใหม่แล้วส่งไปที่ ${email} ทันที`,
+    text: `ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ${email} ทันที`,
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: 'ส่งรหัส',
+    confirmButtonText: 'ส่งลิงก์',
     cancelButtonText: 'ยกเลิก'
   });
   
