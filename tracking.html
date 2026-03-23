@@ -2,531 +2,1013 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>ติดตามพัสดุ | Track & Trace</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+<title>พนักงานจัดส่ง — ระบบจัดการโลจิสติกส์</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --bg: #f8fafc;
+  /* Premium Delivery Palette */
+  --primary: #0f172a;      /* Deep Slate */
+  --primary-hover: #1e293b;
+  --accent: #2563eb;       /* Corporate Blue */
+  --accent-hover: #1d4ed8;
+  --accent-light: #eff6ff;
+  --success: #10b981;      /* Emerald Green */
+  --success-hover: #059669;
+  --success-light: #ecfdf5;
+  --warning: #f59e0b;      /* Amber */
+  --danger: #ef4444;       /* Red */
+  
+  --bg-color: #f8fafc;
   --surface: #ffffff;
   --text-main: #0f172a;
   --text-muted: #64748b;
+  --text-tertiary: #94a3b8;
   --border: #e2e8f0;
-  --radius: 20px;
-  --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+  
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 8px rgba(15,23,42,0.04);
+  --shadow-md: 0 12px 32px rgba(15,23,42,0.08);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
-body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { 
+  font-family: 'Prompt', sans-serif; 
+  background-color: var(--bg-color); 
+  color: var(--text-main); 
+  min-height: 100vh; 
+  display: flex; 
+  flex-direction: column; 
+  -webkit-font-smoothing: antialiased; 
+}
 
-/* Header */
-.header { background: var(--surface); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-.header .logo { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), #1e40af); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.header h1 { font-size: 18px; font-weight: 700; color: var(--text-main); }
-.header p { font-size: 12px; color: var(--text-muted); }
+/* App Header */
+.app-header {
+  background: var(--surface);
+  color: var(--primary);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 0 var(--border);
+}
+.app-header .icon-box {
+  width: 40px; height: 40px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.app-header h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 2px; }
+.app-header p { font-size: 12px; color: var(--text-muted); font-weight: 400; }
 
 /* Main Container */
-.container { max-width: 600px; margin: 0 auto; padding: 24px 20px; flex: 1; width: 100%; display: flex; flex-direction: column; }
+.main-container {
+  padding: 24px 20px 40px;
+  max-width: 500px;
+  margin: 0 auto;
+  flex: 1;
+  width: 100%;
+}
 
-/* Views */
-.view { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.view.active { display: block; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+/* Utility */
+.hidden { display: none !important; }
+.section { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.section.active { display: block; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-/* Card */
-.card { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
+/* Premium Cards */
+.premium-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-header-title {
+  font-size: 16px; font-weight: 700; color: var(--text-main);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
 
-/* Search Box */
-.search-wrapper { position: relative; margin-bottom: 16px; }
-.search-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-.search-input { width: 100%; padding: 16px 16px 16px 44px; border: 2px solid var(--border); border-radius: 16px; font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; transition: 0.3s; background: var(--bg); text-transform: uppercase; }
-.search-input:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px var(--primary-light); }
-.search-input::placeholder { font-weight: 400; text-transform: none; color: #94a3b8; }
-.btn-search { width: 100%; background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
-.btn-search:hover { background: var(--primary-hover); transform: translateY(-2px); }
-.btn-search:active { transform: scale(0.98); }
+/* Forms & Inputs */
+.input-wrapper { display: flex; gap: 8px; margin-bottom: 16px; }
+.modern-input {
+  flex: 1;
+  padding: 16px 20px;
+  background: var(--bg-color);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--primary);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+.modern-input:focus {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-light);
+  outline: none;
+}
+.modern-input::placeholder { font-weight: 400; color: var(--text-tertiary); text-transform: none; }
 
-/* ETA Banner */
-.eta-banner { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(22,163,74,0.05); }
-.eta-icon { width: 44px; height: 44px; background: #fff; color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(22,163,74,0.15); flex-shrink: 0; }
-.eta-info h3 { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-.eta-info p { font-size: 16px; color: #14532d; font-weight: 500; margin: 0; }
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
+  font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.2s ease;
+  width: 100%;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* Status Head */
-.status-head { text-align: center; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px dashed var(--border); position: relative; }
-.status-icon-main { width: 80px; height: 80px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 0 8px rgba(37,99,235,0.05); }
-.status-head h2 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-.status-head p { font-size: 14px; color: var(--text-muted); }
-.live-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--success-light); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 12px; letter-spacing: 0.5px; }
-.live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-success { background: var(--success); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.2); }
+.btn-success:hover { background: var(--success-hover); }
+.btn-outline { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.btn-outline:hover { background: var(--bg-color); }
+.btn-danger { background: var(--danger); color: #fff; }
 
-/* Action Buttons */
-.action-buttons { display: flex; gap: 10px; margin-bottom: 24px; }
-.btn-action { flex: 1; padding: 12px; background: #fff; border: 1.5px solid var(--border); border-radius: 12px; color: var(--text-main); font-weight: 600; font-size: 13.5px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
-.btn-action i { color: var(--primary); }
-.btn-action:hover { background: var(--bg); border-color: #cbd5e1; }
-.btn-action:active { transform: scale(0.98); }
+.btn-sm { padding: 8px 16px; font-size: 13.5px; border-radius: 8px; width: auto; }
+.btn-icon-only { width: 56px; padding: 0; flex-shrink: 0; }
 
-/* Details Grid */
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; background: var(--bg); padding: 16px; border-radius: 16px; }
-.d-box { display: flex; flex-direction: column; }
-.d-box.full { grid-column: 1 / -1; }
-.d-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.d-val { font-size: 14.5px; font-weight: 600; color: var(--text-main); line-height: 1.4; word-break: break-word; }
+/* Divider */
+.divider { display: flex; align-items: center; text-align: center; margin: 24px 0; color: var(--text-tertiary); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+.divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+.divider::before { margin-right: .5em; }
+.divider::after { margin-left: .5em; }
 
-/* Timeline */
-.timeline-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--text-main); }
-.timeline { display: flex; flex-direction: column; }
-.tl-item { display: flex; gap: 16px; padding-bottom: 24px; position: relative; }
-.tl-item:last-child { padding-bottom: 0; }
-.tl-item::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: var(--border); z-index: 0; }
-.tl-item:last-child::before { display: none; }
-.tl-dot { width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; z-index: 1; flex-shrink: 0; color: var(--text-muted); transition: 0.3s; }
-.tl-item.active .tl-dot { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
-.tl-item.done .tl-dot { background: var(--primary); border-color: var(--primary); color: #fff; }
-.tl-item.cancelled .tl-dot { background: var(--danger); border-color: var(--danger); color: #fff; box-shadow: 0 0 0 4px var(--danger-light); }
-.tl-content { padding-top: 4px; flex: 1; }
-.tl-status { font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
-.tl-time { font-size: 12px; color: var(--text-muted); }
-.tl-note { font-size: 13px; color: var(--text-muted); margin-top: 6px; background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); }
-.tl-img { margin-top: 8px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; width: 100%; max-width: 240px; cursor: pointer; }
-.tl-img img { width: 100%; height: auto; display: block; }
+/* QR Scanner */
+.scanner-container {
+  position: relative;
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 4/5;
+  width: 100%;
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+}
+#qr-video { width: 100%; height: 100%; object-fit: cover; }
+.scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
+.scan-frame { 
+  width: 220px; height: 220px; 
+  border: 2px solid rgba(255,255,255,0.8); 
+  border-radius: 20px; 
+  position: relative; 
+  box-shadow: 0 0 0 4000px rgba(0,0,0,0.4);
+}
+.scan-frame::before {
+  content: ''; position: absolute; inset: -2px; border-radius: 20px;
+  border: 2px solid var(--accent);
+  clip-path: polygon(0 0, 20px 0, 20px 100%, 0 100%, 0 0, 100% 0, 100% 20px, 0 20px, 0 0, 100% 100%, calc(100% - 20px) 100%, calc(100% - 20px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 20px), 100% calc(100% - 20px), 100% 100%);
+}
+.scan-line {
+  position: absolute; left: 5%; right: 5%; height: 3px; 
+  background: var(--accent); border-radius: 3px;
+  box-shadow: 0 0 12px var(--accent);
+  animation: scan-line 2s ease-in-out infinite;
+}
+@keyframes scan-line { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
 
-/* Loader */
-.loading-view { text-align: center; padding: 60px 20px; }
-.spinner { animation: spin 1s linear infinite; color: var(--primary); width: 48px; height: 48px; margin: 0 auto 16px; }
-.loading-view h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
-.loading-view p { font-size: 14px; color: var(--text-muted); }
+/* Order Details Grid */
+.detail-grid { background: var(--bg-color); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; }
+.detail-row { display: flex; flex-direction: column; margin-bottom: 16px; }
+.detail-row:last-child { margin-bottom: 0; }
+.detail-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.detail-value { font-size: 15px; font-weight: 500; color: var(--text-main); line-height: 1.4; word-break: break-word; }
+.detail-value.highlight { color: var(--accent); font-family: monospace; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+
+/* Status Pill */
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 30px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.sp-ready { background: var(--success-light); color: var(--success); }
+.sp-out { background: var(--accent-light); color: var(--accent); }
+
+/* Steps Indicator */
+.steps-container { display: flex; justify-content: space-between; position: relative; margin-bottom: 32px; padding: 0 20px; }
+.steps-container::before { content: ''; position: absolute; top: 14px; left: 40px; right: 40px; height: 2px; background: var(--border); z-index: 0; }
+.step-item { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 1; width: 60px; }
+.step-circle { 
+  width: 30px; height: 30px; border-radius: 50%; 
+  background: var(--surface); border: 2px solid var(--border); 
+  display: flex; align-items: center; justify-content: center; 
+  font-size: 12px; font-weight: 700; color: var(--text-tertiary); 
+  transition: all 0.3s ease; 
+}
+.step-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.2; }
+/* States */
+.step-item.active .step-circle { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-light); }
+.step-item.active .step-label { color: var(--primary); }
+.step-item.done .step-circle { border-color: var(--success); background: var(--success); color: #fff; }
+
+/* Camera & Photo Grid */
+.camera-wrap { border-radius: var(--radius-md); overflow: hidden; background: #000; margin-bottom: 16px; border: 1px solid var(--border); position: relative; }
+#capture-video { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; }
+.camera-controls { display: flex; gap: 12px; margin-bottom: 24px; }
+
+.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.photo-slot { aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--bg-color); border: 1.5px dashed var(--text-tertiary); display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); position: relative; transition: 0.2s; }
+.photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+.photo-slot .remove-btn { 
+  position: absolute; top: 4px; right: 4px; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); 
+  color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; 
+}
+.photo-slot.filled { border-style: solid; border-color: var(--border); }
+.photo-slot.filled:hover .remove-btn { opacity: 1; }
+
+/* Success State */
+.success-card { text-align: center; padding: 40px 20px; }
+.success-icon-wrap { width: 80px; height: 80px; background: var(--success-light); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+.success-card h2 { font-size: 22px; color: var(--primary); margin-bottom: 8px; }
+.success-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+
+/* Loading Overlay */
+.loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; opacity: 1; }
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.spinner { animation: spin 1s linear infinite; color: var(--accent); width: 40px; height: 40px; margin-bottom: 16px; }
+.loading-text { font-size: 15px; font-weight: 600; color: var(--primary); letter-spacing: 0.5px; }
+
 @keyframes spin { 100% { transform: rotate(360deg); } }
+canvas { display: none; }
 
-/* Footer */
-.footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; margin-top: auto; }
-
-/* Swal Custom */
-div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; padding: 24px; font-family: 'Prompt', sans-serif; }
+/* Custom SweetAlert styles */
+div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 20px; padding: 24px; box-shadow: var(--shadow-md); font-family: 'Prompt', sans-serif; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo"><i data-lucide="package" style="width:24px;"></i></div>
+<header class="app-header">
+  <div class="icon-box"><i data-lucide="truck" style="width:20px;height:20px;"></i></div>
   <div>
-    <h1>ติดตามพัสดุ</h1>
-    <p>Delivery Tracking System</p>
+    <h1>Delivery Portal</h1>
+    <p>ระบบบันทึกการจัดส่งพัสดุ</p>
   </div>
-</div>
+</header>
 
-<div class="container">
+<main class="main-container" id="app-content">
 
-  <!-- VIEW 1: SEARCH -->
-  <div id="view-search" class="view active">
-    <div style="text-align:center; margin-bottom:32px; margin-top:20px;">
-      <div style="background:var(--primary-light); width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-        <i data-lucide="search" style="width:40px; height:40px; color:var(--primary);"></i>
+  <!-- SECTION 1: INPUT -->
+  <div id="sec-input" class="section active">
+    
+    <div class="premium-card" style="padding: 32px 24px;">
+      <div style="text-align:center; margin-bottom:24px;">
+        <div style="width:56px;height:56px;background:var(--accent-light);color:var(--accent);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i data-lucide="scan-line" style="width:28px;height:28px;"></i>
+        </div>
+        <h2 style="font-size:18px;font-weight:700;">ค้นหาพัสดุ</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">สแกน QR Code หรือกรอกหมายเลข</p>
       </div>
-      <h2 style="font-size:22px; font-weight:800; color:var(--text-main); margin-bottom:8px;">ค้นหาสถานะพัสดุ</h2>
-      <p style="color:var(--text-muted); font-size:14.5px;">กรอกหมายเลขติดตาม (Tracking ID) ของคุณ<br>เพื่อตรวจสอบสถานะการจัดส่งล่าสุด</p>
+
+      <div id="qr-section">
+        <button class="btn btn-primary" onclick="startScan()" id="scan-btn">
+          <i data-lucide="camera" style="width:18px;"></i> สแกน QR Code ใบปะหน้า
+        </button>
+        
+        <div id="scanner-container" class="hidden">
+          <div class="scanner-container">
+            <video id="qr-video" playsinline></video>
+            <div class="scan-overlay">
+              <div class="scan-frame"><div class="scan-line"></div></div>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="stopScan()">
+            <i data-lucide="x" style="width:18px;"></i> ยกเลิกการสแกน
+          </button>
+        </div>
+      </div>
+
+      <div class="divider">หรือระบุหมายเลข</div>
+
+      <div class="input-wrapper">
+        <input id="tid-input" type="text" class="modern-input" placeholder="TRKXXXXXX" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter') findOrder()"/>
+        <button class="btn btn-primary btn-icon-only" onclick="findOrder()">
+          <i data-lucide="search" style="width:20px;"></i>
+        </button>
+      </div>
     </div>
 
-    <div class="card" style="padding: 32px 24px;">
-      <div class="search-wrapper">
-        <i data-lucide="box"></i>
-        <input type="text" id="tracking-input" class="search-input" placeholder="TRK-XXXXXXXX" onkeypress="if(event.key==='Enter') searchTracking()"/>
+  </div>
+
+  <!-- SECTION 2: ACTION (ORDER DETAILS) -->
+  <div id="sec-action" class="section">
+    
+    <!-- Step Indicator -->
+    <div class="steps-container">
+      <div class="step-item active" id="step-1">
+        <div class="step-circle">1</div>
+        <div class="step-label">ตรวจสอบ<br>ข้อมูล</div>
       </div>
-      <button class="btn-search" onclick="searchTracking()">
-        ค้นหาพัสดุ <i data-lucide="arrow-right" style="width:20px;"></i>
+      <div class="step-item" id="step-2">
+        <div class="step-circle">2</div>
+        <div class="step-label">ถ่ายรูป<br>ยืนยัน</div>
+      </div>
+      <div class="step-item" id="step-3">
+        <div class="step-circle"><i data-lucide="check" style="width:16px;"></i></div>
+        <div class="step-label">เสร็จสิ้น</div>
+      </div>
+    </div>
+
+    <div class="premium-card">
+      <div class="card-header-title"><i data-lucide="file-text" style="color:var(--accent);"></i> รายละเอียดพัสดุ</div>
+      
+      <div class="detail-grid" id="action-order-info">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="input-wrapper" style="margin-bottom:24px; display:none;" id="driver-input-wrapper">
+        <div style="position:relative; width:100%;">
+          <i data-lucide="user-circle" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);width:18px;"></i>
+          <input id="driver-name" type="text" class="modern-input" style="padding-left:42px;" placeholder="ระบุชื่อผู้จัดส่ง (ตัวเลือก)"/>
+        </div>
+      </div>
+
+      <div id="action-btn-area" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Buttons injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PHOTO CAPTURE -->
+  <div id="sec-photo" class="section">
+    
+    <div class="steps-container">
+      <div class="step-item done" id="step-1-p">
+        <div class="step-circle"><i data-lucide="check" style="width:16px;"></i></div>
+        <div class="step-label">ตรวจสอบ<br>ข้อมูล</div>
+      </div>
+      <div class="step-item active" id="step-2-p">
+        <div class="step-circle">2</div>
+        <div class="step-label">ถ่ายรูป<br>ยืนยัน</div>
+      </div>
+      <div class="step-item" id="step-3-p">
+        <div class="step-circle"><i data-lucide="check" style="width:16px;"></i></div>
+        <div class="step-label">เสร็จสิ้น</div>
+      </div>
+    </div>
+
+    <div class="premium-card">
+      <div class="card-header-title"><i data-lucide="camera" style="color:var(--accent);"></i> หลักฐานการจัดส่ง</div>
+      
+      <div class="camera-wrap" id="camera-wrap">
+        <video id="capture-video" playsinline autoplay></video>
+      </div>
+      <canvas id="capture-canvas"></canvas>
+
+      <div class="camera-controls">
+        <button class="btn btn-outline btn-icon-only" onclick="switchCamera()" title="สลับกล้อง">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+        <button class="btn btn-primary" id="take-photo-btn" onclick="takePhoto()">
+          <i data-lucide="camera"></i> บันทึกภาพ
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase;">รูปภาพที่บันทึกแล้ว</span>
+        <span style="font-size:12px; font-weight:700; color:var(--accent);" id="photo-count-label">0 / 4 รูป</span>
+      </div>
+
+      <div class="photo-grid" id="photo-grid">
+        <div class="photo-slot" id="slot-0"><i data-lucide="image" style="width:20px;opacity:0.5;"></i></div>
+        <div class="photo-slot" id="slot-1"><i data-lucide="image" style="width:20px;opacity:0.5;"></i></div>
+        <div class="photo-slot" id="slot-2"><i data-lucide="image" style="width:20px;opacity:0.5;"></i></div>
+        <div class="photo-slot" id="slot-3"><i data-lucide="image" style="width:20px;opacity:0.5;"></i></div>
+      </div>
+
+      <div style="height:1px; background:var(--border); margin:24px 0;"></div>
+
+      <button class="btn btn-success" id="submit-photos-btn" onclick="submitDelivery()" disabled>
+        <i data-lucide="upload-cloud"></i> ยืนยันการจัดส่ง
+      </button>
+      <p style="text-align:center; font-size:11px; color:var(--text-tertiary); margin-top:12px;">* จำเป็นต้องถ่ายรูปอย่างน้อย 1 รูป เพื่อยืนยันการจัดส่ง</p>
+    </div>
+  </div>
+
+  <!-- SECTION 4: SUCCESS -->
+  <div id="sec-success" class="section">
+    <div class="premium-card success-card">
+      <div class="success-icon-wrap">
+        <i data-lucide="check" style="width:40px;height:40px;"></i>
+      </div>
+      <h2>บันทึกข้อมูลสำเร็จ</h2>
+      <p id="success-sub">ระบบอัปเดตสถานะพัสดุเรียบร้อยแล้ว</p>
+      
+      <button class="btn btn-primary" onclick="resetAll()">
+        <i data-lucide="package"></i> จัดการพัสดุชิ้นต่อไป
       </button>
     </div>
   </div>
 
-  <!-- VIEW 2: LOADING -->
-  <div id="view-loading" class="view">
-    <div class="loading-view">
-      <i data-lucide="loader-2" class="spinner"></i>
-      <h3>กำลังค้นหาข้อมูลพัสดุ...</h3>
-      <p>กรุณารอสักครู่ ระบบกำลังดึงข้อมูลล่าสุด</p>
-    </div>
-  </div>
+</main>
 
-  <!-- VIEW 3: RESULT -->
-  <div id="view-result" class="view">
-    
-    <!-- ETA Banner (Dynamic) -->
-    <div class="eta-banner" id="eta-container">
-      <div class="eta-icon"><i data-lucide="clock" style="width:24px;"></i></div>
-      <div class="eta-info">
-        <h3>คาดว่าจะจัดส่งถึง</h3>
-        <p id="eta-text">กำลังประเมินเวลา...</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="status-head">
-        <div class="status-icon-main" id="r-icon-wrap">
-          <i id="r-icon" data-lucide="package" style="width:40px;height:40px;"></i>
-        </div>
-        <h2 id="r-status-title">สถานะพัสดุ</h2>
-        <p id="r-status-desc">รายละเอียดสถานะ</p>
-        <div id="live-badge" class="live-badge hidden">
-          <div class="live-dot"></div> อัปเดตสถานะแบบเรียลไทม์ (Live)
-        </div>
-      </div>
-
-      <div class="action-buttons">
-        <div class="btn-action" onclick="showSubscribe()">
-          <i data-lucide="bell-ring"></i>
-          <span>รับแจ้งเตือน</span>
-        </div>
-        <div class="btn-action" id="btn-confirm-receipt" style="display:none;" onclick="confirmReceipt()">
-          <i data-lucide="check-circle" style="color:var(--success);"></i>
-          <span style="color:var(--success);">ฉันได้รับของแล้ว</span>
-        </div>
-        <div class="btn-action" onclick="resetSearch()">
-          <i data-lucide="search"></i>
-          <span>ค้นหาใหม่</span>
-        </div>
-      </div>
-
-      <div class="detail-grid">
-        <div class="d-box">
-          <span class="d-label">หมายเลขพัสดุ</span>
-          <span class="d-val" style="color:var(--primary); font-family:monospace; font-size:16px;" id="r-tid">-</span>
-        </div>
-        <div class="d-box">
-          <span class="d-label">ชื่อผู้รับ</span>
-          <span class="d-val" id="r-name">-</span>
-        </div>
-        <div class="d-box full">
-          <span class="d-label">รายการสินค้า</span>
-          <span class="d-val" id="r-product">-</span>
-        </div>
-        <div class="d-box full">
-          <span class="d-label">พนักงานจัดส่ง</span>
-          <span class="d-val" id="r-driver" style="color:var(--primary);">-</span>
-        </div>
-      </div>
-
-      <div class="timeline-title">
-        <i data-lucide="milestone" style="color:var(--primary);"></i> เส้นทางพัสดุ
-      </div>
-      <div class="timeline" id="r-timeline">
-        <!-- Injected via JS -->
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="footer">
-  &copy; 2026 Tracking System. All rights reserved.
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <i data-lucide="loader-2" class="spinner"></i>
+  <div class="loading-text" id="loading-text">กำลังเชื่อมต่อ...</div>
 </div>
 
 <script>
+// ── Configuration ─────────────────────────────────────────
 // 🔴 แก้ไข URL ให้ตรงกับ Google Apps Script Web App ของคุณ
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
 
-let currentOrderData = null;
-let autoUpdateTimer = null;
+let currentOrder  = null;
+let scanInterval  = null;
+let scanStream    = null;
+let photos        = [];           
+let captureStream = null;
+let currentCamera = 'environment';
+let currentGPS    = null;
+let deliveryTID   = null;
 
-const STATUS_MAP = {
-  pending: { title: 'รอดำเนินการ', desc: 'ได้รับข้อมูลการสั่งซื้อแล้ว', icon: 'clock', color: '#f59e0b' },
-  preparing: { title: 'กำลังเตรียมสินค้า', desc: 'ร้านค้ากำลังเตรียมพัสดุของคุณ', icon: 'wrench', color: '#f97316' },
-  ready: { title: 'รอการจัดส่ง', desc: 'พัสดุพร้อม รอพนักงานเข้ามารับ', icon: 'package', color: '#10b981' },
-  out_for_delivery: { title: 'กำลังนำส่งพัสดุ', desc: 'พนักงานกำลังเดินทางไปส่งพัสดุให้คุณ', icon: 'truck', color: '#2563eb' },
-  delivered: { title: 'จัดส่งสำเร็จ', desc: 'พัสดุถูกส่งมอบเรียบร้อยแล้ว', icon: 'check-circle', color: '#059669' },
-  cancelled: { title: 'ยกเลิกคำสั่งซื้อ', desc: 'รายการนี้ถูกยกเลิก', icon: 'x-circle', color: '#ef4444' },
-  confirmed: { title: 'ลูกค้ารับสินค้าแล้ว', desc: 'ขอบคุณที่ใช้บริการ', icon: 'party-popper', color: '#8b5cf6' }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  const action = urlParams.get('action');
-  const email = urlParams.get('email');
-
-  if (action === 'unsubscribe' && id && email) {
-    handleUnsubscribe(id, email);
-  } else if (id) {
-    document.getElementById('tracking-input').value = id;
-    fetchOrder(id);
+document.addEventListener('DOMContentLoaded', () => { 
+  lucide.createIcons(); 
+  
+  // เช็คพารามิเตอร์ URL ว่ามี id พัสดุมาไหม (เผื่อสแกน QR มา)
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if(id){
+    document.getElementById('tid-input').value = id.toUpperCase(); 
+    findOrder();
   }
 });
 
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  lucide.createIcons();
-}
-
-function safeUpdateUrl(id, replace = false) {
+async function api(payload) {
   try {
-    if (window.location.protocol === 'blob:' || window.location.hostname.includes('usercontent')) return;
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + (id ? '?id=' + id : '');
-    if (replace) window.history.replaceState({path:newUrl}, '', newUrl);
-    else window.history.pushState({path:newUrl}, '', newUrl);
-  } catch (e) { console.warn('URL update skipped.'); }
-}
-
-async function apiCall(payload) {
-  try {
-    const res = await fetch(SCRIPT_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
-    return await res.json();
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    return data;
   } catch (error) {
     return { success: false, message: 'การเชื่อมต่อขัดข้อง โปรดตรวจสอบอินเทอร์เน็ต' };
   }
 }
 
-function searchTracking() {
-  const input = document.getElementById('tracking-input').value.trim().toUpperCase();
-  if (!input) return Swal.fire({ title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุหมายเลขติดตามพัสดุ', icon: 'warning' });
-  
-  safeUpdateUrl(input);
-  fetchOrder(input);
+function getGPS() {
+  return new Promise((resolve)=>{
+    if(!navigator.geolocation){ resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({lat: p.coords.latitude.toFixed(5), lng: p.coords.longitude.toFixed(5)}),
+      () => resolve(null),
+      {timeout: 8000}
+    );
+  });
 }
 
-function resetSearch() {
-  stopAutoUpdate();
-  safeUpdateUrl('');
-  document.getElementById('tracking-input').value = '';
-  showView('view-search');
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+  });
+  const target = document.getElementById('sec-' + id) || document.getElementById(id);
+  if(target) target.classList.add('active');
+  lucide.createIcons();
 }
 
-function stopAutoUpdate() {
-  if (autoUpdateTimer) { clearInterval(autoUpdateTimer); autoUpdateTimer = null; }
-  document.getElementById('live-badge').classList.add('hidden');
+function showLoading(text = 'กำลังโหลด...') { 
+  document.getElementById('loading-text').textContent = text; 
+  document.getElementById('loading-overlay').classList.remove('hidden'); 
+}
+function hideLoading() { 
+  document.getElementById('loading-overlay').classList.add('hidden'); 
 }
 
-async function fetchOrder(tid, isSilent = false) {
-  if (!isSilent) showView('view-loading');
+// ── Operations ───────────────────────────────────────────
 
-  const res = await apiCall({ action: 'getOrder', trackingId: tid });
-  
-  if (res.success) {
-    currentOrderData = res.order;
-    renderOrder(res.order);
-    showView('view-result');
-
-    // ถ้าสถานะกำลังทำงาน (ยังไม่จบ) ให้เปิดระบบ Auto Refresh ทุกๆ 30 วินาที
-    if (!['delivered', 'cancelled', 'confirmed'].includes(res.order.status)) {
-      document.getElementById('live-badge').classList.remove('hidden');
-      if (!autoUpdateTimer) {
-        autoUpdateTimer = setInterval(() => { fetchOrder(tid, true); }, 30000);
-      }
-    } else {
-      stopAutoUpdate();
-    }
-  } else {
-    stopAutoUpdate();
-    if (!isSilent) {
-      Swal.fire({ title: 'ไม่พบข้อมูล', text: res.message || 'ไม่พบรหัสติดตามสินค้านี้ในระบบ', icon: 'error' }).then(() => { showView('view-search'); });
-    }
+async function findOrder() {
+  const tid = document.getElementById('tid-input').value.trim().toUpperCase();
+  if(!tid) { 
+    Swal.fire({ title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุเลขติดตามสินค้า', icon: 'info', confirmButtonColor: 'var(--primary)' }); 
+    return; 
   }
+
+  showLoading('กำลังค้นหาพัสดุ...');
+  const res = await api({action: 'getOrder', trackingId: tid});
+  hideLoading();
+
+  if(!res.success) { 
+    Swal.fire({ title: 'ไม่พบข้อมูล', text: res.message, icon: 'error', confirmButtonColor: 'var(--primary)' }); 
+    return; 
+  }
+  
+  stopScan();
+  handleFoundOrder(res.order);
 }
 
-function renderETA(order) {
-  const etaContainer = document.getElementById('eta-container');
-  const etaText = document.getElementById('eta-text');
-
-  // ซ่อนแบนเนอร์ ETA ถ้ารับของแล้วหรือยกเลิก
-  if (['delivered', 'confirmed', 'cancelled'].includes(order.status)) {
-    etaContainer.style.display = 'none';
+function handleFoundOrder(order) {
+  currentOrder = order;
+  const validStatuses = ['ready', 'out_for_delivery'];
+  if(!validStatuses.includes(order.status)) {
+    Swal.fire({
+      title: 'ไม่สามารถดำเนินการได้', 
+      text: `พัสดุนี้ไม่ได้อยู่ในสถานะรอจัดส่ง (สถานะปัจจุบัน: ${order.status})`, 
+      icon: 'warning', 
+      confirmButtonColor: 'var(--primary)'
+    });
     return;
   }
-
-  etaContainer.style.display = 'flex';
-
-  if (order.status === 'out_for_delivery' && order.driver_eta) {
-    // คนขับระบุเวลาแล้ว (แม่นยำ)
-    const d = new Date(order.driver_eta);
-    etaText.innerHTML = `เวลาประมาณ <span style="color:var(--primary); font-size:18px;">${d.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} น.</span>`;
-  } else if (order.expected_date) {
-    // โชว์วันที่ตอนแอดมินสร้าง
-    const d = new Date(order.expected_date);
-    etaText.innerHTML = `ภายใน <span style="color:var(--primary);">${d.toLocaleDateString('th-TH', {day: '2-digit', month: 'short', year: 'numeric'})}</span>`;
-  } else {
-    etaText.innerHTML = '<span style="color:var(--text-muted);font-size:14px;">อยู่ระหว่างการประเมินเวลา</span>';
-  }
+  renderActionSection(order);
+  showSection('sec-action');
 }
 
-function renderOrder(order) {
-  const st = STATUS_MAP[order.status] || STATUS_MAP['pending'];
-  
-  // Header Icon & Colors
-  document.getElementById('r-icon-wrap').style.color = st.color;
-  document.getElementById('r-icon-wrap').style.background = st.color + '15'; // 15% opacity
-  document.getElementById('r-icon-wrap').style.boxShadow = `0 0 0 8px ${st.color}08`;
-  document.getElementById('r-icon').setAttribute('data-lucide', st.icon);
-  
-  document.getElementById('r-status-title').textContent = st.title;
-  document.getElementById('r-status-title').style.color = st.color;
-  document.getElementById('r-status-desc').textContent = st.desc;
+function renderActionSection(order) {
+  const statusHtml = order.status === 'ready' 
+    ? `<span class="status-pill sp-ready"><i data-lucide="package-check" style="width:14px;"></i> รอพนักงานรับ</span>`
+    : `<span class="status-pill sp-out"><i data-lucide="truck" style="width:14px;"></i> กำลังนำส่ง</span>`;
 
-  // Details
-  document.getElementById('r-tid').textContent = order.tracking_id;
-  document.getElementById('r-name').textContent = order.customer_name;
-  document.getElementById('r-product').textContent = order.product_name;
-  document.getElementById('r-driver').textContent = order.delivery_person_name || 'รอจัดสรรพนักงาน';
+  // สร้าง URL ของ Google Maps (ใช้ลิงก์ที่ให้มา หรือเอาที่อยู่ไปค้นหา)
+  const mapsUrl = order.maps_link ? order.maps_link : (order.delivery_address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.delivery_address)}` : '');
 
-  // ETA Logic
-  renderETA(order);
-
-  // Action Buttons (Confirm Receipt)
-  const btnConfirm = document.getElementById('btn-confirm-receipt');
-  if (order.status === 'delivered') {
-    btnConfirm.style.display = 'flex';
-  } else {
-    btnConfirm.style.display = 'none';
+  // โชว์ ETA
+  let etaText = 'ยังไม่ระบุ';
+  if (order.driver_eta) {
+    const d = new Date(order.driver_eta);
+    etaText = `<span style="color:var(--success); font-weight:700;">${d.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} น.</span>`;
+  } else if (order.expected_date) {
+    const d = new Date(order.expected_date);
+    etaText = `<span style="font-weight:600;">ภายใน ${d.toLocaleDateString('th-TH', {day: '2-digit', month: 'short', year: 'numeric'})}</span>`;
   }
 
-  // Timeline
-  const tl = document.getElementById('r-timeline');
-  const history = order.history || [];
+  document.getElementById('action-order-info').innerHTML = `
+    <div class="detail-row">
+      <span class="detail-label">หมายเลขติดตาม (Tracking ID)</span>
+      <span class="detail-value highlight">${order.tracking_id}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">สถานะปัจจุบัน</span>
+      <span class="detail-value">${statusHtml}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">คาดว่าจะส่งถึง (ETA)</span>
+      <span class="detail-value">${etaText}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">ชื่อผู้รับ</span>
+      <span class="detail-value">${order.customer_name || '-'}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">รายการสินค้า</span>
+      <span class="detail-value">${order.product_name || '-'}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">ที่อยู่ปลายทาง</span>
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <span class="detail-value" style="color:var(--text-muted); flex:1;">${order.delivery_address || '-'}</span>
+        ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="btn btn-primary btn-sm" style="padding: 6px 10px; flex-shrink: 0; text-decoration: none;"><i data-lucide="map" style="width:16px;"></i> นำทาง</a>` : ''}
+      </div>
+    </div>
+  `;
+
+  const area = document.getElementById('action-btn-area');
   
-  if (history.length === 0) {
-    tl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:14px;">ยังไม่มีประวัติการอัปเดต</div>';
-  } else {
-    let html = '';
-    // เรียงจากใหม่ไปเก่า
-    const reversed = [...history].reverse();
+  if(order.status === 'ready') {
+    // State 1: Ready to pickup
+    document.getElementById('step-1').className = 'step-item active';
+    document.getElementById('step-2').className = 'step-item';
+    document.getElementById('driver-input-wrapper').style.display = 'block';
     
-    reversed.forEach((h, index) => {
-      const isFirst = index === 0;
-      const hSt = STATUS_MAP[h.status] || STATUS_MAP['pending'];
-      let itemClass = 'tl-item';
-      
-      if (isFirst) {
-        if (h.status === 'cancelled') itemClass += ' cancelled';
-        else if (h.status === 'delivered' || h.status === 'confirmed') itemClass += ' done';
-        else itemClass += ' active';
-      } else {
-        itemClass += ' done';
-      }
-
-      const dateObj = new Date(h.timestamp);
-      const timeStr = dateObj.toLocaleDateString('th-TH', {day:'2-digit',month:'short',year:'2-digit'}) + ' ' + dateObj.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}) + ' น.';
-
-      let extraContent = '';
-      if (h.notes) extraContent += `<div class="tl-note">${h.notes}</div>`;
-      if (h.photo_url) {
-        let dlUrl = h.photo_url;
-        const match = h.photo_url.match(/id=([^&]+)/);
-        if(match) dlUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
-        extraContent += `<div class="tl-img" onclick="window.open('${dlUrl}','_blank')"><img src="${h.photo_url}" alt="Delivery Proof"/></div>`;
-      }
-
-      html += `
-        <div class="${itemClass}">
-          <div class="tl-dot"><i data-lucide="${hSt.icon}" style="width:16px;"></i></div>
-          <div class="tl-content">
-            <div class="tl-status">${hSt.title}</div>
-            <div class="tl-time">${timeStr}</div>
-            ${extraContent}
-          </div>
-        </div>
-      `;
-    });
-    tl.innerHTML = html;
+    area.innerHTML = `
+      <button class="btn btn-primary" onclick="departStore()">
+        <i data-lucide="truck" style="width:18px;"></i> รับพัสดุเพื่อไปส่ง (ออกรถ)
+      </button>
+      <button class="btn btn-outline" onclick="resetAll()">
+        ย้อนกลับ
+      </button>
+    `;
+  } else if(order.status === 'out_for_delivery') {
+    // State 2: Ready to deliver
+    document.getElementById('step-1').className = 'step-item done';
+    document.getElementById('step-1').querySelector('.step-circle').innerHTML = '<i data-lucide="check" style="width:16px;"></i>';
+    document.getElementById('step-2').className = 'step-item active';
+    document.getElementById('driver-input-wrapper').style.display = 'none';
+    
+    area.innerHTML = `
+      <button class="btn btn-success" onclick="startPhotoCapture()">
+        <i data-lucide="camera" style="width:18px;"></i> ถ่ายรูปยืนยันการจัดส่ง
+      </button>
+      <button class="btn btn-outline" onclick="resetAll()">
+        ย้อนกลับ
+      </button>
+    `;
   }
   lucide.createIcons();
 }
 
-async function showSubscribe() {
-  const { value: formValues } = await Swal.fire({
-    title: 'รับการแจ้งเตือนพัสดุ',
-    html: `
-      <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">กรอกอีเมลเพื่อรับการแจ้งเตือนเมื่อสถานะพัสดุมีการเปลี่ยนแปลง</p>
-      <input id="sub-email" class="swal2-input" type="email" placeholder="example@email.com" style="margin:0 0 16px 0; width:100%; box-sizing:border-box;">
-      <select id="sub-pref" class="swal2-select" style="margin:0; width:100%; box-sizing:border-box; font-size:15px;">
-        <option value="all">แจ้งเตือนทุกสถานะ</option>
-        <option value="delivered_only">แจ้งเตือนเฉพาะเมื่อส่งสำเร็จ</option>
-      </select>
-    `,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'ยืนยันลงทะเบียน',
-    cancelButtonText: 'ยกเลิก',
-    confirmButtonColor: 'var(--primary)',
-    preConfirm: () => {
-      const email = document.getElementById('sub-email').value.trim();
-      const pref = document.getElementById('sub-pref').value;
-      if (!email || !email.includes('@')) {
-        Swal.showValidationMessage('กรุณากรอกอีเมลให้ถูกต้อง');
-        return false;
-      }
-      return { email, pref };
-    }
-  });
+// ── QR Scanner ───────────────────────────────────────────
 
-  if (formValues) {
-    Swal.fire({ title: 'กำลังลงทะเบียน...', didOpen: () => Swal.showLoading() });
-    const res = await apiCall({
-      action: 'subscribeEmail',
-      trackingId: currentOrderData.tracking_id,
-      email: formValues.email,
-      pref: formValues.pref
-    });
-
-    if (res.success) Swal.fire('สำเร็จ', 'ลงทะเบียนรับแจ้งเตือนเรียบร้อยแล้ว ระบบได้ส่งอีเมลยืนยันไปที่คุณ', 'success');
-    else Swal.fire('ข้อผิดพลาด', res.message, 'error');
-  }
-}
-
-async function confirmReceipt() {
-  if (!currentOrderData) return;
-  const res = await Swal.fire({
-    title: 'ยืนยันรับสินค้า',
-    text: 'คุณได้รับสินค้าเรียบร้อยและสินค้าอยู่ในสภาพสมบูรณ์ใช่หรือไม่?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: 'var(--success)',
-    confirmButtonText: 'ใช่, ฉันได้รับแล้ว',
-    cancelButtonText: 'ยกเลิก'
-  });
-
-  if (res.isConfirmed) {
-    Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
-    const apiRes = await apiCall({ action: 'confirmReceipt', trackingId: currentOrderData.tracking_id, updatedBy: 'Customer' });
+async function startScan() {
+  document.getElementById('scanner-container').classList.remove('hidden');
+  document.getElementById('scan-btn').classList.add('hidden');
+  const video = document.getElementById('qr-video');
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject = scanStream;
+    video.setAttribute("playsinline", true);
+    video.play();
+    const canvas = document.createElement('canvas'); 
+    const ctx = canvas.getContext('2d');
     
-    if (apiRes.success) {
-      Swal.fire('ขอบคุณครับ', 'ยืนยันการรับสินค้าสำเร็จ', 'success');
-      fetchOrder(currentOrderData.tracking_id, true);
-    } else {
-      Swal.fire('ข้อผิดพลาด', apiRes.message, 'error');
-    }
+    scanInterval = setInterval(() => {
+      if(video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth; 
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+      
+      if(code) {
+        const url = code.data; 
+        let tid = url;
+        try { 
+          const u = new URL(url); 
+          tid = u.searchParams.get('id') || url; 
+        } catch(e) { tid = url; }
+        
+        document.getElementById('tid-input').value = tid.toUpperCase();
+        stopScan(); 
+        findOrder();
+      }
+    }, 200);
+  } catch(e) { 
+    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการเข้าถึงกล้อง', 'error'); 
+    stopScan(); 
   }
 }
 
-async function handleUnsubscribe(tid, email) {
-  stopAutoUpdate();
-  showView('view-loading');
-  const res = await apiCall({ action: 'unsubscribeEmail', trackingId: tid, email: email });
+function stopScan() {
+  if(scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+  if(scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  document.getElementById('scanner-container').classList.add('hidden');
+  document.getElementById('scan-btn').classList.remove('hidden');
+}
+
+// ── Delivery Actions ─────────────────────────────────────
+
+async function departStore() {
+  showLoading('กำลังตรวจสอบสถานะ...');
+  const checkRes = await api({action: 'getOrder', trackingId: currentOrder.tracking_id});
   
-  if (res.success) {
-    Swal.fire({
-      title: 'ยกเลิกสำเร็จ',
-      text: 'ระบบได้ยกเลิกการแจ้งเตือนพัสดุนี้แล้ว',
-      icon: 'success',
-      confirmButtonColor: 'var(--primary)'
-    }).then(() => {
-      safeUpdateUrl(tid, true);
-      fetchOrder(tid);
-    });
-  } else {
-    Swal.fire('ข้อผิดพลาด', res.message, 'error').then(() => {
-      safeUpdateUrl(tid, true);
-      fetchOrder(tid);
-    });
+  hideLoading();
+
+  if(checkRes.success && checkRes.order.status === 'cancelled') {
+     Swal.fire({ title: 'ออเดอร์ถูกยกเลิก', text: 'รายการนี้ถูกยกเลิกโดยแอดมินแล้ว ไม่สามารถจัดส่งได้', icon: 'warning', confirmButtonColor: 'var(--primary)'}); 
+     resetAll(); 
+     return;
   }
+
+  // เด้ง Popup ถามคนขับว่า "จะถึงในอีกกี่นาที"
+  const { value: etaMinutes } = await Swal.fire({
+    title: 'คาดว่าจะถึงในอีกกี่นาที?',
+    input: 'select',
+    inputOptions: {
+      '15': '15 นาที',
+      '30': '30 นาที',
+      '45': '45 นาที',
+      '60': '1 ชั่วโมง',
+      '90': '1.5 ชั่วโมง',
+      '120': '2 ชั่วโมง',
+      '180': '3 ชั่วโมง'
+    },
+    inputPlaceholder: 'เลือกเวลาที่คาดว่าจะถึง...',
+    showCancelButton: true,
+    confirmButtonText: 'ยืนยันและออกรถ',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: 'var(--accent)',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'กรุณาเลือกเวลาที่จะถึงเพื่อแจ้งลูกค้า!'
+      }
+    }
+  });
+
+  if (!etaMinutes) return; // กดยกเลิก
+  
+  // คำนวณเวลาที่จะถึงจริงๆ
+  const etaDate = new Date();
+  etaDate.setMinutes(etaDate.getMinutes() + parseInt(etaMinutes));
+  const driverEtaIso = etaDate.toISOString();
+
+  showLoading('กำลังบันทึกข้อมูล...');
+  const gps = await getGPS(); 
+  const driverInput = document.getElementById('driver-name').value.trim();
+  const driverName = driverInput || 'พนักงานจัดส่ง (ไม่ระบุชื่อ)'; 
+  
+  const res = await api({
+    action: 'updateStatus', 
+    trackingId: currentOrder.tracking_id, 
+    status: 'out_for_delivery', 
+    notes: 'ผู้จัดส่งออกเดินทาง', 
+    deliveryPersonName: driverName, 
+    gpsLat: gps?.lat || '', 
+    gpsLng: gps?.lng || '', 
+    updatedBy: driverName,
+    driverEta: driverEtaIso
+  });
+  
+  hideLoading();
+  
+  if(res.success) {
+    currentOrder.status = 'out_for_delivery';
+    currentOrder.driver_eta = driverEtaIso;
+
+    document.getElementById('step-1').className = 'step-item done';
+    document.getElementById('step-1').querySelector('.step-circle').innerHTML = '<i data-lucide="check" style="width:16px;"></i>';
+    document.getElementById('step-2').className = 'step-item active';
+    document.getElementById('driver-input-wrapper').style.display = 'none';
+    
+    document.getElementById('action-btn-area').innerHTML = `
+      <div style="background:var(--accent-light); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; text-align:center; margin-bottom:12px;">
+        <i data-lucide="truck" style="width:32px;height:32px;color:var(--accent);margin-bottom:8px;"></i>
+        <div style="font-size:15px;font-weight:700;color:var(--primary);">สถานะ: กำลังนำส่ง</div>
+        <div style="font-size:13px;font-weight:600;color:var(--success);margin-top:4px;">ถึงประมาณ: ${etaDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} น.</div>
+        ${gps ? `<div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;"><i data-lucide="map-pin" style="width:12px;"></i> พิกัด: ${gps.lat}, ${gps.lng}</div>` : ''}
+      </div>
+      <button class="btn btn-success" onclick="startPhotoCapture()">
+        <i data-lucide="camera" style="width:18px;"></i> ถ่ายรูปยืนยันการจัดส่ง
+      </button>
+      <button class="btn btn-outline" onclick="resetAll()">
+        พักไว้ก่อน (กลับหน้าค้นหา)
+      </button>
+    `;
+    lucide.createIcons();
+  } else { 
+    Swal.fire('ข้อผิดพลาด', res.message || 'บันทึกไม่สำเร็จ', 'error'); 
+  }
+}
+
+// ── Photo Capture ────────────────────────────────────────
+
+async function startPhotoCapture() {
+  photos = []; 
+  updatePhotoUI(); 
+  showSection('sec-photo'); 
+  await openCamera();
+}
+
+async function openCamera() {
+  try {
+    if(captureStream) captureStream.getTracks().forEach(t => t.stop());
+    captureStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: currentCamera, width: { ideal: 1280 }, height: { ideal: 720 } } 
+    });
+    const video = document.getElementById('capture-video');
+    video.srcObject = captureStream;
+    video.setAttribute("playsinline", true);
+  } catch(e) { 
+    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเปิดกล้องได้: '+e.message, 'error'); 
+  }
+}
+
+function switchCamera() { 
+  currentCamera = currentCamera === 'environment' ? 'user' : 'environment'; 
+  openCamera(); 
+}
+
+function takePhoto() {
+  if(photos.length >= 4) return;
+  const video = document.getElementById('capture-video'); 
+  const canvas = document.getElementById('capture-canvas');
+  
+  canvas.width = video.videoWidth || 640; 
+  canvas.height = video.videoHeight || 480;
+  
+  const ctx = canvas.getContext('2d'); 
+  ctx.drawImage(video, 0, 0);
+  
+  photos.push(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+  updatePhotoUI();
+  
+  if(photos.length === 4) { 
+    if(captureStream) captureStream.getTracks().forEach(t => t.stop()); 
+    document.getElementById('camera-wrap').style.display = 'none'; 
+    document.getElementById('take-photo-btn').disabled = true;
+  }
+}
+
+function removePhoto(idx) {
+  photos.splice(idx, 1);
+  if(photos.length < 4 && !captureStream) { 
+    document.getElementById('camera-wrap').style.display = 'block'; 
+    document.getElementById('take-photo-btn').disabled = false; 
+    openCamera(); 
+  }
+  updatePhotoUI();
+}
+
+function updatePhotoUI() {
+  const slots = document.querySelectorAll('.photo-slot');
+  slots.forEach((slot, i) => {
+    if(i < photos.length) {
+      slot.innerHTML = `
+        <img src="data:image/jpeg;base64,${photos[i]}" alt="Photo ${i+1}"/> 
+        <button class="remove-btn" onclick="removePhoto(${i})"><i data-lucide="x" style="width:14px;"></i></button>
+      `;
+      slot.classList.add('filled');
+    } else {
+      slot.innerHTML = '<i data-lucide="image" style="width:20px;opacity:0.5;"></i>'; 
+      slot.classList.remove('filled');
+    }
+  });
+  
+  const count = photos.length;
+  document.getElementById('photo-count-label').textContent = `${count} / 4 รูป`;
+  
+  const submitBtn = document.getElementById('submit-photos-btn');
+  submitBtn.disabled = count < 1;
+  submitBtn.innerHTML = count >= 1 
+    ? `<i data-lucide="upload-cloud" style="width:18px;"></i> ยืนยันการจัดส่ง (${count} รูป)` 
+    : `<i data-lucide="upload-cloud" style="width:18px;"></i> ต้องถ่ายอย่างน้อย 1 รูป`;
+    
+  lucide.createIcons();
+}
+
+async function submitDelivery() {
+  if(photos.length < 1) { 
+    Swal.fire('ข้อควรระวัง', 'กรุณาถ่ายรูปอย่างน้อย 1 รูปเพื่อเป็นหลักฐาน', 'warning'); 
+    return; 
+  }
+  
+  showLoading('ตรวจสอบสถานะ...');
+  deliveryTID = currentOrder.tracking_id;
+  
+  const checkRes = await api({action: 'getOrder', trackingId: deliveryTID});
+  if(checkRes.success && checkRes.order.status === 'cancelled') {
+     hideLoading(); 
+     Swal.fire('ถูกยกเลิก', 'รายการนี้ถูกยกเลิกโดยแอดมินแล้ว', 'warning'); 
+     resetAll(); 
+     return;
+  }
+  
+  showLoading('กำลังรวมรูปภาพ...');
+  const gps = await getGPS(); 
+  currentGPS = gps;
+  const combinedBase64 = await combinePhotos(photos, deliveryTID, gps);
+  
+  document.getElementById('loading-text').textContent = 'กำลังอัปโหลดข้อมูลสู่เซิร์ฟเวอร์...';
+  const uploadRes = await api({action: 'uploadPhoto', trackingId: deliveryTID, imageBase64: combinedBase64});
+  const photoUrl = uploadRes.success ? uploadRes.url : '';
+  
+  document.getElementById('loading-text').textContent = 'อัปเดตสถานะขั้นสุดท้าย...';
+  const driverInput = document.getElementById('driver-name').value.trim();
+  const driverName = driverInput || 'พนักงานจัดส่ง (ไม่ระบุชื่อ)'; 
+  
+  const res = await api({ 
+    action: 'updateStatus', 
+    trackingId: deliveryTID, 
+    status: 'delivered', 
+    notes: `พัสดุถูกส่งมอบแล้ว พร้อมหลักฐาน ${photos.length} รูป`, 
+    photoUrl: photoUrl, 
+    gpsLat: gps?.lat || '', 
+    gpsLng: gps?.lng || '', 
+    deliveryPersonName: driverName, 
+    updatedBy: driverName 
+  });
+  
+  hideLoading();
+  if(captureStream) captureStream.getTracks().forEach(t => t.stop());
+  
+  if(res.success) { 
+    document.getElementById('success-sub').textContent = `พัสดุ ${deliveryTID} จัดส่งสำเร็จ`; 
+    showSection('sec-success'); 
+  } else { 
+    Swal.fire('ข้อผิดพลาด', res.message || 'ไม่สามารถบันทึกได้', 'error'); 
+  }
+}
+
+// ฟังก์ชันรวมรูปภาพพร้อมลายน้ำ (Watermark)
+function combinePhotos(photoArray, tid, gps) {
+  return new Promise((resolve) => {
+    const SIZE = 800; 
+    const COLS = Math.min(photoArray.length, 2); 
+    const ROWS = Math.ceil(photoArray.length / 2); 
+    const W = COLS * SIZE; 
+    const H = ROWS * SIZE + 100; // Extra height for footer banner
+    
+    const canvas = document.createElement('canvas'); 
+    canvas.width = W; canvas.height = H; 
+    const ctx = canvas.getContext('2d');
+    
+    // Background
+    ctx.fillStyle = '#0f172a'; 
+    ctx.fillRect(0, 0, W, H);
+    
+    let loaded = 0;
+    photoArray.forEach((b64, i) => {
+      const img = new Image();
+      img.onload = () => {
+        const col = i % 2; 
+        const row = Math.floor(i / 2); 
+        const x = col * SIZE; 
+        const y = row * SIZE;
+        
+        ctx.save(); 
+        ctx.beginPath(); 
+        ctx.rect(x + 4, y + 4, SIZE - 8, SIZE - 8); 
+        ctx.clip();
+        
+        // Cover logic
+        const scale = Math.max(SIZE / img.width, SIZE / img.height); 
+        const sw = img.width * scale; 
+        const sh = img.height * scale; 
+        const sx = x + (SIZE - sw) / 2; 
+        const sy = y + (SIZE - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh); 
+        ctx.restore();
+        
+        // Photo Index Badge
+        ctx.fillStyle = 'rgba(0,0,0,0.6)'; 
+        ctx.fillRect(x + SIZE - 50, y + 10, 40, 40);
+        ctx.fillStyle = '#ffffff'; 
+        ctx.font = 'bold 20px Prompt, sans-serif'; 
+        ctx.textAlign = 'center'; 
+        ctx.fillText(`${i+1}`, x + SIZE - 30, y + 37);
+        
+        loaded++;
+        if(loaded === photoArray.length) {
+          // Central Watermark
+          ctx.save(); 
+          ctx.translate(W/2, (ROWS*SIZE)/2); 
+          ctx.rotate(-Math.PI/6); 
+          ctx.font = "bold 80px Prompt, sans-serif"; 
+          ctx.textAlign = "center"; 
+          ctx.textBaseline = "middle"; 
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; 
+          ctx.fillText("FOR INTERNAL USE", 0, 0); 
+          ctx.restore();
+          
+          // Bottom Data Banner
+          const barY = ROWS * SIZE; 
+          ctx.fillStyle = '#1e293b'; 
+          ctx.fillRect(0, barY, W, 100);
+          
+          ctx.fillStyle = '#60a5fa'; 
+          ctx.font = 'bold 24px monospace'; 
+          ctx.textAlign = 'left'; 
+          ctx.fillText(`TID: ${tid}`, 24, barY + 36);
+          
+          const now = new Date(); 
+          const dateStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB');
+          ctx.fillStyle = '#cbd5e1'; 
+          ctx.font = '18px Prompt, sans-serif'; 
+          ctx.fillText(`TIME: ${dateStr}`, 24, barY + 70);
+          
+          ctx.textAlign = 'right';
+          ctx.fillText(gps ? `GPS: ${gps.lat}, ${gps.lng}` : 'GPS: UNAVAILABLE', W - 24, barY + 70);
+          
+          ctx.fillStyle = '#10b981'; 
+          ctx.font = 'bold 24px Prompt, sans-serif'; 
+          ctx.fillText('DELIVERED SUCCESSFULLY', W - 24, barY + 36);
+          
+          resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+        }
+      }; 
+      img.src = 'data:image/jpeg;base64,' + b64;
+    });
+  });
+}
+
+function resetAll() { 
+  currentOrder = null; 
+  photos = []; 
+  currentGPS = null; 
+  deliveryTID = null; 
+  currentCamera = 'environment'; 
+  
+  if(captureStream) captureStream.getTracks().forEach(t => t.stop()); 
+  captureStream = null; 
+  
+  document.getElementById('camera-wrap').style.display = 'block'; 
+  document.getElementById('take-photo-btn').disabled = false; 
+  document.getElementById('tid-input').value = ''; 
+  // ไม่รีเซ็ตช่องใส่ชื่อ เพื่อให้รอบถัดไปไม่ต้องพิมพ์ใหม่
+  
+  // Reset Steps UI
+  document.getElementById('step-1').className = 'step-item active';
+  document.getElementById('step-1').querySelector('.step-circle').innerHTML = '1';
+  document.getElementById('step-2').className = 'step-item';
+  document.getElementById('step-3').className = 'step-item';
+  
+  updatePhotoUI(); 
+  showSection('sec-input'); 
 }
 </script>
 </body>
