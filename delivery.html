@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
-<title>ผู้จัดส่ง — ระบบจัดการโลจิสติกส์</title>
+<title>พนักงานจัดส่ง — ระบบจัดการโลจิสติกส์</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -145,6 +145,7 @@ body {
 .btn-outline:hover { background: var(--bg-color); }
 .btn-danger { background: var(--danger); color: #fff; }
 
+.btn-sm { padding: 8px 16px; font-size: 13.5px; border-radius: 8px; width: auto; }
 .btn-icon-only { width: 56px; padding: 0; flex-shrink: 0; }
 
 /* Divider */
@@ -171,7 +172,7 @@ body {
   border: 2px solid rgba(255,255,255,0.8); 
   border-radius: 20px; 
   position: relative; 
-  box-shadow: 0 0 0 4000px rgba(0,0,0,0.4); /* Focus effect */
+  box-shadow: 0 0 0 4000px rgba(0,0,0,0.4);
 }
 .scan-frame::before {
   content: ''; position: absolute; inset: -2px; border-radius: 20px;
@@ -191,7 +192,7 @@ body {
 .detail-row { display: flex; flex-direction: column; margin-bottom: 16px; }
 .detail-row:last-child { margin-bottom: 0; }
 .detail-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.detail-value { font-size: 15px; font-weight: 500; color: var(--text-main); line-height: 1.4; }
+.detail-value { font-size: 15px; font-weight: 500; color: var(--text-main); line-height: 1.4; word-break: break-word; }
 .detail-value.highlight { color: var(--accent); font-family: monospace; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
 
 /* Status Pill */
@@ -422,6 +423,7 @@ canvas { display: none; }
 
 <script>
 // ── Configuration ─────────────────────────────────────────
+// ใส่ URL ของ Google Apps Script (Deploy > Web app > URL)
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKxXRMU-E7X1nCvt9Df6i-ZYHHmr7yShBoMKFUGpyt1Ac_DKvrxBJkek793QRGWI82/exec';
 
 let currentOrder  = null;
@@ -527,6 +529,9 @@ function renderActionSection(order) {
     ? `<span class="status-pill sp-ready"><i data-lucide="package-check" style="width:14px;"></i> รอพนักงานรับ</span>`
     : `<span class="status-pill sp-out"><i data-lucide="truck" style="width:14px;"></i> กำลังนำส่ง</span>`;
 
+  // สร้าง URL ของ Google Maps (ใช้ลิงก์ที่ให้มา หรือเอาที่อยู่ไปค้นหา)
+  const mapsUrl = order.maps_link ? order.maps_link : (order.delivery_address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.delivery_address)}` : '');
+
   document.getElementById('action-order-info').innerHTML = `
     <div class="detail-row">
       <span class="detail-label">หมายเลขติดตาม (Tracking ID)</span>
@@ -546,7 +551,10 @@ function renderActionSection(order) {
     </div>
     <div class="detail-row">
       <span class="detail-label">ที่อยู่ปลายทาง</span>
-      <span class="detail-value" style="color:var(--text-muted);">${order.delivery_address || '-'}</span>
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <span class="detail-value" style="color:var(--text-muted); flex:1;">${order.delivery_address || '-'}</span>
+        ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="btn btn-primary btn-sm" style="padding: 6px 10px; flex-shrink: 0; text-decoration: none;"><i data-lucide="map" style="width:16px;"></i> นำทาง</a>` : ''}
+      </div>
     </div>
   `;
 
