@@ -211,16 +211,6 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
   body * { visibility: hidden; }
   #print-area, #print-area * { visibility: visible; }
   #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
-  .print-label-card { border: 2px solid #000; border-radius: 16px; padding: 24px; max-width: 500px; margin: 0 auto; color: #000; font-family: 'Prompt', sans-serif; page-break-inside: avoid; }
-  .print-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 16px; }
-  .print-qr-code { width: 120px; height: 120px; }
-  .print-title { font-size: 22px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;}
-  .print-tid { font-family: monospace; font-size: 24px; font-weight: bold; }
-  .print-row { margin-bottom: 12px; }
-  .print-label-text { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 4px; text-transform: uppercase; }
-  .print-value-text { font-size: 18px; margin-bottom: 16px; }
-  .print-value-address { border: 1px solid #000; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: normal; margin-bottom: 16px; }
-  .print-footer { text-align: center; border-top: 2px dashed #000; padding-top: 16px; margin-top: 16px; font-size: 14px; font-weight: bold; text-transform: uppercase;}
 }
 
 /* Responsive */
@@ -344,17 +334,17 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
 
 <!-- Change Password Modal -->
 <div id="change-pw-modal" class="modal-bg hidden">
-  <div class="modal" style="max-width:440px;">
-    <div class="modal-header">
+  <div class="modal" style="max-width:440px; text-align:left;">
+    <div class="modal-header" style="padding:0 0 16px;">
       <span class="modal-title">เปลี่ยนรหัสผ่าน</span>
-      <button class="close-btn" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
+      <button class="close-btn" style="position:relative; top:-5px;" onclick="closeModal('change-pw-modal')"><i data-lucide="x" style="width:20px;"></i></button>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
+    <div class="modal-body" style="padding:16px 0 0;">
+      <div class="form-group" style="margin-bottom:16px;">
         <label>รหัสผ่านเดิม</label>
         <input id="cpw-old" type="password" class="login-input" placeholder="กรอกรหัสผ่านปัจจุบัน"/>
       </div>
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:16px;">
         <label>รหัสผ่านใหม่ <span style="font-size:11px;color:var(--muted);font-weight:normal;">(อักษรใหญ่, เล็ก, ตัวเลข, 8 ตัวอักษรขึ้นไป)</span></label>
         <input id="cpw-new" type="password" class="login-input" placeholder="กรอกรหัสผ่านใหม่"/>
       </div>
@@ -521,7 +511,11 @@ div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 24px; paddi
               </div>
               <div class="form-group full">
                 <label>ที่อยู่จัดส่งโดยละเอียด <span style="color:var(--red);">*</span></label>
-                <textarea id="f-address" rows="4" placeholder="บ้านเลขที่, ถนน, แขวง, เขต, จังหวัด, รหัสไปรษณีย์..."></textarea>
+                <textarea id="f-address" rows="3" placeholder="บ้านเลขที่, ถนน, แขวง, เขต, จังหวัด, รหัสไปรษณีย์..."></textarea>
+              </div>
+              <div class="form-group full">
+                <label>ลิงก์พิกัด Google Maps (ไม่บังคับ)</label>
+                <input id="f-maps" type="url" placeholder="วางลิงก์ Google Maps เช่น https://maps.app.goo.gl/..."/>
               </div>
             </div>
             <div style="margin-top:28px;display:flex;gap:12px;">
@@ -740,6 +734,7 @@ async function checkUrlForReset() {
           icon: 'error',
           confirmButtonColor: 'var(--blue)'
         }).then(() => {
+          // ใช้การเคลียร์ query string ออกไปเพื่อกลับหน้า login ปกติ
           window.location.href = window.location.pathname;
         });
       }
@@ -862,7 +857,6 @@ async function doLogin() {
       checkLoginState();
     }
   } else {
-    // เช็คกรณีอีเมลไม่มีในระบบ (unregistered)
     if (res.errorType === 'unregistered') {
       Swal.fire({
         title: 'ไม่พบข้อมูลในระบบ',
@@ -1296,7 +1290,13 @@ async function showDetail(tid) {
         <div><span style="font-size:12px;color:var(--muted);"><i data-lucide="user" style="width:12px;vertical-align:bottom;"></i> ชื่อลูกค้า</span><div style="font-weight:600;font-size:15px;color:var(--text);margin-top:4px;">${o.customer_name}</div></div>
         <div><span style="font-size:12px;color:var(--muted);"><i data-lucide="package" style="width:12px;vertical-align:bottom;"></i> รายการสินค้า</span><div style="font-weight:600;font-size:15px;color:var(--text);margin-top:4px;">${o.product_name}</div></div>
         
-        <div style="grid-column:1/-1;"><span style="font-size:12px;color:var(--muted);"><i data-lucide="map-pin" style="width:12px;vertical-align:bottom;"></i> ที่อยู่สำหรับจัดส่ง</span><div style="font-size:14.5px;color:var(--text-light);margin-top:4px;line-height:1.6;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--border);">${o.delivery_address}</div></div>
+        <div style="grid-column:1/-1;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <span style="font-size:12px;color:var(--muted);"><i data-lucide="map-pin" style="width:12px;vertical-align:bottom;"></i> ที่อยู่สำหรับจัดส่ง</span>
+            ${o.maps_link ? `<a href="${o.maps_link}" target="_blank" style="font-size:12px; color:var(--blue); text-decoration:none; font-weight:600; display:flex; align-items:center; gap:4px;"><i data-lucide="external-link" style="width:12px;"></i> เปิดพิกัดแนบ (Maps)</a>` : (o.delivery_address ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(o.delivery_address)}" target="_blank" style="font-size:12px; color:var(--blue); text-decoration:none; font-weight:600; display:flex; align-items:center; gap:4px;"><i data-lucide="external-link" style="width:12px;"></i> ค้นหาจากที่อยู่</a>` : '')}
+          </div>
+          <div style="font-size:14.5px;color:var(--text-light);margin-top:4px;line-height:1.6;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--border);">${o.delivery_address}</div>
+        </div>
         
         ${o.delivery_person_name?`<div><span style="font-size:12px;color:var(--muted);"><i data-lucide="truck" style="width:12px;vertical-align:bottom;"></i> พนักงานจัดส่ง</span><div style="font-weight:600;font-size:14.5px;color:var(--blue-mid);margin-top:4px;">${o.delivery_person_name}</div></div>`:''}
         ${o.cancel_reason?`<div style="grid-column:1/-1;background:var(--red-light);padding:12px;border-radius:8px;border:1px solid #fecaca;"><span style="font-size:12px;color:var(--red);font-weight:600;"><i data-lucide="info" style="width:12px;vertical-align:bottom;"></i> เหตุผลที่ยกเลิก</span><div style="color:var(--red);font-size:14px;margin-top:4px;font-weight:500;">${o.cancel_reason}</div></div>`:''}
@@ -1519,7 +1519,7 @@ async function promptTestEmail() {
 }
 
 function clearForm() {
-  ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
+  ['f-name','f-product','f-address','f-maps'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('create-msg').innerHTML = '';
 }
 
@@ -1527,6 +1527,7 @@ async function createOrder() {
   const name    = document.getElementById('f-name').value.trim();
   const product = document.getElementById('f-product').value.trim();
   const address = document.getElementById('f-address').value.trim();
+  const maps    = document.getElementById('f-maps').value.trim();
   
   if(!name||!product||!address){
     Swal.fire({title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณากรอกฟิลด์ที่มีเครื่องหมาย * ให้ครบทุกช่อง', icon: 'warning', confirmButtonColor: 'var(--blue)'});
@@ -1537,7 +1538,7 @@ async function createOrder() {
   msgEl.innerHTML = '<div style="background:#eff6ff; padding:16px; border-radius:12px; color:var(--blue); font-weight:500; display:flex; align-items:center; gap:10px;"><i data-lucide="loader-2" class="spin"></i> กำลังบันทึกข้อมูลลงฐานข้อมูล...</div>';
   lucide.createIcons();
 
-  const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address});
+  const res = await api({action:'createOrder', customerName:name, productName:product, deliveryAddress:address, mapsLink:maps});
   
   if(res.success){
     msgEl.innerHTML = `
@@ -1563,7 +1564,7 @@ async function createOrder() {
         </div>
       </div>`;
     
-    ['f-name','f-product','f-address'].forEach(id=>document.getElementById(id).value='');
+    ['f-name','f-product','f-address','f-maps'].forEach(id=>document.getElementById(id).value='');
     await loadAllOrders();
     lucide.createIcons();
     
