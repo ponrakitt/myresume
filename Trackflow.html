@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFlow | ponrakitt.site</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Apple Pro Dark Mode Palette */
+            --bg-base: #000000;
+            --bg-surface: #151516;
+            --bg-glass: rgba(21, 21, 22, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(255, 255, 255, 0.2);
+            --text-primary: #f5f5f7;
+            --text-secondary: #86868b;
+            --accent: #2997ff;
+            --accent-glow: rgba(41, 151, 255, 0.15);
+            
+            --font-en: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-th: 'Prompt', sans-serif;
+            --transition-smooth: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            --radius-large: 24px;
+            --radius-medium: 16px;
+            --radius-small: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-en);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body.lang-th { font-family: var(--font-th); }
+
+        /* Typography */
+        h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.03em; margin-bottom: 0.5em; }
+        h1 { font-size: clamp(3rem, 6vw, 5.5rem); line-height: 1.05; }
+        h2 { font-size: clamp(2rem, 4vw, 3.5rem); }
+        h3 { font-size: 1.5rem; letter-spacing: -0.01em; }
+        
+        .text-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #86868b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        p { color: var(--text-secondary); font-size: 1.125rem; font-weight: 400; letter-spacing: -0.01em; }
+
+        /* Layout & Utilities */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .glass { background: var(--bg-glass); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 2rem; }
+        .mb-4 { margin-bottom: 2rem; }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-up { animation: fadeUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .delay-1 { animation-delay: 0.2s; opacity: 0; }
+        .delay-2 { animation-delay: 0.4s; opacity: 0; }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.5rem; }
+        .logo-sub { font-size: 0.75rem; font-weight: 400; color: var(--text-secondary); }
+        
+        /* Custom Language Switcher */
+        .lang-switcher-container { position: relative; }
+        .lang-toggle {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            user-select: none;
+        }
+        .lang-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
+        .lang-toggle svg { width: 14px; height: 14px; fill: currentColor; }
+        
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: rgba(21, 21, 22, 0.85);
+            backdrop-filter: saturate(180%) blur(25px);
+            -webkit-backdrop-filter: saturate(180%) blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 140px;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: var(--transition-smooth);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+        }
+        .lang-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .lang-item {
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .lang-item:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+        .lang-item.active { color: var(--text-primary); font-weight: 500; background: rgba(255,255,255,0.04); }
+        .lang-item.active::after { content: '\2713'; font-size: 0.9rem; color: var(--text-primary); }
+
+        /* Hero Showcase Section */
+        .hero {
+            padding: 12rem 0 8rem;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hero p { max-width: 600px; margin: 1rem auto 3rem; font-size: 1.25rem; }
+        
+        /* Product Showcase Mockup */
+        .product-mockup {
+            width: 100%;
+            max-width: 900px;
+            height: 450px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1c1c1e 0%, #0d0d0e 100%);
+            border-radius: var(--radius-large);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .mockup-header {
+            height: 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 6px;
+        }
+        .mockup-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+        .mockup-dot:nth-child(1) { background: #ff5f56; }
+        .mockup-dot:nth-child(2) { background: #ffbd2e; }
+        .mockup-dot:nth-child(3) { background: #27c93f; }
+        
+        .mockup-body {
+            flex: 1;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1.5rem;
+        }
+        
+        /* Mockup UI Sidebar */
+        .mockup-sidebar { 
+            background: rgba(255,255,255,0.02); border-radius: var(--radius-medium); 
+            border: 1px solid rgba(255,255,255,0.04); padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem;
+        }
+        .ms-logo { width: 60%; height: 20px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 1rem; }
+        .ms-item { width: 100%; height: 16px; background: rgba(255,255,255,0.04); border-radius: 4px; }
+        .ms-item.active { background: var(--accent); opacity: 0.8; }
+        
+        /* Mockup UI Content (Dashboard) */
+        .mockup-content { 
+            display: flex; flex-direction: column; gap: 1.2rem;
+        }
+        .mc-header { display: flex; justify-content: space-between; align-items: center; }
+        .mc-title { width: 30%; height: 24px; background: rgba(255,255,255,0.1); border-radius: 6px; }
+        .mc-avatar { width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+        
+        .mc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .mc-card { 
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); 
+            border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem;
+        }
+        .mc-card-val { height: 24px; border-radius: 4px; }
+        .mc-card-label { width: 70%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; }
+        
+        .mc-chart-area { 
+            flex: 1; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); 
+            border-radius: 12px; display: flex; align-items: flex-end; padding: 1rem; gap: 8px; position: relative; overflow: hidden;
+        }
+        .mc-bar { 
+            flex: 1; background: linear-gradient(180deg, var(--accent) 0%, transparent 100%); 
+            opacity: 0.6; border-radius: 4px 4px 0 0; transform-origin: bottom; animation: riseUp 1.5s ease-out forwards;
+        }
+        @keyframes riseUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        
+        .mc-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .mc-list-item { 
+            background: rgba(255,255,255,0.02); border-radius: 8px; padding: 0.8rem 1rem; 
+            display: flex; align-items: center; gap: 1rem; border: 1px solid rgba(255,255,255,0.03);
+        }
+        .mc-list-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff9f0a; }
+        .mc-list-line { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; }
+
+        /* Pricing Section (Product Lineup) */
+        .pricing-section { padding: 6rem 0; background: var(--bg-surface); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+        .tier {
+            background: var(--bg-base);
+            border-radius: var(--radius-large);
+            padding: 3rem 2rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .tier:hover { transform: scale(1.02); border-color: var(--border-highlight); }
+        .tier-pro {
+            background: linear-gradient(180deg, #1c1c1e 0%, var(--bg-base) 100%);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .tier-price { font-size: 3rem; font-weight: 700; margin: 1rem 0; letter-spacing: -0.04em; color: var(--text-primary); }
+        .tier-price span { font-size: 1rem; color: var(--text-secondary); font-weight: 500; letter-spacing: normal; }
+        .tier-desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2.5rem; min-height: 45px; }
+        .tier-features { list-style: none; margin-bottom: 2rem; flex-grow: 1; }
+        .tier-features li {
+            padding: 0.8rem 0; border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem; display: flex; align-items: center; color: #d2d2d7;
+        }
+        .tier-features li::before {
+            content: ''; display: inline-block; width: 5px; height: 5px;
+            background: var(--text-secondary); border-radius: 50%; margin-right: 12px;
+        }
+
+        /* Lead Gen Form Section (Configuration) */
+        .engine-section { padding: 8rem 0; }
+        .engine-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            background: var(--bg-surface);
+            padding: 3rem;
+            border-radius: var(--radius-large);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* iOS Style Inputs */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; }
+        .form-control {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 1rem 1.2rem;
+            border-radius: var(--radius-medium);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+        .form-control:focus { background: rgba(255,255,255,0.08); border-color: var(--text-secondary); }
+        select.form-control { appearance: none; cursor: pointer; }
+        select.form-control option { background: var(--bg-surface); color: var(--text-primary); }
+
+        /* Privacy Checkbox */
+        .terms-group { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+        .checkbox-label {
+            display: flex; align-items: center; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;
+        }
+        .checkbox-label input {
+            margin-right: 0.75rem; width: 18px; height: 18px; cursor: pointer; accent-color: var(--text-primary);
+        }
+        .checkbox-label a { color: var(--text-primary); text-decoration: none; }
+        .checkbox-label a:hover { text-decoration: underline; }
+
+        /* Custom Add-on Toggles (MIUI/iOS style) */
+        .addons-list { margin-top: 1rem; }
+        .addon-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem; background: var(--bg-base); border: 1px solid var(--border-color);
+            border-radius: var(--radius-medium); margin-bottom: 1rem;
+            transition: var(--transition-smooth);
+        }
+        .addon-item:hover { border-color: rgba(255,255,255,0.2); }
+        .addon-info span { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+        .addon-info strong { display: block; font-size: 1.05rem; font-weight: 500; color: var(--text-primary); }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1); border-radius: 30px; transition: .4s;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 24px; width: 24px;
+            left: 2px; bottom: 2px; background-color: #fff; border-radius: 50%; transition: .4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        input:checked + .slider { background-color: #34c759; /* Apple Green */ }
+        input:checked + .slider:before { transform: translateX(22px); }
+        input:disabled + .slider { opacity: 0.4; cursor: not-allowed; }
+
+        .badge-soon {
+            background: rgba(255, 255, 255, 0.05); color: var(--text-secondary);
+            padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500;
+        }
+
+        /* Pill Buttons */
+        .btn-group { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+        @media (min-width: 600px) { .btn-group { flex-direction: row; } }
+        .btn {
+            padding: 1rem 2rem; border-radius: 999px; font-family: inherit;
+            font-size: 1rem; font-weight: 500; cursor: pointer;
+            transition: var(--transition-smooth); outline: none; border: none;
+            display: inline-flex; justify-content: center; align-items: center; width: 100%;
+        }
+        .btn-primary { background: var(--text-primary); color: var(--bg-base); }
+        .btn-primary:hover { background: #fff; transform: scale(1.02); }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 2px solid rgba(0,0,0,0.1); border-left-color: var(--bg-base);
+            border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite;
+            display: none; margin-left: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Quotation / Invoice Area (Apple Receipt Style) */
+        .quotation-wrapper {
+            display: none; opacity: 0; transform: translateY(20px); transition: var(--transition-smooth);
+            background: #ffffff; color: #1d1d1f; padding: 4rem; border-radius: var(--radius-large); margin-top: 4rem;
+        }
+        .quotation-wrapper.active { display: block; opacity: 1; transform: translateY(0); }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 1px solid #d2d2d7; padding-bottom: 2rem; margin-bottom: 2rem; }
+        .invoice-title { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em; color: #1d1d1f; }
+        .invoice-details { text-align: right; font-size: 0.9rem; color: #86868b; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+        .invoice-table th, .invoice-table td { padding: 1.2rem 1rem; border-bottom: 1px solid #f5f5f7; text-align: left; }
+        .invoice-table th { font-weight: 500; font-size: 0.85rem; color: #86868b; }
+        .invoice-table td.amount { text-align: right; font-weight: 500; }
+        .invoice-table th.amount { text-align: right; }
+        .invoice-summary { width: 100%; max-width: 400px; margin-left: auto; }
+        .summary-row { display: flex; justify-content: space-between; padding: 1rem; }
+        .summary-row.total { font-weight: 600; font-size: 1.5rem; border-top: 1px solid #d2d2d7; margin-top: 1rem; padding-top: 1.5rem; }
+        .print-actions { margin-top: 3rem; text-align: center; }
+        .print-actions .btn { background: #1d1d1f; color: #fff; width: auto; min-width: 200px; }
+
+        /* FAQ Section */
+        .faq-section { padding: 8rem 0; max-width: 800px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border-color); }
+        .faq-question {
+            padding: 1.8rem 0; cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; font-weight: 500; font-size: 1.15rem; transition: var(--transition-smooth); color: var(--text-primary);
+        }
+        .faq-icon { width: 14px; height: 14px; position: relative; flex-shrink: 0; margin-left: 1rem; }
+        .faq-icon::before, .faq-icon::after { content: ''; position: absolute; background: var(--text-secondary); transition: transform 0.3s ease; }
+        .faq-icon::before { top: 6px; left: 0; width: 14px; height: 2px; }
+        .faq-icon::after { top: 0; left: 6px; width: 2px; height: 14px; }
+        .faq-item.active .faq-icon::after { transform: rotate(90deg); opacity: 0; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; color: var(--text-secondary); }
+        .faq-answer p { padding-bottom: 1.8rem; font-size: 1rem; }
+
+        /* Footer */
+        footer {
+            text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border-color);
+            color: var(--text-secondary); font-size: 0.85rem; background: var(--bg-surface);
+        }
+        footer a { color: var(--text-primary); text-decoration: none; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: var(--transition-smooth);
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-content {
+            background: var(--bg-surface); padding: 3rem; border-radius: var(--radius-large);
+            border: 1px solid var(--border-color); text-align: center; max-width: 450px; width: 90%;
+            transform: scale(0.95); transition: var(--transition-smooth);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h2 { font-size: 1.8rem; margin-bottom: 1rem; }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .pricing-grid, .engine-container { grid-template-columns: 1fr; }
+            .hero { padding: 8rem 0 4rem; }
+            .quotation-wrapper { padding: 2rem; }
+            .mockup-body { grid-template-columns: 1fr; }
+            .mockup-sidebar { display: none; }
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .hero, .pricing-section, .engine-container, .faq-section, footer, .print-actions, .modal-overlay { display: none !important; }
+            .container { padding: 0; max-width: 100%; margin: 0; }
+            .quotation-wrapper { display: block !important; opacity: 1 !important; transform: none !important; margin: 0 !important; padding: 0 !important; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass">
+        <div class="logo">TrackFlow <span class="logo-sub">ponrakitt.site</span></div>
+        <div class="lang-switcher-container">
+            <div class="lang-toggle" id="langToggle">
+                <!-- Globe Icon -->
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                <span id="currentLangDisplay">EN</span>
+                <!-- Chevron Down Icon -->
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="lang-menu" id="langMenu">
+                <div class="lang-item active" data-lang="en">English</div>
+                <div class="lang-item" data-lang="th">ภาษาไทย</div>
+                <div class="lang-item" data-lang="zh">中文</div>
+                <div class="lang-item" data-lang="ja">日本語</div>
+                <div class="lang-item" data-lang="es">Español</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Showcase Section -->
+    <section class="hero container animate-fade-up">
+        <h1 class="text-gradient" data-i18n="hero_title">Enterprise Delivery Architecture.</h1>
+        <p class="delay-1 animate-fade-up" data-i18n="hero_subtitle">Logistics software solutions designed for operational efficiency. Built for stability and scalability.</p>
+        
+        <!-- Abstract Product Showcase -->
+        <div class="product-mockup delay-2 animate-fade-up">
+            <div class="mockup-header">
+                <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+            </div>
+            <div class="mockup-body">
+                <!-- Sidebar Simulation -->
+                <div class="mockup-sidebar">
+                    <div class="ms-logo"></div>
+                    <div class="ms-item active"></div>
+                    <div class="ms-item"></div>
+                    <div class="ms-item"></div>
+                    <div class="ms-item" style="margin-top: auto;"></div>
+                </div>
+                <!-- Content/Dashboard Simulation -->
+                <div class="mockup-content">
+                    <div class="mc-header">
+                        <div class="mc-title"></div>
+                        <div class="mc-avatar"></div>
+                    </div>
+                    <!-- Stat Cards -->
+                    <div class="mc-stats">
+                        <div class="mc-card">
+                            <div class="mc-card-val" style="width: 60%; background: rgba(41, 151, 255, 0.8);"></div>
+                            <div class="mc-card-label"></div>
+                        </div>
+                        <div class="mc-card">
+                            <div class="mc-card-val" style="width: 40%; background: rgba(255, 255, 255, 0.1);"></div>
+                            <div class="mc-card-label"></div>
+                        </div>
+                        <div class="mc-card">
+                            <div class="mc-card-val" style="width: 50%; background: rgba(48, 209, 88, 0.8);"></div>
+                            <div class="mc-card-label"></div>
+                        </div>
+                    </div>
+                    <!-- Main Chart -->
+                    <div class="mc-chart-area">
+                        <div class="mc-bar" style="height: 30%"></div>
+                        <div class="mc-bar" style="height: 50%"></div>
+                        <div class="mc-bar" style="height: 40%"></div>
+                        <div class="mc-bar" style="height: 70%"></div>
+                        <div class="mc-bar" style="height: 60%"></div>
+                        <div class="mc-bar" style="height: 90%; background: linear-gradient(180deg, #30d158 0%, transparent 100%);"></div>
+                        <div class="mc-bar" style="height: 80%"></div>
+                    </div>
+                    <!-- Recent List -->
+                    <div class="mc-list">
+                        <div class="mc-list-item">
+                            <div class="mc-list-dot"></div>
+                            <div class="mc-list-line" style="width: 40%;"></div>
+                            <div class="mc-list-line" style="width: 15%; margin-left: auto;"></div>
+                        </div>
+                        <div class="mc-list-item">
+                            <div class="mc-list-dot" style="background: #30d158;"></div>
+                            <div class="mc-list-line" style="width: 55%;"></div>
+                            <div class="mc-list-line" style="width: 20%; margin-left: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section (Product Lineup) -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <h2 class="text-center" data-i18n="pricing_title">Choose your architecture.</h2>
+            <div class="pricing-grid">
+                <!-- Tier 1 -->
+                <div class="tier">
+                    <h3 data-i18n="tier1_name">Starter</h3>
+                    <p class="tier-desc" data-i18n="tier1_desc">Essential tracking features for starting businesses.</p>
+                    <div class="tier-price">39,000 <span>THB</span></div>
+                    <ul class="tier-features">
+                        <li data-i18n="feat_admin">Admin & Warehouse Portals</li>
+                        <li data-i18n="feat_driver">Dedicated Driver Application</li>
+                        <li data-i18n="feat_customer">Customer Tracking Interface</li>
+                        <li data-i18n="feat_deploy1">1-3 Days Deployment</li>
+                    </ul>
+                </div>
+
+                <!-- Tier 2 -->
+                <div class="tier tier-pro">
+                    <h3 data-i18n="tier2_name" style="color: #fff;">Professional</h3>
+                    <p class="tier-desc" data-i18n="tier2_desc">Extended features with standard brand integration for SMEs.</p>
+                    <div class="tier-price" style="color: #fff;">55,000 <span>THB</span></div>
+                    <ul class="tier-features">
+                        <li data-i18n="feat_all_starter">All Starter Features</li>
+                        <li data-i18n="feat_brand" style="color: #fff;">Standard Brand Integration</li>
+                        <li data-i18n="feat_addon_free" style="color: #fff;">1 Premium Add-on Included</li>
+                        <li data-i18n="feat_deploy2">7 Days Deployment</li>
+                    </ul>
+                </div>
+
+                <!-- Tier 3 -->
+                <div class="tier">
+                    <h3 data-i18n="tier3_name">Enterprise</h3>
+                    <p class="tier-desc" data-i18n="tier3_desc">Full white-label customization for enterprise operations.</p>
+                    <div class="tier-price">89,000 <span>THB</span></div>
+                    <ul class="tier-features">
+                        <li data-i18n="feat_whitelabel">White-label Customization</li>
+                        <li data-i18n="feat_all_addons">All Add-ons Included</li>
+                        <li data-i18n="feat_priority">Technical Email Support</li>
+                        <li data-i18n="feat_deploy3">14 Days Deployment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Engine / Form Configuration -->
+    <section id="lead-gen" class="engine-section container">
+        <h2 class="text-center mb-4" data-i18n="engine_title">Configure your system.</h2>
+        <p class="text-center mb-4" style="margin-top: -1rem; max-width: 600px; margin-left: auto; margin-right: auto;" data-i18n="engine_subtitle">Select your tier and modules to estimate your system deployment cost.</p>
+        
+        <div class="engine-container">
+            <!-- Form Area -->
+            <div>
+                <div class="form-group">
+                    <label data-i18n="label_name">Full Name</label>
+                    <input type="text" id="inpName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="label_email">Work Email</label>
+                    <input type="email" id="inpEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="label_phone">Phone Number</label>
+                    <input type="tel" id="inpPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="label_company">Company Name</label>
+                    <input type="text" id="inpCompany" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="label_package">Select Architecture Tier</label>
+                    <select id="selPackage" class="form-control">
+                        <option value="39000" data-tier="Starter" data-i18n="opt_starter">Starter (39,000 THB)</option>
+                        <option value="55000" data-tier="Professional" data-i18n="opt_pro" selected>Professional (55,000 THB)</option>
+                        <option value="89000" data-tier="Enterprise" data-i18n="opt_ent">Enterprise (89,000 THB)</option>
+                    </select>
+                </div>
+
+                <div class="form-group terms-group">
+                    <label class="checkbox-label" id="lblTerms">
+                        <input type="checkbox" id="chkTerms" required>
+                        <span data-i18n-html="label_terms">I agree to the <a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+                    </label>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="btnQuote" type="button" data-i18n="btn_quote">Generate Quotation</button>
+                    <button class="btn btn-primary" id="btnCallback" type="button">
+                        <span data-i18n="btn_callback">Request Callback</span>
+                        <div class="spinner" id="btnSpinner"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add-ons Area -->
+            <div>
+                <h3 data-i18n="addons_title">System Modules</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;" data-i18n="addons_desc">Enhance your deployment. (5,000 THB per module).</p>
+                
+                <div class="addons-list">
+                    <div class="addon-item" style="opacity: 0.5; cursor: not-allowed;">
+                        <div class="addon-info">
+                            <strong data-i18n="addon_line">LINE Notify Integration</strong>
+                            <span data-i18n="addon_line_desc">Automated status updates via LINE.</span>
+                        </div>
+                        <div class="badge-soon" data-i18n="badge_soon">Coming Soon</div>
+                    </div>
+                    <div class="addon-item" style="opacity: 0.5; cursor: not-allowed;">
+                        <div class="addon-info">
+                            <strong data-i18n="addon_thermal">Thermal Printer Sync</strong>
+                            <span data-i18n="addon_thermal_desc">Standard ESC/POS protocol integration.</span>
+                        </div>
+                        <div class="badge-soon" data-i18n="badge_soon">Coming Soon</div>
+                    </div>
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <strong data-i18n="addon_esig">E-Signature Capture</strong>
+                            <span data-i18n="addon_esig_desc">Digital image proof of delivery.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="addon-checkbox" value="5000" data-name="E-Signature Capture">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <strong data-i18n="addon_bulk">Bulk Upload API</strong>
+                            <span data-i18n="addon_bulk_desc">Import orders via standard CSV templates.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="addon-checkbox" value="5000" data-name="Bulk Upload API">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <strong data-i18n="addon_analytics">Data Analytics</strong>
+                            <span data-i18n="addon_analytics_desc">Data export and standard dashboard.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="addon-checkbox" value="5000" data-name="Advanced Analytics">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quotation Output -->
+        <div class="quotation-wrapper" id="quotationArea">
+            <div class="invoice-header">
+                <div>
+                    <div class="invoice-title" data-i18n="inv_title">Quotation</div>
+                    <div style="margin-top: 0.5rem; color: #86868b;">
+                        TrackFlow Systems Inc.<br>
+                        <strong>ponrakitt.site</strong>
+                    </div>
+                </div>
+                <div class="invoice-details">
+                    <div><span data-i18n="inv_date_label">Date:</span> <span id="invDate" style="color:#1d1d1f; font-weight:500;"></span></div>
+                    <div><span data-i18n="inv_valid_until">Valid Until:</span> <span id="invDueDate" style="color:#1d1d1f; font-weight:500;"></span></div>
+                    <div><span data-i18n="inv_ref_label">Ref:</span> <span style="color:#1d1d1f; font-weight:500;">TF-<span id="invRef"></span></span></div>
+                    <div style="margin-top: 1rem; font-weight: 600; color: #1d1d1f;" id="invCompany"></div>
+                </div>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="inv_th_desc">Description</th>
+                        <th class="amount" data-i18n="inv_th_amount">Amount (THB)</th>
+                    </tr>
+                </thead>
+                <tbody id="invBody">
+                    <!-- Injected via JS -->
+                </tbody>
+            </table>
+
+            <div class="invoice-summary">
+                <div class="summary-row">
+                    <span data-i18n="inv_subtotal" style="color: #86868b;">Subtotal</span>
+                    <span class="amount" id="invSub">0.00</span>
+                </div>
+                <div class="summary-row" id="rowDiscount" style="display: none; color: #ff3b30;">
+                    <span data-i18n="inv_discount">Discount</span>
+                    <span class="amount" id="invDisc">-0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span data-i18n="inv_total">Total</span>
+                    <span class="amount" id="invTotal">0.00</span>
+                </div>
+            </div>
+
+            <div class="print-actions no-print">
+                <button class="btn btn-primary" onclick="downloadPDF()" data-i18n="btn_download" style="max-width: 300px; margin: 0 auto;">Download PDF</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section container">
+        <h2 class="text-center mb-4" data-i18n="faq_header">Technical FAQ.</h2>
+        <div class="accordion" id="faqAccordion">
+            <!-- Injected via JS -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            &copy; 2026 Powered by <a href="https://ponrakitt.site" target="_blank">ponrakitt.site</a>. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-primary);" data-i18n="modal_title">Inquiry Received</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;" data-i18n="modal_desc">Thank you for your interest. To ensure we can technically support your requirements, please allow 7 to 30 days for our team to evaluate and contact you. A summary has been sent to your email.</p>
+            <button class="btn btn-primary" onclick="closeModal('successModal')" data-i18n="btn_close">Done</button>
+        </div>
+    </div>
+
+    <!-- Include html2pdf.js for Direct PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Logic & Data -->
+    <script>
+        // ====== CONFIGURATION ======
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1NiGpwmsHqzqOVPs4DikfnPSbVtZ0jiliCfZJHlncvDNAOc4_B0ZC4u6rQ3PSkgkK/exec'; 
+        // ===========================
+
+        // Dictionary for 5 Languages
+        const dict = {
+            en: {
+                hero_title: "Enterprise Delivery Architecture.",
+                hero_subtitle: "Logistics software solutions designed for operational efficiency. Built for stability and scalability.",
+                pricing_title: "Choose your architecture.",
+                tier1_name: "Starter",
+                tier1_desc: "Essential tracking features for starting businesses.",
+                feat_admin: "Admin & Warehouse Portals",
+                feat_driver: "Dedicated Driver Application",
+                feat_customer: "Customer Tracking Interface",
+                feat_deploy1: "1-3 Days Deployment",
+                badge_recommended: "RECOMMENDED",
+                tier2_name: "Professional",
+                tier2_desc: "Extended features with standard brand integration for SMEs.",
+                feat_all_starter: "All Starter Features",
+                feat_brand: "Standard Brand Integration",
+                feat_addon_free: "1 Premium Add-on Included",
+                feat_deploy2: "7 Days Deployment",
+                tier3_name: "Enterprise",
+                tier3_desc: "Full white-label customization for enterprise operations.",
+                feat_whitelabel: "White-label Customization",
+                feat_all_addons: "All Add-ons Included",
+                feat_priority: "Technical Email Support",
+                feat_deploy3: "14 Days Deployment",
+                engine_title: "Configure your system.",
+                engine_subtitle: "Select your tier and modules to estimate your system deployment cost.",
+                label_name: "Full Name",
+                label_email: "Work Email",
+                label_phone: "Phone Number",
+                label_company: "Company Name",
+                label_package: "Select Architecture Tier",
+                opt_starter: "Starter (39,000 THB)",
+                opt_pro: "Professional (55,000 THB)",
+                opt_ent: "Enterprise (89,000 THB)",
+                label_terms: `I agree to the <a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.`,
+                btn_quote: "Generate Quotation",
+                btn_callback: "Request Callback",
+                addons_title: "System Modules",
+                addons_desc: "Enhance your deployment. (5,000 THB per module).",
+                addon_line: "LINE Notify Integration",
+                addon_line_desc: "Automated status updates via LINE.",
+                addon_thermal: "Thermal Printer Sync",
+                addon_thermal_desc: "Standard ESC/POS protocol integration.",
+                addon_esig: "E-Signature Capture",
+                addon_esig_desc: "Digital image proof of delivery.",
+                addon_bulk: "Bulk Upload API",
+                addon_bulk_desc: "Import orders via standard CSV templates.",
+                addon_analytics: "Data Analytics",
+                addon_analytics_desc: "Data export and standard dashboard.",
+                badge_soon: "Coming Soon",
+                inv_title: "Quotation",
+                inv_date_label: "Date:",
+                inv_valid_until: "Valid Until:",
+                inv_ref_label: "Ref:",
+                inv_th_desc: "Description",
+                inv_th_amount: "Amount (THB)",
+                inv_subtotal: "Subtotal",
+                inv_discount: "Discount",
+                inv_total: "Total",
+                btn_download: "Download PDF",
+                modal_title: "Inquiry Received",
+                modal_desc: "Thank you for your interest. To ensure we can technically support your requirements, please allow 7 to 30 days for our team to evaluate and contact you. A summary has been sent to your email.",
+                btn_close: "Done",
+                
+                // Email
+                email_subject: "Your TrackFlow Setup Estimation",
+                email_greeting: "Dear",
+                email_intro: "Thank you for your interest in TrackFlow. Below is the preliminary estimation for your system deployment. Our engineering team will review your operational requirements and contact you within 7 to 30 days to discuss technical feasibility.",
+                email_footer: "We look forward to connecting with you.",
+                email_addon_prefix: "Module:",
+
+                // FAQ
+                faq_header: "Technical FAQ.",
+                faq_q1: "Who are we and what is TrackFlow?",
+                faq_a1: "We are a software development team specializing in logistics systems. TrackFlow is our core delivery architecture that we configure and deploy to align with your specific business requirements.",
+                faq_q2: "Why should you use TrackFlow instead of developing your own system?",
+                faq_a2: "Developing a system from scratch requires significant time and budget. TrackFlow provides a pre-built, tested foundation that reduces development time and minimizes implementation risks for your operations.",
+                faq_q3: "How does TrackFlow compare to standard SaaS products?",
+                faq_a3: "While standard SaaS solutions offer fixed features, TrackFlow allows for deeper customization to match your specific operational rules and includes white-label branding options to maintain your corporate identity.",
+                faq_q4: "What is the standard deployment process?",
+                faq_a4: "We start with requirement gathering, followed by system configuration, user acceptance testing (UAT), and deployment. The process typically takes 1 to 14 days depending on the required level of customization.",
+                faq_q5: "What is the system's reliability and support policy?",
+                faq_a5: "Our systems are hosted on reliable cloud infrastructure designed for high availability. We provide regular automated backups and standard technical support for bug fixes to maintain operational stability.",
+                faq_q6: "How long does system setup take?",
+                faq_a6: "Setup generally takes between 1 to 14 days depending on the tier you select and the specific technical configurations required for your warehouse staff and drivers.",
+                faq_q7: "What is included in the White-label customization?",
+                faq_a7: "White-labeling in the Enterprise tier allows you to use your corporate logo, domains, and brand colors on the tracking interfaces and driver applications.",
+                faq_q8: "How do you handle data security?",
+                faq_a8: "We utilize standard HTTPS encryption for data transfer and host our databases on secure cloud infrastructure with configured access controls.",
+                faq_q9: "Can the system integrate with existing ERP software?",
+                faq_a9: "The Enterprise tier includes standard REST APIs that allow your in-house development team to build custom integrations with your existing internal systems.",
+                faq_q10: "Which thermal printers are compatible?",
+                faq_a10: "The thermal printer module is designed to support standard ESC/POS protocol printers commonly used in warehouse environments for label generation.",
+                faq_q11: "How does the bulk upload feature work?",
+                faq_a11: "You can import multiple orders into the system using our provided CSV templates. The system parses the data programmatically, which is more efficient than manual entry.",
+                faq_q12: "What is your Service Level Agreement (SLA) for support?",
+                faq_a12: "We provide email support for technical issues. Our standard SLA for responding to active client inquiries is within 24 to 48 business hours.",
+                faq_q13: "Do you provide user training?",
+                faq_a13: "We provide digital documentation and manuals. Depending on your tier, a remote onboarding session may be included to familiarize your team with the system's interface.",
+                faq_q14: "How is the driver application accessed?",
+                faq_a14: "Drivers access the system via standard mobile web browsers or through a lightweight wrapper application installed on their smartphones.",
+                faq_q15: "How does the E-signature module work?",
+                faq_a15: "The E-signature feature allows the receiver to sign on the driver's device screen. The system stores this digital image along with a timestamp as a basic proof of delivery.",
+                faq_q16: "Is the system architecture scalable?",
+                faq_a16: "Yes, the system is designed to scale. You can start with the Starter tier and upgrade to Professional or Enterprise as your operational volume increases.",
+                faq_q17: "What type of data analytics is provided?",
+                faq_a17: "The system provides a basic dashboard displaying standard delivery metrics and allows administrators to export raw delivery data for external analysis.",
+                faq_q18: "How does the LINE Notify module function?",
+                faq_a18: "Once configured with an API token, the system pushes standard delivery status updates (e.g., Out for Delivery, Delivered) to a designated LINE chat.",
+                faq_q19: "Are there monthly recurring costs?",
+                faq_a19: "The initial deployment fee is a one-time cost. There will be standard monthly fees for cloud hosting and server maintenance, which will be clearly outlined in your agreement.",
+                faq_q20: "Why is the estimated contact time 7 to 30 days?",
+                faq_a20: "To ensure we can technically support your specific requirements, our engineering team reviews each inquiry carefully. Please allow up to 7-30 days for a detailed technical evaluation and response.",
+                faq_q21: "Why does TrackFlow utilize a decoupled HTML/JS architecture?",
+                faq_a21: "We use a decoupled architecture (Frontend: HTML/JS, Backend: APIs). This approach reduces server processing load, improves security, and allows for easier future upgrades without disrupting the core system.",
+                faq_q22: "How does this architecture compare to traditional PHP systems?",
+                faq_a22: "By separating the frontend from the backend, we reduce the risk of server overloads during high traffic spikes, resulting in more stable performance compared to traditional monolithic server-rendered applications.",
+                faq_q23: "How is the system installed and hosted?",
+                faq_a23: "The system is a cloud-based solution. You do not need to manage local servers. Our team handles the cloud provisioning, database setup, and domain routing.",
+                faq_q24: "How do you optimize system performance?",
+                faq_a24: "We utilize Content Delivery Networks (CDN) to serve the frontend assets quickly. Our API endpoints are optimized to ensure standard query response times are kept as low as possible.",
+                faq_q25: "What are the failover procedures during a crash?",
+                faq_a25: "Our cloud infrastructure utilizes standard failover mechanisms. If a primary server encounters an issue, traffic can be routed to a backup instance to minimize operational downtime.",
+                faq_q26: "How do users access the platform today?",
+                faq_a26: "Currently, the system is fully accessible as a web-based application via standard browsers. Our development team is continuously working on infrastructure upgrades and future feature releases."
+            },
+            th: {
+                hero_title: "สถาปัตยกรรมการจัดส่งระดับองค์กร",
+                hero_subtitle: "ซอฟต์แวร์โลจิสติกส์ที่ออกแบบมาเพื่อเพิ่มประสิทธิภาพการทำงาน เน้นความเสถียร ความปลอดภัย และรองรับการขยายระบบ",
+                pricing_title: "เลือกระดับสถาปัตยกรรมของคุณ",
+                tier1_name: "เริ่มต้น",
+                tier1_desc: "ระบบติดตามพื้นฐานที่จำเป็นสำหรับธุรกิจเริ่มต้น",
+                feat_admin: "พอร์ทัลผู้ดูแลระบบและคลังสินค้า",
+                feat_driver: "แอปพลิเคชันสำหรับพนักงานขับรถ",
+                feat_customer: "หน้าจอติดตามสถานะสำหรับลูกค้า",
+                feat_deploy1: "ติดตั้งระบบภายใน 1-3 วัน",
+                badge_recommended: "แนะนำ",
+                tier2_name: "มืออาชีพ",
+                tier2_desc: "ฟีเจอร์เพิ่มเติมพร้อมการปรับแต่งแบรนด์มาตรฐานสำหรับ SME",
+                feat_all_starter: "คุณสมบัติระดับเริ่มต้นทั้งหมด",
+                feat_brand: "ปรับแต่งสีและโลโก้มาตรฐาน",
+                feat_addon_free: "เลือกโมดูลเสริมฟรี 1 รายการ",
+                feat_deploy2: "ติดตั้งระบบภายใน 7 วัน",
+                tier3_name: "องค์กร",
+                tier3_desc: "ระบบ White-label เต็มรูปแบบที่ปรับแต่งได้สำหรับองค์กร",
+                feat_whitelabel: "ปรับแต่ง White-label เต็มรูปแบบ",
+                feat_all_addons: "รวมโมดูลเสริมทั้งหมด",
+                feat_priority: "การสนับสนุนด้านเทคนิคผ่านอีเมล",
+                feat_deploy3: "ติดตั้งระบบภายใน 14 วัน",
+                engine_title: "ประเมินค่าใช้จ่ายระบบ",
+                engine_subtitle: "เลือกระดับและโมดูลที่ต้องการ เพื่อประเมินค่าใช้จ่ายในการติดตั้งเบื้องต้น",
+                label_name: "ชื่อ - นามสกุล",
+                label_email: "อีเมลองค์กร",
+                label_phone: "เบอร์โทรศัพท์",
+                label_company: "ชื่อบริษัท",
+                label_package: "เลือกระดับสถาปัตยกรรม",
+                opt_starter: "เริ่มต้น (39,000 บาท)",
+                opt_pro: "มืออาชีพ (55,000 บาท)",
+                opt_ent: "องค์กร (89,000 บาท)",
+                label_terms: `ฉันยอมรับ <a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">เงื่อนไขความเป็นส่วนตัว</a>`,
+                btn_quote: "ประเมินราคาเบื้องต้น",
+                btn_callback: "ส่งข้อมูลประเมินระบบ",
+                addons_title: "โมดูลเสริมระบบ",
+                addons_desc: "เพิ่มความสามารถให้ระบบ (โมดูลละ 5,000 บาท)",
+                addon_line: "การเชื่อมต่อ LINE Notify",
+                addon_line_desc: "ส่งสถานะอัปเดตอัตโนมัติผ่าน LINE API",
+                addon_thermal: "รองรับเครื่องพิมพ์ใบปะหน้า",
+                addon_thermal_desc: "เชื่อมต่อผ่านโปรโตคอล ESC/POS มาตรฐาน",
+                addon_esig: "ระบบเซ็นรับของดิจิทัล",
+                addon_esig_desc: "บันทึกภาพลายเซ็นเป็นหลักฐานการจัดส่ง",
+                addon_bulk: "อัปโหลดข้อมูลผ่าน CSV",
+                addon_bulk_desc: "นำเข้าออเดอร์จำนวนมากด้วยไฟล์เทมเพลต",
+                addon_analytics: "ระบบนำข้อมูลออก",
+                addon_analytics_desc: "แดชบอร์ดพื้นฐานและการนำข้อมูล Raw Data ออก",
+                badge_soon: "เร็วๆ นี้",
+                inv_title: "ใบประเมินราคา",
+                inv_date_label: "วันที่:",
+                inv_valid_until: "ยืนราคาถึง:",
+                inv_ref_label: "อ้างอิง:",
+                inv_th_desc: "รายการ",
+                inv_th_amount: "จำนวนเงิน (บาท)",
+                inv_subtotal: "ยอดรวม",
+                inv_discount: "ส่วนลด",
+                inv_total: "ยอดสุทธิ",
+                btn_download: "ดาวน์โหลด PDF",
+                modal_title: "ได้รับข้อมูลเรียบร้อยแล้ว",
+                modal_desc: "ขอบคุณที่ให้ความสนใจ เพื่อให้ทีมวิศวกรประเมินความต้องการทางเทคนิคของคุณได้อย่างครบถ้วน โปรดรอการติดต่อกลับภายใน 7-30 วัน ข้อมูลเบื้องต้นได้ถูกส่งไปยังอีเมลของคุณแล้ว",
+                btn_close: "เสร็จสิ้น",
+
+                // Email Translations
+                email_subject: "ประเมินราคาเบื้องต้นระบบ TrackFlow",
+                email_greeting: "เรียน คุณ",
+                email_intro: "ขอบคุณที่ให้ความสนใจระบบ TrackFlow นี่คือสรุปค่าใช้จ่ายในการติดตั้งระบบเบื้องต้นตามที่คุณได้เลือกไว้ เพื่อให้มั่นใจว่าเราสามารถรองรับความต้องการทางเทคนิคของคุณได้ ทีมวิศวกรจะประเมินข้อมูลและติดต่อกลับหาคุณภายใน 7 ถึง 30 วัน",
+                email_footer: "ทีมงานของเราจะติดต่อกลับเพื่อพูดคุยถึงรายละเอียดด้านเทคนิคและกำหนดการติดตั้งระบบ",
+                email_addon_prefix: "โมดูลเสริม:",
+
+                // FAQ
+                faq_header: "ข้อมูลทางเทคนิค (FAQ)",
+                faq_q1: "เราคือใคร และ TrackFlow คืออะไร?",
+                faq_a1: "เราคือทีมพัฒนาซอฟต์แวร์ที่เชี่ยวชาญด้านระบบโลจิสติกส์ TrackFlow คือสถาปัตยกรรมระบบจัดส่งหลักของเรา ที่นำมาปรับตั้งค่าให้เข้ากับความต้องการทางธุรกิจของคุณ",
+                faq_q2: "ทำไมถึงควรใช้ TrackFlow แทนการพัฒนาซอฟต์แวร์ขึ้นเองทั้งหมด?",
+                faq_a2: "การพัฒนาซอฟต์แวร์ใหม่ทั้งหมดใช้เวลาและงบประมาณสูง TrackFlow มีโครงสร้างพื้นฐานที่ผ่านการทดสอบมาแล้ว ช่วยลดระยะเวลาการพัฒนาและลดความเสี่ยงในการนำระบบไปใช้งานจริง",
+                faq_q3: "TrackFlow มีข้อดีต่างจากซอฟต์แวร์สำเร็จรูป (SaaS) ทั่วไปอย่างไร?",
+                faq_a3: "ซอฟต์แวร์สำเร็จรูปทั่วไปอาจมีข้อจำกัดในการปรับแต่งการทำงาน TrackFlow ถูกออกแบบให้ยืดหยุ่นกว่า เพื่อรองรับเงื่อนไขการทำงานเฉพาะของธุรกิจคุณ พร้อมตัวเลือกการปรับแต่งแบรนด์ (White-label)",
+                faq_q4: "กระบวนการทำงานและติดตั้งระบบเป็นอย่างไร?",
+                faq_a4: "กระบวนการเริ่มจากการเก็บ Requirement, ทำการปรับตั้งค่าระบบ, ทดสอบการใช้งาน (UAT), และนำขึ้นระบบจริง โดยทั่วไปใช้เวลา 1 ถึง 14 วัน ขึ้นอยู่กับระดับการปรับแต่ง",
+                faq_q5: "มีความน่าเชื่อถือและนโยบายการดูแลระบบอย่างไร?",
+                faq_a5: "ระบบของเราฝากไว้บน Cloud Infrastructure ที่ออกแบบมาเพื่อความเสถียรสูง (High availability) มีการสำรองข้อมูล (Backup) อัตโนมัติเป็นประจำ และมีบริการแก้ไขข้อผิดพลาด (Bug fixes) ตามมาตรฐานซอฟต์แวร์",
+                faq_q6: "ใช้เวลาติดตั้งระบบนานเท่าไหร่?",
+                faq_a6: "การติดตั้งระบบใช้เวลาประมาณ 1 ถึง 14 วัน ขึ้นอยู่กับระดับแพ็กเกจที่คุณเลือกและความซับซ้อนในการตั้งค่าระบบสำหรับคลังสินค้าและคนขับ",
+                faq_q7: "ระบบ White-label ประกอบด้วยอะไรบ้าง?",
+                faq_a7: "ในแพ็กเกจองค์กร คุณสามารถใช้โดเมนเนม โลโก้องค์กร และสีของแบรนด์บนหน้าจอติดตามพัสดุและแอปคนขับได้",
+                faq_q8: "ข้อมูลองค์กรมีความปลอดภัยหรือไม่?",
+                faq_a8: "เราใช้การเข้ารหัส HTTPS มาตรฐานสำหรับการส่งข้อมูล และจัดเก็บฐานข้อมูลไว้บนระบบคลาวด์ที่มีการตั้งค่าควบคุมสิทธิ์การเข้าถึงอย่างรัดกุม",
+                faq_q9: "สามารถเชื่อมต่อกับระบบ ERP เดิมของบริษัทได้ไหม?",
+                faq_a9: "แพ็กเกจองค์กรมีบริการ REST API พื้นฐานให้ ซึ่งทีมนักพัฒนาของคุณสามารถนำไปใช้เพื่อสร้างการเชื่อมต่อข้อมูลกับระบบภายในของคุณได้",
+                faq_q10: "รองรับเครื่องพิมพ์ใบปะหน้าแบบไหน?",
+                faq_a10: "โมดูลเครื่องพิมพ์รองรับเครื่องพิมพ์ความร้อนที่ใช้โปรโตคอลมาตรฐาน ESC/POS ซึ่งเป็นมาตรฐานทั่วไปในคลังสินค้า",
+                faq_q11: "การอัปโหลดข้อมูลทีละมากๆ (Bulk Upload) ทำได้อย่างไร?",
+                faq_a11: "ระบบใช้วิธีนำเข้าข้อมูลผ่านไฟล์เทมเพลต CSV โดยระบบจะทำการ Parse ข้อมูลโดยอัตโนมัติ ซึ่งช่วยลดเวลาการทำงานเทียบกับการคีย์ข้อมูลด้วยมือ",
+                faq_q12: "ทีมซัพพอร์ตมี SLA หรือระยะเวลาตอบกลับอย่างไร?",
+                faq_a12: "เรารับแจ้งปัญหาเทคนิคผ่านอีเมล โดยมีระยะเวลาตอบกลับมาตรฐาน (SLA) สำหรับลูกค้าปัจจุบันเพื่อตรวจสอบปัญหาเบื้องต้นภายใน 24 ถึง 48 ชั่วโมงทำการ",
+                faq_q13: "มีการอบรมการใช้งานให้กับพนักงานหรือไม่?",
+                faq_a13: "เรามีคู่มือดิจิทัลให้ (Digital documentation) และขึ้นอยู่กับแพ็กเกจของคุณ อาจมีเซสชันการแนะนำระบบผ่านออนไลน์ (Remote onboarding) เพื่อให้ทีมงานเริ่มใช้งานได้รวดเร็วขึ้น",
+                faq_q14: "พนักงานขับรถเข้าใช้งานระบบอย่างไร?",
+                faq_a14: "พนักงานขับรถสามารถเข้าใช้งานผ่านเว็บบราวเซอร์บนมือถือมาตรฐาน หรือผ่านแอปพลิเคชันรูปแบบ Wrapper ที่ติดตั้งบนสมาร์ทโฟน",
+                faq_q15: "ระบบเซ็นรับของดิจิทัล (E-signature) ทำงานอย่างไร?",
+                faq_a15: "ระบบเปิดให้ลูกค้าเซ็นชื่อบนหน้าจออุปกรณ์ของคนขับได้ โดยจะบันทึกรูปภาพลายเซ็นพร้อมแนบ Timestamp ไว้เป็นข้อมูลอ้างอิงการจัดส่งเบื้องต้น",
+                faq_q16: "สามารถอัปเกรดระดับแพ็กเกจในภายหลังได้หรือไม่?",
+                faq_a16: "สถาปัตยกรรมระบบถูกออกแบบมาให้รองรับการขยายตัว (Scalable) คุณสามารถเริ่มจากระดับ Starter แล้วอัปเกรดเป็นระดับที่สูงขึ้นเมื่อมีความต้องการใช้งานมากขึ้นได้",
+                faq_q17: "ระบบให้ข้อมูลเชิงวิเคราะห์ (Analytics) แบบใดบ้าง?",
+                faq_a17: "ระบบมีหน้าแดชบอร์ดพื้นฐานแสดงตัวเลขการจัดส่ง และอนุญาตให้ผู้ดูแลระบบดาวน์โหลดข้อมูลดิบ (Raw Data) ออกไปวิเคราะห์ต่อในโปรแกรมอื่นได้",
+                faq_q18: "โมดูล LINE Notify ทำหน้าที่อย่างไร?",
+                faq_a18: "เมื่อตั้งค่า API Token เรียบร้อยแล้ว ระบบจะส่งข้อความแจ้งเตือนสถานะพัสดุมาตรฐาน (เช่น กำลังจัดส่ง, จัดส่งสำเร็จ) ไปยังหน้าแชท LINE ที่กำหนดไว้",
+                faq_q19: "มีค่าบริการรายเดือนหรือค่าใช้จ่ายอื่นๆ หรือไม่?",
+                faq_a19: "ค่าติดตั้งแพ็กเกจเป็นค่าใช้จ่ายแบบจ่ายครั้งเดียว หลังจากนั้นจะมีค่าบริการมาตรฐานรายเดือนสำหรับ Cloud Hosting และการบำรุงรักษาเซิร์ฟเวอร์ ซึ่งจะระบุไว้อย่างชัดเจนในสัญญา",
+                faq_q20: "ทำไมถึงต้องรอการติดต่อกลับ 7-30 วัน?",
+                faq_a20: "เพื่อให้มั่นใจว่าเราสามารถรองรับความต้องการทางเทคนิคของคุณได้อย่างครบถ้วน ทีมวิศวกรจะประเมินรายละเอียดของโครงสร้างระบบอย่างละเอียด โปรดรอการติดต่อกลับพร้อมผลการประเมินภายใน 7-30 วัน",
+                faq_q21: "ทำไมระบบถึงเน้นการทำงานด้วยสถาปัตยกรรมแยกส่วน (Decoupled)?",
+                faq_a21: "เราใช้สถาปัตยกรรมที่แยกส่วนหน้า (HTML/JS) ออกจากส่วนหลัง (APIs) วิธีนี้ช่วยลดภาระการประมวลผลของเซิร์ฟเวอร์หลัก เพิ่มความปลอดภัย และทำให้การอัปเกรดระบบในอนาคตทำได้ง่ายขึ้นโดยไม่กระทบแกนหลัก",
+                faq_q22: "ระบบนี้เสถียรกว่าระบบการเขียนโค้ดแบบดั้งเดิม (เช่น Monolithic PHP) อย่างไร?",
+                faq_a22: "การแยกส่วน Frontend และ Backend ช่วยลดความเสี่ยงที่เซิร์ฟเวอร์จะทำงานหนักเกินไปในช่วงที่มีปริมาณการใช้งานสูง (High traffic spikes) ทำให้ระบบโดยรวมมีความเสถียรมากกว่าแอปพลิเคชันแบบดั้งเดิม",
+                faq_q23: "ขั้นตอนการติดตั้งและโฮสต์ระบบเป็นอย่างไร?",
+                faq_a23: "ระบบทำงานแบบ Cloud-based โซลูชัน คุณไม่ต้องจัดการเซิร์ฟเวอร์ภายในองค์กร ทีมงานของเราจะดูแลการตั้งค่า Cloud, ฐานข้อมูล และการเชื่อมต่อโดเมนให้ทั้งหมด",
+                faq_q24: "มีการจัดการเพื่อเพิ่มความเร็วของระบบอย่างไร?",
+                faq_a24: "เราใช้งาน Content Delivery Network (CDN) ในการส่งมอบไฟล์หน้าเว็บ และปรับแต่งฝั่ง API Endpoint ให้มีระยะเวลาการตอบสนอง (Response time) ที่ต่ำที่สุดเท่าที่เป็นไปได้",
+                faq_q25: "ระบบมีกลไกจัดการ (Failover) อย่างไรเมื่อเกิดข้อขัดข้อง?",
+                faq_a25: "โครงสร้าง Cloud ของเรามีกลไก Failover ตามมาตรฐาน หากเซิร์ฟเวอร์หลักมีปัญหา ระบบจะพยายามส่งทราฟฟิกไปยังเซิร์ฟเวอร์สำรองเพื่อลดระยะเวลา Downtime ของระบบ",
+                faq_q26: "ปัจจุบันระบบรองรับการเข้าถึงผ่านช่องทางใด?",
+                faq_a26: "ในตอนนี้ผู้ใช้สามารถเข้าถึงระบบทั้งหมดผ่านเว็บบราวเซอร์มาตรฐาน (Web-based application) โดยทีมพัฒนากำลังดำเนินการปรับปรุงโครงสร้างพื้นฐานอย่างต่อเนื่องเพื่อเพิ่มฟีเจอร์ในอนาคต"
+            },
+            zh: {
+                hero_title: "企业级配送架构。",
+                hero_subtitle: "专为提升运营效率设计的物流软件。注重稳定性、安全性和可扩展性。",
+                pricing_title: "选择您的架构。",
+                tier1_name: "入门版",
+                tier1_desc: "适用于初创企业的基本跟踪功能。",
+                feat_admin: "管理员与仓库门户",
+                feat_driver: "专用司机应用程序",
+                feat_customer: "客户跟踪界面",
+                feat_deploy1: "1-3天部署",
+                badge_recommended: "推荐",
+                tier2_name: "专业版",
+                tier2_desc: "适用于中小型企业的标准品牌整合和扩展功能。",
+                feat_all_starter: "所有入门版功能",
+                feat_brand: "标准品牌整合",
+                feat_addon_free: "包含1个免费模块",
+                feat_deploy2: "7天部署",
+                tier3_name: "企业版",
+                tier3_desc: "适用于企业运营的完整白标定制。",
+                feat_whitelabel: "白标定制",
+                feat_all_addons: "包含所有模块",
+                feat_priority: "技术电子邮件支持",
+                feat_deploy3: "14天部署",
+                engine_title: "配置您的系统。",
+                engine_subtitle: "选择您的层级和模块以估算您的系统部署成本。",
+                label_name: "全名",
+                label_email: "工作邮箱",
+                label_phone: "电话号码",
+                label_company: "公司名称",
+                label_package: "选择架构层级",
+                opt_starter: "入门版 (39,000 THB)",
+                opt_pro: "专业版 (55,000 THB)",
+                opt_ent: "企业版 (89,000 THB)",
+                label_terms: `我同意<a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">隐私政策</a>。`,
+                btn_quote: "获取估算",
+                btn_callback: "提交评估请求",
+                addons_title: "系统模块",
+                addons_desc: "增强您的系统功能 (模块单价 5,000 THB)。",
+                addon_line: "LINE Notify 整合",
+                addon_line_desc: "通过 LINE API 自动推送状态。",
+                addon_thermal: "热敏打印机支持",
+                addon_thermal_desc: "标准 ESC/POS 协议整合。",
+                addon_esig: "电子签名捕获",
+                addon_esig_desc: "保存数字图像作为交付凭证。",
+                addon_bulk: "CSV 批量上传",
+                addon_bulk_desc: "通过标准模板导入订单。",
+                addon_analytics: "数据导出",
+                addon_analytics_desc: "数据导出和基本仪表板。",
+                badge_soon: "敬请期待",
+                inv_title: "估算单",
+                inv_date_label: "日期:",
+                inv_valid_until: "有效期至:",
+                inv_ref_label: "参考号:",
+                inv_th_desc: "描述",
+                inv_th_amount: "金额 (THB)",
+                inv_subtotal: "小计",
+                inv_discount: "折扣",
+                inv_total: "总计",
+                btn_download: "下载 PDF",
+                modal_title: "已收到您的请求",
+                modal_desc: "感谢您的关注。为了确保我们能够从技术上支持您的需求，请允许我们的团队在 7 到 30 天内进行评估并与您联系。摘要已发送至您的邮箱。",
+                btn_close: "完成",
+
+                // Email
+                email_subject: "您的 TrackFlow 系统估算",
+                email_greeting: "尊敬的",
+                email_intro: "感谢您对 TrackFlow 的关注。以下是您系统部署的初步估算。我们的工程团队将审核您的运营需求，并在 7 到 30 天内与您联系，讨论技术可行性。",
+                email_footer: "我们期待与您取得联系。",
+                email_addon_prefix: "模块:",
+
+                // FAQ
+                faq_header: "技术常见问题",
+                faq_q1: "我们是谁，TrackFlow 是什么？",
+                faq_a1: "我们是一支专注于物流系统的软件开发团队。TrackFlow 是我们的核心配送架构，我们会对其进行配置和部署以符合您的具体业务需求。",
+                faq_q2: "为什么您应该使用 TrackFlow 而不是自己开发系统？",
+                faq_a2: "从零开始开发系统需要大量时间和预算。TrackFlow 提供经过测试的基础架构，可减少您的运营开发时间并降低实施风险。",
+                faq_q3: "TrackFlow 与标准 SaaS 产品相比如何？",
+                faq_a3: "虽然标准 SaaS 解决方案提供固定功能，但 TrackFlow 允许进行更深入的定制以匹配您特定的操作规则，并包含白标选项以维护您的企业形象。",
+                faq_q4: "标准的部署流程是什么？",
+                faq_a4: "我们从需求收集开始，然后是系统配置、用户验收测试 (UAT) 和部署。根据所需的定制级别，该过程通常需要 1 到 14 天。",
+                faq_q5: "系统的可靠性和支持政策是什么？",
+                faq_a5: "我们的系统托管在专为高可用性设计的可靠云基础架构上。我们提供定期的自动备份和错误修复的标准技术支持，以保持操作的稳定性。",
+                faq_q6: "系统设置需要多长时间？",
+                faq_a6: "设置通常需要 1 到 14 天，具体取决于您选择的层级以及您的仓库人员和司机所需的特定技术配置。",
+                faq_q7: "白标定制包括什么？",
+                faq_a7: "企业版中的白标允许您在跟踪界面和司机应用程序上使用您的企业徽标、域名和品牌颜色。",
+                faq_q8: "您如何处理数据安全？",
+                faq_a8: "我们使用标准的 HTTPS 加密进行数据传输，并将我们的数据库托管在具有已配置访问控制的安全云基础架构上。",
+                faq_q9: "系统可以与现有的 ERP 软件集成吗？",
+                faq_a9: "企业版包含标准的 REST API，允许您的内部开发团队构建与您现有内部系统的自定义集成。",
+                faq_q10: "兼容哪些热敏打印机？",
+                faq_a10: "热敏打印机模块旨在支持仓库环境中常用于生成标签的标准 ESC/POS 协议打印机。",
+                faq_q11: "批量上传功能如何工作？",
+                faq_a11: "您可以使用我们提供的 CSV 模板将多个订单导入系统。系统以编程方式解析数据，这比手动输入更高效。",
+                faq_q12: "您的支持服务级别协议 (SLA) 是什么？",
+                faq_a12: "我们为技术问题提供电子邮件支持。我们对活跃客户查询的标准响应 SLA 是在 24 到 48 个工作小时内。",
+                faq_q13: "你们提供用户培训吗？",
+                faq_a13: "我们提供数字文档和手册。根据您的层级，可能包含远程入职培训课程，以使您的团队熟悉系统界面。",
+                faq_q14: "司机如何访问应用程序？",
+                faq_a14: "司机通过标准移动网络浏览器或通过直接安装在其智能手机上的轻量级封装应用程序访问系统。",
+                faq_q15: "电子签名模块如何工作？",
+                faq_a15: "电子签名功能允许收件人在司机的设备屏幕上签名。系统将此数字图像与时间戳一起存储为基本的交付证明。",
+                faq_q16: "系统架构可扩展吗？",
+                faq_a16: "是的，该系统旨在扩展。您可以从入门版开始，随着运营量的增加升级到专业版或企业版。",
+                faq_q17: "提供哪种类型的数据分析？",
+                faq_a17: "系统提供一个显示标准交付指标的基本仪表板，并允许管理员导出原始交付数据以进行外部分析。",
+                faq_q18: "LINE Notify 模块如何运作？",
+                faq_a18: "一旦配置了 API 令牌，系统就会将标准交付状态更新（例如，正在派送，已交付）推送到指定的 LINE 聊天中。",
+                faq_q19: "有每月经常性费用吗？",
+                faq_a19: "初始部署费是一次性成本。云托管和服务器维护会有标准的月度费用，这将在您的协议中明确列出。",
+                faq_q20: "为什么预计联系时间是 7 到 30 天？",
+                faq_a20: "为了确保我们能在技术上支持您的具体需求，我们的工程团队会仔细审查每项查询。请允许长达 7-30 天的时间进行详细的技术评估和响应。",
+                faq_q21: "为什么 TrackFlow 使用解耦的 HTML/JS 架构？",
+                faq_a21: "我们使用解耦架构（前端：HTML/JS，后端：API）。这种方法降低了服务器处理负载，提高了安全性，并允许在不中断核心系统的情况下进行更轻松的未来升级。",
+                faq_q22: "这种架构与传统的 PHP 系统相比如何？",
+                faq_a22: "通过将前端与后端分离，我们降低了在流量高峰期服务器过载的风险，与传统的单体服务器渲染应用程序相比，性能更稳定。",
+                faq_q23: "系统如何安装和托管？",
+                faq_a23: "该系统是基于云的解决方案。您无需管理本地服务器。我们的团队负责云配置、数据库设置和域路由。",
+                faq_q24: "您如何优化系统性能？",
+                faq_a24: "我们利用内容分发网络 (CDN) 快速提供前端资产。我们的 API 端点经过优化，以确保将标准查询响应时间保持在尽可能低的水平。",
+                faq_q25: "崩溃期间的故障转移程序是什么？",
+                faq_a25: "我们的云基础架构利用标准的故障转移机制。如果主服务器遇到问题，流量可以路由到备份实例以尽量减少操作停机时间。",
+                faq_q26: "目前用户如何访问该平台？",
+                faq_a26: "目前，所有用户均可通过标准浏览器作为基于 Web 的应用程序完全访问该系统。我们的开发团队正在不断进行基础架构升级和未来的功能发布。"
+            },
+            ja: {
+                hero_title: "エンタープライズ配送アーキテクチャ",
+                hero_subtitle: "運用効率を向上させるために設計された物流ソフトウェア。安定性、セキュリティ、およびスケーラビリティに重点を置いています。",
+                pricing_title: "アーキテクチャを選択してください。",
+                tier1_name: "スターター",
+                tier1_desc: "ビジネスを開始するための必須の追跡機能。",
+                feat_admin: "管理者および倉庫ポータル",
+                feat_driver: "専用ドライバーアプリ",
+                feat_customer: "顧客追跡インターフェース",
+                feat_deploy1: "1-3日の展開",
+                badge_recommended: "おすすめ",
+                tier2_name: "プロフェッショナル",
+                tier2_desc: "SME向けの標準的なブランド統合を備えた拡張機能。",
+                feat_all_starter: "すべてのスターター機能",
+                feat_brand: "標準のブランド統合",
+                feat_addon_free: "1つのモジュールが無料",
+                feat_deploy2: "7日の展開",
+                tier3_name: "エンタープライズ",
+                tier3_desc: "エンタープライズ運用向けの完全なホワイトラベルカスタマイズ。",
+                feat_whitelabel: "ホワイトラベルカスタマイズ",
+                feat_all_addons: "すべてのモジュールを含む",
+                feat_priority: "技術的なメールサポート",
+                feat_deploy3: "14日展開",
+                engine_title: "システムを構成します。",
+                engine_subtitle: "プランとモジュールを選択して、システム展開コストを見積もります。",
+                label_name: "氏名",
+                label_email: "勤務先メール",
+                label_phone: "電話番号",
+                label_company: "会社名",
+                label_package: "アーキテクチャ層を選択",
+                opt_starter: "スターター (39,000 THB)",
+                opt_pro: "プロフェッショナル (55,000 THB)",
+                opt_ent: "エンタープライズ (89,000 THB)",
+                label_terms: `<a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>に同意します。`,
+                btn_quote: "見積もりを取得",
+                btn_callback: "評価をリクエスト",
+                addons_title: "システムモジュール",
+                addons_desc: "機能を強化します (1モジュールあたり 5,000 THB)。",
+                addon_line: "LINE Notify統合",
+                addon_line_desc: "LINE API経由の自動ステータス更新。",
+                addon_thermal: "サーマルプリンタ対応",
+                addon_thermal_desc: "標準ESC/POSプロトコルの統合。",
+                addon_esig: "電子署名キャプチャ",
+                addon_esig_desc: "配達の証拠としてのデジタル画像。",
+                addon_bulk: "CSV一括アップロード",
+                addon_bulk_desc: "標準テンプレート経経由で注文をインポート。",
+                addon_analytics: "データエクスポート",
+                addon_analytics_desc: "データエクスポートと基本ダッシュボード。",
+                badge_soon: "近日公開",
+                inv_title: "見積書",
+                inv_date_label: "日付:",
+                inv_valid_until: "有効期限:",
+                inv_ref_label: "参照:",
+                inv_th_desc: "説明",
+                inv_th_amount: "金額 (THB)",
+                inv_subtotal: "小計",
+                inv_discount: "割引",
+                inv_total: "合計",
+                btn_download: "PDFをダウンロード",
+                modal_title: "リクエストを受信しました",
+                modal_desc: "ご関心をお寄せいただきありがとうございます。お客様の要件を技術的にサポートできることを確認するため、評価とご連絡に7〜30日ほどお待ちください。概要はメールに送信されました。",
+                btn_close: "完了",
+
+                // Email
+                email_subject: "TrackFlowシステムの概算見積もり",
+                email_greeting: "様",
+                email_intro: "TrackFlowにご関心をお寄せいただきありがとうございます。以下は、システム展開の初期見積もりです。エンジニアリングチームが運用要件を審査し、技術的な実現可能性について話し合うため、7〜30日以内にご連絡いたします。",
+                email_footer: "ご連絡をお待ちしております。",
+                email_addon_prefix: "モジュール:",
+
+                // FAQ
+                faq_header: "技術的なよくある質問",
+                faq_q1: "私たちは誰で、TrackFlowとは何ですか？",
+                faq_a1: "私たちは物流システムを専門とするソフトウェア開発チームです。TrackFlowは当社のコアな配送アーキテクチャであり、特定のビジネス要件に合わせて構成および展開します。",
+                faq_q2: "独自のシステムを開発する代わりにTrackFlowを使用すべき理由は何ですか？",
+                faq_a2: "システムをゼロから開発するには、かなりの時間と予算が必要です。TrackFlowは、運用の開発時間を短縮し、実装リスクを最小限に抑える、構築およびテスト済みの基盤を提供します。",
+                faq_q3: "TrackFlowは一般的なSaaS製品とどう違いますか？",
+                faq_a3: "標準的なSaaSソリューションは固定された機能を提供しますが、TrackFlowは特定の運用ルールに合わせるためのより深いカスタマイズを可能にし、企業のアイデンティティを維持するためのホワイトラベルのオプションを備えています。",
+                faq_q4: "標準的な展開プロセスは何ですか？",
+                faq_a4: "要件の収集から始まり、システム構成、ユーザー受け入れテスト（UAT）、そして展開へと続きます。プロセスは通常、必要なカスタマイズのレベルに応じて1〜14日かかります。",
+                faq_q5: "システムの信頼性とサポートのポリシーは何ですか？",
+                faq_a5: "当社のシステムは、高可用性のために設計された信頼性の高いクラウドインフラストラクチャ上でホストされています。運用の安定性を維持するために、定期的な自動バックアップと、バグ修正のための標準的な技術サポートを提供します。",
+                faq_q6: "システムのセットアップにはどのくらい時間がかかりますか？",
+                faq_a6: "セットアップは通常、選択したプランと、倉庫スタッフやドライバーに必要な特定の技術構成に応じて1〜14日かかります。",
+                faq_q7: "ホワイトラベルのカスタマイズには何が含まれますか？",
+                faq_a7: "Enterpriseプランのホワイトラベルを使用すると、追跡インターフェースやドライバーアプリケーションに企業のロゴ、ドメイン、ブランドカラーを使用できます。",
+                faq_q8: "データセキュリティはどのように扱っていますか？",
+                faq_a8: "データ転送には標準のHTTPS暗号化を利用し、アクセス制御が構成された安全なクラウドインフラストラクチャ上でデータベースをホストしています。",
+                faq_q9: "システムは既存のERPソフトウェアと統合できますか？",
+                faq_a9: "Enterpriseプランには、社内の開発チームが既存の社内システムとカスタム統合を構築できるようにする標準のREST APIが含まれています。",
+                faq_q10: "互換性のあるサーマルプリンタはどれですか？",
+                faq_a10: "サーマルプリンタモジュールは、ラベル生成のために倉庫環境で一般的に使用されている標準のESC/POSプロトコルプリンタをサポートするように設計されています。",
+                faq_q11: "一括アップロード機能はどのように機能しますか？",
+                faq_a11: "提供されたCSVテンプレートを使用して、システムに複数の注文をインポートできます。システムはプログラムでデータを解析するため、手動入力よりも効率的です。",
+                faq_q12: "サポートのサービスレベルアグリーメント（SLA）は何ですか？",
+                faq_a12: "技術的な問題については電子メールサポートを提供しています。アクティブなクライアントからの問い合わせに対する標準的な対応SLAは、24〜48営業時間以内です。",
+                faq_q13: "ユーザー向けのトレーニングは提供していますか？",
+                faq_a13: "デジタルドキュメントとマニュアルを提供しています。プランによっては、チームがシステムのインターフェースに慣れるためのリモートオンボーディングセッションが含まれる場合があります。",
+                faq_q14: "ドライバーアプリケーションにはどのようにアクセスしますか？",
+                faq_a14: "ドライバーは、標準のモバイルWebブラウザ経由、またはスマートフォンにインストールされた軽量のラッパーアプリケーションを介してシステムにアクセスします。",
+                faq_q15: "電子署名モジュールはどのように機能しますか？",
+                faq_a15: "電子署名機能により、受取人はドライバーのデバイス画面に署名できます。システムはこのデジタル画像を、基本的な配達の証明としてタイムスタンプとともに保存します。",
+                faq_q16: "システムアーキテクチャはスケーラブルですか？",
+                faq_a16: "はい、システムはスケーラブルに設計されています。Starterプランから始めて、運用量が増加するにつれてProfessionalまたはEnterpriseにアップグレードできます。",
+                faq_q17: "どのような種類のデータ分析が提供されますか？",
+                faq_a17: "システムは、標準的な配信メトリックを表示する基本ダッシュボードを提供し、管理者が外部での分析のために生の配信データをエクスポートできるようにします。",
+                faq_q18: "LINE Notifyモジュールはどのように機能しますか？",
+                faq_a18: "APIトークンを使用して構成されると、システムは標準の配達ステータスの更新（「配達中」、「配達済み」など）を指定されたLINEチャットにプッシュします。",
+                faq_q19: "毎月の定期的な費用はありますか？",
+                faq_a19: "初期の展開料金は1回限りの費用です。クラウドホスティングとサーバーメンテナンスの標準的な月額料金が発生しますが、これは契約に明確に記載されます。",
+                faq_q20: "見積もりの連絡時間が7〜30日なのはなぜですか？",
+                faq_a20: "お客様の特定の要件を技術的にサポートできるように、エンジニアリングチームが各問い合わせを慎重に確認します。詳細な技術的評価と回答に最大7〜30日かかりますのでご了承ください。",
+                faq_q21: "なぜTrackFlowは分離されたHTML/JSアーキテクチャを利用するのですか？",
+                faq_a21: "分離されたアーキテクチャ（フロントエンド：HTML/JS、バックエンド：API）を使用しています。このアプローチにより、サーバーの処理負荷が軽減され、セキュリティが向上し、コアシステムを中断することなく将来のアップグレードが容易になります。",
+                faq_q22: "このアーキテクチャは従来のPHPシステムと比べてどうですか？",
+                faq_a22: "フロントエンドをバックエンドから分離することで、トラフィックのピーク時のサーバーの過負荷のリスクを軽減し、従来のモノリシックなサーバーレンダリングアプリケーションと比較して安定したパフォーマンスを実現します。",
+                faq_q23: "システムはどのようにインストールおよびホストされますか？",
+                faq_a23: "システムはクラウドベースのソリューションです。ローカルサーバーを管理する必要はありません。私たちのチームが、クラウドのプロビジョニング、データベースのセットアップ、ドメインのルーティングを処理します。",
+                faq_q24: "システムのパフォーマンスをどのように最適化していますか？",
+                faq_a24: "コンテンツ配信ネットワーク（CDN）を利用して、フロントエンドのアセットを迅速に提供しています。APIエンドポイントは最適化されており、標準のクエリ応答時間が可能な限り低く抑えられています。",
+                faq_q25: "クラッシュ時のフェイルオーバー手順は何ですか？",
+                faq_a25: "当社のクラウドインフラストラクチャは、標準のフェイルオーバーメカニズムを利用しています。プライマリサーバーで問題が発生した場合、運用のダウンタイムを最小限に抑えるために、トラフィックをバックアップインスタンスにルーティングできます。",
+                faq_q26: "ユーザーは現在プラットフォームにどのようにアクセスしていますか？",
+                faq_a26: "現在、システムは標準のブラウザを介してWebベースのアプリケーションとして完全にアクセス可能です。当社の開発チームは、インフラストラクチャのアップグレードと将来の機能リリースに継続的に取り組んでいます。"
+            },
+            es: {
+                hero_title: "Arquitectura de Entrega Empresarial.",
+                hero_subtitle: "Soluciones de software de logística diseñadas para la eficiencia operativa. Creado para la estabilidad y la escalabilidad.",
+                pricing_title: "Elige tu arquitectura.",
+                tier1_name: "Inicial",
+                tier1_desc: "Funciones de seguimiento esenciales para empresas que comienzan.",
+                feat_admin: "Portales de Administración y Almacén",
+                feat_driver: "Aplicación para Conductores",
+                feat_customer: "Interfaz de Seguimiento de Clientes",
+                feat_deploy1: "Implementación en 1-3 días",
+                badge_recommended: "RECOMENDADO",
+                tier2_name: "Profesional",
+                tier2_desc: "Funciones ampliadas con integración de marca estándar para pymes.",
+                feat_all_starter: "Todas las características Iniciales",
+                feat_brand: "Integración de Marca Estándar",
+                feat_addon_free: "1 Módulo Incluido",
+                feat_deploy2: "Implementación en 7 días",
+                tier3_name: "Empresarial",
+                tier3_desc: "Personalización de marca blanca completa para operaciones empresariales.",
+                feat_whitelabel: "Personalización de Marca Blanca",
+                feat_all_addons: "Todos los módulos incluidos",
+                feat_priority: "Soporte Técnico por Correo",
+                feat_deploy3: "Implementación en 14 días",
+                engine_title: "Configura tu sistema.",
+                engine_subtitle: "Selecciona tu nivel y módulos para estimar el costo de implementación.",
+                label_name: "Nombre Completo",
+                label_email: "Correo Electrónico",
+                label_phone: "Número de Teléfono",
+                label_company: "Nombre de la Empresa",
+                label_package: "Seleccione Nivel",
+                opt_starter: "Inicial (39,000 THB)",
+                opt_pro: "Profesional (55,000 THB)",
+                opt_ent: "Empresarial (89,000 THB)",
+                label_terms: `Acepto la <a href="https://ponrakitt.site/Policy.html" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>.`,
+                btn_quote: "Obtener Estimación",
+                btn_callback: "Solicitar Evaluación",
+                addons_title: "Módulos del Sistema",
+                addons_desc: "Mejore su implementación. (5,000 THB por módulo).",
+                addon_line: "Integración LINE Notify",
+                addon_line_desc: "Actualizaciones automáticas vía API de LINE.",
+                addon_thermal: "Soporte de Impresora Térmica",
+                addon_thermal_desc: "Integración de protocolo estándar ESC/POS.",
+                addon_esig: "Captura de Firma Electrónica",
+                addon_esig_desc: "Imagen digital como comprobante de entrega.",
+                addon_bulk: "Carga Masiva CSV",
+                addon_bulk_desc: "Importa pedidos usando plantillas estándar.",
+                addon_analytics: "Exportación de Datos",
+                addon_analytics_desc: "Tablero básico y exportación de datos.",
+                badge_soon: "Próximamente",
+                inv_title: "Estimación",
+                inv_date_label: "Fecha:",
+                inv_valid_until: "Válido hasta:",
+                inv_ref_label: "Ref:",
+                inv_th_desc: "Descripción",
+                inv_th_amount: "Monto (THB)",
+                inv_subtotal: "Subtotal",
+                inv_discount: "Descuento",
+                inv_total: "Total",
+                btn_download: "Descargar PDF",
+                modal_title: "Solicitud Recibida",
+                modal_desc: "Gracias por su interés. Para garantizar que podamos respaldar técnicamente sus requisitos, permita de 7 a 30 días para que nuestro equipo evalúe y se comunique con usted. Se ha enviado un resumen a su correo.",
+                btn_close: "Hecho",
+
+                // Email
+                email_subject: "Su Estimación del Sistema TrackFlow",
+                email_greeting: "Estimado/a",
+                email_intro: "Gracias por su interés en TrackFlow. A continuación se muestra la estimación preliminar para la implementación de su sistema. Nuestro equipo de ingeniería revisará sus requisitos operativos y se comunicará con usted entre 7 y 30 días para discutir la viabilidad técnica.",
+                email_footer: "Esperamos ponernos en contacto con usted.",
+                email_addon_prefix: "Módulo:",
+
+                // FAQ
+                faq_header: "Preguntas Técnicas Frecuentes",
+                faq_q1: "¿Quiénes somos y qué es TrackFlow?",
+                faq_a1: "Somos un equipo de desarrollo de software especializado en sistemas logísticos. TrackFlow es nuestra arquitectura de entrega principal que configuramos y desplegamos para que se alinee con sus requisitos comerciales específicos.",
+                faq_q2: "¿Por qué debería usar TrackFlow en lugar de desarrollar su propio sistema?",
+                faq_a2: "Desarrollar un sistema desde cero requiere mucho tiempo y presupuesto. TrackFlow proporciona una base preconstruida y probada que reduce el tiempo de desarrollo y minimiza los riesgos de implementación para sus operaciones.",
+                faq_q3: "¿Cómo se compara TrackFlow con los productos SaaS estándar?",
+                faq_a3: "Si bien las soluciones SaaS estándar ofrecen funciones fijas, TrackFlow permite una personalización más profunda para que coincida con sus reglas operativas específicas e incluye opciones de marca blanca para mantener su identidad corporativa.",
+                faq_q4: "¿Cuál es el proceso de implementación estándar?",
+                faq_a4: "Comenzamos con la recopilación de requisitos, seguida de la configuración del sistema, las pruebas de aceptación del usuario (UAT) y la implementación. El proceso suele durar de 1 a 14 días, según el nivel de personalización necesario.",
+                faq_q5: "¿Cuál es la política de soporte y confiabilidad del sistema?",
+                faq_a5: "Nuestros sistemas están alojados en una infraestructura de nube confiable diseñada para una alta disponibilidad. Proporcionamos copias de seguridad automatizadas periódicas y soporte técnico estándar para la corrección de errores a fin de mantener la estabilidad operativa.",
+                faq_q6: "¿Cuánto tiempo lleva la configuración del sistema?",
+                faq_a6: "La configuración generalmente demora entre 1 y 14 días, según el nivel que seleccione y las configuraciones técnicas específicas requeridas para el personal de su almacén y los conductores.",
+                faq_q7: "¿Qué incluye la personalización de marca blanca?",
+                faq_a7: "La marca blanca en el nivel Empresarial le permite utilizar su logotipo corporativo, dominios y colores de marca en las interfaces de seguimiento y aplicaciones de conductores.",
+                faq_q8: "¿Cómo manejan la seguridad de los datos?",
+                faq_a8: "Utilizamos cifrado HTTPS estándar para la transferencia de datos y alojamos nuestras bases de datos en una infraestructura de nube segura con controles de acceso configurados.",
+                faq_q9: "¿Puede el sistema integrarse con el software ERP existente?",
+                faq_a9: "El nivel Empresarial incluye API REST estándar que permiten a su equipo de desarrollo interno crear integraciones personalizadas con sus sistemas internos existentes.",
+                faq_q10: "¿Qué impresoras térmicas son compatibles?",
+                faq_a10: "El módulo de impresora térmica está diseñado para admitir impresoras de protocolo ESC/POS estándar comúnmente utilizadas en entornos de almacén para la generación de etiquetas.",
+                faq_q11: "¿Cómo funciona la función de carga masiva?",
+                faq_a11: "Puede importar varios pedidos al sistema mediante las plantillas CSV que le proporcionamos. El sistema analiza los datos mediante programación, lo cual es más eficiente que la entrada manual.",
+                faq_q12: "¿Cuál es su Acuerdo de Nivel de Servicio (SLA) para soporte?",
+                faq_a12: "Brindamos soporte por correo electrónico para problemas técnicos. Nuestro SLA estándar para responder a las consultas de los clientes activos es de 24 a 48 horas hábiles.",
+                faq_q13: "¿Proporcionan capacitación a los usuarios?",
+                faq_a13: "Proporcionamos documentación digital y manuales. Según su nivel, se puede incluir una sesión de incorporación remota para familiarizar a su equipo con la interfaz del sistema.",
+                faq_q14: "¿Cómo se accede a la aplicación del conductor?",
+                faq_a14: "Los conductores acceden al sistema a través de navegadores web móviles estándar o mediante una aplicación contenedora liviana instalada en sus teléfonos inteligentes.",
+                faq_q15: "¿Cómo funciona el módulo de firma electrónica?",
+                faq_a15: "La función de firma electrónica permite al receptor firmar en la pantalla del dispositivo del conductor. El sistema almacena esta imagen digital junto con una marca de tiempo como comprobante de entrega básico.",
+                faq_q16: "¿La arquitectura del sistema es escalable?",
+                faq_a16: "Sí, el sistema está diseñado a escala. Puede comenzar con el nivel Inicial y ascender a Profesional o Empresarial a medida que aumenta su volumen operativo.",
+                faq_q17: "¿Qué tipo de análisis de datos se proporciona?",
+                faq_a17: "El sistema proporciona un panel básico que muestra métricas de entrega estándar y permite a los administradores exportar datos de entrega sin procesar para un análisis externo.",
+                faq_q18: "¿Cómo funciona el módulo LINE Notify?",
+                faq_a18: "Una vez configurado con un token de API, el sistema envía actualizaciones de estado de entrega estándar (por ejemplo, En reparto, Entregado) a un chat de LINE designado.",
+                faq_q19: "¿Existen costos recurrentes mensuales?",
+                faq_a19: "La tarifa de implementación inicial es un costo único. Habrá tarifas mensuales estándar para el alojamiento en la nube y el mantenimiento del servidor, que se detallarán claramente en su acuerdo.",
+                faq_q20: "¿Por qué el tiempo estimado de contacto es de 7 a 30 días?",
+                faq_a20: "Para garantizar que podamos respaldar técnicamente sus requisitos específicos, nuestro equipo de ingeniería revisa cada consulta detenidamente. Permita hasta 7-30 días para una evaluación técnica detallada y respuesta.",
+                faq_q21: "¿Por qué TrackFlow utiliza una arquitectura HTML/JS desacoplada?",
+                faq_a21: "Usamos una arquitectura desacoplada (Frontend: HTML/JS, Backend: API). Este enfoque reduce la carga de procesamiento del servidor, mejora la seguridad y permite futuras actualizaciones más sencillas sin interrumpir el sistema central.",
+                faq_q22: "¿Cómo se compara esta arquitectura con los sistemas PHP tradicionales?",
+                faq_a22: "Al separar el frontend del backend, reducimos el riesgo de sobrecargas del servidor durante los picos de tráfico, lo que da como resultado un rendimiento más estable en comparación con las aplicaciones monolíticas tradicionales renderizadas en el servidor.",
+                faq_q23: "¿Cómo se instala y aloja el sistema?",
+                faq_a23: "El sistema es una solución basada en la nube. No es necesario administrar servidores locales. Nuestro equipo maneja el aprovisionamiento en la nube, la configuración de la base de datos y el enrutamiento de dominios.",
+                faq_q24: "¿Cómo optimizan el rendimiento del sistema?",
+                faq_a24: "Utilizamos redes de entrega de contenido (CDN) para servir los activos de la interfaz rápidamente. Nuestros puntos finales de API están optimizados para garantizar que los tiempos de respuesta de consulta estándar se mantengan lo más bajos posible.",
+                faq_q25: "¿Cuáles son los procedimientos de conmutación por error durante un bloqueo?",
+                faq_a25: "Nuestra infraestructura de nube utiliza mecanismos estándar de conmutación por error. Si un servidor principal encuentra un problema, el tráfico se puede enrutar a una instancia de respaldo para minimizar el tiempo de inactividad operativo.",
+                faq_q26: "¿Cómo acceden los usuarios a la plataforma en la actualidad?",
+                faq_a26: "Actualmente, el sistema es totalmente accesible como una aplicación web a través de navegadores estándar. Nuestro equipo de desarrollo trabaja continuamente en actualizaciones de infraestructura y futuras versiones de características."
+            }
+        };
+
+        // Render FAQ HTML dynamically
+        const faqContainer = document.getElementById('faqAccordion');
+        for (let i = 1; i <= 26; i++) {
+            const item = document.createElement('div');
+            item.className = 'faq-item';
+            item.innerHTML = `
+                <div class="faq-question">
+                    <span data-i18n="faq_q${i}"></span>
+                    <div class="faq-icon"></div>
+                </div>
+                <div class="faq-answer">
+                    <p data-i18n="faq_a${i}"></p>
+                </div>
+            `;
+            faqContainer.appendChild(item);
+        }
+
+        // Accordion Interaction Logic
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close all others
+                faqItems.forEach(other => {
+                    other.classList.remove('active');
+                    other.querySelector('.faq-answer').style.maxHeight = null;
+                });
+
+                // Toggle current
+                if (!isActive) {
+                    item.classList.add('active');
+                    const answer = item.querySelector('.faq-answer');
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                }
+            });
+        });
+
+        // UI Elements
+        const langToggle = document.getElementById('langToggle');
+        const langMenu = document.getElementById('langMenu');
+        const langItems = document.querySelectorAll('.lang-item');
+        const currentLangDisplay = document.getElementById('currentLangDisplay');
+        const selPackage = document.getElementById('selPackage');
+        const checkboxes = document.querySelectorAll('.addon-checkbox');
+        let currentActiveLang = 'en';
+        
+        // Custom Language Dropdown Logic
+        langToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langMenu.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!langToggle.contains(e.target) && !langMenu.contains(e.target)) {
+                langMenu.classList.remove('show');
+            }
+        });
+
+        // Language Logic
+        function updateLanguage(lang) {
+            currentActiveLang = lang;
+            document.body.className = lang === 'th' ? 'lang-th' : '';
+            
+            // Update UI Dropdown
+            currentLangDisplay.textContent = lang.toUpperCase();
+            langItems.forEach(item => {
+                if (item.dataset.lang === lang) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+
+            // Standard Text Translation
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[lang] && dict[lang][key]) {
+                    if (el.tagName === 'INPUT' && el.type === 'button') {
+                        el.value = dict[lang][key];
+                    } else {
+                        el.textContent = dict[lang][key];
+                    }
+                }
+            });
+
+            // HTML Translation (for the link in Terms checkbox)
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                if (dict[lang] && dict[lang][key]) {
+                    el.innerHTML = dict[lang][key];
+                }
+            });
+
+            // Recalculate max-height for active accordion
+            const activeFaq = document.querySelector('.faq-item.active .faq-answer');
+            if(activeFaq) {
+                activeFaq.style.maxHeight = activeFaq.scrollHeight + "px";
+            }
+        }
+
+        langItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const lang = item.dataset.lang;
+                updateLanguage(lang);
+                langMenu.classList.remove('show');
+            });
+        });
+
+        // Package Selection Logic for Add-ons UI
+        selPackage.addEventListener('change', () => {
+            const tier = selPackage.options[selPackage.selectedIndex].dataset.tier;
+            checkboxes.forEach(cb => {
+                if(tier === 'Enterprise') {
+                    cb.checked = true;
+                    cb.disabled = true;
+                } else {
+                    cb.disabled = false;
+                }
+            });
+            document.getElementById('quotationArea').classList.remove('active');
+        });
+
+        // Common Validation Logic
+        function validateForm() {
+            const name = document.getElementById('inpName').value;
+            const email = document.getElementById('inpEmail').value;
+            const phone = document.getElementById('inpPhone').value;
+            const company = document.getElementById('inpCompany').value;
+            const chkTerms = document.getElementById('chkTerms');
+            const lblTerms = document.getElementById('lblTerms');
+
+            let isValid = true;
+
+            const inputs = [document.getElementById('inpName'), document.getElementById('inpEmail'), document.getElementById('inpPhone'), document.getElementById('inpCompany')];
+            inputs.forEach(inp => {
+                if(!inp.value) {
+                    inp.style.borderBottomColor = '#ff3b30';
+                    isValid = false;
+                } else {
+                    inp.style.borderBottomColor = 'var(--border-color)';
+                }
+            });
+
+            if(!chkTerms.checked) {
+                lblTerms.style.color = '#ff3b30';
+                isValid = false;
+            } else {
+                lblTerms.style.color = 'var(--text-secondary)';
+            }
+
+            return isValid;
+        }
+
+        // Logic to extract Quotation Data
+        function getQuotationData() {
+            const companyName = document.getElementById('inpCompany').value || 'Valued Client';
+            const tierOption = selPackage.options[selPackage.selectedIndex];
+            const basePrice = parseInt(tierOption.value);
+            const tierName = tierOption.dataset.tier;
+            
+            let selectedAddons = [];
+            checkboxes.forEach(cb => {
+                if(cb.checked || tierName === 'Enterprise') {
+                    selectedAddons.push({ name: cb.dataset.name, price: parseInt(cb.value) });
+                }
+            });
+
+            let addonsCost = 0;
+            let discount = 0;
+
+            if (tierName === 'Enterprise') {
+                selectedAddons.forEach(a => addonsCost += a.price);
+                discount = addonsCost; 
+            } else if (tierName === 'Professional' && selectedAddons.length > 0) {
+                selectedAddons.forEach(a => addonsCost += a.price);
+                discount = 5000;
+            } else {
+                selectedAddons.forEach(a => addonsCost += a.price);
+            }
+
+            const subtotal = basePrice + addonsCost - discount;
+            const refNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const today = new Date();
+            const validUntil = new Date(today);
+            validUntil.setDate(validUntil.getDate() + 30);
+
+            return {
+                companyName, tierName, basePrice, selectedAddons, addonsCost, discount, subtotal, 
+                grandTotal: subtotal, refNumber, date: today.toLocaleDateString(), validUntil: validUntil.toLocaleDateString()
+            };
+        }
+
+        // Render Quotation onto Screen
+        function renderQuotationUI(qData) {
+            document.getElementById('invDate').textContent = qData.date;
+            document.getElementById('invDueDate').textContent = qData.validUntil;
+            document.getElementById('invRef').textContent = qData.refNumber;
+            document.getElementById('invCompany').textContent = qData.companyName;
+
+            const t = dict[currentActiveLang];
+
+            let tbodyHtml = `<tr>
+                <td>TrackFlow Architecture - ${qData.tierName} Tier</td>
+                <td class="amount">${qData.basePrice.toLocaleString()}</td>
+            </tr>`;
+
+            qData.selectedAddons.forEach(a => {
+                const addonName = t[`addon_${a.name.split(' ')[0].toLowerCase()}`] ? t[`addon_${a.name.split(' ')[0].toLowerCase()}`] : a.name;
+                tbodyHtml += `<tr>
+                    <td>${t.email_addon_prefix || 'Add-on:'} ${a.name}</td>
+                    <td class="amount">${a.price.toLocaleString()}</td>
+                </tr>`;
+            });
+
+            document.getElementById('invBody').innerHTML = tbodyHtml;
+            document.getElementById('invSub').textContent = (qData.basePrice + qData.addonsCost).toLocaleString();
+            
+            const rowDiscount = document.getElementById('rowDiscount');
+            if(qData.discount > 0) {
+                rowDiscount.style.display = 'flex';
+                document.getElementById('invDisc').textContent = `-${qData.discount.toLocaleString()}`;
+            } else {
+                rowDiscount.style.display = 'none';
+            }
+
+            document.getElementById('invTotal').textContent = qData.grandTotal.toLocaleString();
+
+            const quoteArea = document.getElementById('quotationArea');
+            quoteArea.classList.add('active');
+            setTimeout(() => { quoteArea.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+        }
+
+        // Button Generate Click
+        document.getElementById('btnQuote').addEventListener('click', () => {
+            if(!validateForm()) return;
+            renderQuotationUI(getQuotationData());
+        });
+
+        // Request Callback & SEND TO GOOGLE SHEETS/EMAIL
+        const btnCallback = document.getElementById('btnCallback');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        btnCallback.addEventListener('click', () => {
+            if(!validateForm()) return;
+
+            btnCallback.disabled = true;
+            btnSpinner.style.display = 'inline-block';
+
+            const qData = getQuotationData();
+            const clientName = document.getElementById('inpName').value;
+            const t = dict[currentActiveLang];
+            
+            // Build the Translated HTML Email right here on the client
+            let htmlEmailBody = `
+              <div style="background-color: #000000; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f5f5f7; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #151516; border: 1px solid #333333; border-radius: 24px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                  
+                  <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.03em; color: #ffffff;">${t.inv_title}</h2>
+                    <p style="margin: 5px 0 0; font-size: 14px; color: #86868b; font-weight: 400;">TrackFlow Enterprise</p>
+                  </div>
+
+                  <p style="color: #f5f5f7; font-size: 15px;">${t.email_greeting} <strong style="color: #ffffff;">${clientName}</strong>,</p>
+                  <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 30px;">${t.email_intro}</p>
+                  
+                  <div style="background-color: #000000; border: 1px solid #333333; border-radius: 16px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+                      <thead>
+                        <tr style="background-color: #1c1c1e;">
+                          <th style="padding: 16px; font-weight: 500; color: #86868b; border-bottom: 1px solid #333333;">${t.inv_th_desc}</th>
+                          <th style="padding: 16px; font-weight: 500; color: #86868b; text-align: right; border-bottom: 1px solid #333333;">${t.inv_th_amount}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style="padding: 16px; border-bottom: 1px solid #1c1c1e; color: #f5f5f7;">TrackFlow Architecture - ${qData.tierName} Tier</td>
+                          <td style="padding: 16px; text-align: right; border-bottom: 1px solid #1c1c1e; font-weight: 500; color: #ffffff;">${qData.basePrice.toLocaleString()}</td>
+                        </tr>`;
+
+            if(qData.selectedAddons && qData.selectedAddons.length > 0) {
+              qData.selectedAddons.forEach(function(addon) {
+                htmlEmailBody += `
+                        <tr>
+                          <td style="padding: 16px; border-bottom: 1px solid #1c1c1e; color: #f5f5f7;">${t.email_addon_prefix} ${addon.name}</td>
+                          <td style="padding: 16px; text-align: right; border-bottom: 1px solid #1c1c1e; font-weight: 500; color: #ffffff;">${addon.price.toLocaleString()}</td>
+                        </tr>`;
+              });
+            }
+
+            if(qData.discount > 0) {
+               htmlEmailBody += `
+                        <tr>
+                          <td style="padding: 16px; border-bottom: 1px solid #1c1c1e; color: #ff3b30;">${t.inv_discount}</td>
+                          <td style="padding: 16px; text-align: right; border-bottom: 1px solid #1c1c1e; font-weight: 500; color: #ff3b30;">-${qData.discount.toLocaleString()}</td>
+                        </tr>`;
+            }
+
+            htmlEmailBody += `
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td style="padding: 20px 16px; font-weight: 600; color: #ffffff; font-size: 16px; border-top: 1px solid #333333;">${t.inv_total}</td>
+                          <td style="padding: 20px 16px; text-align: right; font-weight: 700; color: #ffffff; font-size: 18px; border-top: 1px solid #333333;">${qData.grandTotal.toLocaleString()}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <div style="margin-top: 30px; font-size: 13px; color: #86868b; text-align: center; line-height: 1.8;">
+                    <p style="margin: 0;">
+                      <strong style="color:#a1a1aa;">${t.inv_ref_label}</strong> TF-${qData.refNumber} &nbsp;|&nbsp; 
+                      <strong style="color:#a1a1aa;">${t.inv_valid_until}</strong> ${qData.validUntil}
+                    </p>
+                    <p style="margin: 15px 0;">${t.email_footer}</p>
+                    
+                    <div style="margin: 30px auto 0; width: 40px; height: 1px; background-color: #333333;"></div>
+                    
+                    <p style="margin-top: 30px;">
+                      TrackFlow Systems Inc.<br>
+                      <a href="https://ponrakitt.site" style="color: #2997ff; text-decoration: none; font-weight: 500;">ponrakitt.site</a>
+                    </p>
+                  </div>
+                  
+                </div>
+              </div>
+            `;
+
+            // Build Payload for Google Script
+            const payload = {
+                name: clientName,
+                email: document.getElementById('inpEmail').value,
+                phone: document.getElementById('inpPhone').value,
+                company: qData.companyName,
+                tier: qData.tierName,
+                totalPrice: qData.grandTotal,
+                refNumber: qData.refNumber,
+                emailSubject: `${t.email_subject} [Ref: TF-${qData.refNumber}]`,
+                emailHtml: htmlEmailBody // Sending pre-translated HTML
+            };
+
+            // Send to Google Sheets
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                btnCallback.disabled = false;
+                btnSpinner.style.display = 'none';
+                document.getElementById('successModal').classList.add('active');
+            })
+            .catch(error => {
+                console.error('Error submitting form', error);
+                btnCallback.disabled = false;
+                btnSpinner.style.display = 'none';
+                alert('Connection error. Please try again.');
+            });
+        });
+
+        // Generate PDF Direct Download Logic
+        function downloadPDF() {
+            const element = document.getElementById('quotationArea');
+            const printActions = element.querySelector('.print-actions');
+            
+            printActions.style.display = 'none';
+
+            const originalOverflow = document.body.style.overflow;
+            const originalTransform = element.style.transform;
+            const originalTransition = element.style.transition;
+            
+            document.body.style.overflow = 'visible';
+            element.style.transform = 'none';
+            element.style.transition = 'none';
+
+            const refNumber = document.getElementById('invRef').textContent;
+            
+            const opt = {
+                margin:       0.5,
+                filename:     `Quotation_TrackFlow_${refNumber}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                printActions.style.display = 'block';
+                document.body.style.overflow = originalOverflow;
+                element.style.transform = originalTransform;
+                element.style.transition = originalTransition;
+            });
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if(modalId === 'successModal') {
+                document.getElementById('inpName').value = '';
+                document.getElementById('inpEmail').value = '';
+                document.getElementById('inpPhone').value = '';
+                document.getElementById('inpCompany').value = '';
+                document.getElementById('chkTerms').checked = false;
+                document.getElementById('quotationArea').classList.remove('active');
+            }
+        }
+
+        // Initialize default language
+        updateLanguage('en');
+
+    </script>
+</body>
+</html>
