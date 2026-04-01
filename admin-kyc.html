@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Admin Dashboard | Wanflorist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0fdf4', 500: '#22c55e', 900: '#14532d' },
+                        secure: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-800 antialiased font-sans">
+
+    <!-- Top Navigation -->
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-secure-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-halved text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Wanflorist</h1>
+                        <p class="text-[10px] text-secure-300">KYC Management Center</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-300 hidden sm:block"><i class="fas fa-user-circle mr-1"></i> Admin</span>
+                    <button class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors border border-slate-700">
+                        ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header & Action -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">จัดการข้อมูลยืนยันตัวตน</h2>
+                <p class="text-slate-500 text-sm mt-1">สร้างลิงก์และตรวจสอบสถานะ KYC ของลูกค้า</p>
+            </div>
+            <button onclick="openCreateModal()" class="bg-secure-600 hover:bg-secure-700 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-secure-600/30 flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i> สร้างลิงก์ KYC ใหม่
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">
+                    <i class="fas fa-link"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">รอการยืนยัน (Pending)</p>
+                    <h3 class="text-2xl font-bold text-slate-800"><span id="statPending">0</span> <span class="text-sm font-normal text-slate-400">รายการ</span></h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-2xl">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">ยืนยันแล้ว (Completed)</p>
+                    <h3 class="text-2xl font-bold text-slate-800"><span id="statCompleted">0</span> <span class="text-sm font-normal text-slate-400">รายการ</span></h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-2xl">
+                    <i class="fas fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">ลบอัตโนมัติแล้ว (Deleted)</p>
+                    <h3 class="text-2xl font-bold text-slate-800"><span id="statDeleted">0</span> <span class="text-sm font-normal text-slate-400">รายการ</span></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">รายการล่าสุด</h3>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" placeholder="ค้นหาเลขอ้างอิง, ชื่อ..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-secure-500 focus:ring-1 focus:ring-secure-500 w-64">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
+                            <th class="p-4 font-medium">เลขอ้างอิง (Ref)</th>
+                            <th class="p-4 font-medium">ชื่อลูกค้า / รายการ</th>
+                            <th class="p-4 font-medium">วันที่สร้างลิงก์</th>
+                            <th class="p-4 font-medium">สถานะ</th>
+                            <th class="p-4 font-medium text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kycTableBody" class="text-sm">
+                        <tr><td colspan="5" class="text-center p-8 text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูลจากเซิร์ฟเวอร์...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-t border-slate-100 text-center">
+                <button class="text-sm text-secure-600 font-medium hover:text-secure-800">ดูรายการทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create KYC Modal -->
+    <div id="createModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex-items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-800">สร้างลิงก์ KYC ใหม่</h3>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4" id="createFormView">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อลูกค้า <span class="text-red-500">*</span></label>
+                    <input type="text" id="customerName" placeholder="เช่น คุณสมชาย ใจดี" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-secure-500 focus:ring-1 focus:ring-secure-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ยอดชำระโดยประมาณ (บาท)</label>
+                    <input type="number" id="orderAmount" placeholder="เช่น 150000" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-secure-500 focus:ring-1 focus:ring-secure-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">เลขอ้างอิง (Ref)</label>
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 font-mono text-sm">WF-</span>
+                        <input type="text" id="refNumber" readonly class="w-full border border-slate-300 rounded-r-lg px-4 py-2.5 bg-slate-50 font-mono text-slate-600 focus:outline-none">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1"><i class="fas fa-info-circle"></i> ระบบสุ่มให้โดยอัตโนมัติ</p>
+                </div>
+                
+                <button onclick="generateLink()" id="submitCreateBtn" class="w-full bg-secure-600 hover:bg-secure-700 text-white font-bold py-3 rounded-xl transition-all mt-4">
+                    สร้างลิงก์
+                </button>
+            </div>
+
+            <!-- Success / Copy Link View -->
+            <div class="p-6 text-center hidden" id="linkGeneratedView">
+                <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-slate-800 mb-1">สร้างลิงก์สำเร็จ!</h4>
+                <p class="text-sm text-slate-500 mb-6">คัดลอกลิงก์ด้านล่างเพื่อส่งให้ลูกค้า</p>
+                
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between mb-4">
+                    <input type="text" id="generatedLink" readonly class="bg-transparent border-none focus:outline-none text-sm text-slate-600 w-full font-mono overflow-hidden whitespace-nowrap overflow-ellipsis">
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeCreateModal()" class="flex-1 px-4 py-2.5 rounded-lg font-medium text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors">
+                        ปิด
+                    </button>
+                    <button onclick="copyGeneratedLink()" id="copyBtn" class="flex-1 bg-secure-600 hover:bg-secure-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-copy"></i> คัดลอกลิงก์
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        <i class="fas fa-check-circle text-green-400"></i>
+        <span id="toastMsg" class="text-sm font-medium">คัดลอกลิงก์แล้ว</span>
+    </div>
+
+    <script>
+        // DOM Elements
+        const createModal = document.getElementById('createModal');
+        const createFormView = document.getElementById('createFormView');
+        const linkGeneratedView = document.getElementById('linkGeneratedView');
+        const refNumberInput = document.getElementById('refNumber');
+        const generatedLinkInput = document.getElementById('generatedLink');
+        const customerNameInput = document.getElementById('customerName');
+
+        // ⚠️ สำคัญ: ใส่ URL ของ Google Apps Script (Web App URL) ที่ช่องนี้
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec';
+        
+        // URL ของหน้าสำหรับลูกค้า (หน้า index.html ที่คุณเอาไปวางบนโฮสต์)
+        const BASE_CLIENT_URL = window.location.origin + '/index.html'; 
+
+        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+        window.onload = loadRecords;
+
+        async function loadRecords() {
+            if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
+                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i> กรุณาใส่ GOOGLE_SCRIPT_URL ในโค้ดก่อนใช้งาน</td></tr>';
+                return;
+            }
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getRecords');
+                const data = await response.json();
+                renderTable(data);
+                updateStats(data);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล</td></tr>';
+            }
+        }
+
+        function renderTable(records) {
+            const tbody = document.getElementById('kycTableBody');
+            tbody.innerHTML = '';
+            
+            if(records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">ยังไม่มีรายการ</td></tr>';
+                return;
+            }
+
+            records.forEach(record => {
+                const dateStr = new Date(record.date).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                let statusHtml = '';
+                let actionHtml = '';
+
+                if (record.status === 'Pending') {
+                    statusHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium"><i class="fas fa-spinner fa-spin"></i> รอการยืนยัน</span>`;
+                    actionHtml = `<button onclick="copyLink('${record.ref}', '${record.name}', '${record.link}')" class="text-secure-600 hover:text-secure-800 bg-secure-50 hover:bg-secure-100 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium"><i class="fas fa-copy mr-1"></i> คัดลอกลิงก์</button>`;
+                } else if (record.status === 'Completed') {
+                    statusHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium"><i class="fas fa-check-circle"></i> ยืนยันแล้ว</span>`;
+                    actionHtml = `<button onclick="window.open('${record.idFrontUrl}', '_blank'); window.open('${record.selfieUrl}', '_blank');" class="text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium"><i class="fas fa-image mr-1"></i> ดูรูปภาพ</button>`;
+                } else {
+                    statusHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-medium"><i class="fas fa-clock-rotate-left"></i> ลบแล้ว</span>`;
+                    actionHtml = `<span class="text-xs text-slate-400">ถูกทำลายแล้ว</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-50 hover:bg-slate-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono font-medium text-slate-700">${record.ref}</td>
+                    <td class="p-4">
+                        <p class="font-semibold text-slate-800">${record.name}</p>
+                        <p class="text-xs text-slate-500">ยอดชำระ: ${record.amount ? Number(record.amount).toLocaleString() + ' ฿' : '-'}</p>
+                    </td>
+                    <td class="p-4 text-slate-600">${dateStr}</td>
+                    <td class="p-4">${statusHtml}</td>
+                    <td class="p-4 text-right flex justify-end gap-2">${actionHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStats(records) {
+            let pending = 0, completed = 0, deleted = 0;
+            records.forEach(r => {
+                if (r.status === 'Pending') pending++;
+                else if (r.status === 'Completed') completed++;
+                else if (r.status === 'Deleted') deleted++;
+            });
+            document.getElementById('statPending').innerText = pending;
+            document.getElementById('statCompleted').innerText = completed;
+            document.getElementById('statDeleted').innerText = deleted;
+        }
+
+        function openCreateModal() {
+            refNumberInput.value = Math.floor(100000 + Math.random() * 900000);
+            customerNameInput.value = '';
+            document.getElementById('orderAmount').value = '';
+            
+            createFormView.classList.remove('hidden');
+            linkGeneratedView.classList.add('hidden');
+            
+            createModal.classList.remove('hidden');
+            createModal.classList.add('flex');
+        }
+
+        function closeCreateModal() {
+            createModal.classList.add('hidden');
+            createModal.classList.remove('flex');
+        }
+
+        async function generateLink() {
+            const name = customerNameInput.value.trim();
+            const amount = document.getElementById('orderAmount').value;
+            if(!name) {
+                alert('กรุณากรอกชื่อลูกค้า');
+                return;
+            }
+
+            const ref = 'WF-' + refNumberInput.value;
+            const finalUrl = `${BASE_CLIENT_URL}?ref=${ref}&name=${encodeURIComponent(name)}`;
+            
+            const submitBtn = document.getElementById('submitCreateBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
+            submitBtn.disabled = true;
+
+            if (GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec') {
+                try {
+                    // ส่งข้อมูลไปบันทึกลง Google Sheets สถานะ "Pending"
+                    await fetch(`${GOOGLE_SCRIPT_URL}?action=createLink&ref=${ref}&name=${encodeURIComponent(name)}&amount=${amount}&link=${encodeURIComponent(finalUrl)}`);
+                    await loadRecords(); // รีเฟรชตารางหลังสร้างเสร็จ
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            
+            generatedLinkInput.value = finalUrl;
+            createFormView.classList.add('hidden');
+            linkGeneratedView.classList.remove('hidden');
+
+            submitBtn.innerHTML = 'สร้างลิงก์';
+            submitBtn.disabled = false;
+        }
+
+        function copyGeneratedLink() {
+            generatedLinkInput.select();
+            document.execCommand('copy');
+            
+            const copyBtn = document.getElementById('copyBtn');
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
+            copyBtn.classList.replace('bg-secure-600', 'bg-green-600');
+            
+            showToast('คัดลอกลิงก์สำเร็จ นำไปวางในแชทลูกค้าได้เลย');
+
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHtml;
+                copyBtn.classList.replace('bg-green-600', 'bg-secure-600');
+            }, 2000);
+        }
+
+        function copyLink(ref, name, linkUrl) {
+            const finalUrl = linkUrl || `${BASE_CLIENT_URL}?ref=${ref}&name=${encodeURIComponent(name)}`;
+            const tempInput = document.createElement('input');
+            tempInput.value = finalUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            showToast(`คัดลอกลิงก์ของ ${name} แล้ว`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 3000);
+        }
+    </script>
+</body>
+</html>
