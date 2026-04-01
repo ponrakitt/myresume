@@ -325,7 +325,7 @@
 
     <!-- Scripts -->
     <script>
-        // ⚠️ สำคัญมาก: เปลี่ยน URL ด้านล่างให้เป็น URL ที่ได้จากการ Deploy ใหม่ของคุณเอง
+        // ⚠️ สำคัญมาก: เปลี่ยน URL ด้านล่างให้เป็น URL ที่ได้จากการ Deploy "รายการใหม่" ของคุณเอง
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec';
         
         let base64IdFront = '';
@@ -626,6 +626,7 @@
                 loadingText.innerText = "กำลังเข้ารหัสและส่งข้อมูลอย่างปลอดภัย... (อาจใช้เวลา 10-15 วินาที)";
 
                 const payload = {
+                    action: 'submitKyc', // เพิ่มฟิลด์ action เพื่อบอกให้หลังบ้านรู้
                     refNumber: globalRefNumber,
                     customerName: globalCustomerName,
                     idFront: base64IdFront,
@@ -633,7 +634,7 @@
                 };
 
                 if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== '') {
-                    // ลบโหมด no-cors และส่งด้วย text/plain เพื่อเลี่ยงการติด CORS
+                    // ส่งด้วย text/plain เพื่อเลี่ยงการติด CORS
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST', 
                         headers: {
@@ -649,7 +650,6 @@
                     }
                 }
                 
-                // ถ้าทุกอย่างผ่านฉลุย
                 setTimeout(() => {
                     document.getElementById('loadingView').classList.add('hidden');
                     document.getElementById('successView').classList.remove('hidden');
