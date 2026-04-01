@@ -220,7 +220,7 @@
                 updateStats(data);
             } catch (error) {
                 console.error(error);
-                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล</td></tr>';
+                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาตรวจสอบ URL หรือการตั้งค่า Apps Script</td></tr>';
             }
         }
 
@@ -309,13 +309,21 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
             submitBtn.disabled = true;
 
-            if (GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec') {
+            if (GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
                 try {
-                    // ส่งข้อมูลไปบันทึกลง Google Sheets สถานะ "Pending"
-                    await fetch(`${GOOGLE_SCRIPT_URL}?action=createLink&ref=${ref}&name=${encodeURIComponent(name)}&amount=${amount}&link=${encodeURIComponent(finalUrl)}`);
-                    await loadRecords(); // รีเฟรชตารางหลังสร้างเสร็จ
+                    // ส่งข้อมูลไปบันทึกลง Google Sheets สถานะ "Pending" โดยแนบพารามิเตอร์ไปกับ URL (GET Request)
+                    const apiUrl = `${GOOGLE_SCRIPT_URL}?action=createLink&ref=${ref}&name=${encodeURIComponent(name)}&amount=${amount}&link=${encodeURIComponent(finalUrl)}`;
+                    
+                    // ใช้ mode: 'no-cors' เพื่อไม่ให้ติดปัญหา CORS Policy ของบราวเซอร์ (Fire and Forget)
+                    await fetch(apiUrl, { mode: 'no-cors' });
+                    
+                    // หน่วงเวลา 1 วินาที ให้ Google Sheets บันทึกข้อมูลเสร็จก่อนรีเฟรชตาราง
+                    setTimeout(() => {
+                        loadRecords(); 
+                    }, 1000);
+
                 } catch (err) {
-                    console.error(err);
+                    console.error('Error generating link:', err);
                 }
             }
             
