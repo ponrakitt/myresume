@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secure Identity Verification | Wanflorist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
+                    colors: {
+                        secure: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Camera Overlay Styles */
+        #cameraModal { backdrop-filter: blur(10px); }
+        .guideline-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+            pointer-events: none;
+        }
+        .guideline-id {
+            width: 85%; height: 55%;
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+        }
+        .guideline-selfie {
+            width: 70%; height: 60%;
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+        }
+        
+        .hidden-file-input { display: none; }
+        
+        /* Custom Scrollbar for How it Works Modal */
+        .modal-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-scroll::-webkit-scrollbar-track { background: transparent; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 md:p-8 antialiased relative">
+
+    <!-- Main Container -->
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden ring-1 ring-slate-900/5 relative z-10">
+        
+        <!-- Header / Partner Branding -->
+        <div class="bg-slate-900 p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-secure-500 rounded-full blur-3xl opacity-20"></div>
+            
+            <div class="flex items-center gap-4 z-10 text-white">
+                <div class="text-right">
+                    <h1 class="text-xl font-bold tracking-wide">Wanflorist</h1>
+                    <p class="text-xs text-slate-400">Premium Florist</p>
+                </div>
+                <div class="h-10 w-px bg-slate-700 mx-2"></div>
+                <div class="text-left flex items-center gap-2">
+                    <i class="fas fa-shield-check text-secure-500 text-2xl"></i>
+                    <div>
+                        <h2 class="text-sm font-semibold text-secure-400">ponrakitt.site</h2>
+                        <p class="text-xs text-slate-400">Security Partner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How it works Button -->
+            <button onclick="toggleHowItWorks()" class="z-10 flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 transition-colors text-slate-300">
+                <i class="fas fa-question-circle text-sm"></i>
+                <span class="text-xs font-medium">ขั้นตอนการทำงาน</span>
+            </button>
+        </div>
+
+        <!-- 1. Intro & Consent View -->
+        <div id="introView" class="p-6 md:p-10 fade-in">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-secure-50 text-secure-600 rounded-2xl flex items-center justify-center mx-auto mb-5 rotate-3 shadow-sm border border-secure-100">
+                    <i class="fas fa-user-lock text-3xl -rotate-3"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-3">การยืนยันตัวตน (Identity Verification)</h2>
+                <p class="text-slate-600 text-sm leading-relaxed max-w-lg mx-auto">
+                    เพื่อความปลอดภัยขั้นสูงสุดในการทำธุรกรรมมูลค่าสูงของคุณ
+                </p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8 text-sm text-slate-700 leading-relaxed shadow-inner">
+                <!-- เพิ่มกล่องต้อนรับลูกค้า -->
+                <div id="welcomeCustomerBox" class="hidden mb-4 pb-4 border-b border-slate-200">
+                    <p class="text-slate-500">สวัสดี,</p>
+                    <p class="text-lg font-bold text-slate-800" id="customerNameDisplay">คุณลูกค้า</p>
+                    <p class="text-xs text-slate-500 font-mono mt-1">Ref: <span id="refNumberDisplayIntro"></span></p>
+                </div>
+                
+                <p class="mb-4">
+                    ร้าน <strong class="text-slate-900">Wanflorist</strong> ได้ทำงานร่วมกับระบบตรวจสอบความปลอดภัย <strong class="text-secure-600">ponrakitt.site</strong> 
+                    ในการที่จะยืนยันได้ว่าคุณมีตัวตนอยู่จริง และเป็นเจ้าของสิทธิ์ในการทำรายการนี้อย่างถูกต้อง 
+                </p>
+                <p>
+                    รูปถ่ายของคุณจะถูกประทับลายน้ำ <strong>"ใช้สำหรับยืนยันตัวตนกับ Wanflorist เท่านั้น"</strong> เพื่อป้องกันการนำไปใช้ผิดวัตถุประสงค์ และจะถูกลบอัตโนมัติจากระบบภายใน 180 วัน
+                </p>
+            </div>
+
+            <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors mb-8 group">
+                <input type="checkbox" id="consentCheckbox" class="mt-0.5 w-5 h-5 text-secure-600 rounded border-slate-300 focus:ring-secure-500 cursor-pointer" onchange="toggleStartBtn()">
+                <span class="text-sm text-slate-600 select-none group-hover:text-slate-800 transition-colors">
+                    ข้าพเจ้ายินยอมให้รวบรวมภาพถ่ายบัตรประชาชนและใบหน้า เพื่อวัตถุประสงค์ในการยืนยันตัวตนตามเงื่อนไขที่ระบุไว้ข้างต้น
+                </span>
+            </label>
+
+            <button id="startBtn" disabled onclick="showUploadView()" class="w-full bg-slate-300 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 cursor-not-allowed">
+                ยอมรับและเริ่มยืนยันตัวตน <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- 2. Upload Form View -->
+        <div id="uploadView" class="p-6 md:p-10 hidden fade-in">
+            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                <h3 class="text-xl font-bold text-slate-800">ถ่ายรูปเอกสาร</h3>
+                <span class="text-sm font-medium text-secure-600 bg-secure-50 px-3 py-1 rounded-full">ขั้นตอนที่ 1/1</span>
+            </div>
+
+            <div class="space-y-6">
+                <!-- ID Card Front -->
+                <div>
+                    <label class="block text-slate-800 font-medium mb-2 text-sm">
+                        1. ภาพถ่ายด้านหน้าบัตรประชาชน <span class="text-red-500">*</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mb-3">ระบบจะใส่ลายน้ำป้องกันให้โดยอัตโนมัติ</p>
+                    
+                    <div id="idFrontPreviewBox" onclick="openCamera('idFront')" class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center bg-slate-50 hover:bg-secure-50 hover:border-secure-400 transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] cursor-pointer">
+                        <div class="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
+                            <i class="fas fa-camera text-xl text-secure-500" id="idFrontIcon"></i>
+                        </div>
+                        <span class="text-secure-600 font-semibold text-sm" id="idFrontText">เปิดกล้องถ่ายรูปบัตรประชาชน</span>
+                        <img id="idFrontPreview" class="hidden mt-4 max-h-40 rounded-xl shadow-md border border-slate-200 w-full object-contain">
+                    </div>
+                    <!-- Fallback Upload -->
+                    <input type="file" id="idFrontFileInput" class="hidden-file-input" accept="image/jpeg, image/png" onchange="handleFallbackUpload(this, 'idFront')">
+                    <div class="text-center mt-2">
+                        <button onclick="document.getElementById('idFrontFileInput').click()" class="text-[11px] text-slate-400 underline hover:text-secure-500">
+                            เปิดกล้องไม่ได้? อัปโหลดไฟล์แทน
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selfie -->
+                <div class="pt-4">
+                    <label class="block text-slate-800 font-medium mb-2 text-sm">
+                        2. ภาพถ่ายเซลฟี่คู่กับใบหน้า <span class="text-red-500">*</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mb-3">กรุณาถอดแว่นตาดำและหมวก เพื่อให้เห็นใบหน้าชัดเจน</p>
+                    
+                    <div id="selfiePreviewBox" onclick="openCamera('selfie')" class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center bg-slate-50 hover:bg-secure-50 hover:border-secure-400 transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] cursor-pointer">
+                        <div class="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
+                            <i class="fas fa-camera-retro text-xl text-secure-500" id="selfieIcon"></i>
+                        </div>
+                        <span class="text-secure-600 font-semibold text-sm" id="selfieText">เปิดกล้องเซลฟี่</span>
+                        <img id="selfiePreview" class="hidden mt-4 max-h-40 rounded-xl shadow-md border border-slate-200 w-full object-contain">
+                    </div>
+                    <!-- Fallback Upload -->
+                    <input type="file" id="selfieFileInput" class="hidden-file-input" accept="image/jpeg, image/png" onchange="handleFallbackUpload(this, 'selfie')">
+                    <div class="text-center mt-2">
+                        <button onclick="document.getElementById('selfieFileInput').click()" class="text-[11px] text-slate-400 underline hover:text-secure-500">
+                            เปิดกล้องไม่ได้? อัปโหลดไฟล์แทน
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-10">
+                <button onclick="showIntroView()" class="px-6 py-4 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
+                    ย้อนกลับ
+                </button>
+                <button onclick="submitData()" id="submitBtn" class="flex-1 bg-secure-600 hover:bg-secure-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-secure-600/30 flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-arrow-up"></i> ส่งข้อมูล
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Loading State -->
+        <div id="loadingView" class="p-12 text-center hidden fade-in py-24">
+            <div class="relative w-24 h-24 mx-auto mb-8">
+                <svg class="animate-spin w-full h-full text-slate-200" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="8"></circle>
+                    <path d="M50 5A45 45 0 0 1 95 50" stroke="#2563eb" stroke-width="8" stroke-linecap="round"></path>
+                </svg>
+                <i class="fas fa-lock absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-secure-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">กำลังส่งข้อมูลอย่างปลอดภัย...</h3>
+            <p class="text-slate-500 text-sm">การดำเนินการนี้อาจใช้เวลา 10-15 วินาที<br>กรุณาอย่าปิดหรือรีเฟรชหน้าจอนี้</p>
+        </div>
+
+        <!-- 4. Success State -->
+        <div id="successView" class="p-10 md:p-14 text-center hidden fade-in">
+            <div class="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                <div class="absolute inset-0 border-4 border-green-100 rounded-full animate-ping opacity-20"></div>
+                <i class="fas fa-check text-5xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800 mb-3">ตรวจสอบข้อมูลสำเร็จ</h3>
+            <p class="text-slate-600 mb-8 max-w-sm mx-auto">
+                ระบบได้รับเอกสารและทำการบันทึกอย่างปลอดภัยเรียบร้อยแล้ว
+            </p>
+            <div class="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-200 shadow-sm max-w-sm mx-auto">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-slate-500">สถานะ:</span>
+                    <span class="text-sm font-medium text-green-600 flex items-center gap-1">
+                        <i class="fas fa-shield-check"></i> ยืนยันแล้ว
+                    </span>
+                </div>
+            </div>
+            <button onclick="alert('ไปสู่หน้าชำระเงินของ Wanflorist...')" class="w-full max-w-sm mx-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg">
+                ดำเนินการชำระเงินต่อ <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- How it Works Modal -->
+    <div id="howItWorksModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex-items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-shield-check text-secure-600"></i> ขั้นตอนการทำงาน
+                </h3>
+                <button onclick="toggleHowItWorks()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto modal-scroll space-y-6">
+                
+                <p class="text-sm text-slate-600 mb-4 text-center">
+                    ระบบ <strong>ponrakitt.site</strong> ถูกออกแบบมาเพื่อปกป้องผู้ซื้อและผู้ขาย ให้การทำธุรกรรมปลอดภัย 100%
+                </p>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 font-bold">1</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">ถ่ายรูปยืนยันตัวตน</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">ลูกค้าทำการถ่ายรูปบัตรประชาชนและรูปเซลฟี่ผ่านระบบที่ปลอดภัย (SSL 256-bit Encryption)</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 font-bold">2</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">ประทับลายน้ำอัตโนมัติ</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">ระบบจะประทับลายน้ำ "ใช้สำหรับยืนยันตัวตนกับ Wanflorist เท่านั้น" ลงบนรูปภาพทันที เพื่อป้องกันการนำไปใช้ที่อื่น</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 font-bold">3</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">เข้ารหัสและจัดเก็บ</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">ข้อมูลจะถูกส่งเข้ารหัสและจัดเก็บในเซิร์ฟเวอร์แบบปิด (Private Storage) ที่บุคคลภายนอกไม่สามารถเข้าถึงได้</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 font-bold">4</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">ทำลายข้อมูลอัตโนมัติ (PDPA)</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">ตามนโยบายคุ้มครองข้อมูลส่วนบุคคล รูปภาพทั้งหมดจะถูกลบและทำลายออกจากระบบอย่างถาวรภายใน 180 วัน</p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="p-6 border-t border-slate-100 text-center">
+                <button onclick="toggleHowItWorks()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-6 rounded-xl transition-colors">
+                    เข้าใจแล้ว
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Camera Modal -->
+    <div id="cameraModal" class="fixed inset-0 bg-black/90 z-[60] hidden flex-col items-center justify-center fade-in">
+        <div class="absolute top-4 right-4 z-[60] flex gap-4">
+            <button onclick="switchCamera()" class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-colors">
+                <i class="fas fa-sync-alt text-xl"></i>
+            </button>
+            <button onclick="closeCamera()" class="w-12 h-12 bg-red-500/80 hover:bg-red-600 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="relative w-full max-w-md h-[70vh] flex items-center justify-center overflow-hidden bg-black">
+            <!-- Video Stream -->
+            <video id="cameraStream" class="w-full h-full object-cover" autoplay playsinline></video>
+            
+            <!-- Dynamic Guideline -->
+            <div id="cameraGuideline" class="guideline-overlay"></div>
+            
+            <!-- Instructions -->
+            <div class="absolute top-8 left-0 right-0 text-center z-20">
+                <p id="cameraInstruction" class="text-white font-medium bg-black/50 px-4 py-2 rounded-full inline-block backdrop-blur-sm text-sm">
+                    กรุณาวางบัตรให้อยู่ในกรอบ
+                </p>
+            </div>
+        </div>
+
+        <div class="w-full h-[30vh] bg-black flex flex-col items-center justify-center pb-8">
+            <button onclick="capturePhoto()" class="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-slate-300 hover:scale-95 transition-transform">
+                <div class="w-16 h-16 bg-white border-2 border-slate-800 rounded-full"></div>
+            </button>
+            <p class="text-slate-400 mt-4 text-sm font-medium">แตะเพื่อถ่ายรูป</p>
+        </div>
+        
+        <canvas id="captureCanvas" class="hidden"></canvas>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec';
+        let base64IdFront = '';
+        let base64Selfie = '';
+        let currentStream = null;
+        let currentCaptureType = ''; 
+        let useFrontCamera = false; 
+
+        // === ใหม่: อ่านค่าจาก URL ที่ Admin ส่งมา ===
+        let globalRefNumber = '';
+        let globalCustomerName = '';
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refFromUrl = urlParams.get('ref');
+            const nameFromUrl = urlParams.get('name');
+
+            // ถ้ามี Ref ส่งมา ให้ใช้ค่าจาก URL ถ้าไม่มีให้สุ่มเอา
+            if (refFromUrl) {
+                globalRefNumber = refFromUrl;
+            } else {
+                globalRefNumber = 'WF-' + Math.floor(100000 + Math.random() * 900000);
+            }
+
+            // ถ้ามีชื่อส่งมา ให้โชว์กล่องต้อนรับ
+            if (nameFromUrl) {
+                globalCustomerName = decodeURIComponent(nameFromUrl);
+                document.getElementById('customerNameDisplay').innerText = globalCustomerName;
+                document.getElementById('refNumberDisplayIntro').innerText = globalRefNumber;
+                document.getElementById('welcomeCustomerBox').classList.remove('hidden');
+            }
+        };
+        // =====================================
+
+        // Modal Logic
+        function toggleHowItWorks() {
+            const modal = document.getElementById('howItWorksModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('howItWorksModal').addEventListener('click', function(e) {
+            if (e.target === this) toggleHowItWorks();
+        });
+
+        // UI Flow
+        function toggleStartBtn() {
+            const isChecked = document.getElementById('consentCheckbox').checked;
+            const btn = document.getElementById('startBtn');
+            if(isChecked) {
+                btn.removeAttribute('disabled');
+                btn.classList.replace('bg-slate-300', 'bg-secure-600');
+                btn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+            } else {
+                btn.setAttribute('disabled', 'true');
+                btn.classList.replace('bg-secure-600', 'bg-slate-300');
+                btn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+            }
+        }
+
+        function showUploadView() {
+            document.getElementById('introView').classList.add('hidden');
+            document.getElementById('uploadView').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function showIntroView() {
+            document.getElementById('uploadView').classList.add('hidden');
+            document.getElementById('introView').classList.remove('hidden');
+        }
+
+        // --- Camera Logic ---
+        async function openCamera(type) {
+            currentCaptureType = type;
+            const modal = document.getElementById('cameraModal');
+            const guideline = document.getElementById('cameraGuideline');
+            const instruction = document.getElementById('cameraInstruction');
+            
+            if(type === 'idFront') {
+                useFrontCamera = false;
+                guideline.className = 'guideline-overlay guideline-id';
+                instruction.innerText = 'กรุณาวางหน้าบัตรประชาชนให้อยู่ในกรอบสี่เหลี่ยม';
+            } else {
+                useFrontCamera = true;
+                guideline.className = 'guideline-overlay guideline-selfie';
+                instruction.innerText = 'กรุณาให้ใบหน้าอยู่ในกรอบวงรี ถอดแว่นและหมวก';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            await startStream();
+        }
+
+        async function startStream() {
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+
+            const constraints = {
+                video: { facingMode: useFrontCamera ? "user" : "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            };
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                currentStream = stream;
+                document.getElementById('cameraStream').srcObject = stream;
+            } catch (err) {
+                console.error("Camera error:", err);
+                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้อง หรือใช้วิธี 'อัปโหลดไฟล์แทน' ครับ");
+                closeCamera();
+            }
+        }
+
+        function switchCamera() {
+            useFrontCamera = !useFrontCamera;
+            startStream();
+        }
+
+        function closeCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            document.getElementById('cameraModal').classList.add('hidden');
+            document.getElementById('cameraModal').classList.remove('flex');
+        }
+
+        // --- Capture & Watermark Logic ---
+        function capturePhoto() {
+            const video = document.getElementById('cameraStream');
+            const canvas = document.getElementById('captureCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            if (useFrontCamera) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            applyWatermark(ctx, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            updatePreviewUI(currentCaptureType, dataUrl);
+            closeCamera();
+        }
+
+        function handleFallbackUpload(input, type) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.getElementById('captureCanvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const MAX_WIDTH = 1280;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        applyWatermark(ctx, canvas.width, canvas.height);
+                        const watermarkedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                        updatePreviewUI(type, watermarkedBase64);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyWatermark(ctx, canvasWidth, canvasHeight) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+            ctx.shadowBlur = 4;
+            
+            const fontSize = Math.max(24, Math.floor(canvasWidth / 25));
+            ctx.font = `600 ${fontSize}px Prompt, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.translate(canvasWidth / 2, canvasHeight / 2);
+            ctx.rotate(-Math.PI / 4);
+            ctx.translate(-canvasWidth / 2, -canvasHeight / 2);
+
+            const text = "ใช้สำหรับยืนยันตัวตนกับ Wanflorist เท่านั้น";
+            const stepX = canvasWidth * 0.8;
+            const stepY = fontSize * 4;
+            
+            for (let x = -canvasWidth; x < canvasWidth * 2; x += stepX) {
+                for (let y = -canvasHeight; y < canvasHeight * 2; y += stepY) {
+                    ctx.fillText(text, x, y);
+                }
+            }
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.shadowBlur = 0;
+        }
+
+        function updatePreviewUI(type, base64Data) {
+            const previewId = type === 'idFront' ? 'idFrontPreview' : 'selfiePreview';
+            const textId = type === 'idFront' ? 'idFrontText' : 'selfieText';
+            const iconId = type === 'idFront' ? 'idFrontIcon' : 'selfieIcon';
+            const boxId = type === 'idFront' ? 'idFrontPreviewBox' : 'selfiePreviewBox';
+
+            const imgEl = document.getElementById(previewId);
+            imgEl.src = base64Data;
+            imgEl.classList.remove('hidden');
+
+            document.getElementById(textId).innerText = "ถ่ายสำเร็จ (แตะเพื่อถ่ายใหม่)";
+            document.getElementById(textId).classList.replace('text-secure-600', 'text-green-600');
+            
+            const iconEl = document.getElementById(iconId);
+            iconEl.className = 'fas fa-check-circle text-xl text-green-500';
+            
+            document.getElementById(boxId).classList.replace('border-slate-300', 'border-green-400');
+            document.getElementById(boxId).classList.replace('bg-slate-50', 'bg-green-50');
+
+            if (type === 'idFront') base64IdFront = base64Data;
+            if (type === 'selfie') base64Selfie = base64Data;
+        }
+
+        // --- Submit Logic ---
+        async function submitData() {
+            if (!base64IdFront || !base64Selfie) {
+                alert('กรุณาถ่ายรูปให้ครบทั้ง 2 รายการครับ');
+                return;
+            }
+
+            document.getElementById('uploadView').classList.add('hidden');
+            document.getElementById('loadingView').classList.remove('hidden');
+
+            const payload = {
+                refNumber: globalRefNumber, // ใช้ตัวแปร Global แทนการสุ่มใหม่ตรงนี้
+                customerName: globalCustomerName, // แนบชื่อส่งกลับไปให้ Google Sheet ด้วย
+                idFront: base64IdFront,
+                selfie: base64Selfie
+            };
+
+            try {
+                if(GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('loadingView').classList.add('hidden');
+                    document.getElementById('successView').classList.remove('hidden');
+                    document.getElementById('refNumberDisplay').innerText = globalRefNumber; // แสดง Ref ในหน้า Success
+                }, 2000);
+
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                document.getElementById('loadingView').classList.add('hidden');
+                document.getElementById('uploadView').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
