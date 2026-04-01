@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- เพิ่ม Library สำหรับ AI ตรวจจับและเปรียบเทียบใบหน้า (e-KYC) -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -198,8 +200,8 @@
                 </svg>
                 <i class="fas fa-lock absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-secure-600 text-2xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">กำลังส่งข้อมูลอย่างปลอดภัย...</h3>
-            <p class="text-slate-500 text-sm">การดำเนินการนี้อาจใช้เวลา 10-15 วินาที<br>กรุณาอย่าปิดหรือรีเฟรชหน้าจอนี้</p>
+            <h3 class="text-xl font-bold text-slate-800 mb-2" id="loadingTitle">กำลังส่งข้อมูลอย่างปลอดภัย...</h3>
+            <p class="text-slate-500 text-sm" id="loadingText">การดำเนินการนี้อาจใช้เวลา 10-15 วินาที<br>กรุณาอย่าปิดหรือรีเฟรชหน้าจอนี้</p>
         </div>
 
         <!-- 4. Success State -->
@@ -568,14 +570,70 @@
             document.getElementById('uploadView').classList.add('hidden');
             document.getElementById('loadingView').classList.remove('hidden');
 
-            const payload = {
-                refNumber: globalRefNumber, // ใช้ตัวแปร Global แทนการสุ่มใหม่ตรงนี้
-                customerName: globalCustomerName, // แนบชื่อส่งกลับไปให้ Google Sheet ด้วย
-                idFront: base64IdFront,
-                selfie: base64Selfie
-            };
+            const loadingTitle = document.getElementById('loadingTitle');
+            const loadingText = document.getElementById('loadingText');
 
             try {
+                // 1. โหลด AI Model
+                loadingTitle.innerText = "กำลังเตรียมระบบ AI...";
+                loadingText.innerText = "กำลังโหลดโมเดลตรวจสอบใบหน้า (ครั้งแรกอาจใช้เวลานิดหน่อย)...";
+                
+                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+                // 2. ตรวจจับใบหน้าบนบัตรประชาชน
+                loadingTitle.innerText = "1/2 วิเคราะห์หน้าบัตร ปชช.";
+                loadingText.innerText = "กำลังสแกนหาเค้าโครงใบหน้าบนบัตร...";
+                const idImg = document.getElementById('idFrontPreview');
+                const idFace = await faceapi.detectSingleFace(idImg).withFaceLandmarks().withFaceDescriptor();
+
+                if (!idFace) {
+                    alert('AI ไม่พบใบหน้าบนบัตรประชาชน กรุณาถ่ายใหม่ให้ชัดเจนขึ้น (ระวังแสงสะท้อนหรือลายน้ำบังหน้า)');
+                    document.getElementById('loadingView').classList.add('hidden');
+                    document.getElementById('uploadView').classList.remove('hidden');
+                    return;
+                }
+
+                // 3. ตรวจจับใบหน้าเซลฟี่
+                loadingTitle.innerText = "2/2 วิเคราะห์รูปเซลฟี่";
+                loadingText.innerText = "กำลังสแกนอัตลักษณ์ใบหน้าจากกล้อง...";
+                const selfieImg = document.getElementById('selfiePreview');
+                const selfieFace = await faceapi.detectSingleFace(selfieImg).withFaceLandmarks().withFaceDescriptor();
+
+                if (!selfieFace) {
+                    alert('AI ไม่พบใบหน้าในรูปเซลฟี่ กรุณาถ่ายในที่สว่าง ไม่สวมหมวกและแว่นตาดำครับ');
+                    document.getElementById('loadingView').classList.add('hidden');
+                    document.getElementById('uploadView').classList.remove('hidden');
+                    return;
+                }
+
+                // 4. เปรียบเทียบความตรงกัน (Face Matching)
+                loadingTitle.innerText = "ตรวจสอบความตรงกัน...";
+                loadingText.innerText = "AI กำลังวิเคราะห์ว่าบุคคลในบัตรและเซลฟี่คือคนเดียวกันหรือไม่...";
+                
+                // คำนวณระยะห่าง (ถ้าน้อยกว่า 0.55 ถือว่าเป็นคนเดียวกัน)
+                const distance = faceapi.euclideanDistance(idFace.descriptor, selfieFace.descriptor);
+                
+                if (distance > 0.55) {
+                    alert(`ใบหน้าไม่ตรงกัน! AI ตรวจพบว่าอาจไม่ใช่บุคคลเดียวกัน กรุณาถ่ายภาพใหม่ครับ`);
+                    document.getElementById('loadingView').classList.add('hidden');
+                    document.getElementById('uploadView').classList.remove('hidden');
+                    return;
+                }
+
+                // 5. ถ้าตรงกัน ค่อยทำการส่งข้อมูล
+                loadingTitle.innerText = "ใบหน้าตรงกัน ยืนยันสำเร็จ!";
+                loadingText.innerText = "กำลังเข้ารหัสและส่งข้อมูลอย่างปลอดภัย...";
+
+                const payload = {
+                    refNumber: globalRefNumber,
+                    customerName: globalCustomerName,
+                    idFront: base64IdFront,
+                    selfie: base64Selfie
+                };
+
                 if(GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
                     await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST', mode: 'no-cors',
@@ -587,11 +645,12 @@
                 setTimeout(() => {
                     document.getElementById('loadingView').classList.add('hidden');
                     document.getElementById('successView').classList.remove('hidden');
-                    document.getElementById('refNumberDisplay').innerText = globalRefNumber; // แสดง Ref ในหน้า Success
-                }, 2000);
+                    document.getElementById('refNumberDisplay').innerText = globalRefNumber;
+                }, 1500);
 
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                console.error(error);
+                alert('เกิดข้อผิดพลาดในการวิเคราะห์ด้วย AI กรุณาลองใหม่อีกครั้ง');
                 document.getElementById('loadingView').classList.add('hidden');
                 document.getElementById('uploadView').classList.remove('hidden');
             }
