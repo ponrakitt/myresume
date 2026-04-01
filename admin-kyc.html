@@ -121,9 +121,6 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-4 border-t border-slate-100 text-center">
-                <button class="text-sm text-secure-600 font-medium hover:text-secure-800">ดูรายการทั้งหมด</button>
-            </div>
         </div>
     </div>
 
@@ -152,7 +149,6 @@
                         <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 font-mono text-sm">WF-</span>
                         <input type="text" id="refNumber" readonly class="w-full border border-slate-300 rounded-r-lg px-4 py-2.5 bg-slate-50 font-mono text-slate-600 focus:outline-none">
                     </div>
-                    <p class="text-xs text-slate-400 mt-1"><i class="fas fa-info-circle"></i> ระบบสุ่มให้โดยอัตโนมัติ</p>
                 </div>
                 
                 <button onclick="generateLink()" id="submitCreateBtn" class="w-full bg-secure-600 hover:bg-secure-700 text-white font-bold py-3 rounded-xl transition-all mt-4">
@@ -191,36 +187,38 @@
     </div>
 
     <script>
-        // DOM Elements
-        const createModal = document.getElementById('createModal');
-        const createFormView = document.getElementById('createFormView');
-        const linkGeneratedView = document.getElementById('linkGeneratedView');
-        const refNumberInput = document.getElementById('refNumber');
-        const generatedLinkInput = document.getElementById('generatedLink');
-        const customerNameInput = document.getElementById('customerName');
-
-        // ⚠️ สำคัญ: ใส่ URL ของ Google Apps Script (Web App URL) ที่ช่องนี้
+        // ⚠️ สำคัญมาก: เปลี่ยน URL ด้านล่างให้เป็น URL ที่ได้จากการ Deploy "รายการใหม่" ของคุณเอง
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzDT-9VURthVGLM7u058N_KimnULQEzdXdCS2hn83yVBYtg_qwIHzf3xPGYwvEw-2/exec';
-        
-        // URL ของหน้าสำหรับลูกค้า เปลี่ยนให้ชี้ไปที่ /kyc.html ตามที่แก้ไขแล้ว
         const BASE_CLIENT_URL = window.location.origin + '/kyc.html'; 
 
-        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
         window.onload = loadRecords;
 
+        // เปลี่ยนการทำงานเป็นส่ง POST ทั้งหมด เพื่อป้องกันการติด Block CORS
+        async function fetchAPI(payload) {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            return await response.json();
+        }
+
         async function loadRecords() {
-            if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
                 document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i> กรุณาใส่ GOOGLE_SCRIPT_URL ในโค้ดก่อนใช้งาน</td></tr>';
                 return;
             }
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getRecords');
-                const data = await response.json();
-                renderTable(data);
-                updateStats(data);
+                const result = await fetchAPI({ action: 'getRecords' });
+                if(result.status === 'success') {
+                    renderTable(result.data);
+                    updateStats(result.data);
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error(error);
-                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาตรวจสอบ URL หรือการตั้งค่า Apps Script</td></tr>';
+                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
             }
         }
 
@@ -278,64 +276,66 @@
         }
 
         function openCreateModal() {
-            refNumberInput.value = Math.floor(100000 + Math.random() * 900000);
-            customerNameInput.value = '';
+            document.getElementById('refNumber').value = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('customerName').value = '';
             document.getElementById('orderAmount').value = '';
             
-            createFormView.classList.remove('hidden');
-            linkGeneratedView.classList.add('hidden');
+            document.getElementById('createFormView').classList.remove('hidden');
+            document.getElementById('linkGeneratedView').classList.add('hidden');
             
-            createModal.classList.remove('hidden');
-            createModal.classList.add('flex');
+            document.getElementById('createModal').classList.remove('hidden');
+            document.getElementById('createModal').classList.add('flex');
         }
 
         function closeCreateModal() {
-            createModal.classList.add('hidden');
-            createModal.classList.remove('flex');
+            document.getElementById('createModal').classList.add('hidden');
+            document.getElementById('createModal').classList.remove('flex');
         }
 
         async function generateLink() {
-            const name = customerNameInput.value.trim();
+            const name = document.getElementById('customerName').value.trim();
             const amount = document.getElementById('orderAmount').value;
-            if(!name) {
-                alert('กรุณากรอกชื่อลูกค้า');
-                return;
-            }
+            const ref = 'WF-' + document.getElementById('refNumber').value;
+            if(!name) { alert('กรุณากรอกชื่อลูกค้า'); return; }
 
-            const ref = 'WF-' + refNumberInput.value;
             const finalUrl = `${BASE_CLIENT_URL}?ref=${ref}&name=${encodeURIComponent(name)}`;
-            
             const submitBtn = document.getElementById('submitCreateBtn');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
             submitBtn.disabled = true;
 
-            if (GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
-                try {
-                    // ส่งข้อมูลไปบันทึกลง Google Sheets สถานะ "Pending" โดยแนบพารามิเตอร์ไปกับ URL (GET Request)
-                    const apiUrl = `${GOOGLE_SCRIPT_URL}?action=createLink&ref=${ref}&name=${encodeURIComponent(name)}&amount=${amount}&link=${encodeURIComponent(finalUrl)}`;
-                    
-                    // ใช้ mode: 'no-cors' เพื่อไม่ให้ติดปัญหา CORS Policy ของบราวเซอร์ (Fire and Forget)
-                    await fetch(apiUrl, { mode: 'no-cors' });
-                    
-                    // หน่วงเวลา 1 วินาที ให้ Google Sheets บันทึกข้อมูลเสร็จก่อนรีเฟรชตาราง
-                    setTimeout(() => {
-                        loadRecords(); 
-                    }, 1000);
+            try {
+                const payload = {
+                    action: 'createLink',
+                    ref: ref,
+                    name: name,
+                    amount: amount,
+                    link: finalUrl
+                };
 
-                } catch (err) {
-                    console.error('Error generating link:', err);
+                const result = await fetchAPI(payload);
+
+                if(result.status === 'success') {
+                    document.getElementById('generatedLink').value = finalUrl;
+                    document.getElementById('createFormView').classList.add('hidden');
+                    document.getElementById('linkGeneratedView').classList.remove('hidden');
+                    
+                    // โหลดข้อมูลใหม่เพื่ออัปเดตตาราง
+                    setTimeout(() => { loadRecords(); }, 500); 
+                } else {
+                    alert("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + result.message);
                 }
+            } catch (err) {
+                console.error(err);
+                alert("บันทึกข้อมูลไม่สำเร็จ!\n\nกรุณาตรวจสอบให้แน่ใจว่าคุณนำโค้ดล่าสุดไป Deploy เป็น 'New Deployment' และตั้งสิทธิ์ 'Anyone' แล้วครับ");
             }
             
-            generatedLinkInput.value = finalUrl;
-            createFormView.classList.add('hidden');
-            linkGeneratedView.classList.remove('hidden');
-
             submitBtn.innerHTML = 'สร้างลิงก์';
             submitBtn.disabled = false;
         }
 
         function copyGeneratedLink() {
+            const generatedLinkInput = document.getElementById('generatedLink');
             generatedLinkInput.select();
             document.execCommand('copy');
             
@@ -343,7 +343,6 @@
             const originalHtml = copyBtn.innerHTML;
             copyBtn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
             copyBtn.classList.replace('bg-secure-600', 'bg-green-600');
-            
             showToast('คัดลอกลิงก์สำเร็จ นำไปวางในแชทลูกค้าได้เลย');
 
             setTimeout(() => {
