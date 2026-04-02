@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ⚠️ ติดตั้ง AI Library ของจริง (face-api.js) ⚠️ -->
+    <!-- ติดตั้ง AI Library ของจริง (face-api.js) -->
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/dist/face-api.min.js"></script>
 
     <script>
@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <!-- Maintenance View (AI Disabled) -->
+        <!-- Maintenance View -->
         <div id="maintenanceView" class="p-8 md:p-12 text-center hidden fade-in">
             <div class="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-200">
                 <i class="fas fa-tools text-4xl"></i>
@@ -239,7 +239,6 @@
 
         <!-- Video Stream Container -->
         <div class="relative w-full h-full max-w-md mx-auto overflow-hidden flex flex-col justify-center items-center">
-            <!-- ซ่อนวีดีโอไว้หลังหน้ากาก -->
             <video id="liveVideo" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"></video>
             
             <div id="faceGuide" class="liveness-guide"></div>
@@ -274,12 +273,15 @@
     <canvas id="livenessCanvas" class="hidden"></canvas>
 
     <script>
-        const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL';
+        // ⚠️ เชื่อมต่อกับ Backend ผ่าน Web App URL ที่คุณให้มา
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8nIFSonxBZ4kktOiiUzYf1HgXv-ON-FoIEKgJFG4bqOmortR_JBrP7Djp3edKLRHOXg/exec';
+        
         let currentKey = ''; let base64Id = ''; let base64Selfie = '';
         let livenessPassed = false;
 
-        // UI Flow (Basic)
+        // UI Flow
         window.onload = () => { switchView('introView'); };
+        
         function toggleStartBtn() {
             const btn = document.getElementById('startBtn');
             if(document.getElementById('consentCheckbox').checked) {
@@ -288,6 +290,7 @@
                 btn.setAttribute('disabled', 'true'); btn.classList.replace('bg-slate-900', 'bg-slate-300');
             }
         }
+        
         function switchView(viewId) {
             ['introView', 'keyView', 'uploadView', 'successView', 'errorView', 'banView', 'maintenanceView'].forEach(id => {
                 const el = document.getElementById(id);
@@ -295,6 +298,7 @@
             });
             document.getElementById(viewId).classList.remove('hidden');
         }
+        
         function previewImg(input, imgId, textId, iconId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -315,6 +319,12 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function showError(elementId, msg) {
+            const el = document.getElementById(elementId);
+            el.innerText = msg; el.classList.remove('hidden');
+        }
+
         async function verifyKey() {
             const keyInput = document.getElementById('accessKey').value.trim().toUpperCase();
             if(!keyInput) { showError('keyError', 'กรุณากรอก Key ก่อนครับ'); return; }
@@ -324,22 +334,13 @@
             btn.disabled = true;
 
             try {
-                if(GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
-                    // Simulation mode if no backend URL
-                    setTimeout(() => {
-                        currentKey = keyInput;
-                        document.getElementById('displayKeyHeader').innerText = `KEY: ${currentKey}`;
-                        document.getElementById('keyError').classList.add('hidden');
-                        switchView('uploadView');
-                        btn.innerHTML = 'ตรวจสอบ Key'; btn.disabled = false;
-                    }, 1000);
-                    return;
-                }
-
+                // ส่งเป็น text/plain เพื่อป้องกัน CORS
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: 'verify_key', key: keyInput })
                 });
+                
                 const result = await response.json();
 
                 if (result.status === 'success') {
@@ -348,14 +349,13 @@
                     document.getElementById('keyError').classList.add('hidden');
                     switchView('uploadView');
                 } else if (result.status === 'system_offline') {
-                    // หากระบบ AI ถูกปิดจากหลังบ้าน ให้โชว์หน้าจอ Maintenance
                     document.getElementById('maintenanceMsg').innerText = result.message;
                     switchView('maintenanceView');
                 } else {
                     showError('keyError', result.message);
                 }
             } catch (error) {
-                showError('keyError', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+                showError('keyError', 'ไม่สามารถเชื่อมต่อระบบหลังบ้านได้ โปรดลองอีกครั้ง');
             } finally {
                 btn.innerHTML = 'ตรวจสอบ Key'; btn.disabled = false;
             }
@@ -369,7 +369,6 @@
         let aiModelsLoaded = false;
         let livenessActive = false;
         
-        // เรากำหนดคำสั่ง AI ที่จับได้แม่นยำ 4 อย่าง
         const AI_COMMANDS = [
             { id: "SMILE", text: "ยิ้มให้เห็นฟัน" },
             { id: "SURPRISE", text: "ทำหน้าประหลาดใจ (เลิกคิ้ว/เบิกตา)" },
@@ -383,7 +382,6 @@
         async function loadAIModels() {
             if (aiModelsLoaded) return;
             try {
-                // ดึงโมเดล AI จาก Github ของ FaceAPI โดยตรง
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -392,7 +390,6 @@
                 ]);
                 aiModelsLoaded = true;
             } catch (err) {
-                console.error("AI Load Error:", err);
                 alert("เกิดข้อผิดพลาดในการโหลดระบบ AI กรุณาตรวจสอบอินเทอร์เน็ต");
             }
         }
@@ -402,10 +399,8 @@
             modal.classList.remove('hidden'); modal.classList.add('flex');
             document.getElementById('aiLoading').classList.remove('hidden');
             
-            // 1. โหลดโมเดล
             await loadAIModels();
             
-            // 2. เปิดกล้อง
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
                 videoStream = stream;
@@ -414,7 +409,6 @@
                 alert("กรุณาอนุญาตให้เข้าถึงกล้องครับ"); closeLivenessModal(); return;
             }
 
-            // 3. ปิดหน้าโหลด แสดงปุ่มเริ่ม
             document.getElementById('aiLoading').classList.add('hidden');
             document.getElementById('startRecBtn').classList.remove('hidden');
             document.getElementById('commandText').innerText = "ให้ใบหน้าอยู่ในกรอบ แล้วกดเริ่มสแกน";
@@ -433,7 +427,6 @@
             document.getElementById('commandCounter').classList.remove('hidden');
             document.getElementById('livenessHeader').innerText = "AI กำลังตรวจสอบท่าทาง...";
             
-            // สุ่ม 4 คำสั่งให้ลูกค้าทำ
             currentSequence = [...AI_COMMANDS].sort(() => 0.5 - Math.random()).slice(0, 4);
             commandIndex = 0;
             livenessActive = true;
@@ -456,16 +449,13 @@
             
             document.getElementById('livenessProgress').style.width = `${((commandIndex) / 4) * 100}%`;
 
-            // ลูป AI จับภาพทุกๆ เสี้ยววินาที (ทำงานแบบ Real-Time บนมือถือ)
             requestAnimationFrame(() => detectFaceRealTime(activeCmd.id));
         }
 
-        // หัวใจของระบบ AI (Face Detection + Expression + Landmarks)
         async function detectFaceRealTime(commandId) {
             if (!livenessActive) return;
             const video = document.getElementById('liveVideo');
             
-            // ดึงข้อมูล 3 อย่าง: ตำแหน่งใบหน้า, โครงสร้างหน้า (Landmarks), และ สีหน้า (Expressions)
             const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                 .withFaceLandmarks()
                 .withFaceExpressions();
@@ -473,24 +463,15 @@
             if (detections) {
                 let passed = false;
                 
-                // 1. ตรวจสอบ "ยิ้ม" (วัดจากความสุข > 70%)
-                if (commandId === "SMILE" && detections.expressions.happy > 0.7) {
-                    passed = true;
-                }
-                // 2. ตรวจสอบ "ทำหน้าประหลาดใจ" (วัดจาก Surprise > 70%)
-                else if (commandId === "SURPRISE" && detections.expressions.surprised > 0.7) {
-                    passed = true;
-                }
-                // 3. ตรวจสอบ "อ้าปาก" (คำนวณจากระยะห่างริมฝีปากบนและล่าง)
+                if (commandId === "SMILE" && detections.expressions.happy > 0.7) passed = true;
+                else if (commandId === "SURPRISE" && detections.expressions.surprised > 0.7) passed = true;
                 else if (commandId === "OPEN_MOUTH") {
-                    const mouthTop = detections.landmarks.getMouth()[3]; // จุดบนปาก
-                    const mouthBottom = detections.landmarks.getMouth()[9]; // จุดล่างปาก
+                    const mouthTop = detections.landmarks.getMouth()[3]; 
+                    const mouthBottom = detections.landmarks.getMouth()[9]; 
                     const distance = Math.abs(mouthBottom.y - mouthTop.y);
                     const faceHeight = detections.detection.box.height;
-                    // ถ้าอ้าปากกว้างเกิน 10% ของความสูงหน้า ถือว่าผ่าน
                     if (distance / faceHeight > 0.1) passed = true;
                 }
-                // 4. ตรวจสอบ "หันหน้า" (คำนวณจากแกนจมูกเทียบกับแก้มซ้าย-ขวา)
                 else if (commandId === "TURN_LEFT" || commandId === "TURN_RIGHT") {
                     const nose = detections.landmarks.getNose()[3];
                     const leftCheek = detections.landmarks.getJawOutline()[2];
@@ -498,26 +479,22 @@
                     const distLeft = Math.abs(nose.x - leftCheek.x);
                     const distRight = Math.abs(rightCheek.x - nose.x);
                     
-                    // หมายเหตุ: วิดีโอถูก Mirror ไว้ ซ้าย/ขวาจึงสลับกันในมุมกล้อง
                     if (commandId === "TURN_RIGHT" && distLeft / distRight > 1.8) passed = true;
                     if (commandId === "TURN_LEFT" && distRight / distLeft > 1.8) passed = true;
                 }
 
-                // หาก AI จับได้ว่าทำถูกท่า
                 if (passed) {
                     document.getElementById('faceGuide').classList.replace('active', 'success');
                     document.getElementById('commandText').innerHTML = `<span class="text-green-400"><i class="fas fa-check-circle"></i> ผ่าน!</span>`;
                     
-                    // หน่วงเวลา 1 วิให้ลูกค้ารู้ว่าผ่าน แล้วไปท่าต่อไป
                     setTimeout(() => {
                         document.getElementById('faceGuide').classList.replace('success', 'active');
                         commandIndex++;
                         runCommandAI();
                     }, 1000);
-                    return; // หยุดลูปของคำสั่งปัจจุบัน
+                    return; 
                 }
             }
-            // หากยังทำไม่ถูก ให้ AI สแกนเฟรมต่อไปเรื่อยๆ อย่างต่อเนื่อง
             requestAnimationFrame(() => detectFaceRealTime(commandId));
         }
 
@@ -526,7 +503,6 @@
             document.getElementById('livenessProgress').style.width = '100%';
             document.getElementById('commandText').innerHTML = `<span class="text-green-400 font-bold"><i class="fas fa-shield-check"></i> AI ยืนยันตัวตนสำเร็จ!</span>`;
             
-            // แอบ Capture ภาพหน้าคนจริงๆ (ไม่ใช่หน้ากาก) ไว้เป็นหลักฐานส่งเซิร์ฟเวอร์
             const video = document.getElementById('liveVideo');
             const canvas = document.getElementById('livenessCanvas');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -539,7 +515,6 @@
                 livenessPassed = true;
                 closeLivenessModal();
                 
-                // อัปเดตหน้าหลักให้เป็นสีเขียว
                 document.getElementById('livenessBox').classList.replace('border-blue-400', 'border-green-400');
                 document.getElementById('livenessBox').classList.replace('bg-blue-50', 'bg-green-50');
                 document.getElementById('livenessIcon').className = "fas fa-check-circle text-3xl text-green-500 mb-2";
@@ -551,15 +526,56 @@
 
         // ==========================================
         async function startAIVerification() {
-            if(!base64Id || !livenessPassed) { alert('กรุณาทำรายการให้ครบถ้วนครับ'); return; }
-            const fname = document.getElementById('firstName').value || 'User';
-            const isSuccess = fname.toLowerCase().includes('pass'); // จำลอง Backend
+            const fname = document.getElementById('firstName').value.trim();
+            const lname = document.getElementById('lastName').value.trim();
             
-            if(isSuccess) {
-                document.getElementById('resName').innerText = fname;
-                switchView('successView');
-            } else {
-                switchView('errorView');
+            if(!fname || !lname || !base64Id || !livenessPassed) {
+                alert('กรุณากรอกข้อมูลและแนบรูปภาพให้ครบถ้วนก่อนยืนยันครับ'); return;
+            }
+
+            const btn = document.getElementById('submitKycBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
+            btn.disabled = true;
+
+            try {
+                // ส่งข้อมูลเข้าเซิร์ฟเวอร์แบบ POST (ใช้ text/plain)
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'submit_kyc',
+                        key: currentKey,
+                        firstName: fname,
+                        lastName: lname,
+                        idFront: base64Id,
+                        selfie: base64Selfie
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('resName').innerText = `${fname} ${lname}`;
+                    switchView('successView');
+                } else if (result.status === 'error_banned') {
+                    const date = new Date(result.banUntil);
+                    document.getElementById('banDurationDisplay').innerText = `${date.toLocaleDateString('th-TH')} เวลา ${date.toLocaleTimeString('th-TH')}`;
+                    switchView('banView');
+                } else {
+                    if(result.attemptsLeft <= 0) {
+                        alert(`Key [${currentKey}] ถูกระงับถาวร เนื่องจากให้ข้อมูลผิดครบกำหนด`);
+                        location.reload();
+                    } else {
+                        document.getElementById('errorMsg').innerText = result.message;
+                        document.getElementById('attemptsLeft').innerText = result.attemptsLeft;
+                        switchView('errorView');
+                    }
+                }
+            } catch (error) {
+                alert('การเชื่อมต่อขัดข้อง โปรดลองใหม่อีกครั้ง');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-paper-plane text-green-400"></i> ยืนยันข้อมูลทั้งหมด';
+                btn.disabled = false;
             }
         }
     </script>
