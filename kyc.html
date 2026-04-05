@@ -148,7 +148,7 @@
                 <div class="pt-2">
                     <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">เอกสารบัตรประชาชน <span class="text-[11px] font-normal text-slate-400">(เฉพาะด้านหน้า)</span></label>
                     <div class="relative group cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 hover:bg-slate-100/50 transition-all h-40 flex flex-col items-center justify-center">
-                        <input type="file" id="client-idcard" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewID(this)">
+                        <input type="file" id="client-idcard" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewID(this)">
                         <div id="id-preview-container" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-transform group-hover:scale-105">
                             <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 text-slate-400 group-hover:text-slate-600 transition-colors">
                                 <i class="fas fa-camera text-xl"></i>
@@ -299,7 +299,7 @@
         }
 
         window.clientVerifyKey = async function() {
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL' || SCRIPT_URL === '') {
                 showToast('กรุณาใส่ SCRIPT_URL ในโค้ดของ Client ก่อนครับ', 'error'); return;
             }
 
@@ -308,7 +308,7 @@
             const key = inputEl.value.trim().toUpperCase();
             
             if (!key) { errorEl.innerText = "กรุณากรอกรหัส"; errorEl.classList.remove('hidden'); return; }
-            document.getElementById('btn-verify-key').innerText = "กำลังตรวจสอบกับ Google Sheets...";
+            document.getElementById('btn-verify-key').innerText = "กำลังตรวจสอบรหัส...";
             
             try {
                 const response = await fetch(SCRIPT_URL + '?action=get&key=' + key);
