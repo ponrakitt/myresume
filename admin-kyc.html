@@ -3,193 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wanflorist | Admin Center</title>
+    <title>ระบบยืนยันตัวตน (e-KYC) - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } } }
-    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 50; }
+        .toast { background: #333; color: white; padding: 12px 24px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s; }
+    </style>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="text-gray-800 h-screen flex flex-col">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-3xl shadow-2xl border border-slate-700 overflow-hidden">
-        
-        <!-- Header -->
-        <div class="p-6 border-b border-slate-700 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <div>
-                    <h1 class="text-white font-bold text-lg">Admin Center</h1>
-                    <p class="text-slate-400 text-xs">KYC System Control</p>
-                </div>
-            </div>
-            <div class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold border border-green-500/30 flex items-center gap-2" id="netStatus">
-                <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div> Online
-            </div>
-        </div>
+    <div id="toast-container"></div>
 
-        <div class="p-8 text-center space-y-6">
+    <!-- Navbar -->
+    <nav class="bg-indigo-700 text-white p-4 shadow-md flex justify-between items-center z-10">
+        <div class="font-bold text-xl"><i class="fas fa-user-shield mr-2"></i> ระบบจัดการ e-KYC (Admin)</div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow p-4 md:p-8 flex justify-center">
+        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-5xl h-fit">
             
-            <!-- AI Toggle Switch -->
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 flex justify-between items-center transition-colors duration-300" id="aiToggleBox">
-                <div class="text-left">
-                    <div class="text-white font-bold flex items-center gap-2">
-                        <i class="fas fa-robot text-blue-400"></i> ระบบ AI ยืนยันตัวตน
-                    </div>
-                    <div class="text-xs text-slate-400 mt-1" id="aiStatusText">กำลังเชื่อมต่อข้อมูล...</div>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="aiToggleBtn" class="sr-only peer" onchange="toggleSystemStatus()" disabled>
-                    <div class="w-14 h-7 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"></div>
-                </label>
+            <div id="auth-loading" class="flex justify-center items-center py-10 text-gray-500">
+                <div class="spinner w-8 h-8 mr-3 border-indigo-600"></div> กำลังเชื่อมต่อระบบ...
             </div>
 
-            <hr class="border-slate-700">
-
-            <!-- Key Generator -->
-            <div class="text-left">
-                <p class="text-slate-300 text-sm font-bold mb-2">สร้าง Access Key ให้ลูกค้า</p>
-                <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 relative group mb-4">
-                    <div id="keyDisplay" class="text-3xl font-mono font-bold text-white tracking-widest text-center">
-                        WF-XXXX-XXXX
-                    </div>
-                    <button onclick="copyToClipboard()" id="copyBtn" class="absolute top-2 right-2 w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-400 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 disabled:opacity-0">
-                        <i class="fas fa-copy"></i>
+            <div id="admin-content" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-indigo-700 mb-4 sm:mb-0"><i class="fas fa-list-alt mr-2"></i> รายการคำขอยืนยันตัวตน</h2>
+                    <button onclick="adminGenerateKey()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow font-bold transition">
+                        <i class="fas fa-plus mr-1"></i> สร้าง Key ใหม่
                     </button>
                 </div>
                 
-                <button id="generateBtn" onclick="generateAndSaveKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
-                    <i class="fas fa-magic"></i> สร้าง Key ใหม่
-                </button>
-                <div id="statusMsg" class="text-sm font-medium hidden text-center mt-4"></div>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full bg-white text-sm sm:text-base">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="py-3 px-4 text-left border-b w-1/4">รหัสยืนยัน (Key)</th>
+                                <th class="py-3 px-4 text-left border-b w-1/3">ชื่อ - นามสกุล</th>
+                                <th class="py-3 px-4 text-left border-b w-1/4">สถานะ</th>
+                                <th class="py-3 px-4 text-center border-b">คัดลอก</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body">
+                            <tr><td colspan="4" class="py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
         </div>
     </div>
 
+    <!-- Google Sheets API Script -->
     <script>
-        // ⚠️ เชื่อมต่อกับ Backend ผ่าน Web App URL ที่คุณให้มา
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8nIFSonxBZ4kktOiiUzYf1HgXv-ON-FoIEKgJFG4bqOmortR_JBrP7Djp3edKLRHOXg/exec';
-        let currentGeneratedKey = '';
+        // นำ URL ที่ได้จากขั้นตอน Deploy ของ Google Apps Script มาวางที่นี่
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyoH9Oq_PsMDIW3HW3Ct4vwTnTiidFkU_rJu7SfVYib8mEQjlMZivosKfY3qEYmuWkP/exec'; 
 
-        // โหลดสถานะตอนเปิดหน้าแอดมิน
-        window.onload = async () => {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    // นำ headers ออกเพื่อป้องกันปัญหา CORS Preflight ในบางเบราว์เซอร์
-                    body: JSON.stringify({ action: 'get_status' })
-                });
-                const result = await response.json();
-                updateToggleUI(result.ai_active);
-                document.getElementById('aiToggleBtn').disabled = false;
-            } catch(e) {
-                document.getElementById('aiStatusText').innerText = "เชื่อมต่อล้มเหลว";
-                document.getElementById('aiStatusText').classList.add('text-red-400');
+        window.showToast = function(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'bg-red-600' : 'bg-gray-800'}`;
+            toast.innerHTML = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        async function initApp() {
+            document.getElementById('auth-loading').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+            fetchData();
+            // ดึงข้อมูลอัปเดตจาก Sheets ทุกๆ 3 วินาที
+            setInterval(fetchData, 3000);
+        }
+
+        async function fetchData() {
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="4" class="py-6 text-center text-red-500 font-bold">กรุณานำ Web App URL ของ Google Sheets มาใส่ในโค้ดตรง SCRIPT_URL ก่อนครับ</td></tr>';
+                return;
             }
-        };
-
-        // สั่งเปิด/ปิด ระบบ AI ไปยังหลังบ้าน
-        async function toggleSystemStatus() {
-            const toggle = document.getElementById('aiToggleBtn');
-            const isActive = toggle.checked;
-            toggle.disabled = true;
-            document.getElementById('aiStatusText').innerText = "กำลังอัปเดต...";
 
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'set_status', status: isActive })
-                });
-                const result = await response.json();
-                if(result.status === 'success') {
-                    updateToggleUI(isActive);
-                } else {
-                    throw new Error("Update Failed");
+                const response = await fetch(SCRIPT_URL + '?action=getAll');
+                const docs = await response.json();
+                
+                const tbody = document.getElementById('admin-table-body');
+
+                if (!docs || docs.length === 0 || docs.error) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-gray-500">ยังไม่มีข้อมูล Key ในระบบ</td></tr>';
+                    return;
                 }
-            } catch(e) {
-                alert("เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
-                toggle.checked = !isActive; // Rollback
-                updateToggleUI(!isActive);
-            } finally {
-                toggle.disabled = false;
-            }
-        }
 
-        // ปรับสี UI ของสวิตช์
-        function updateToggleUI(isActive) {
-            document.getElementById('aiToggleBtn').checked = isActive;
-            const box = document.getElementById('aiToggleBox');
-            const text = document.getElementById('aiStatusText');
-            if (isActive) {
-                box.classList.add('border-green-500/50', 'shadow-[0_0_15px_rgba(34,197,94,0.15)]');
-                box.classList.remove('border-red-500/50', 'shadow-[0_0_15px_rgba(239,68,68,0.15)]');
-                text.innerHTML = '<span class="text-green-400">● เปิดทำงาน (ออนไลน์)</span>';
-            } else {
-                box.classList.remove('border-green-500/50', 'shadow-[0_0_15px_rgba(34,197,94,0.15)]');
-                box.classList.add('border-red-500/50', 'shadow-[0_0_15px_rgba(239,68,68,0.15)]');
-                text.innerHTML = '<span class="text-red-400">● ปิดการใช้งานชั่วคราว</span>';
-            }
-        }
+                // สลับข้อมูลให้ใบล่าสุดอยู่ด้านบน
+                docs.reverse();
 
-        function randomString(length) {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            return result;
-        }
-
-        async function generateAndSaveKey() {
-            const btn = document.getElementById('generateBtn');
-            const display = document.getElementById('keyDisplay');
-            const status = document.getElementById('statusMsg');
-            
-            currentGeneratedKey = `WF-${randomString(4)}-${randomString(4)}`;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
-            display.innerText = currentGeneratedKey;
-            display.classList.add('text-slate-500', 'animate-pulse');
-            status.classList.add('hidden');
-
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'create_key', key: currentGeneratedKey })
-                });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    display.classList.remove('text-slate-500', 'animate-pulse');
-                    display.classList.add('text-green-400');
-                    status.innerHTML = '<i class="fas fa-check-circle"></i> บันทึกแล้ว! คัดลอกส่งลูกค้าได้เลย';
-                    status.className = 'text-sm font-medium text-green-400 mt-4 block fade-in';
-                } else throw new Error();
+                tbody.innerHTML = docs.map(d => {
+                    const statusBadge = d.status === 'ยืนยันแล้ว' 
+                        ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-check mr-1"></i> ยืนยันแล้ว</span>'
+                        : '<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> รอดำเนินการ</span>';
+                    return `
+                        <tr class="border-b hover:bg-gray-50 transition">
+                            <td class="py-3 px-4 font-mono font-bold text-blue-600">${d.id}</td>
+                            <td class="py-3 px-4 font-medium">${d.name}</td>
+                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4 text-center">
+                                <button onclick="copyAdminKey('${d.id}')" class="text-gray-500 hover:text-indigo-600 transition p-2" title="คัดลอก Key">
+                                    <i class="far fa-copy text-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (error) {
-                display.classList.remove('animate-pulse', 'text-green-400');
-                display.classList.add('text-red-400');
-                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> บันทึกไม่สำเร็จ';
-                status.className = 'text-sm font-medium text-red-400 mt-4 block fade-in';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-magic"></i> สร้าง Key ใหม่อีกครั้ง';
+                console.error(error);
             }
         }
 
-        function copyToClipboard() {
-            if (!currentGeneratedKey) return;
-            const el = document.createElement('textarea');
-            el.value = `เพื่อความปลอดภัย โปรดยืนยันตัวตนผ่านลิงก์ของทางร้าน\n\nลิงก์: [ลิงก์เว็บไซต์]\nAccess Key: ${currentGeneratedKey}`;
-            document.body.appendChild(el);
-            el.select(); document.execCommand('copy'); document.body.removeChild(el);
-
-            const copyBtn = document.getElementById('copyBtn');
-            copyBtn.innerHTML = '<i class="fas fa-check text-green-400"></i>';
-            setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+        window.adminGenerateKey = async function() {
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                showToast("ยังไม่ได้ใส่ SCRIPT_URL", "error");
+                return;
+            }
+            const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+            const newKey = `KYC-${randomStr}`;
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'create', key: newKey })
+                });
+                
+                if (!response.ok) {
+                    throw new Error("HTTP Status " + response.status);
+                }
+                
+                showToast(`สร้างรหัส ${newKey} สำเร็จ`);
+                fetchData(); // สั่งรีเฟรชข้อมูลทันทีหลังจากสร้างเสร็จ
+            } catch (err) {
+                console.error("เกิดข้อผิดพลาดในการส่งข้อมูล:", err);
+                showToast("ล้มเหลว: " + err.message + " (ตรวจสอบสิทธิ์การเข้าถึง Apps Script)", "error");
+            }
         }
+
+        window.copyAdminKey = function(key) {
+            const el = document.createElement('textarea');
+            el.value = key;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(`คัดลอก ${key} แล้ว นำไปส่งให้ลูกค้าได้เลย`);
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
