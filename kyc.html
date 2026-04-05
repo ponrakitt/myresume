@@ -2,582 +2,493 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure AI Verification | Wanflorist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบยืนยันตัวตน (e-KYC)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
+    <!-- เพิ่มฟอนต์ Prompt เพื่อความทันสมัย -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- ติดตั้ง AI Library ของจริง (face-api.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/dist/face-api.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
-                    colors: { secure: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 900: '#14532d' } }
-                }
-            }
-        }
-    </script>
     <style>
-        body { background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .hidden-file-input { display: none; }
-        .ai-scanner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: #22c55e; box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e;
-            animation: scan 2s linear infinite; z-index: 20;
-        }
-        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .hidden-view { display: none !important; }
+        .spinner { border: 3px solid rgba(0,0,0,0.05); border-left-color: #0f172a; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .spinner-large { width: 48px; height: 48px; border-width: 4px; border-left-color: #0f172a; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        #livenessModal { backdrop-filter: blur(15px); }
-        .liveness-guide {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 280px; height: 380px; border: 4px dashed rgba(255,255,255,0.7);
-            border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0,0,0,0.75);
-            pointer-events: none; transition: all 0.3s ease;
-        }
-        .liveness-guide.active { border-color: #3b82f6; border-style: solid; box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); }
-        .liveness-guide.success { border-color: #22c55e; border-style: solid; }
-        .command-text { text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-        .progress-bar-fill { transition: width 0.3s ease; }
+        /* Premium Background Blobs (ลูกเล่นพื้นหลังหรูหรา) */
+        .bg-shape { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; animation: float 10s ease-in-out infinite; }
+        .bg-shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(147,197,253,0.8) 0%, rgba(219,234,254,0) 70%); }
+        .bg-shape-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(196,181,253,0.8) 0%, rgba(2ede9,213,255,0) 70%); animation-delay: -5s; }
+        @keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
+
+        /* Glassmorphism Card (การ์ดกระจก) */
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05); }
+        
+        #video-container { position: relative; width: 100%; max-width: 400px; margin: auto; border-radius: 2rem; overflow: hidden; background: #0f172a; min-height: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 6px solid rgba(255,255,255,0.8); }
+        #webcam { width: 100%; height: 100%; display: block; transform: scaleX(-1); object-fit: cover; }
+        #ai-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); pointer-events: none; }
+        #prompt-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding: 24px; pointer-events: none; z-index: 10; }
+        
+        .instruction-pill { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); color: #0f172a; padding: 12px 24px; border-radius: 9999px; font-weight: 600; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 10px; transform: translateY(0); transition: all 0.3s ease; }
+        .instruction-pill.active { background: #0f172a; color: white; transform: scale(1.05); }
+        
+        #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: 10px; width: max-content; }
+        .toast { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); color: white; padding: 14px 28px; border-radius: 9999px; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: opacity 0.3s, transform 0.3s; text-align: center; font-size: 0.9rem; }
+        
+        /* Custom Scrollbar for Terms */
+        .terms-scroll::-webkit-scrollbar { width: 6px; }
+        .terms-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
+        .terms-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 md:p-8 antialiased relative">
+<body class="text-slate-800 min-h-screen flex flex-col relative">
 
-    <div class="max-w-xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden ring-1 ring-slate-900/5 relative z-10">
+    <!-- Decorative Background -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <div id="toast-container"></div>
+
+    <!-- Floating Navbar -->
+    <nav class="w-full flex justify-center pt-6 px-4 absolute top-0 z-20 pointer-events-none">
+        <div class="glass-card px-8 py-4 rounded-full flex items-center gap-3 pointer-events-auto">
+            <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white shadow-lg">
+                <i class="fas fa-shield-check text-lg"></i>
+            </div>
+            <div class="font-bold text-lg tracking-wide text-slate-900">IDENTITY<span class="font-light text-slate-500"> VERIFICATION</span></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow flex items-center justify-center p-4 pt-28 pb-12 z-10">
         
-        <!-- Header -->
-        <div class="bg-slate-900 p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl opacity-20"></div>
-            <div class="flex items-center gap-4 z-10 text-white w-full justify-center md:justify-start">
-                <div class="text-right">
-                    <h1 class="text-xl font-bold tracking-wide">Wanflorist</h1>
-                    <p class="text-[10px] text-slate-400">Premium Florist</p>
-                </div>
-                <div class="h-8 w-px bg-slate-700 mx-1"></div>
-                <div class="text-left flex items-center gap-2">
-                    <i class="fas fa-shield-check text-green-400 text-xl"></i>
-                    <div>
-                        <h2 class="text-sm font-semibold text-slate-300">ponrakitt.site</h2>
-                        <p class="text-[10px] text-green-500 font-medium">True AI Liveness Check</p>
-                    </div>
-                </div>
-            </div>
+        <div id="auth-loading" class="flex flex-col items-center justify-center text-slate-500 transition-all">
+            <div class="spinner spinner-large mb-6"></div>
+            <p class="font-medium tracking-wide animate-pulse">กำลังเตรียมระบบความปลอดภัย...</p>
         </div>
 
-        <!-- 0. Ban View -->
-        <div id="banView" class="p-8 md:p-12 text-center hidden fade-in">
-            <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-ban text-4xl"></i>
+        <!-- Step 0: Intro & Consent -->
+        <div id="view-intro" class="glass-card p-8 md:p-10 rounded-[2.5rem] w-full max-w-md hidden-view flex flex-col items-center text-center transform transition-all duration-500">
+            <div class="w-20 h-20 bg-slate-50 rounded-2xl shadow-inner flex items-center justify-center mb-6 border border-white">
+                <i class="fas fa-handshake text-3xl text-slate-800"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">ระงับการใช้งานชั่วคราว</h2>
-            <p class="text-slate-600 text-sm mb-6">บัญชีนี้ถูกระงับการทำรายการชั่วคราว เพื่อความปลอดภัย</p>
-            <div class="bg-slate-50 border border-red-100 rounded-xl p-4 inline-block mb-6 w-full">
-                <p class="text-xs text-slate-500 mb-1">ปลดล็อกอัตโนมัติวันที่</p>
-                <p class="text-lg font-bold text-red-600" id="banDurationDisplay">-</p>
-            </div>
-        </div>
-
-        <!-- Maintenance View -->
-        <div id="maintenanceView" class="p-8 md:p-12 text-center hidden fade-in">
-            <div class="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-200">
-                <i class="fas fa-tools text-4xl"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">ระบบปิดปรับปรุง</h2>
-            <p class="text-slate-600 text-sm mb-6 leading-relaxed" id="maintenanceMsg">
-                AI ไม่พร้อมสำหรับการยืนยันตัวตน กรุณากลับมาอีกครั้งเมื่อ AI พร้อมทำงานแล้ว
-            </p>
-            <button onclick="location.reload()" class="w-full bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-slate-800 transition-colors">
-                รีเฟรชหน้าจอ
-            </button>
-        </div>
-
-        <!-- 1. Intro View -->
-        <div id="introView" class="p-6 md:p-10 fade-in">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-slate-50 text-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm border border-slate-200">
-                    <i class="fas fa-fingerprint text-3xl text-slate-700"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">ยืนยันตัวตนเพื่อความปลอดภัย</h2>
-                <p class="text-slate-500 text-sm">Identity Verification System</p>
-            </div>
-
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8 text-sm text-slate-700 leading-relaxed shadow-inner">
+            <h2 class="text-2xl font-bold mb-5 text-slate-900 tracking-tight">เงื่อนไขการตรวจสอบตัวตน</h2>
+            
+            <div class="text-slate-600 text-sm leading-relaxed mb-6 text-left bg-white/70 p-5 rounded-2xl border border-white shadow-inner backdrop-blur-sm h-64 overflow-y-auto terms-scroll w-full">
                 <p class="mb-4">
-                    ร้าน <strong class="text-slate-900">Wanflorist</strong> ได้ทำงานร่วมกับระบบรักษาความปลอดภัย <strong class="text-slate-900">ponrakitt.site</strong> 
-                    ในการที่จะยืนยันได้ว่าคุณมีตัวตนอยู่จริง <strong>เพื่อป้องกันการสวมรอยและการทุจริตทางการเงิน (Chargeback Fraud)</strong>
+                    <strong class="text-slate-900 text-base">wanflorist.net</strong> ได้ร่วมมือกับ <strong class="text-slate-900 text-base">ponrakitt.site</strong> ในการตรวจสอบตัวตนของท่าน เพื่อยกระดับมาตรฐานความปลอดภัยและป้องกันการแอบอ้างสิทธิ์ในการรับบริการหรือทำธุรกรรม
                 </p>
-                <p>
-                    <span class="text-green-600 font-semibold"><i class="fas fa-lock"></i> Zero-Knowledge Architecture:</span> ข้อมูลของท่านจะถูกตรวจสอบด้วยระบบ AI อัจฉริยะ 
-                    ซึ่งรับประกันว่าภาพถ่าย วิดีโอ และข้อมูลส่วนบุคคลของท่าน จะไม่ถูกมองเห็น จัดเก็บ หรือเข้าถึงโดยมนุษย์
-                    และจะถูกประมวลผลแล้วลบทิ้งทันทีเมื่อการตรวจสอบเสร็จสิ้น
-                </p>
-            </div>
 
-            <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors mb-8 group">
-                <input type="checkbox" id="consentCheckbox" class="mt-0.5 w-5 h-5 text-green-600 rounded border-slate-300 focus:ring-green-500 cursor-pointer" onchange="toggleStartBtn()">
-                <span class="text-sm text-slate-600 select-none group-hover:text-slate-800 transition-colors">
-                    ข้าพเจ้ายินยอมให้ระบบ AI ประมวลผลภาพถ่ายและวิดีโอ เพื่อยืนยันสิทธิ์ในการทำธุรกรรมนี้
+                <h4 class="font-bold text-slate-800 mt-4 mb-2"><i class="fas fa-cogs text-blue-500 mr-1"></i> ขั้นตอนการทำงานของระบบ</h4>
+                <ul class="list-disc pl-5 mb-4 space-y-1 text-slate-700">
+                    <li>กรอกรหัสอ้างอิง (Key) ที่ได้รับจากเจ้าหน้าที่</li>
+                    <li>กรอกชื่อ-นามสกุล และแนบรูปถ่ายหน้าบัตรประชาชน</li>
+                    <li>ระบบ AI จะให้ท่านสแกนใบหน้า (เช่น หันซ้าย, ขวา, ยิ้ม) เพื่อยืนยันว่าเป็นบุคคลจริง (Liveness Detection)</li>
+                </ul>
+
+                <h4 class="font-bold text-slate-800 mt-5 mb-2"><i class="fas fa-user-shield text-emerald-500 mr-1"></i> มาตรฐานความปลอดภัย (PDPA)</h4>
+                <ul class="list-disc pl-5 mb-2 space-y-2 text-slate-700">
+                    <li><strong>ประมวลผลบนอุปกรณ์ท่าน:</strong> การวิเคราะห์ใบหน้าและบัตรประชาชนจะทำงานบนโทรศัพท์มือถือหรือคอมพิวเตอร์ของท่านโดยตรง</li>
+                    <li><strong>ไม่มีการจัดเก็บรูปภาพ:</strong> รูปถ่ายบัตรประชาชนและวิดีโอสแกนใบหน้าจะถูก <span class="text-red-500 font-bold underline decoration-red-300">ทำลายทิ้งทันที</span> เมื่อประมวลผลเสร็จสิ้น จะไม่มีการส่งหรือบันทึกไฟล์ภาพลงบนเซิร์ฟเวอร์ส่วนกลางโดยเด็ดขาด</li>
+                    <li><strong>ข้อมูลที่บันทึก:</strong> ระบบจะบันทึกเพียง "ชื่อ-นามสกุล" และ "สถานะการยืนยันตัวตนสำเร็จ" เพื่อใช้เป็นหลักฐานยืนยันความปลอดภัยเท่านั้น</li>
+                </ul>
+            </div>
+            
+            <!-- Checkbox Consent -->
+            <label class="flex items-start gap-3 mb-6 cursor-pointer group text-left w-full px-2">
+                <div class="relative flex items-center justify-center mt-0.5 shrink-0">
+                    <input type="checkbox" id="consent-checkbox" class="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-2 focus:ring-slate-900/20 checked:bg-slate-900 checked:border-slate-900 transition-all cursor-pointer" onchange="toggleConsentButton()">
+                    <i class="fas fa-check absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                </div>
+                <span class="text-sm text-slate-700 font-medium group-hover:text-slate-900 transition-colors select-none">
+                    ข้าพเจ้าได้อ่าน เข้าใจ และยอมรับเงื่อนไขการทำงาน รวมถึงนโยบายการคุ้มครองข้อมูลส่วนบุคคลที่ระบุไว้
                 </span>
             </label>
-
-            <button id="startBtn" disabled onclick="switchView('keyView')" class="w-full bg-slate-300 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 cursor-not-allowed">
-                ยอมรับเงื่อนไขและดำเนินการต่อ <i class="fas fa-arrow-right"></i>
+            
+            <button id="btn-consent-next" onclick="goToKeyStep()" disabled class="w-full bg-slate-300 text-slate-500 font-medium py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 text-lg cursor-not-allowed">
+                ยอมรับและดำเนินการต่อ <i class="fas fa-arrow-right text-sm ml-1"></i>
             </button>
         </div>
 
-        <!-- 2. Key Entry View -->
-        <div id="keyView" class="p-6 md:p-10 hidden fade-in">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
-                    <i class="fas fa-key text-2xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">กรอกรหัสยืนยัน (Access Key)</h2>
-                <p class="text-slate-500 text-sm">กรุณากรอก Key ที่ได้รับจากเจ้าหน้าที่ Wanflorist</p>
+        <!-- Step 1: Enter Key -->
+        <div id="view-client-key" class="glass-card p-10 rounded-[2.5rem] w-full max-w-md hidden-view flex flex-col items-center text-center transform transition-all duration-500">
+            <div class="w-20 h-20 bg-slate-50 rounded-2xl shadow-inner flex items-center justify-center mb-6 border border-white">
+                <i class="fas fa-key text-3xl text-slate-800"></i>
             </div>
-            <div class="space-y-4 relative">
-                <input type="text" id="accessKey" placeholder="เช่น WF-1234-ABCD" class="w-full text-center text-xl font-mono uppercase tracking-wider p-4 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-colors">
-                <button id="verifyBtn" onclick="verifyKey()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 px-6 rounded-xl transition-all flex justify-center items-center gap-2">
-                    ตรวจสอบ Key
-                </button>
-                <div class="flex items-center justify-center mt-4">
-                   <button onclick="switchView('introView')" class="text-sm text-slate-400 hover:text-slate-600 underline">ย้อนกลับ</button>
-                </div>
-                <p id="keyError" class="text-red-500 text-xs text-center hidden mt-2"></p>
+            <h2 class="text-3xl font-bold mb-3 text-slate-900 tracking-tight">รหัสยืนยันตัวตน</h2>
+            <p class="text-slate-500 mb-8 font-light text-sm">กรุณากรอกรหัสความปลอดภัยที่ได้รับจากเจ้าหน้าที่เพื่อเริ่มต้นการยืนยันตัวตน</p>
+            
+            <div class="w-full relative mb-6">
+                <input type="text" id="client-input-key" placeholder="เช่น KYC-XXXXX" class="w-full px-6 py-4 bg-white/60 border border-white shadow-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:bg-white transition-all text-center text-xl font-bold uppercase tracking-widest text-slate-800 placeholder-slate-300">
             </div>
+            
+            <button id="btn-verify-key" onclick="clientVerifyKey()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 text-lg">
+                ตรวจสอบรหัส <i class="fas fa-arrow-right text-sm ml-1"></i>
+            </button>
+            <p id="key-error" class="text-red-500 mt-4 text-sm hidden font-medium bg-red-50/80 px-4 py-2 rounded-xl backdrop-blur-sm"></p>
         </div>
 
-        <!-- 3. Form & Upload View -->
-        <div id="uploadView" class="p-6 md:p-10 hidden fade-in">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                <h3 class="text-xl font-bold text-slate-800">ส่งข้อมูลให้ AI ตรวจสอบ</h3>
-                <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full" id="displayKeyHeader">KEY: -</span>
+        <!-- Step 2: Info & ID Card -->
+        <div id="view-client-info" class="glass-card p-8 md:p-10 rounded-[2.5rem] w-full max-w-md hidden-view transform transition-all duration-500">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-slate-900">ข้อมูลส่วนตัว</h2>
+                <span class="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-wider border border-white shadow-sm">ขั้นตอน 1/2</span>
             </div>
-
+            
             <div class="space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-slate-700 text-xs font-bold mb-1">ชื่อจริง <span class="text-red-500">*</span></label>
-                        <input type="text" id="firstName" class="w-full p-3 border border-slate-300 rounded-lg focus:border-blue-500 outline-none" placeholder="ไม่ต้องใส่คำนำหน้า">
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 text-xs font-bold mb-1">นามสกุล <span class="text-red-500">*</span></label>
-                        <input type="text" id="lastName" class="w-full p-3 border border-slate-300 rounded-lg focus:border-blue-500 outline-none" placeholder="นามสกุล">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-slate-700 text-xs font-bold mb-1">
-                        บัตรที่รัฐออกให้ (ถ่ายภาพตัวจริง) <span class="text-red-500">*</span>
-                    </label>
-                    <div id="idBox" onclick="document.getElementById('idInput').click()" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors relative overflow-hidden">
-                        <i class="fas fa-id-card text-2xl text-slate-400 mb-2" id="idIcon"></i>
-                        <p class="text-sm text-slate-600 font-medium" id="idText">แตะเพื่อแนบรูปบัตร</p>
-                        <img id="idPreview" class="hidden mt-3 max-h-32 mx-auto rounded-lg shadow-sm relative z-10">
-                    </div>
-                    <input type="file" id="idInput" class="hidden-file-input" accept="image/*" onchange="previewImg(this, 'idPreview', 'idText', 'idIcon')">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">ชื่อจริง</label>
+                    <input type="text" id="client-fname" class="w-full px-5 py-3.5 bg-white/60 border border-white shadow-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:bg-white transition-all text-slate-800 placeholder-slate-400">
                 </div>
-
-                <!-- Liveness Check Video (AI) -->
                 <div>
-                    <label class="block text-slate-700 text-xs font-bold mb-1">
-                        ระบบ AI ยืนยันใบหน้าบุคคล (Liveness Check) <span class="text-red-500">*</span>
-                    </label>
-                    <p class="text-[10px] text-slate-500 mb-2">กล้องจะตรวจจับการเคลื่อนไหวจริงของคุณเพื่อป้องกันภาพถ่ายปลอม</p>
-                    <div id="livenessBox" onclick="initLivenessAI()" class="border-2 border-dashed border-blue-400 rounded-xl p-6 text-center bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors relative overflow-hidden group">
-                        <i class="fas fa-vr-cardboard text-3xl text-blue-500 mb-2 group-hover:scale-110 transition-transform" id="livenessIcon"></i>
-                        <p class="text-sm text-blue-700 font-bold" id="livenessText">แตะเพื่อเปิดระบบ AI สแกนใบหน้า</p>
-                        <div id="livenessSuccessBadge" class="hidden mt-3 inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold relative z-10">
-                            <i class="fas fa-check-circle"></i> AI ยืนยันตัวตนสำเร็จ
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">นามสกุล</label>
+                    <input type="text" id="client-lname" class="w-full px-5 py-3.5 bg-white/60 border border-white shadow-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:bg-white transition-all text-slate-800 placeholder-slate-400">
+                </div>
+                <div class="pt-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 ml-1">เอกสารบัตรประชาชน <span class="text-[11px] font-normal text-slate-400">(เฉพาะด้านหน้า)</span></label>
+                    <div class="relative group cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 hover:bg-slate-100/50 transition-all h-40 flex flex-col items-center justify-center">
+                        <input type="file" id="client-idcard" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewID(this)">
+                        <div id="id-preview-container" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-transform group-hover:scale-105">
+                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 text-slate-400 group-hover:text-slate-600 transition-colors">
+                                <i class="fas fa-camera text-xl"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-500">แตะเพื่อถ่ายรูปหรืออัปโหลด</p>
                         </div>
                     </div>
                 </div>
+                <button onclick="goToVideoStep()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-4 px-6 rounded-2xl mt-6 transition-all duration-300 shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 text-lg">
+                    ดำเนินการต่อ <i class="fas fa-arrow-right text-sm ml-1"></i>
+                </button>
             </div>
-
-            <button id="submitKycBtn" onclick="startAIVerification()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl mt-8 transition-all flex items-center justify-center gap-2 shadow-lg disabled:bg-slate-300 disabled:cursor-not-allowed">
-                <i class="fas fa-paper-plane text-green-400"></i> ยืนยันข้อมูลทั้งหมด
-            </button>
         </div>
 
-        <!-- 4. Result Views (Success/Error) -->
-        <div id="successView" class="p-10 md:p-14 text-center hidden fade-in">
-            <div class="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-check-circle text-5xl"></i>
+        <!-- Step 3: Video KYC (Real Face AI) -->
+        <div id="view-client-video" class="glass-card p-8 md:p-10 rounded-[2.5rem] w-full max-w-md hidden-view flex flex-col items-center transform transition-all duration-500">
+            <div class="w-full flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-slate-900">สแกนใบหน้า</h2>
+                <span class="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-wider border border-white shadow-sm">ขั้นตอน 2/2</span>
             </div>
-            <h3 class="text-2xl font-bold text-slate-800 mb-2">ตรวจสอบเสร็จสมบูรณ์</h3>
-            <p class="text-slate-500 text-sm mb-6">AI ส่งผลลัพธ์การอนุมัติให้ร้านค้าเรียบร้อยแล้ว</p>
-            <button onclick="location.reload()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg">กลับสู่หน้าหลัก</button>
-        </div>
-
-        <div id="errorView" class="p-10 text-center hidden fade-in">
-            <div class="w-24 h-24 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-user-shield text-4xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">ข้อมูลไม่ตรงกัน</h3>
-            <p class="text-slate-600 text-sm mb-4" id="errorMsg">ระบบตรวจพบว่าชื่อและข้อมูลไม่ถูกต้อง</p>
-            <button onclick="switchView('uploadView')" class="w-full bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg">ลองใหม่อีกครั้ง</button>
-        </div>
-    </div>
-
-    <!-- 🎥 LIVENESS AI MODAL (FullScreen) -->
-    <div id="livenessModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex-col items-center justify-center">
-        <button onclick="closeLivenessModal()" class="absolute top-6 right-6 z-50 w-10 h-10 bg-white/20 rounded-full text-white flex items-center justify-center hover:bg-white/30 backdrop-blur">
-            <i class="fas fa-times text-xl"></i>
-        </button>
-
-        <!-- Loading State -->
-        <div id="aiLoading" class="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-900 text-white">
-            <i class="fas fa-microchip text-5xl text-blue-500 mb-4 animate-pulse"></i>
-            <h3 class="font-bold text-xl mb-2">กำลังโหลดระบบ AI Vision</h3>
-            <p class="text-sm text-slate-400">การเข้าใช้งานครั้งแรกอาจใช้เวลา 5-10 วินาที</p>
-            <div class="w-48 h-1 bg-slate-700 rounded-full mt-4 overflow-hidden"><div class="w-full h-full bg-blue-500 animate-pulse"></div></div>
-        </div>
-
-        <!-- Video Stream Container -->
-        <div class="relative w-full h-full max-w-md mx-auto overflow-hidden flex flex-col justify-center items-center">
-            <video id="liveVideo" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"></video>
             
-            <div id="faceGuide" class="liveness-guide"></div>
-
-            <div class="absolute top-10 left-0 right-0 z-20 px-6">
-                <div class="bg-black/60 backdrop-blur-md rounded-2xl p-4 border border-slate-700 text-center shadow-2xl">
-                    <div class="flex justify-between items-center mb-2">
-                        <span id="livenessHeader" class="text-white font-bold text-sm">เตรียมพร้อมสแกนใบหน้า</span>
-                        <span id="commandCounter" class="text-blue-400 font-mono font-bold text-sm hidden">0/4</span>
+            <div id="video-container" class="group">
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="ai-canvas"></canvas>
+                <div id="prompt-overlay">
+                    <div class="instruction-pill" id="ai-status">
+                        <div class="flex items-center gap-3"><div class="spinner border-slate-900 h-5 w-5"></div> <span class="text-sm">กำลังเชื่อมต่อกล้อง...</span></div>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden mt-2">
-                        <div id="livenessProgress" class="h-full bg-blue-500 w-0 progress-bar-fill"></div>
-                    </div>
+                    <div id="ai-prompt" class="instruction-pill active hidden text-lg shadow-2xl"></div>
                 </div>
             </div>
 
-            <!-- Command Overlay -->
-            <div class="absolute top-1/2 left-0 right-0 -translate-y-1/2 z-20 text-center px-4 mt-20">
-                <h1 id="commandText" class="text-3xl font-bold text-white command-text tracking-wide fade-in drop-shadow-2xl">
-                    กรุณาให้ใบหน้าอยู่ในกรอบ
-                </h1>
+            <div class="w-full mt-8">
+                <div id="model-loading" class="flex items-center justify-center gap-3 text-sm text-slate-600 font-medium hidden mb-6 bg-white/50 py-3 rounded-2xl border border-white">
+                    <div class="spinner h-4 w-4"></div> กำลังโหลดระบบ AI...
+                </div>
+                
+                <button id="btn-start-ai" onclick="startAITracking()" class="hidden w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 text-lg">
+                    <i class="fas fa-face-viewfinder mr-1"></i> เริ่มสแกนใบหน้า
+                </button>
+                
+                <div id="kyc-progress" class="hidden mt-2 w-full">
+                    <div class="flex justify-between text-sm font-semibold text-slate-700 mb-2">
+                        <span>ความคืบหน้า</span>
+                        <span id="progress-text" class="bg-white px-3 py-1 rounded-full text-xs shadow-sm border border-slate-100">0/3</span>
+                    </div>
+                    <div class="w-full bg-slate-200/50 rounded-full h-3 overflow-hidden shadow-inner backdrop-blur-sm border border-white">
+                        <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500 relative" style="width: 0%">
+                            <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-[11px] text-center text-slate-400 mt-6 font-light leading-relaxed">
+                    <i class="fas fa-shield-alt mr-1 text-slate-300"></i> ระบบจะประมวลผลบนอุปกรณ์ของคุณ<br>และจะไม่มีการบันทึกภาพหรือวิดีโอเข้าสู่เซิร์ฟเวอร์
+                </p>
             </div>
+        </div>
 
-            <div class="absolute bottom-10 left-0 right-0 z-20 text-center">
-                <button id="startRecBtn" onclick="startAITracking()" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105 border-2 border-blue-400">
-                    <i class="fas fa-play mr-2"></i> เริ่มสแกน AI
+        <!-- Step 4: Success -->
+        <div id="view-client-processing" class="glass-card p-12 rounded-[2.5rem] w-full max-w-md hidden-view flex flex-col items-center text-center transform transition-all duration-500">
+            <div id="processing-state" class="flex flex-col items-center w-full">
+                <div class="relative w-24 h-24 mb-8 flex items-center justify-center">
+                    <div class="absolute inset-0 border-[6px] border-slate-100 rounded-full"></div>
+                    <div class="absolute inset-0 border-[6px] border-slate-900 rounded-full border-t-transparent animate-spin"></div>
+                    <i class="fas fa-shield-alt text-2xl text-slate-900"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-3 tracking-tight">กำลังบันทึกข้อมูล</h2>
+                <p class="text-slate-500 font-light text-sm leading-relaxed">ระบบกำลังยืนยันข้อมูลความปลอดภัย<br>และกำลังทำลายข้อมูลรูปภาพชั่วคราว...</p>
+            </div>
+            
+            <div id="success-state" class="hidden flex flex-col items-center w-full">
+                <div class="w-24 h-24 bg-emerald-100/50 border border-emerald-200 rounded-full flex items-center justify-center mb-6 text-emerald-500 relative">
+                    <div class="absolute inset-0 bg-emerald-400/20 rounded-full animate-ping"></div>
+                    <i class="fas fa-check text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 mb-3 tracking-tight">ยืนยันตัวตนสำเร็จ</h2>
+                <p class="text-slate-500 mb-10 font-light text-sm leading-relaxed">ข้อมูลของคุณได้รับการบันทึกเรียบร้อยแล้ว<br>รูปภาพและวิดีโอถูกทำลายออกจากระบบ 100%</p>
+                <button onclick="location.reload()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium py-4 px-6 rounded-2xl transition-all duration-300 shadow-sm border border-white">
+                    เสร็จสิ้น
                 </button>
             </div>
         </div>
     </div>
-    
-    <canvas id="livenessCanvas" class="hidden"></canvas>
 
+    <!-- Google Sheets SDK & Logic -->
     <script>
-        // ⚠️ เชื่อมต่อกับ Backend ผ่าน Web App URL ที่คุณให้มา
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8nIFSonxBZ4kktOiiUzYf1HgXv-ON-FoIEKgJFG4bqOmortR_JBrP7Djp3edKLRHOXg/exec';
-        
-        let currentKey = ''; let base64Id = ''; let base64Selfie = '';
-        let livenessPassed = false;
+        // นำ URL ที่ได้จากขั้นตอน Deploy ของ Google Apps Script มาวางที่นี่
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyoH9Oq_PsMDIW3HW3Ct4vwTnTiidFkU_rJu7SfVYib8mEQjlMZivosKfY3qEYmuWkP/exec';
 
-        // UI Flow
-        window.onload = () => { switchView('introView'); };
+        window.currentDocId = null;
+        window.clientData = { fname: '', lname: '' };
         
-        function toggleStartBtn() {
-            const btn = document.getElementById('startBtn');
-            if(document.getElementById('consentCheckbox').checked) {
-                btn.removeAttribute('disabled'); btn.classList.replace('bg-slate-300', 'bg-slate-900');
+        let videoEl = document.getElementById('webcam');
+        let canvasEl = document.getElementById('ai-canvas');
+        let isVideoPlaying = false;
+        let aiInterval = null;
+        
+        const AI_PROMPTS = [
+            { id: 'neutral', text: 'มองตรง ทำหน้าปกติ', check: (exp, ratio) => exp.neutral > 0.8 },
+            { id: 'smile', text: 'ยิ้มกว้างๆ ให้เห็นฟัน', check: (exp, ratio) => exp.happy > 0.7 },
+            { id: 'left', text: 'หันหน้าไปทางซ้ายช้าๆ', check: (exp, ratio) => ratio < 0.6 },
+            { id: 'right', text: 'หันหน้าไปทางขวาช้าๆ', check: (exp, ratio) => ratio > 1.6 }
+        ];
+
+        window.showToast = function(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'bg-red-600' : 'bg-gray-800'}`;
+            toast.innerHTML = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function showView(viewId) {
+            // ซ่อนทุกหน้าต่างโดยการเติมคลาส hidden-view
+            const allViews = ['view-intro', 'view-client-key', 'view-client-info', 'view-client-video', 'view-client-processing', 'auth-loading'];
+            allViews.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden-view');
+            });
+            
+            // แสดงเฉพาะหน้าที่ต้องการโดยการลบคลาส hidden-view ออก
+            const targetEl = document.getElementById(viewId);
+            if (targetEl) targetEl.classList.remove('hidden-view');
+        }
+
+        function initApp() {
+            showView('view-intro');
+        }
+
+        window.toggleConsentButton = function() {
+            const checkbox = document.getElementById('consent-checkbox');
+            const btn = document.getElementById('btn-consent-next');
+            if (checkbox.checked) {
+                btn.disabled = false;
+                btn.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                btn.classList.add('bg-slate-900', 'hover:bg-slate-800', 'text-white', 'shadow-xl', 'shadow-slate-900/20');
             } else {
-                btn.setAttribute('disabled', 'true'); btn.classList.replace('bg-slate-900', 'bg-slate-300');
+                btn.disabled = true;
+                btn.classList.add('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                btn.classList.remove('bg-slate-900', 'hover:bg-slate-800', 'text-white', 'shadow-xl', 'shadow-slate-900/20');
             }
         }
-        
-        function switchView(viewId) {
-            ['introView', 'keyView', 'uploadView', 'successView', 'errorView', 'banView', 'maintenanceView'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
+
+        function goToKeyStep() {
+            showView('view-client-key');
         }
-        
-        function previewImg(input, imgId, textId, iconId) {
+
+        window.clientVerifyKey = async function() {
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                showToast('กรุณาใส่ SCRIPT_URL ในโค้ดของ Client ก่อนครับ', 'error'); return;
+            }
+
+            const inputEl = document.getElementById('client-input-key');
+            const errorEl = document.getElementById('key-error');
+            const key = inputEl.value.trim().toUpperCase();
+            
+            if (!key) { errorEl.innerText = "กรุณากรอกรหัส"; errorEl.classList.remove('hidden'); return; }
+            document.getElementById('btn-verify-key').innerText = "กำลังตรวจสอบกับ Google Sheets...";
+            
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=get&key=' + key);
+                const data = await response.json();
+
+                if (data && data.id && data.status === 'รอดำเนินการ') {
+                    window.currentDocId = key;
+                    errorEl.classList.add('hidden');
+                    showView('view-client-info');
+                } else {
+                    errorEl.innerHTML = "<i class='fas fa-exclamation-circle'></i> รหัส Key ไม่ถูกต้อง หรือถูกใช้งานไปแล้ว"; 
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorEl.innerText = "เกิดข้อผิดพลาดในการตรวจสอบ"; errorEl.classList.remove('hidden');
+            }
+            document.getElementById('btn-verify-key').innerHTML = `ตรวจสอบรหัส <i class="fas fa-arrow-right ml-1"></i>`;
+        }
+
+        window.previewID = function(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image(); img.onload = () => {
-                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-                        const MAX_WIDTH = 800; let width = img.width, height = img.height;
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                        document.getElementById(imgId).src = resizedBase64; document.getElementById(imgId).classList.remove('hidden');
-                        document.getElementById(textId).innerText = "แนบรูปสำเร็จ"; document.getElementById(textId).classList.replace('text-slate-600', 'text-green-600');
-                        document.getElementById(iconId).className = "fas fa-check-circle text-green-500 text-2xl mb-2";
-                        base64Id = resizedBase64;
-                    }; img.src = e.target.result;
+                reader.onload = function(e) {
+                    const container = document.getElementById('id-preview-container');
+                    container.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded opacity-80">
+                                           <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                                <p class="text-white font-bold"><i class="fas fa-check-circle"></i> เลือกรูปแล้ว</p>
+                                           </div>`;
+                    container.classList.remove('pointer-events-none');
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function showError(elementId, msg) {
-            const el = document.getElementById(elementId);
-            el.innerText = msg; el.classList.remove('hidden');
+        window.goToVideoStep = function() {
+            const fname = document.getElementById('client-fname').value.trim();
+            const lname = document.getElementById('client-lname').value.trim();
+            const idCard = document.getElementById('client-idcard').files[0];
+            
+            if(!fname || !lname) { showToast('กรุณากรอกชื่อและนามสกุลให้ครบถ้วน', 'error'); return; }
+            if(!idCard) { showToast('กรุณาถ่ายรูปบัตรประชาชน', 'error'); return; }
+
+            window.clientData.fname = fname;
+            window.clientData.lname = lname;
+            showView('view-client-video');
+            initCameraAndAI();
         }
 
-        async function verifyKey() {
-            const keyInput = document.getElementById('accessKey').value.trim().toUpperCase();
-            if(!keyInput) { showError('keyError', 'กรุณากรอก Key ก่อนครับ'); return; }
-
-            const btn = document.getElementById('verifyBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
-            btn.disabled = true;
+        async function initCameraAndAI() {
+            const statusEl = document.getElementById('ai-status');
+            const modelLoadingEl = document.getElementById('model-loading');
+            const startBtn = document.getElementById('btn-start-ai');
 
             try {
-                // ส่งเป็น text/plain เพื่อป้องกัน CORS
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'verify_key', key: keyInput })
-                });
-                
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    currentKey = keyInput;
-                    document.getElementById('displayKeyHeader').innerText = `KEY: ${currentKey}`;
-                    document.getElementById('keyError').classList.add('hidden');
-                    switchView('uploadView');
-                } else if (result.status === 'system_offline') {
-                    document.getElementById('maintenanceMsg').innerText = result.message;
-                    switchView('maintenanceView');
-                } else {
-                    showError('keyError', result.message);
-                }
-            } catch (error) {
-                showError('keyError', 'ไม่สามารถเชื่อมต่อระบบหลังบ้านได้ โปรดลองอีกครั้ง');
-            } finally {
-                btn.innerHTML = 'ตรวจสอบ Key'; btn.disabled = false;
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                videoEl.srcObject = stream;
+                isVideoPlaying = true;
+                statusEl.innerText = "กล้องพร้อมทำงาน กำลังเตรียม AI...";
+            } catch (err) {
+                statusEl.innerHTML = "<span class='text-red-500'>ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตให้สิทธิ์</span>";
+                return;
             }
-        }
 
-        // ==========================================
-        // 🚀 TRUE AI LIVENESS SYSTEM (FACE-API.JS)
-        // ==========================================
-        
-        let videoStream = null;
-        let aiModelsLoaded = false;
-        let livenessActive = false;
-        
-        const AI_COMMANDS = [
-            { id: "SMILE", text: "ยิ้มให้เห็นฟัน" },
-            { id: "SURPRISE", text: "ทำหน้าประหลาดใจ (เลิกคิ้ว/เบิกตา)" },
-            { id: "OPEN_MOUTH", text: "อ้าปากกว้างๆ" },
-            { id: "TURN_RIGHT", text: "หันหน้าไปทางขวา" },
-            { id: "TURN_LEFT", text: "หันหน้าไปทางซ้าย" }
-        ];
-        let currentSequence = [];
-        let commandIndex = 0;
-
-        async function loadAIModels() {
-            if (aiModelsLoaded) return;
+            modelLoadingEl.classList.remove('hidden');
+            const modelUrl = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            
             try {
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
                 await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                    faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl),
+                    faceapi.nets.faceExpressionNet.loadFromUri(modelUrl)
                 ]);
-                aiModelsLoaded = true;
-            } catch (err) {
-                alert("เกิดข้อผิดพลาดในการโหลดระบบ AI กรุณาตรวจสอบอินเทอร์เน็ต");
-            }
-        }
-
-        async function initLivenessAI() {
-            const modal = document.getElementById('livenessModal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            document.getElementById('aiLoading').classList.remove('hidden');
-            
-            await loadAIModels();
-            
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-                videoStream = stream;
-                document.getElementById('liveVideo').srcObject = stream;
-            } catch (err) {
-                alert("กรุณาอนุญาตให้เข้าถึงกล้องครับ"); closeLivenessModal(); return;
-            }
-
-            document.getElementById('aiLoading').classList.add('hidden');
-            document.getElementById('startRecBtn').classList.remove('hidden');
-            document.getElementById('commandText').innerText = "ให้ใบหน้าอยู่ในกรอบ แล้วกดเริ่มสแกน";
-        }
-
-        function closeLivenessModal() {
-            if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); videoStream = null; }
-            document.getElementById('livenessModal').classList.add('hidden');
-            document.getElementById('livenessModal').classList.remove('flex');
-            livenessActive = false;
-        }
-
-        function startAITracking() {
-            document.getElementById('startRecBtn').classList.add('hidden');
-            document.getElementById('faceGuide').classList.add('active');
-            document.getElementById('commandCounter').classList.remove('hidden');
-            document.getElementById('livenessHeader').innerText = "AI กำลังตรวจสอบท่าทาง...";
-            
-            currentSequence = [...AI_COMMANDS].sort(() => 0.5 - Math.random()).slice(0, 4);
-            commandIndex = 0;
-            livenessActive = true;
-            
-            runCommandAI();
-        }
-
-        function runCommandAI() {
-            if (!livenessActive) return;
-            if (commandIndex >= currentSequence.length) {
-                finishAILiveness(); return;
-            }
-
-            const activeCmd = currentSequence[commandIndex];
-            document.getElementById('commandCounter').innerText = `${commandIndex + 1}/4`;
-            
-            const textEl = document.getElementById('commandText');
-            textEl.classList.remove('fade-in'); void textEl.offsetWidth; textEl.classList.add('fade-in');
-            textEl.innerHTML = `<span class="text-blue-400">คำสั่ง:</span><br/>${activeCmd.text}`;
-            
-            document.getElementById('livenessProgress').style.width = `${((commandIndex) / 4) * 100}%`;
-
-            requestAnimationFrame(() => detectFaceRealTime(activeCmd.id));
-        }
-
-        async function detectFaceRealTime(commandId) {
-            if (!livenessActive) return;
-            const video = document.getElementById('liveVideo');
-            
-            const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks()
-                .withFaceExpressions();
-
-            if (detections) {
-                let passed = false;
                 
-                if (commandId === "SMILE" && detections.expressions.happy > 0.7) passed = true;
-                else if (commandId === "SURPRISE" && detections.expressions.surprised > 0.7) passed = true;
-                else if (commandId === "OPEN_MOUTH") {
-                    const mouthTop = detections.landmarks.getMouth()[3]; 
-                    const mouthBottom = detections.landmarks.getMouth()[9]; 
-                    const distance = Math.abs(mouthBottom.y - mouthTop.y);
-                    const faceHeight = detections.detection.box.height;
-                    if (distance / faceHeight > 0.1) passed = true;
-                }
-                else if (commandId === "TURN_LEFT" || commandId === "TURN_RIGHT") {
-                    const nose = detections.landmarks.getNose()[3];
-                    const leftCheek = detections.landmarks.getJawOutline()[2];
-                    const rightCheek = detections.landmarks.getJawOutline()[14];
-                    const distLeft = Math.abs(nose.x - leftCheek.x);
-                    const distRight = Math.abs(rightCheek.x - nose.x);
-                    
-                    if (commandId === "TURN_RIGHT" && distLeft / distRight > 1.8) passed = true;
-                    if (commandId === "TURN_LEFT" && distRight / distLeft > 1.8) passed = true;
-                }
+                modelLoadingEl.classList.add('hidden');
+                statusEl.innerText = "AI พร้อมใช้งาน จัดหน้าให้อยู่ในกรอบ";
+                startBtn.classList.remove('hidden');
 
-                if (passed) {
-                    document.getElementById('faceGuide').classList.replace('active', 'success');
-                    document.getElementById('commandText').innerHTML = `<span class="text-green-400"><i class="fas fa-check-circle"></i> ผ่าน!</span>`;
-                    
-                    setTimeout(() => {
-                        document.getElementById('faceGuide').classList.replace('success', 'active');
-                        commandIndex++;
-                        runCommandAI();
-                    }, 1000);
-                    return; 
-                }
-            }
-            requestAnimationFrame(() => detectFaceRealTime(commandId));
-        }
-
-        function finishAILiveness() {
-            livenessActive = false;
-            document.getElementById('livenessProgress').style.width = '100%';
-            document.getElementById('commandText').innerHTML = `<span class="text-green-400 font-bold"><i class="fas fa-shield-check"></i> AI ยืนยันตัวตนสำเร็จ!</span>`;
-            
-            const video = document.getElementById('liveVideo');
-            const canvas = document.getElementById('livenessCanvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            base64Selfie = canvas.toDataURL('image/jpeg', 0.6); 
-
-            setTimeout(() => {
-                livenessPassed = true;
-                closeLivenessModal();
-                
-                document.getElementById('livenessBox').classList.replace('border-blue-400', 'border-green-400');
-                document.getElementById('livenessBox').classList.replace('bg-blue-50', 'bg-green-50');
-                document.getElementById('livenessIcon').className = "fas fa-check-circle text-3xl text-green-500 mb-2";
-                document.getElementById('livenessText').innerText = "ระบบ AI อนุมัติการยืนยันใบหน้า";
-                document.getElementById('livenessText').classList.replace('text-blue-700', 'text-green-700');
-                document.getElementById('livenessSuccessBadge').classList.remove('hidden');
-            }, 1500);
-        }
-
-        // ==========================================
-        async function startAIVerification() {
-            const fname = document.getElementById('firstName').value.trim();
-            const lname = document.getElementById('lastName').value.trim();
-            
-            if(!fname || !lname || !base64Id || !livenessPassed) {
-                alert('กรุณากรอกข้อมูลและแนบรูปภาพให้ครบถ้วนก่อนยืนยันครับ'); return;
-            }
-
-            const btn = document.getElementById('submitKycBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
-            btn.disabled = true;
-
-            try {
-                // ส่งข้อมูลเข้าเซิร์ฟเวอร์แบบ POST (ใช้ text/plain)
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'submit_kyc',
-                        key: currentKey,
-                        firstName: fname,
-                        lastName: lname,
-                        idFront: base64Id,
-                        selfie: base64Selfie
-                    })
+                videoEl.addEventListener('play', () => {
+                    const displaySize = { width: videoEl.videoWidth || 400, height: videoEl.videoHeight || 300 };
+                    faceapi.matchDimensions(canvasEl, displaySize);
                 });
-
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    document.getElementById('resName').innerText = `${fname} ${lname}`;
-                    switchView('successView');
-                } else if (result.status === 'error_banned') {
-                    const date = new Date(result.banUntil);
-                    document.getElementById('banDurationDisplay').innerText = `${date.toLocaleDateString('th-TH')} เวลา ${date.toLocaleTimeString('th-TH')}`;
-                    switchView('banView');
-                } else {
-                    if(result.attemptsLeft <= 0) {
-                        alert(`Key [${currentKey}] ถูกระงับถาวร เนื่องจากให้ข้อมูลผิดครบกำหนด`);
-                        location.reload();
-                    } else {
-                        document.getElementById('errorMsg').innerText = result.message;
-                        document.getElementById('attemptsLeft').innerText = result.attemptsLeft;
-                        switchView('errorView');
-                    }
-                }
-            } catch (error) {
-                alert('การเชื่อมต่อขัดข้อง โปรดลองใหม่อีกครั้ง');
-            } finally {
-                btn.innerHTML = '<i class="fas fa-paper-plane text-green-400"></i> ยืนยันข้อมูลทั้งหมด';
-                btn.disabled = false;
+            } catch(e) {
+                statusEl.innerHTML = "<span class='text-red-500'>โหลดโมเดลล้มเหลว</span>";
             }
         }
+
+        window.startAITracking = async function() {
+            document.getElementById('btn-start-ai').classList.add('hidden');
+            document.getElementById('kyc-progress').classList.remove('hidden');
+            document.getElementById('ai-prompt').classList.remove('hidden');
+            document.getElementById('ai-status').classList.add('hidden');
+            
+            let tasks = [...AI_PROMPTS].sort(() => 0.5 - Math.random()).slice(0, 3);
+            let currentTaskIndex = 0;
+            
+            const promptEl = document.getElementById('ai-prompt');
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
+            
+            const updateUI = () => {
+                if(currentTaskIndex < tasks.length) {
+                    promptEl.innerHTML = tasks[currentTaskIndex].text;
+                    progressText.innerText = `${currentTaskIndex}/${tasks.length}`;
+                    progressBar.style.width = `${(currentTaskIndex / tasks.length) * 100}%`;
+                }
+            };
+            updateUI();
+
+            const displaySize = { width: videoEl.videoWidth || 400, height: videoEl.videoHeight || 300 };
+            faceapi.matchDimensions(canvasEl, displaySize);
+
+            aiInterval = setInterval(async () => {
+                if (!isVideoPlaying || currentTaskIndex >= tasks.length) return;
+
+                const detection = await faceapi.detectSingleFace(videoEl, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks().withFaceExpressions();
+                
+                const ctx = canvasEl.getContext('2d');
+                ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+                if (detection) {
+                    const resizedResult = faceapi.resizeResults(detection, displaySize);
+                    faceapi.draw.drawDetections(canvasEl, resizedResult);
+                    
+                    const nose = detection.landmarks.getNose()[3];
+                    const leftJaw = detection.landmarks.getJawOutline()[0];
+                    const rightJaw = detection.landmarks.getJawOutline()[16];
+                    
+                    const ratio = Math.abs(nose.x - leftJaw.x) / Math.abs(rightJaw.x - nose.x);
+
+                    if (tasks[currentTaskIndex].check(detection.expressions, ratio)) {
+                        promptEl.innerHTML = `<span class="text-green-300"><i class="fas fa-check-circle"></i> ยอดเยี่ยม!</span>`;
+                        currentTaskIndex++;
+                        
+                        if (currentTaskIndex >= tasks.length) {
+                            clearInterval(aiInterval);
+                            progressText.innerText = `3/3`;
+                            progressBar.style.width = `100%`;
+                            setTimeout(completeKYC, 1000);
+                        } else {
+                            clearInterval(aiInterval);
+                            setTimeout(() => { updateUI(); aiInterval = setInterval(arguments.callee, 200); }, 1500);
+                        }
+                    }
+                } else {
+                    ctx.fillStyle = "rgba(255,0,0,0.5)"; ctx.fillText("ไม่พบใบหน้า", 10, 20);
+                }
+            }, 200);
+        }
+
+        async function completeKYC() {
+            if (videoEl.srcObject) { videoEl.srcObject.getTracks().forEach(t => t.stop()); isVideoPlaying = false; }
+            if (aiInterval) clearInterval(aiInterval);
+
+            // ลบรูปภาพทิ้งตามความต้องการ (ทำลายออกจากหน่วยความจำ Client-side ทันที)
+            document.getElementById('client-idcard').value = '';
+            
+            showView('view-client-processing');
+
+            try {
+                if(window.currentDocId) {
+                    // ส่งข้อมูลเฉพาะ Key และ ชื่อ-นามสกุล เข้า Google Sheets API
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'update',
+                            key: window.currentDocId,
+                            name: `${window.clientData.fname} ${window.clientData.lname}`
+                        })
+                    });
+                }
+                
+                window.currentDocId = null; window.clientData = {};
+                document.getElementById('processing-state').classList.add('hidden');
+                document.getElementById('success-state').classList.remove('hidden');
+            } catch(e) { showToast("บันทึกข้อมูลเข้า Sheet ล้มเหลว", "error"); }
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
