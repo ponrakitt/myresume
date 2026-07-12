@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcousticAI - วิศวกรวัสดุและเสียง</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Spinner */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative">
+
+    <!-- Language Switcher -->
+    <div class="absolute top-4 right-4 z-50">
+        <button onclick="toggleLanguage()" class="glass-panel px-4 py-2 rounded-full text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition border border-slate-600 shadow-lg flex items-center gap-2">
+            <i class="fa-solid fa-language text-lg"></i> <span id="lang-indicator">EN</span>
+        </button>
+    </div>
+
+    <div class="w-full max-w-xl">
+        
+        <!-- HEADER -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                <i class="fa-solid fa-wave-square mr-2"></i>AcousticAI
+            </h1>
+            <p class="text-slate-400 text-sm mt-2" data-i18n="appSubtitle">วิศวกรออกแบบวัสดุลดการสะท้อนและห้องเก็บเสียง</p>
+        </div>
+
+        <!-- SCREEN 1: Home / Login Option -->
+        <div id="screen-home" class="screen active glass-panel p-8 rounded-2xl shadow-2xl">
+            <div class="space-y-4">
+                <button onclick="nav('screen-login')" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition duration-200">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i> <span data-i18n="btnHomeLogin">เข้าสู่ระบบ</span>
+                </button>
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-slate-600"></div>
+                    <span class="flex-shrink-0 mx-4 text-slate-500 text-sm" data-i18n="textOr">หรือ</span>
+                    <div class="flex-grow border-t border-slate-600"></div>
+                </div>
+                <button onclick="nav('screen-whitelist')" class="w-full py-3 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition duration-200">
+                    <i class="fa-solid fa-envelope-open-text mr-2"></i> <span data-i18n="btnHomeWhitelist">ขอ Whitelist (สำหรับผู้ใช้ใหม่)</span>
+                </button>
+                <button onclick="nav('screen-verify')" class="w-full py-3 px-4 bg-transparent border border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl font-medium transition duration-200">
+                    <i class="fa-solid fa-key mr-2"></i> <span data-i18n="btnHomeVerify">มี Code 16 หลักแล้ว</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: Request Whitelist -->
+        <div id="screen-whitelist" class="screen glass-panel p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-2" data-i18n="titleWhitelist">ขอสิทธิ์การใช้งาน (Whitelist)</h2>
+            <form id="form-whitelist" onsubmit="handleWhitelist(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelEmail">อีเมล</label>
+                    <input type="email" id="wl-email" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelName">ชื่อ - นามสกุล</label>
+                    <input type="text" id="wl-name" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelReason">เหตุผลในการใช้งาน (มีผลต่ออายุบัญชี)</label>
+                    <textarea id="wl-reason" required rows="4" data-i18n-placeholder="placeholderReason" placeholder="อธิบายโปรเจกต์ หรือเหตุผลที่ต้องการใช้ AI..." class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div class="flex justify-between items-center pt-4">
+                    <button type="button" onclick="nav('screen-home')" class="text-slate-400 hover:text-white text-sm" data-i18n="btnBack">กลับ</button>
+                    <button type="submit" id="btn-whitelist" class="py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200">
+                        <span data-i18n="btnSubmitRequest">ส่งคำขอ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SCREEN 3: Verify Invite Code -->
+        <div id="screen-verify" class="screen glass-panel p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-2" data-i18n="titleVerify">ยืนยัน Invite Code</h2>
+            <p class="text-sm text-slate-400 mb-4" data-i18n="descVerify">โปรดกรอกอีเมลที่ใช้ลงทะเบียน และ Code 16 หลักที่ได้รับทางอีเมล (หากจับคู่ไม่ตรง Code จะถูกระงับ)</p>
+            <form id="form-verify" onsubmit="handleVerify(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelEmail">อีเมล</label>
+                    <input type="email" id="vf-email" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelCode">Invite Code (16 หลัก)</label>
+                    <input type="text" id="vf-code" required maxlength="16" placeholder="XXXX-XXXX-XXXX-XXXX" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 uppercase font-mono tracking-widest">
+                </div>
+                <div class="flex justify-between items-center pt-4">
+                    <button type="button" onclick="nav('screen-home')" class="text-slate-400 hover:text-white text-sm" data-i18n="btnBack">กลับ</button>
+                    <button type="submit" id="btn-verify" class="py-2 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition duration-200">
+                        <span data-i18n="btnVerifyCode">ตรวจสอบ Code</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SCREEN 4: Set Password -->
+        <div id="screen-password" class="screen glass-panel p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-2" data-i18n="titlePassword">ตั้งรหัสผ่านใหม่</h2>
+            <div class="bg-blue-900 bg-opacity-30 border border-blue-800 p-3 rounded-lg mb-4 text-xs text-blue-300" data-i18n="descPassword">
+                รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร, พิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักษรพิเศษ (!@#$%^&*)
+            </div>
+            <form id="form-password" onsubmit="handleSetPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelNewPassword">รหัสผ่านใหม่</label>
+                    <input type="password" id="pw-new" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelConfirmPassword">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="pw-confirm" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <button type="submit" id="btn-password" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 mt-4">
+                    <span data-i18n="btnSavePassword">บันทึกและเข้าสู่ระบบ</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 5: Login -->
+        <div id="screen-login" class="screen glass-panel p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-2" data-i18n="titleLogin">เข้าสู่ระบบ</h2>
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelEmail">อีเมล</label>
+                    <input type="email" id="lg-email" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelPassword">รหัสผ่าน</label>
+                    <input type="password" id="lg-pw" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <button type="button" onclick="handleForgotPw()" class="text-blue-400 hover:text-blue-300 text-sm" data-i18n="btnForgotPw">ลืมรหัสผ่าน?</button>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <button type="button" onclick="nav('screen-home')" class="text-slate-400 hover:text-white text-sm" data-i18n="btnBack">กลับ</button>
+                    <button type="submit" id="btn-login" class="py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200">
+                        <span data-i18n="btnLogin">เข้าสู่ระบบ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SCREEN 6: Dashboard (Main App) -->
+        <div id="screen-dashboard" class="screen glass-panel p-8 rounded-2xl shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-2">
+                <h2 class="text-xl font-semibold" data-i18n="titleDashboard">ห้องปฏิบัติการออกแบบ</h2>
+                <button onclick="nav('screen-home')" class="text-red-400 hover:text-red-300 text-sm"><i class="fa-solid fa-power-off"></i> <span data-i18n="btnLogout">ออกจากระบบ</span></button>
+            </div>
+            
+            <p class="text-sm text-slate-300 mb-4" data-i18n="descDashboard">กรอกข้อมูลพารามิเตอร์ของห้อง เพื่อให้ AI วิเคราะห์วัสดุและการจัดวาง (ผลลัพธ์จะถูกส่งไปประเมินและส่งเป็น PDF ทางอีเมล)</p>
+            
+            <form id="form-design" onsubmit="handleDesignSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1" data-i18n="labelSize">ขนาดห้อง (กว้างxยาวxสูง ม.)</label>
+                        <input type="text" id="ds-size" required data-i18n-placeholder="placeholderSize" placeholder="เช่น 4x5x3" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1" data-i18n="labelPurpose">วัตถุประสงค์ของห้อง</label>
+                        <select id="ds-purpose" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                            <option value="" data-i18n="optSelect">-- เลือก --</option>
+                            <option value="recording" data-i18n="optRecording">ห้องอัดเสียง (Recording Studio)</option>
+                            <option value="cinema" data-i18n="optCinema">ห้องดูหนัง (Home Theater)</option>
+                            <option value="meeting" data-i18n="optMeeting">ห้องประชุม (Meeting Room)</option>
+                            <option value="bedroom" data-i18n="optBedroom">ห้องนอนเก็บเสียง (Silent Bedroom)</option>
+                            <option value="other" data-i18n="optOther">อื่นๆ</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelStyle">สไตล์การตกแต่งห้อง</label>
+                    <input type="text" id="ds-style" required data-i18n-placeholder="placeholderStyle" placeholder="เช่น Modern Loft, Minimalist, เน้นไม้" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1" data-i18n="labelFocus">ข้อกำหนดพิเศษ / จุดที่ต้องการเน้น</label>
+                    <textarea id="ds-focus" rows="3" data-i18n-placeholder="placeholderFocus" placeholder="เช่น เน้นลดเสียงสะท้อนช่วงความถี่ต่ำ (Bass), ใช้วัสดุเป็นมิตรต่อสิ่งแวดล้อม..." class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+                
+                <button type="submit" id="btn-design" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg font-medium transition duration-200 mt-4 shadow-lg">
+                    <i class="fa-solid fa-microchip mr-2"></i> <span data-i18n="btnSubmitDesign">ส่งให้ AI วิเคราะห์</span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Translations Dictionary (i18n) ---
+        const i18n = {
+            th: {
+                appSubtitle: "วิศวกรออกแบบวัสดุลดการสะท้อนและห้องเก็บเสียง",
+                btnHomeLogin: "เข้าสู่ระบบ",
+                textOr: "หรือ",
+                btnHomeWhitelist: "ขอ Whitelist (สำหรับผู้ใช้ใหม่)",
+                btnHomeVerify: "มี Code 16 หลักแล้ว",
+                titleWhitelist: "ขอสิทธิ์การใช้งาน (Whitelist)",
+                labelEmail: "อีเมล",
+                labelName: "ชื่อ - นามสกุล",
+                labelReason: "เหตุผลในการใช้งาน (มีผลต่ออายุบัญชี)",
+                placeholderReason: "อธิบายโปรเจกต์ หรือเหตุผลที่ต้องการใช้ AI...",
+                btnBack: "กลับ",
+                btnSubmitRequest: "ส่งคำขอ",
+                titleVerify: "ยืนยัน Invite Code",
+                descVerify: "โปรดกรอกอีเมลที่ใช้ลงทะเบียน และ Code 16 หลักที่ได้รับทางอีเมล (หากจับคู่ไม่ตรง Code จะถูกระงับ)",
+                labelCode: "Invite Code (16 หลัก)",
+                btnVerifyCode: "ตรวจสอบ Code",
+                titlePassword: "ตั้งรหัสผ่านใหม่",
+                descPassword: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร, พิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักษรพิเศษ (!@#$%^&*)",
+                labelNewPassword: "รหัสผ่านใหม่",
+                labelConfirmPassword: "ยืนยันรหัสผ่าน",
+                btnSavePassword: "บันทึกและเข้าสู่ระบบ",
+                titleLogin: "เข้าสู่ระบบ",
+                labelPassword: "รหัสผ่าน",
+                btnForgotPw: "ลืมรหัสผ่าน?",
+                btnLogin: "เข้าสู่ระบบ",
+                titleDashboard: "ห้องปฏิบัติการออกแบบ",
+                btnLogout: "ออกจากระบบ",
+                descDashboard: "กรอกข้อมูลพารามิเตอร์ของห้อง เพื่อให้ AI วิเคราะห์วัสดุและการจัดวาง (ผลลัพธ์จะถูกส่งไปประเมินและส่งเป็น PDF ทางอีเมล)",
+                labelSize: "ขนาดห้อง (กว้างxยาวxสูง ม.)",
+                placeholderSize: "เช่น 4x5x3",
+                labelPurpose: "วัตถุประสงค์ของห้อง",
+                optSelect: "-- เลือก --",
+                optRecording: "ห้องอัดเสียง (Recording Studio)",
+                optCinema: "ห้องดูหนัง (Home Theater)",
+                optMeeting: "ห้องประชุม (Meeting Room)",
+                optBedroom: "ห้องนอนเก็บเสียง (Silent Bedroom)",
+                optOther: "อื่นๆ",
+                labelStyle: "สไตล์การตกแต่งห้อง",
+                placeholderStyle: "เช่น Modern Loft, Minimalist, เน้นไม้",
+                labelFocus: "ข้อกำหนดพิเศษ / จุดที่ต้องการเน้น",
+                placeholderFocus: "เช่น เน้นลดเสียงสะท้อนช่วงความถี่ต่ำ (Bass), ใช้วัสดุเป็นมิตรต่อสิ่งแวดล้อม...",
+                btnSubmitDesign: "ส่งให้ AI วิเคราะห์",
+                
+                // JS Messages & Loading
+                loadingMsg: "กำลังประมวลผล...",
+                msgWlSuccess: "ส่งคำขอสำเร็จ! ระบบได้ส่งอีเมลไปหา Admin เพื่อรอการอนุมัติแล้ว<br><span class='text-xs font-normal'>(AI จะคำนวณอายุบัญชีตามเหตุผลของคุณ)</span>",
+                msgVfSuccess: "ยืนยัน Code สำเร็จ! กรุณาตั้งรหัสผ่าน",
+                msgVfError: "Error: Code ไม่ถูกต้อง หรือถูกระงับเนื่องจากอีเมลไม่ตรงกัน",
+                msgPwMismatch: "รหัสผ่านไม่ตรงกัน",
+                msgPwInvalid: "รหัสผ่านไม่ตรงตามเงื่อนไข (ต้องมีตัวพิมพ์เล็ก, ใหญ่, ตัวเลข, อักษรพิเศษ)",
+                msgPwSuccess: "ตั้งรหัสผ่านสำเร็จ! ยินดีต้อนรับสู่ระบบ",
+                msgLoginSuccess: "เข้าสู่ระบบสำเร็จ",
+                msgLoginError: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+                msgForgotPrompt: "กรุณากรอกอีเมลในช่องก่อนกดลืมรหัสผ่าน",
+                msgForgotSuccess: "ส่งรหัสผ่านชั่วคราวไปที่อีเมลของคุณแล้ว (โปรดใช้เพื่อเข้าสู่ระบบและเปลี่ยนรหัสใหม่)",
+                msgDesignSuccess: "ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว! AI กำลังประมวลผล หากผ่านการ Approve จาก Admin คุณจะได้รับไฟล์ PDF ทางอีเมล",
+            },
+            en: {
+                appSubtitle: "Reflection Reduction & Soundproofing Design Engineer",
+                btnHomeLogin: "Login",
+                textOr: "OR",
+                btnHomeWhitelist: "Request Whitelist (New User)",
+                btnHomeVerify: "I have a 16-digit code",
+                titleWhitelist: "Request Access (Whitelist)",
+                labelEmail: "Email Address",
+                labelName: "Full Name",
+                labelReason: "Reason for use (Affects account duration)",
+                placeholderReason: "Describe your project or reason for using the AI...",
+                btnBack: "Back",
+                btnSubmitRequest: "Submit Request",
+                titleVerify: "Verify Invite Code",
+                descVerify: "Please enter your registered email and the 16-digit code. (Mismatched entries will burn the code)",
+                labelCode: "Invite Code (16 digits)",
+                btnVerifyCode: "Verify Code",
+                titlePassword: "Set New Password",
+                descPassword: "Password must be at least 8 characters, include uppercase, lowercase, numbers, and special chars (!@#$%^&*)",
+                labelNewPassword: "New Password",
+                labelConfirmPassword: "Confirm Password",
+                btnSavePassword: "Save & Login",
+                titleLogin: "Login",
+                labelPassword: "Password",
+                btnForgotPw: "Forgot Password?",
+                btnLogin: "Login",
+                titleDashboard: "Design Laboratory",
+                btnLogout: "Logout",
+                descDashboard: "Enter the room parameters for AI analysis. (Results will be evaluated and sent as a PDF via email)",
+                labelSize: "Room Size (WxLxH m.)",
+                placeholderSize: "e.g., 4x5x3",
+                labelPurpose: "Room Purpose",
+                optSelect: "-- Select --",
+                optRecording: "Recording Studio",
+                optCinema: "Home Theater",
+                optMeeting: "Meeting Room",
+                optBedroom: "Silent Bedroom",
+                optOther: "Other",
+                labelStyle: "Decoration Style",
+                placeholderStyle: "e.g., Modern Loft, Minimalist, Wooden theme",
+                labelFocus: "Special Requirements / Focus Areas",
+                placeholderFocus: "e.g., Focus on low-frequency (Bass) absorption, eco-friendly materials...",
+                btnSubmitDesign: "Submit for AI Analysis",
+                
+                // JS Messages & Loading
+                loadingMsg: "Processing...",
+                msgWlSuccess: "Request sent successfully! An email has been sent to the Admin for approval.<br><span class='text-xs font-normal'>(AI will calculate account duration based on your reason)</span>",
+                msgVfSuccess: "Code verified successfully! Please set your password.",
+                msgVfError: "Error: Invalid code, or burned due to email mismatch.",
+                msgPwMismatch: "Passwords do not match.",
+                msgPwInvalid: "Password does not meet requirements (lowercase, uppercase, number, special char).",
+                msgPwSuccess: "Password set successfully! Welcome.",
+                msgLoginSuccess: "Login successful.",
+                msgLoginError: "Invalid email or password.",
+                msgForgotPrompt: "Please enter your email before requesting a password reset.",
+                msgForgotSuccess: "A temporary password has been sent to your email.",
+                msgDesignSuccess: "Data successfully sent! AI is processing. If approved by Admin, you will receive a PDF via email.",
+            }
+        };
+
+        let currentLang = 'th';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('lang-indicator').innerText = currentLang === 'th' ? 'EN' : 'TH';
+            translatePage();
+        }
+
+        function translatePage() {
+            // Translate standard innerHTML elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang][key]) {
+                    el.innerHTML = i18n[currentLang][key];
+                }
+            });
+
+            // Translate placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (i18n[currentLang][key]) {
+                    el.setAttribute('placeholder', i18n[currentLang][key]);
+                }
+            });
+        }
+
+        // Initialize translations on load
+        window.addEventListener('DOMContentLoaded', translatePage);
+
+        // --- Navigation ---
+        function nav(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- Utils (Updated with i18n) ---
+        function showLoading(btnId) {
+            const btn = document.getElementById(btnId);
+            // Save current innerHTML to restore it later
+            btn.dataset.originalHtml = btn.innerHTML; 
+            btn.innerHTML = `<div class="loader"></div> <span class="ml-2">${i18n[currentLang].loadingMsg}</span>`;
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+        }
+
+        function hideLoading(btnId) {
+            const btn = document.getElementById(btnId);
+            btn.innerHTML = btn.dataset.originalHtml;
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+
+        function showMessage(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 max-w-sm p-4 rounded-lg shadow-lg text-white font-medium z-50 transition-all duration-300 transform translate-y-0 ${isError ? 'bg-red-600' : 'bg-emerald-600'}`;
+            toast.innerHTML = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        // --- Password Regex ---
+        const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        // ==========================================
+        // BACKEND INTEGRATION (Google Apps Script)
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuM3IoJApIjo7YJfhrIeY9AorkuuLARm9FMvLVy94Cvu0YTjeY_FW7X7fQA1kEhMH26Q/exec";
+        const currentUser = { email: '', tempCode: '' };
+
+        async function postData(data) {
+            try {
+                // ใช้ text/plain เพื่อเลี่ยงปัญหา CORS preflight ของ GAS และเพิ่ม redirect
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow', // จำเป็นมากสำหรับ Google Apps Script
+                    body: JSON.stringify(data),
+                    headers: { 
+                        'Content-Type': 'text/plain;charset=utf-8' 
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.warn("หมายเหตุ: การเชื่อมต่อถูกบล็อกโดย Sandbox ของหน้าต่างพรีวิว กรุณาเปิดไฟล์ .html บนเครื่องเพื่อใช้งานจริง");
+                
+                // แจ้งเตือนผู้ใช้งานเมื่อเชื่อมต่อ API ไม่ได้
+                showMessage("ระบบกำลังรันบนหน้าต่างพรีวิว (Sandbox)<br><span class='text-xs'>ใช้โหมดจำลอง (Simulation) เพื่อให้เทส UI ต่อได้</span>", true);
+                
+                // คืนค่าเป็น Mock Data เพื่อให้ผู้ใช้สามารถทดสอบการเปลี่ยนหน้าเว็บ (UI Flow) ต่อไปได้
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve({ success: true, message: "ทำงานสำเร็จผ่าน Simulation Mode" });
+                    }, 1200); // ดีเลย์จำลองการโหลด 1.2 วินาที
+                });
+            }
+        }
+
+        async function handleWhitelist(e) {
+            e.preventDefault();
+            const email = document.getElementById('wl-email').value;
+            const name = document.getElementById('wl-name').value;
+            const reason = document.getElementById('wl-reason').value;
+            
+            showLoading('btn-whitelist');
+            
+            let res = await postData({ action: 'whitelist', email, name, reason });
+            
+            hideLoading('btn-whitelist');
+            if (res && res.success) {
+                showMessage(i18n[currentLang].msgWlSuccess);
+                document.getElementById('form-whitelist').reset();
+                nav('screen-home');
+            } else {
+                showMessage(res.message || "เกิดข้อผิดพลาดในการส่งคำขอ", true);
+            }
+        }
+
+        async function handleVerify(e) {
+            e.preventDefault();
+            const email = document.getElementById('vf-email').value;
+            const code = document.getElementById('vf-code').value.toUpperCase();
+            
+            showLoading('btn-verify');
+
+            let res = await postData({ action: 'verify', email, code });
+
+            hideLoading('btn-verify');
+            
+            if(res && res.success) {
+                showMessage(i18n[currentLang].msgVfSuccess);
+                currentUser.email = email;
+                currentUser.tempCode = code;
+                nav('screen-password');
+            } else {
+                showMessage(res.message || i18n[currentLang].msgVfError, true);
+            }
+        }
+
+        async function handleSetPassword(e) {
+            e.preventDefault();
+            const pw1 = document.getElementById('pw-new').value;
+            const pw2 = document.getElementById('pw-confirm').value;
+
+            if (pw1 !== pw2) {
+                showMessage(i18n[currentLang].msgPwMismatch, true);
+                return;
+            }
+            if (!pwRegex.test(pw1)) {
+                showMessage(i18n[currentLang].msgPwInvalid, true);
+                return;
+            }
+
+            showLoading('btn-password');
+
+            let res = await postData({ 
+                action: 'setPassword', 
+                email: currentUser.email, 
+                code: currentUser.tempCode, 
+                password: pw1 
+            });
+
+            hideLoading('btn-password');
+            if (res && res.success) {
+                showMessage(i18n[currentLang].msgPwSuccess);
+                document.getElementById('form-password').reset();
+                nav('screen-dashboard');
+            } else {
+                showMessage(res.message || "เกิดข้อผิดพลาดในการตั้งรหัสผ่าน", true);
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('lg-email').value;
+            const pw = document.getElementById('lg-pw').value;
+
+            showLoading('btn-login');
+
+            let res = await postData({ action: 'login', email, password: pw });
+
+            hideLoading('btn-login');
+            if (res && res.success) {
+                currentUser.email = email;
+                showMessage(i18n[currentLang].msgLoginSuccess);
+                nav('screen-dashboard');
+            } else {
+                showMessage(res.message || i18n[currentLang].msgLoginError, true);
+            }
+        }
+
+        async function handleForgotPw() {
+            const email = document.getElementById('lg-email').value;
+            if(!email) {
+                showMessage(i18n[currentLang].msgForgotPrompt, true);
+                return;
+            }
+            showLoading('btn-login');
+            
+            let res = await postData({ action: 'forgotPassword', email });
+            
+            hideLoading('btn-login');
+            if (res && res.success) {
+                showMessage(i18n[currentLang].msgForgotSuccess);
+            } else {
+                showMessage(res.message || "เกิดข้อผิดพลาด ไม่พบอีเมลนี้ในระบบ", true);
+            }
+        }
+
+        async function handleDesignSubmit(e) {
+            e.preventDefault();
+            const size = document.getElementById('ds-size').value;
+            const purpose = document.getElementById('ds-purpose').value;
+            const style = document.getElementById('ds-style').value;
+            const focus = document.getElementById('ds-focus').value;
+
+            showLoading('btn-design');
+            
+            let res = await postData({
+                action: 'submitDesign',
+                email: currentUser.email,
+                size, purpose, style, focus
+            });
+
+            hideLoading('btn-design');
+            if (res && res.success) {
+                showMessage(i18n[currentLang].msgDesignSuccess);
+                document.getElementById('form-design').reset();
+            } else {
+                showMessage(res.message || "เกิดข้อผิดพลาดในการส่งข้อมูล", true);
+            }
+        }
+    </script>
+</body>
+</html>
