@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Finance Manager - ระบบจัดการเงินส่วนตัว</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Prompt', 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        /* Loading Animation for AI */
+        .ai-thinking::after {
+            content: '...';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: black; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 black, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 black, .5em 0 0 black; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Left Column: Dashboard -->
+        <div class="glass-panel p-6 col-span-1 flex flex-col gap-6 relative">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-1"><i class="fa-solid fa-wallet text-indigo-500 mr-2"></i>กระเป๋าเงินของฉัน</h2>
+                    <p class="text-sm text-gray-500">อัปเดตล่าสุด: วันนี้</p>
+                </div>
+                <!-- ปุ่มเพิ่มเงินเข้ากระเป๋า -->
+                <button onclick="openDepositModal()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 hover:scale-105 w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm" title="ออมเพิ่ม / คืนเงิน">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white shadow-lg">
+                <p class="text-indigo-100 text-sm">เงินสำรองฉุกเฉิน (คงเหลือ)</p>
+                <h3 class="text-3xl font-bold mt-1" id="emergencyBalance">฿6,000</h3>
+                <p class="text-xs text-indigo-200 mt-2"><i class="fa-solid fa-arrow-trend-up mr-1"></i> เติบโตได้ดี</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                <p class="text-gray-500 text-sm">งบยืดหยุ่นประจำเดือน</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1" id="flexBalance">฿1,000</h3>
+            </div>
+            
+            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                <p class="text-gray-500 text-sm">หนี้ที่ต้องคืนตัวเอง</p>
+                <h3 class="text-2xl font-bold text-red-500 mt-1" id="debtBalance">฿0</h3>
+                <p class="text-xs text-red-400 mt-2 hidden" id="monthlyInstallmentText">ผ่อนเดือนละ: ฿0</p>
+            </div>
+        </div>
+
+        <!-- Right Column: Loan Application & AI Evaluator -->
+        <div class="glass-panel p-6 col-span-1 md:col-span-2 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-robot text-teal-500 mr-2"></i>AI พิจารณาสินเชื่อตัวเอง</h2>
+                <span class="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full font-semibold">9arm Gateway</span>
+            </div>
+
+            <!-- Request Form -->
+            <form id="loanForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล (ผู้กู้)</label>
+                        <input type="text" id="borrowerName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="เช่น สมชาย ใจดี">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล (รับสัญญา PDF)</label>
+                        <input type="email" id="borrowerEmail" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="เช่น your@email.com">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนเงินที่ต้องการดึงมาใช้ (บาท)</label>
+                    <input type="number" id="loanAmount" required min="1" max="6000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="เช่น 1000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เหตุผลในการใช้เงิน (ยิ่งละเอียด AI ยิ่งเข้าใจ)</label>
+                    <textarea id="loanReason" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="เช่น แว่นตาหัก จำเป็นต้องใช้ทำงานด่วน"></textarea>
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md flex items-center justify-center">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> ส่งให้ AI ประเมิน
+                </button>
+            </form>
+
+            <!-- AI Response Box (Hidden by default) -->
+            <div id="aiResponseBox" class="mt-6 hidden flex-col h-full">
+                <div class="border-t border-gray-200 pt-4 flex-grow">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-robot text-teal-600"></i>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 w-full relative">
+                            <h4 class="text-sm font-bold text-gray-800 mb-2">บทวิเคราะห์จาก AI</h4>
+                            <p id="aiMessage" class="text-sm text-gray-600 leading-relaxed">
+                                <!-- Message goes here -->
+                            </p>
+                            
+                            <!-- AI Contract Terms -->
+                            <div id="aiContract" class="mt-4 bg-white border border-gray-200 rounded p-3 text-sm hidden">
+                                <h5 class="font-bold text-gray-700 border-b pb-1 mb-2">ข้อเสนอเงินกู้</h5>
+                                <ul class="text-gray-600 space-y-1">
+                                    <li>ดอกเบี้ย: <span id="termRate" class="font-semibold text-red-500"></span></li>
+                                    <li>ระยะเวลาผ่อน: <span id="termMonths" class="font-semibold"></span></li>
+                                    <li>ยอดผ่อนชำระรวมดอก: <span id="termTotal" class="font-semibold text-indigo-600"></span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons after AI response -->
+                <div id="actionButtons" class="mt-4 flex gap-3 hidden">
+                    <button id="cancelBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                        ยกเลิกการยืม
+                    </button>
+                    <button id="confirmLoanBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition shadow-md">
+                        ยืนยันการดึงเงิน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal (หน้าต่างเติมเงิน) -->
+    <div id="depositModal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform scale-95 transition-transform duration-300 mx-4" id="depositModalContent">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-piggy-bank text-green-500 mr-2"></i>ออมเงินเพิ่ม / จ่ายคืนหนี้</h3>
+                <button onclick="closeDepositModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="depositForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">นำเงินเข้ากระเป๋าเป้าหมาย</label>
+                    <select id="depositTarget" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
+                        <option value="emergency">🛡️ เงินสำรองฉุกเฉิน</option>
+                        <option value="flex">💸 งบยืดหยุ่นประจำเดือน</option>
+                        <option value="debt">📉 จ่ายคืนหนี้ (โปะหนี้ตัวเอง)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนเงิน (บาท)</label>
+                    <input type="number" id="depositAmount" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition" placeholder="เช่น 500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">บันทึกช่วยจำ (ถ้ามี)</label>
+                    <input type="text" id="depositMemo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition" placeholder="เช่น เงินเดือนออก, ค่าขนมเหลือ">
+                </div>
+                <button type="submit" id="submitDepositBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition shadow-md flex items-center justify-center mt-2">
+                    <i class="fa-solid fa-check mr-2"></i> บันทึกรายการ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State Variables
+        let currentEmergency = 6000;
+        let currentFlex = 1000;
+        let currentDebt = 0;
+        let currentMonthlyInstallment = 0;
+        let activeLoanTerms = null; // เก็บข้อมูลสัญญาจาก AI
+
+        // Web App URL ของคุณ (ช่วยให้ระบบทำงานได้จากทุกที่ ไม่จำกัดแค่ใน Google Sheet)
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz9o3NTMv8w_efnkpHHvMN6PeG56_gHCFYBySWjU6UShYJmvtqLAIRoos4fetTkCMqH/exec";
+
+        // DOM Elements
+        const loanForm = document.getElementById('loanForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const aiResponseBox = document.getElementById('aiResponseBox');
+        const aiMessage = document.getElementById('aiMessage');
+        const actionButtons = document.getElementById('actionButtons');
+        
+        // Format Currency
+        const formatMoney = (amount) => `฿${amount.toLocaleString()}`;
+
+        // Helper Function เพื่อเรียก Backend (รองรับการใช้งานทั้งใน GAS และภายนอก)
+        async function callBackend(action, data) {
+            // 1. ถ้าเปิดจากหน้าเว็บที่อยู่ในวงของ Google Script โดยตรง (ผ่าน URL .exec ที่เปิดตรงๆ)
+            if (typeof google !== 'undefined' && google.script) {
+                return new Promise((resolve, reject) => {
+                    if (action === "evaluateWithAIGAS") {
+                        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).evaluateWithAIGAS(data.amount, data.reason);
+                    } else if (action === "saveLoanTransaction") {
+                        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveLoanTransaction(data);
+                    } else if (action === "saveDepositTransaction") {
+                        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveDepositTransaction(data);
+                    }
+                });
+            }
+
+            // 2. ถ้าเปิดจากข้างนอก (เช่น รันไฟล์ HTML นี้บนมือถือตัวเอง หรือ Preview ด้านขวามือ)
+            try {
+                const payload = action === "evaluateWithAIGAS" ? { action, amount: data.amount, reason: data.reason } : { action, payload: data };
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (action === "evaluateWithAIGAS") {
+                    if (!result.success) throw new Error(result.message);
+                    return result.data; 
+                }
+                return result; 
+            } catch (error) {
+                throw new Error("ระบบเชื่อมต่อหลังบ้านล้มเหลว: " + error.message);
+            }
+        }
+
+        // Update Dashboard UI
+        function updateDashboard() {
+            document.getElementById('emergencyBalance').innerText = formatMoney(currentEmergency);
+            document.getElementById('flexBalance').innerText = formatMoney(currentFlex);
+            document.getElementById('debtBalance').innerText = formatMoney(currentDebt);
+            
+            if (currentMonthlyInstallment > 0) {
+                document.getElementById('monthlyInstallmentText').classList.remove('hidden');
+                document.getElementById('monthlyInstallmentText').innerText = `ยอดผ่อนชำระ: ${formatMoney(Math.ceil(currentMonthlyInstallment))} / เดือน`;
+            }
+        }
+
+        // Form Submit Handler
+        loanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const amount = parseInt(document.getElementById('loanAmount').value);
+            const reason = document.getElementById('loanReason').value;
+
+            if(amount > currentEmergency) {
+                showCustomAlert("จำนวนเงินที่ระบุ มากกว่าเงินสำรองฉุกเฉินที่มีอยู่ครับ");
+                return;
+            }
+
+            // Update UI to Loading State
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> AI กำลังประเมิน<span class="ai-thinking"></span>';
+            submitBtn.classList.replace('bg-indigo-600', 'bg-indigo-400');
+            
+            aiResponseBox.classList.remove('hidden');
+            actionButtons.classList.add('hidden');
+            document.getElementById('aiContract').classList.add('hidden');
+            aiMessage.innerHTML = '<span class="text-gray-400 italic">กำลังพิจารณาสินเชื่อและคำนวณดอกเบี้ย<span class="ai-thinking"></span></span>';
+
+            try {
+                // Call 9arm Gateway AI
+                const responseRaw = await evaluateWithAI(amount, reason);
+                
+                // ทำความสะอาด JSON เผื่อ AI แนบ markdown มา
+                let jsonStr = responseRaw.replace(/```json/g, '').replace(/```/g, '').trim();
+                const aiData = JSON.parse(jsonStr);
+                
+                // Display Result Message
+                aiMessage.innerHTML = aiData.ai_message.replace(/\n/g, '<br>');
+                
+                // ถ้ายอมให้อนุมัติ ให้คำนวณตัวเลขและแสดงสัญญา
+                if (aiData.approved) {
+                    activeLoanTerms = aiData;
+                    activeLoanTerms.amount = amount;
+                    
+                    // คำนวณดอกเบี้ย
+                    let totalInterest = 0;
+                    if (aiData.interest_type === 'daily') {
+                        // สมมติ 1 เดือน = 30 วัน
+                        totalInterest = amount * (aiData.interest_rate / 100) * (aiData.installments_months * 30);
+                    } else { // monthly
+                        totalInterest = amount * (aiData.interest_rate / 100) * aiData.installments_months;
+                    }
+                    
+                    const totalDebt = amount + totalInterest;
+                    const monthlyPay = totalDebt / aiData.installments_months;
+                    
+                    activeLoanTerms.totalDebt = totalDebt;
+                    
+                    // แสดง UI ข้อเสนอ
+                    document.getElementById('termRate').innerText = `${aiData.interest_rate}% (${aiData.interest_type === 'daily' ? 'รายวัน' : 'รายเดือน'})`;
+                    document.getElementById('termMonths').innerText = `${aiData.installments_months} เดือน`;
+                    document.getElementById('termTotal').innerText = `${formatMoney(Math.ceil(monthlyPay))} / เดือน (ยอดรวม ${formatMoney(Math.ceil(totalDebt))} บาท)`;
+                    
+                    document.getElementById('aiContract').classList.remove('hidden');
+                    document.getElementById('confirmLoanBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('confirmLoanBtn').classList.add('hidden'); // ไม่อนุมัติ ซ่อนปุ่มยืนยัน
+                }
+                
+                actionButtons.classList.remove('hidden');
+                
+            } catch (error) {
+                aiMessage.innerHTML = `<span class="text-red-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i> เกิดข้อผิดพลาดในการเชื่อมต่อ AI: ${error.message}</span>`;
+            } finally {
+                // Reset Button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ประเมินใหม่อีกครั้ง';
+                submitBtn.classList.replace('bg-indigo-400', 'bg-indigo-600');
+            }
+        });
+
+        // Function to call AI API
+        async function evaluateWithAI(amount, reason) {
+            return await callBackend("evaluateWithAIGAS", { amount, reason });
+        }
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            aiResponseBox.classList.add('hidden');
+            loanForm.reset();
+            activeLoanTerms = null;
+        });
+
+        document.getElementById('confirmLoanBtn').addEventListener('click', async () => {
+            if(!activeLoanTerms) return;
+            
+            // ดึงข้อมูลผู้กู้และเหตุผลในการกู้ยืมมาเก็บไว้ส่งไป Backend
+            activeLoanTerms.borrowerName = document.getElementById('borrowerName').value;
+            activeLoanTerms.borrowerEmail = document.getElementById('borrowerEmail').value;
+            activeLoanTerms.reason = document.getElementById('loanReason').value;
+            const amount = activeLoanTerms.amount;
+
+            // เปลี่ยนปุ่มเป็นสถานะกำลังโหลด (UX)
+            const confirmBtn = document.getElementById('confirmLoanBtn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึกบัญชี...';
+            confirmBtn.disabled = true;
+            
+            // ส่งข้อมูลไปบันทึกลง Google Sheet ผ่าน Helper กลาง
+            try {
+                const result = await callBackend("saveLoanTransaction", activeLoanTerms);
+                if(result.success) {
+                    processLoanSuccess(amount, originalText, confirmBtn, result.message);
+                } else {
+                    showCustomAlert(`❌ เกิดข้อผิดพลาด: ${result.message}`);
+                    confirmBtn.innerHTML = originalText;
+                    confirmBtn.disabled = false;
+                }
+            } catch(error) {
+                showCustomAlert(`❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้: ${error.message}`);
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        });
+
+        // ฟังก์ชันจัดการ UI เมื่อบันทึกบัญชีสำเร็จ
+        function processLoanSuccess(amount, originalText, confirmBtn, backendMessage) {
+            // อัปเดตยอดเงินตามสัญญาที่ AI เสนอ
+            currentEmergency -= amount;
+            currentDebt += activeLoanTerms.totalDebt;
+            
+            // คำนวณยอดผ่อนต่อเดือน
+            currentMonthlyInstallment += (activeLoanTerms.totalDebt / activeLoanTerms.installments_months);
+
+            updateDashboard();
+            
+            // ซ่อน AI Box และแสดงข้อความสำเร็จ
+            aiResponseBox.classList.add('hidden');
+            loanForm.reset();
+            
+            showCustomAlert(`✅ โอนเงินสำเร็จ ${formatMoney(amount)}\n(ยอมรับสัญญา: ดอกเบี้ย ${activeLoanTerms.interest_rate}%)\n\n📌 สถานะ: ${backendMessage || 'จัดส่งสัญญาเรียบร้อย'}\n📝 ยอดหนี้รวม ${formatMoney(Math.ceil(activeLoanTerms.totalDebt))} บาท`);
+            
+            // รีเซ็ตค่าและปุ่มกลับสู่สภาพเดิม
+            activeLoanTerms = null;
+            confirmBtn.innerHTML = originalText;
+            confirmBtn.disabled = false;
+        }
+
+        // Custom Alert UI instead of default alert()
+        function showCustomAlert(message) {
+            const alertBox = document.createElement('div');
+            alertBox.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl z-50 transform transition-all duration-300 opacity-0 translate-y-[-20px]';
+            alertBox.innerHTML = `<div class="flex items-center whitespace-pre-line">${message}</div>`;
+            document.body.appendChild(alertBox);
+            
+            // Animate in
+            setTimeout(() => {
+                alertBox.classList.remove('opacity-0', 'translate-y-[-20px]');
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                alertBox.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => alertBox.remove(), 300);
+            }, 4000);
+        }
+
+        // ระบบ Modal สำหรับการเติมเงิน (Deposit Logic)
+        const depositModal = document.getElementById('depositModal');
+        const depositModalContent = document.getElementById('depositModalContent');
+        const depositForm = document.getElementById('depositForm');
+        
+        function openDepositModal() {
+            depositModal.classList.remove('hidden');
+            setTimeout(() => {
+                depositModal.classList.remove('opacity-0');
+                depositModalContent.classList.remove('scale-95');
+                depositModalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeDepositModal() {
+            depositModal.classList.add('opacity-0');
+            depositModalContent.classList.remove('scale-100');
+            depositModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                depositModal.classList.add('hidden');
+                depositForm.reset();
+            }, 300);
+        }
+
+        depositForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const target = document.getElementById('depositTarget').value;
+            const amount = parseInt(document.getElementById('depositAmount').value);
+            const memo = document.getElementById('depositMemo').value || '-';
+            const btn = document.getElementById('submitDepositBtn');
+            const originalText = btn.innerHTML;
+            
+            // ป้องกันการจ่ายหนี้เกินยอดที่มีอยู่
+            if (target === 'debt' && amount > currentDebt) {
+                showCustomAlert("⚠️ จำนวนเงินที่ระบุ มากกว่ายอดหนี้ที่ต้องจ่ายครับ");
+                return;
+            }
+
+            // แสดงสถานะ Loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
+            
+            const depositData = { target, amount, memo };
+
+            // ส่งข้อมูลไปบันทึกผ่าน Helper กลาง
+            try {
+                const result = await callBackend("saveDepositTransaction", depositData);
+                if (result.success) {
+                    processDepositSuccess(depositData, originalText, btn);
+                } else {
+                    showCustomAlert(`❌ เกิดข้อผิดพลาด: ${result.message}`);
+                    resetDepositBtn(btn, originalText);
+                }
+            } catch (error) {
+                showCustomAlert(`❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้: ${error.message}`);
+                resetDepositBtn(btn, originalText);
+            }
+        });
+
+        function processDepositSuccess(data, originalText, btn) {
+            // อัปเดตตัวเลขหน้าแดชบอร์ดตามเป้าหมาย
+            if (data.target === 'emergency') {
+                currentEmergency += data.amount;
+            } else if (data.target === 'flex') {
+                currentFlex += data.amount;
+            } else if (data.target === 'debt') {
+                currentDebt -= data.amount;
+                // ถ้ายอดหนี้หมด ให้ซ่อนข้อความผ่อนรายเดือน
+                if(currentDebt <= 0) {
+                    currentDebt = 0;
+                    currentMonthlyInstallment = 0;
+                    document.getElementById('monthlyInstallmentText').classList.add('hidden');
+                }
+            }
+            
+            updateDashboard();
+            closeDepositModal();
+            
+            const targetName = data.target === 'emergency' ? 'เงินสำรองฉุกเฉิน' : (data.target === 'flex' ? 'งบยืดหยุ่น' : 'หนี้ค้างชำระ (ลดลง)');
+            showCustomAlert(`✅ นำเงินเข้า ${targetName} สำเร็จ\nจำนวน ${formatMoney(data.amount)}`);
+            resetDepositBtn(btn, originalText);
+        }
+
+        function resetDepositBtn(btn, originalText) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+
+    </script>
+</body>
+</html>
