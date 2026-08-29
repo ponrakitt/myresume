@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนทริปเกาะล้าน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f6f8; }
+        .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Toast Animations */
+        .toast-enter { transform: translateY(-100%); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s ease-out; }
+        .toast-exit { transform: translateY(0); opacity: 1; }
+        .toast-exit-active { transform: translateY(-100%); opacity: 0; transition: all 0.3s ease-in; }
+    </style>
+</head>
+<body class="relative min-h-screen">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none"></div>
+
+    <!-- Pre-Registration Overlay (Locked) -->
+    <div id="pre-overlay" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-40 hidden flex flex-col items-center justify-center text-white">
+        <h1 class="text-3xl font-bold mb-4 text-cyan-400">ระบบยังไม่เปิดรับลงทะเบียน</h1>
+        <p class="text-lg mb-6">จะเปิดรับลงทะเบียนในวันที่ 23 สิงหาคม 2569 เวลา 00:00 น.</p>
+        <div class="flex gap-4 text-center" id="pre-countdown">
+            <div class="bg-slate-800 p-4 rounded-lg min-w-[80px]"><span class="block text-4xl font-bold" id="pre-days">0</span><span class="text-sm text-slate-400">วัน</span></div>
+            <div class="bg-slate-800 p-4 rounded-lg min-w-[80px]"><span class="block text-4xl font-bold" id="pre-hours">0</span><span class="text-sm text-slate-400">ชม.</span></div>
+            <div class="bg-slate-800 p-4 rounded-lg min-w-[80px]"><span class="block text-4xl font-bold" id="pre-mins">0</span><span class="text-sm text-slate-400">นาที</span></div>
+            <div class="bg-slate-800 p-4 rounded-lg min-w-[80px]"><span class="block text-4xl font-bold" id="pre-secs">0</span><span class="text-sm text-slate-400">วินาที</span></div>
+        </div>
+    </div>
+
+    <!-- Post-Registration Overlay (Locked) -->
+    <div id="post-overlay" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-40 hidden flex flex-col items-center justify-center text-white">
+        <h1 class="text-3xl font-bold mb-4 text-red-400">ปิดรับลงทะเบียนแล้ว</h1>
+        <p class="text-lg">ขอบคุณที่ให้ความสนใจ หมดเขตการลงทะเบียนเมื่อวันที่ 1 ตุลาคม 2569</p>
+    </div>
+
+    <!-- Active Registration Bar (Countdown) -->
+    <div id="active-bar" class="bg-cyan-800 text-white text-center py-2 sticky top-0 z-30 hidden shadow-md">
+        <span class="text-sm md:text-base font-medium">เหลือเวลาลงทะเบียน: <span id="active-countdown" class="font-bold tracking-wider">--:--:--:--</span></span>
+    </div>
+
+    <!-- Agreement Modal (Popup) -->
+    <div id="agreement-modal" class="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-[pulse_0.3s_ease-in-out_1]">
+            
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-200 bg-cyan-50 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-cyan-800">ข้อตกลงและเงื่อนไขเฉพาะทริป (50 ข้อ)</h2>
+                <button type="button" id="btn-close-x" class="text-slate-400 hover:text-slate-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable Content) -->
+            <div id="agreement-content" class="p-6 overflow-y-auto flex-1 text-sm text-slate-700 space-y-3 relative">
+                <div class="font-semibold text-slate-900 mb-4 text-base">กรุณาเลื่อนอ่านข้อตกลงด้านล่างให้ครบถ้วนเพื่อเปิดใช้งานปุ่มยอมรับ</div>
+                
+                <div class="space-y-2">
+                    <p>1. ผู้เดินทางต้องมีอายุไม่ต่ำกว่า 18 ปีบริบูรณ์ หรือได้รับความยินยอมจากผู้ปกครองเป็นลายลักษณ์อักษร</p>
+                    <p>2. การลงทะเบียนทริปนี้ เป็นการยืนยันเข้าร่วมการเดินทางระหว่างวันที่ 23 - 25 ตุลาคม 2569 ตามที่กำหนด</p>
+                    <p>3. <b>ไม่มีการคืนเงิน (Non-refundable):</b> เมื่อท่านชำระเงินและได้รับการยืนยันแล้ว จะไม่สามารถขอคืนเงินได้ในทุกกรณี</p>
+                    <p>4. <b>ไม่สามารถเปลี่ยนตัวผู้เดินทางได้:</b> สิทธิ์การเดินทางเป็นสิทธิ์เฉพาะบุคคลตามที่ลงทะเบียนเท่านั้น</p>
+                    <p>5. ผู้เดินทางต้องมีสุขภาพร่างกายแข็งแรง ไม่มีโรคประจำตัวร้ายแรงที่เสี่ยงต่อการเดินทางหรือกิจกรรมทางน้ำ</p>
+                    <p>6. ห้ามนำสิ่งเสพติด หรือสิ่งของผิดกฎหมายทุกชนิดร่วมทริปโดยเด็ดขาด หากพบเจอจะแจ้งเจ้าหน้าที่ตำรวจทันที</p>
+                    <p>7. การเดินทางด้วยเรือข้ามฟาก ผู้โดยสารทุกคนต้องสวมเสื้อชูชีพตลอดเวลาที่อยู่บนเรือ</p>
+                    <p>8. ทางผู้จัดทริปไม่รับผิดชอบต่อความล่าช้าที่เกิดจากสภาพอากาศ หรือเหตุสุดวิสัยทางธรรมชาติ</p>
+                    <p>9. หากผู้เดินทางมาไม่ทันเวลานัดหมายขึ้นเรือ จะถือว่าท่านสละสิทธิ์ และไม่สามารถเรียกร้องค่าเสียหายใดๆ ได้</p>
+                    <p>10. ผู้เดินทางต้องดูแลสัมภาระและทรัพย์สินมีค่าของตนเอง ทางผู้จัดจะไม่รับผิดชอบหากเกิดการสูญหายหรือเสียหาย</p>
+                    <p>11. การจัดสรรห้องพักเป็นไปตามที่ผู้จัดกำหนด การขอเปลี่ยนห้องพักหน้างานอาจมีค่าใช้จ่ายเพิ่มเติมที่ผู้เดินทางต้องรับผิดชอบเอง</p>
+                    <p>12. ไม่อนุญาตให้สูบบุหรี่ในห้องพัก รถโดยสาร หรือบริเวณที่ห้ามสูบบุหรี่ตามที่กฎหมายกำหนด</p>
+                    <p>13. ผู้เดินทางต้องปฏิบัติตามกฎระเบียบของที่พัก (โรงแรม/รีสอร์ท) อย่างเคร่งครัด รวมถึงเรื่องการใช้เสียงยามวิกาล</p>
+                    <p>14. กิจกรรมทางน้ำ (เช่น ดำน้ำ, ขี่เจ็ทสกี) เป็นกิจกรรมที่ผู้เดินทางสมัครใจเข้าร่วมเอง ผู้จัดไม่รับผิดชอบต่ออุบัติเหตุที่เกิดขึ้นจากการละเมิดกฎระเบียบความปลอดภัย</p>
+                    <p>15. กรุณาแจ้งประวัติการแพ้อาหาร หรือข้อจำกัดด้านอาหารให้ผู้จัดทราบล่วงหน้าตั้งแต่วันลงทะเบียน</p>
+                    <p>16. หากมีพฤติกรรมทะเลาะวิวาท หรือก่อความวุ่นวาย ทางผู้จัดมีสิทธิ์เชิญท่านออกจากทริปทันทีโดยไม่มีการคืนเงิน</p>
+                    <p>17. การเช่ามอเตอร์ไซค์บนเกาะ ผู้เช่าต้องมีใบขับขี่และรับผิดชอบค่าใช้จ่าย/ค่าเสียหายที่เกิดจากอุบัติเหตุด้วยตนเอง</p>
+                    <p>18. กรุณารักษาสิ่งแวดล้อม ห้ามทิ้งขยะลงทะเล หรือนำทราย/ปะการังออกจากพื้นที่เกาะ</p>
+                    <p>19. ผู้เดินทางอนุญาตให้ผู้จัดทริปบันทึกภาพถ่ายและวิดีโอ เพื่อใช้ในการโปรโมทหรือประชาสัมพันธ์ในอนาคต</p>
+                    <p>20. ค่าใช้จ่ายส่วนตัวนอกเหนือจากโปรแกรม (เช่น เครื่องดื่มแอลกอฮอล์, ของฝาก) ผู้เดินทางต้องรับผิดชอบเอง</p>
+                    <p>21. ผู้จัดขอสงวนสิทธิ์ในการปรับเปลี่ยนโปรแกรมการเดินทางตามความเหมาะสม โดยคำนึงถึงความปลอดภัยเป็นหลัก</p>
+                    <p>22. ในกรณีเกิดอุบัติเหตุ ทางผู้จัดจะประสานงานนำส่งโรงพยาบาลที่ใกล้ที่สุด แต่ค่ารักษาพยาบาลเป็นความรับผิดชอบของผู้เดินทาง</p>
+                    <p>23. ประกันอุบัติเหตุ (หากมี) จะครอบคลุมเฉพาะเงื่อนไขที่ระบุไว้ในกรมธรรม์เท่านั้น</p>
+                    <p>24. ห้ามนำสัตว์เลี้ยงทุกชนิดเข้าร่วมทริป เว้นแต่จะได้รับอนุญาตเป็นกรณีพิเศษจากผู้จัด</p>
+                    <p>25. ผู้เดินทางต้องเตรียมยาประจำตัวมาเอง และแจ้งให้ทีมงานทราบหากมีอาการป่วยระหว่างทริป</p>
+                    <p>26. การดื่มแอลกอฮอล์ต้องอยู่ในขอบเขตที่เหมาะสม ไม่ก่อความเดือดร้อนรำคาญแก่ผู้ร่วมทริปท่านอื่น</p>
+                    <p>27. ห้ามส่งเสียงดังหลังเวลา 22.00 น. เพื่อเป็นการเคารพผู้เข้าพักท่านอื่นในบริเวณใกล้เคียง</p>
+                    <p>28. กรุณาใช้ทรัพยากร (น้ำ, ไฟฟ้า) ในที่พักอย่างประหยัด</p>
+                    <p>29. ของมีค่าควรเก็บไว้กับตัวตลอดเวลา ไม่ควรวางทิ้งไว้ในจุดที่ไม่มีผู้ดูแล</p>
+                    <p>30. หากมีการทำลายทรัพย์สินของทางที่พักหรือของส่วนรวม ผู้กระทำต้องชดใช้ค่าเสียหายตามจริง</p>
+                    <p>31. การเล่นน้ำทะเลต้องอยู่ในบริเวณที่ปลอดภัย และไม่ฝ่าฝืนธงเตือนอันตราย (ธงแดง)</p>
+                    <p>32. เคารพวัฒนธรรมและวิถีชีวิตของคนในพื้นที่เกาะล้าน</p>
+                    <p>33. ให้ความร่วมมือกับทีมงานและสต๊าฟผู้นำทริปอย่างเคร่งครัด</p>
+                    <p>34. หากมีข้อสงสัยหรือปัญหาใดๆ เกิดขึ้นระหว่างทริป ให้แจ้งทีมงานทันทีเพื่อแก้ไขปัญหา</p>
+                    <p>35. ทางผู้จัดไม่รับผิดชอบต่อการล่าช้าของเที่ยวบินพาณิชย์ หรือรถโดยสารสาธารณะที่ท่านใช้เดินทางมายังจุดนัดพบ</p>
+                    <p>36. ท่านรับทราบว่าเกาะล้านอาจมีข้อจำกัดเรื่องสัญญาณอินเทอร์เน็ต โทรศัพท์ และน้ำจืดในบางพื้นที่</p>
+                    <p>37. อุปกรณ์ส่วนรวมของทริป เมื่อยืมใช้แล้วต้องทำความสะอาดและส่งคืนในสภาพเดิม</p>
+                    <p>38. ห้ามลักลอบนำสิ่งของของที่พักติดตัวกลับมาโดยเด็ดขาด</p>
+                    <p>39. การรับประทานอาหารร่วมกัน กรุณาตรงต่อเวลาเพื่อไม่ให้กระทบกำหนดการของส่วนรวม</p>
+                    <p>40. ไม่อนุญาตให้นำบุคคลภายนอกที่ไม่ได้ลงทะเบียน เข้ามาร่วมกิจกรรมหรือพักในห้องพักของทริป</p>
+                    <p>41. หากท่านมีเหตุต้องแยกตัวออกจากกลุ่ม กรุณาแจ้งให้ทีมงานทราบล่วงหน้าทุกครั้ง</p>
+                    <p>42. ในกรณีฉุกเฉินระดับชาติ หรือโรคระบาด ที่ทำให้ไม่สามารถเดินทางได้ จะยึดตามนโยบายของรัฐบาลในการเลื่อน/คืนเงิน</p>
+                    <p>43. ผู้เดินทางต้องดูแลรักษาสุขอนามัยส่วนบุคคลอย่างเคร่งครัด</p>
+                    <p>44. ข้อมูลส่วนบุคคลที่ท่านกรอกในแบบฟอร์มจะถูกเก็บเป็นความลับและใช้สำหรับการจัดทริปนี้เท่านั้น</p>
+                    <p>45. ภาพถ่ายจากโดรน (ถ้ามี) จะถูกนำมาแชร์ในกลุ่มหลังจบทริป ผู้เดินทางสามารถดาวน์โหลดได้ฟรี</p>
+                    <p>46. ข้อเรียกร้องใดๆ ต้องกระทำภายใน 7 วันหลังจากการเดินทางสิ้นสุดลง</p>
+                    <p>47. ทีมงานขอสงวนสิทธิ์ในการปฏิเสธการให้บริการแก่ผู้ที่ฝ่าฝืนกฎระเบียบอย่างร้ายแรง</p>
+                    <p>48. ข้อมูลการติดต่อฉุกเฉินที่ท่านให้ไว้ ถือเป็นข้อมูลจริงและสามารถติดต่อได้ในกรณีฉุกเฉิน</p>
+                    <p>49. หากมีข้อพิพาทใดๆ เกิดขึ้น ให้ถือคำตัดสินของหัวหน้าทริปเป็นที่สิ้นสุด</p>
+                    <p>50. ข้าพเจ้าได้อ่านและทำความเข้าใจข้อตกลงทั้ง 50 ข้อนี้อย่างละเอียด และตกลงยินยอมปฏิบัติตามทุกประการ</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                <button type="button" id="btn-cancel-agreement" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition">ยกเลิก</button>
+                <button type="button" id="btn-accept-agreement" disabled class="px-5 py-2.5 bg-slate-400 text-white font-bold rounded-lg cursor-not-allowed transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    เลื่อนอ่านให้จบเพื่อยอมรับ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-3xl mx-auto p-4 md:p-8">
+        
+        <!-- Main Form UI -->
+        <div id="form-section" class="bg-white rounded-2xl shadow-lg p-6 md:p-10">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ลงทะเบียนทริปเกาะล้าน</h2>
+                <div class="bg-cyan-50 text-cyan-800 px-4 py-2 rounded-lg inline-block font-semibold mb-2">
+                    วันที่เดินทาง: 23 - 25 ตุลาคม 2569 (แก้ไขไม่ได้)
+                </div>
+                <p class="text-slate-500 text-sm">ลงทะเบียนสำหรับตัวเองเท่านั้น ไม่สามารถจองแทนผู้อื่นได้</p>
+            </div>
+
+            <form id="registrationForm" class="space-y-6">
+                <!-- Section 1 -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">ข้อมูลผู้เดินทาง</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
+                            <input type="text" name="fullName" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="เช่น สมชาย ใจดี">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อเล่น</label>
+                            <input type="text" name="nickname" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="เช่น ตูน">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="0812345678">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="you@email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Line ID</label>
+                            <input type="text" name="lineId" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="ไม่บังคับ">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="pt-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">เสนอที่พัก</h3>
+                    <p class="text-xs text-slate-500 mb-4">หากมีที่พักที่อยากแนะนำสำหรับทริปนี้ สามารถใส่ข้อมูลไว้ได้ (ไม่บังคับ)</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อที่พักที่เสนอ</label>
+                            <input type="text" name="hotelName" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="เช่น บ้านทะเลรีสอร์ท เกาะล้าน">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ราคาที่พัก (บาท)</label>
+                            <input type="number" name="hotelPrice" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="เช่น 1500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ลิงก์ Google Map</label>
+                            <input type="url" name="hotelMap" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="https://maps.google.com/...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="pt-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">ข้อมูลเพิ่มเติม</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">แพ้อาหาร / ข้อจำกัดด้านอาหาร</label>
+                            <input type="text" name="foodAllergy" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="เช่น แพ้อาหารทะเล / มังสวิรัติ / ไม่มี">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">โรคประจำตัว / ข้อควรระวังสุขภาพ</label>
+                            <input type="text" name="healthIssue" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition" placeholder="ไม่บังคับ">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agreements -->
+                <div class="space-y-4 pt-4">
+                    <label class="flex items-start bg-slate-50 p-4 rounded-lg cursor-pointer border border-slate-100 hover:bg-slate-100 transition relative">
+                        <input type="checkbox" id="policyAgreementCheckbox" required class="mt-1 w-5 h-5 text-cyan-600 rounded focus:ring-cyan-500 relative z-10">
+                        <span class="ml-3 text-sm text-slate-700 relative z-10">
+                            ข้าพเจ้าได้อ่านและยอมรับ <a href="https://ponrakit.com/Policy.html" target="_blank" class="text-cyan-600 underline font-medium">นโยบายและเงื่อนไขการเข้าร่วมทริป</a> และยืนยันว่าลงทะเบียนสำหรับตัวเองเท่านั้น <span class="text-red-500">*</span>
+                        </span>
+                    </label>
+
+                    <div class="relative group">
+                        <label id="open-modal-trigger" class="flex items-start bg-slate-50 p-4 rounded-lg cursor-pointer border border-slate-100 hover:bg-slate-100 hover:border-cyan-200 transition group-hover:shadow-sm">
+                            <input type="checkbox" id="tripAgreementCheckbox" name="tripAgreement" required class="mt-1 w-5 h-5 text-cyan-600 rounded focus:ring-cyan-500 pointer-events-none transition" onclick="return false;">
+                            <span class="ml-3 text-sm text-slate-700 pointer-events-none">
+                                ข้อตกลงและเงื่อนไขเฉพาะสำหรับทริปนี้ (50 ข้อ) รวมถึงเงื่อนไข ไม่สามารถยกเลิกหรือขอคืนเงินได้เมื่อลงทะเบียนแล้ว <span class="text-red-500">*</span><br>
+                                <span class="text-cyan-700 font-bold inline-block mt-2 bg-cyan-100 px-3 py-1.5 rounded-full pointer-events-auto animate-pulse border border-cyan-300 shadow-sm">👉 คลิกที่นี่เพื่ออ่านและยอมรับข้อตกลง</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" disabled class="w-full bg-slate-400 cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
+                    <span id="btnText">กรุณายอมรับเงื่อนไข 2 ข้อด้านบน</span>
+                    <span id="btnSpinner" class="spinner hidden"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Success Ticket UI (Hidden by default) -->
+        <div id="success-section" class="hidden bg-white rounded-2xl shadow-lg p-6 md:p-10 text-center">
+            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">ลงทะเบียนสำเร็จ!</h2>
+            <p class="text-slate-600 mb-6">สถานะการจองของคุณได้รับการยืนยันแล้ว เราได้ส่ง Boarding Pass ไปยังอีเมลของคุณ</p>
+            
+            <div class="border-2 border-dashed border-cyan-200 bg-cyan-50 rounded-xl p-6 mb-6 max-w-md mx-auto relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-cyan-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">CONFIRMED</div>
+                <h3 class="font-bold text-cyan-800 text-lg mb-1">Koh Larn Trip 2026</h3>
+                <p class="text-sm text-cyan-700 mb-4">23 - 25 ตุลาคม 2569</p>
+                
+                <div class="text-left bg-white p-4 rounded-lg shadow-sm border border-cyan-100">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider">Passenger</p>
+                    <p class="font-bold text-slate-800 text-lg mb-2" id="ticket-name">--</p>
+                    
+                    <p class="text-xs text-slate-400 uppercase tracking-wider">Ticket ID</p>
+                    <p class="font-mono text-cyan-700 font-bold mb-4" id="ticket-id">--</p>
+                    <div class="text-center">
+                         <img id="ticket-qr" src="" alt="QR Code" class="mx-auto w-[150px] h-[150px]">
+                    </div>
+                </div>
+            </div>
+
+            <button id="downloadPdfBtn" class="bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 px-6 rounded-lg transition duration-200 inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                ดาวน์โหลด Boarding Pass (PDF)
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        // REPLACE THIS WITH YOUR GAS WEB APP URL
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQ4koYhYvr9DvqMQQKqOZ6Scz7L1QtUzzKwKljr3UoYWyYHPAGEm5NqaxhLVI8QVKq/exec';
+        
+        // Target Dates
+        const START_DATE = new Date('2026-08-23T00:00:00+07:00').getTime();
+        const END_DATE = new Date('2026-10-01T23:59:59+07:00').getTime();
+
+        // UI Elements
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        let pdfBase64Data = null;
+
+        // --- TOAST NOTIFICATIONS ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bg = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-800';
+            toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg font-medium flex items-center gap-3 toast-enter pointer-events-auto`;
+            
+            const icon = type === 'success' 
+                ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-enter-active');
+            });
+
+            // Remove after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('toast-enter-active');
+                toast.classList.add('toast-exit');
+                requestAnimationFrame(() => {
+                    toast.classList.add('toast-exit-active');
+                });
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // --- TIME LOCK & COUNTDOWN LOGIC ---
+        function updateTimeState() {
+            const now = new Date().getTime();
+
+            if (now < START_DATE) {
+                // Before opening
+                document.getElementById('pre-overlay').classList.remove('hidden');
+                document.getElementById('active-bar').classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+                
+                const distance = START_DATE - now;
+                document.getElementById('pre-days').innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+                document.getElementById('pre-hours').innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                document.getElementById('pre-mins').innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('pre-secs').innerText = Math.floor((distance % (1000 * 60)) / 1000);
+            } 
+            else if (now >= START_DATE && now <= END_DATE) {
+                // During registration
+                document.getElementById('pre-overlay').classList.add('hidden');
+                document.getElementById('post-overlay').classList.add('hidden');
+                document.getElementById('active-bar').classList.remove('hidden');
+                document.body.style.overflow = 'auto';
+
+                const distance = END_DATE - now;
+                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('active-countdown').innerText = `${d} วัน ${h} ชม. ${m} นาที ${s} วิ.`;
+            } 
+            else {
+                // After closing
+                document.getElementById('pre-overlay').classList.add('hidden');
+                document.getElementById('active-bar').classList.add('hidden');
+                document.getElementById('post-overlay').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        setInterval(updateTimeState, 1000);
+        updateTimeState(); // Initial call
+
+        // --- STREAMING_CHUNK: AGREEMENT MODAL & SCROLL LOGIC ---
+        const agreementModal = document.getElementById('agreement-modal');
+        const agreementContent = document.getElementById('agreement-content');
+        const btnAcceptAgreement = document.getElementById('btn-accept-agreement');
+        const btnCancelAgreement = document.getElementById('btn-cancel-agreement');
+        const btnCloseX = document.getElementById('btn-close-x');
+        const modalTrigger = document.getElementById('open-modal-trigger');
+        const tripAgreementCheckbox = document.getElementById('tripAgreementCheckbox');
+        const policyAgreementCheckbox = document.getElementById('policyAgreementCheckbox');
+
+        // ฟังก์ชันตรวจสอบการยอมรับเงื่อนไขทั้ง 2 ข้อ
+        function validateAgreements() {
+            if (policyAgreementCheckbox.checked && tripAgreementCheckbox.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-cyan-700', 'hover:bg-cyan-800');
+                btnText.innerText = 'ยืนยันการลงทะเบียน';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.remove('bg-cyan-700', 'hover:bg-cyan-800');
+                btnText.innerText = 'กรุณายอมรับเงื่อนไข 2 ข้อด้านบน';
+            }
+        }
+
+        policyAgreementCheckbox.addEventListener('change', validateAgreements);
+
+        // เปิด Modal เมื่อคลิกที่ส่วนของ Checkbox หรือ ข้อความ
+        modalTrigger.addEventListener('click', (e) => {
+            e.preventDefault(); // ป้องกันการติ๊ก checkbox โดยตรง
+            agreementModal.classList.remove('hidden');
+            agreementModal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // ล็อกพื้นหลังไม่ให้เลื่อน
+            
+            // เช็คเผื่อกรณีจอใหญ่มากจนเห็นครบ 50 ข้อแต่แรก
+            setTimeout(checkScroll, 100); 
+        });
+
+        // ฟังก์ชันปิด Modal
+        function closeModal() {
+            agreementModal.classList.add('hidden');
+            agreementModal.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // คืนค่าการเลื่อนพื้นหลัง
+        }
+
+        btnCancelAgreement.addEventListener('click', closeModal);
+        btnCloseX.addEventListener('click', closeModal);
+
+        // ตรวจสอบการเลื่อน (Scroll) ว่าถึงด้านล่างหรือยัง
+        function checkScroll() {
+            // คำนวณความสูง: เพิ่ม Error margin เป็น 50px เพื่อให้เลื่อนถึงจุดสุดท่ายได้ง่ายขึ้นแม้หน้าจอเล็ก
+            if (agreementContent.scrollHeight - agreementContent.scrollTop <= agreementContent.clientHeight + 50) {
+                btnAcceptAgreement.disabled = false;
+                btnAcceptAgreement.classList.remove('bg-slate-400', 'cursor-not-allowed');
+                btnAcceptAgreement.classList.add('bg-cyan-600', 'hover:bg-cyan-700', 'cursor-pointer', 'shadow-md');
+                
+                // เปลี่ยนข้อความและลบไอคอนลูกศร
+                btnAcceptAgreement.innerHTML = `<svg class="w-5 h-5 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ฉันยอมรับเงื่อนไขทั้ง 50 ข้อ`;
+            }
+        }
+
+        // จับเหตุการณ์การเลื่อนเมาส์/นิ้ว
+        agreementContent.addEventListener('scroll', checkScroll);
+
+        // เมื่อกดยอมรับ
+        btnAcceptAgreement.addEventListener('click', () => {
+            if (!btnAcceptAgreement.disabled) {
+                tripAgreementCheckbox.checked = true; // ติ๊กถูกให้
+                
+                // ทำไฮไลต์ว่ากดแล้ว
+                modalTrigger.classList.replace('bg-slate-50', 'bg-cyan-50');
+                modalTrigger.classList.add('border-cyan-300');
+                
+                closeModal();
+                validateAgreements(); // ตรวจสอบและปลดล็อกปุ่ม Submit
+            }
+        });
+
+        // --- FORM SUBMISSION ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Check Lock Again securely just in case
+            const now = new Date().getTime();
+            if(now < START_DATE || now > END_DATE) {
+                showToast('ระบบไม่ได้อยู่ในช่วงเปิดรับลงทะเบียน', 'error');
+                return;
+            }
+
+            // ตรวจสอบเงื่อนไขซ้ำอีกครั้งกันเหนียว (Double validation)
+            if (!policyAgreementCheckbox.checked || !tripAgreementCheckbox.checked) {
+                showToast('กรุณากดยอมรับเงื่อนไขทั้ง 2 ข้อก่อนยืนยัน', 'error');
+                return;
+            }
+
+            // Prepare Data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Hardcode dates as requested
+            data.travelDates = "23 - 25 ตุลาคม 2569";
+
+            // UI Loading state
+            btnText.innerText = 'กำลังประมวลผล...';
+            btnSpinner.classList.remove('hidden');
+            submitBtn.disabled = true;
+            submitBtn.classList.replace('bg-cyan-700', 'bg-slate-400');
+            submitBtn.classList.replace('hover:bg-cyan-800', 'hover:bg-slate-400');
+
+            try {
+                // เช็คว่าได้เปลี่ยน URL GAS หรือยัง
+                if (GAS_WEB_APP_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+                    throw new Error('ระบบยังไม่พร้อมใช้งาน (กรุณาตั้งค่า URL GAS ก่อน)');
+                }
+
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // ใช้ text/plain เลี่ยงปัญหา CORS
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showToast('ลงทะเบียนสำเร็จ!', 'success');
+                    
+                    // Hide form, show success UI
+                    document.getElementById('form-section').classList.add('hidden');
+                    document.getElementById('success-section').classList.remove('hidden');
+                    
+                    // Update Ticket UI
+                    document.getElementById('ticket-name').innerText = data.fullName;
+                    document.getElementById('ticket-id').innerText = result.ticketId;
+                    
+                    // Update QR
+                    document.getElementById('ticket-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(result.ticketId)}`;
+                    
+                    // Store PDF base64 for download
+                    pdfBase64Data = result.pdfBase64;
+                    
+                    // Scroll to ticket
+                    document.getElementById('success-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    throw new Error(result.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                
+            } finally {
+                // Reset Button state
+                btnText.innerText = 'ยืนยันการลงทะเบียน';
+                btnSpinner.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.replace('bg-slate-400', 'bg-cyan-700');
+                submitBtn.classList.replace('hover:bg-slate-400', 'hover:bg-cyan-800');
+            }
+        });
+
+        // --- DOWNLOAD PDF FUNCTION ---
+        document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+            if (!pdfBase64Data) {
+                showToast('ไม่พบไฟล์ PDF', 'error');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.href = 'data:application/pdf;base64,' + pdfBase64Data;
+            link.download = `BoardingPass_${document.getElementById('ticket-id').innerText}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+    </script>
+</body>
+</html>
