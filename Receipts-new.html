@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ระบบใบเสร็จรับเงิน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family:'Sarabun',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); margin:0; padding:20px; min-height:100vh; }
+.container { max-width:1000px; margin:0 auto; }
+h1 { text-align:center; color:#fff; font-size:2.5rem; margin-bottom:30px; text-shadow:2px 2px 4px rgba(0,0,0,.3); font-weight:700; }
+.hidden { display:none !important; }
+.form-container { background:rgba(255,255,255,.95); backdrop-filter:blur(10px); border-radius:20px; padding:40px; box-shadow:0 20px 40px rgba(0,0,0,.1); border:1px solid rgba(255,255,255,.2); }
+fieldset { border:2px solid #e3f2fd; border-radius:15px; padding:25px; margin-bottom:25px; background:linear-gradient(145deg,#fff,#f8f9ff); box-shadow:inset 0 2px 4px rgba(0,0,0,.05); }
+legend { font-weight:700; font-size:1.3rem; color:#1976d2; padding:0 15px; background:#fff; border-radius:25px; box-shadow:0 4px 8px rgba(0,0,0,.1); }
+label { display:block; margin-top:15px; font-weight:600; color:#333; font-size:1.1rem; margin-bottom:8px; }
+input[type=text],input[type=number],input[type=date],input[type=password] { width:100%; padding:12px 16px; border-radius:12px; border:2px solid #e1e5e9; font-size:1rem; transition:all .3s ease; background:#fff; font-family:inherit; }
+input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 0 3px rgba(25,118,210,.1); }
+#itemsContainer { margin-top:20px; border:2px solid #e3f2fd; border-radius:15px; background:linear-gradient(145deg,#fafbff,#f0f4ff); padding:20px; }
+.items-header,.item-row { display:grid; grid-template-columns:5fr 1fr 2fr 2fr 1fr; gap:12px; align-items:center; }
+.items-header { margin-bottom:15px; font-weight:700; color:#1976d2; text-align:center; }
+.item-row { margin-bottom:15px; padding:15px; background:#fff; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,.08); }
+.item-row input { padding:10px 12px; border-radius:8px; border:1px solid #ddd; }
+.item-total { background:#f8f9fa !important; font-weight:600; color:#1976d2; }
+.remove-item-btn { background:linear-gradient(145deg,#ff4757,#ff3742); border:none; color:#fff; border-radius:50%; cursor:pointer; width:40px; height:40px; box-shadow:0 4px 8px rgba(255,71,87,.3); }
+#addItemBtn { margin-top:15px; background:linear-gradient(145deg,#2ed573,#2cb865); color:#fff; font-weight:700; padding:12px 24px; border:none; border-radius:12px; cursor:pointer; font-size:1.1rem; box-shadow:0 6px 12px rgba(46,213,115,.3); font-family:inherit; }
+.button-container { display:flex; gap:20px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+.btn-primary,.btn-secondary { color:#fff; font-weight:700; font-size:1.2rem; padding:15px 30px; border:none; border-radius:15px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; }
+.btn-primary { background:linear-gradient(145deg,#1976d2,#1565c0); box-shadow:0 8px 16px rgba(25,118,210,.3); }
+.btn-secondary { background:linear-gradient(145deg,#ff6b6b,#ee5253); box-shadow:0 8px 16px rgba(255,107,107,.3); }
+button:disabled { opacity:.6; cursor:not-allowed; }
+.btn-mini { border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit; }
+.btn-grey { background:#374151; color:#fff; } .btn-light { background:#e5e7eb; color:#111827; }
+.hint { color:#6b7280; font-size:.9rem; margin-top:6px; display:block; }
+.inline-field { display:flex; gap:8px; align-items:center; }
+.sig-controls { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.sig-preview { display:none; margin-top:10px; border:1px solid #d1d5db; background:#fff; padding:6px; border-radius:6px; }
+.sig-preview img { max-width:280px; max-height:120px; }
+
+/* Link result */
+.link-box { margin-top:25px; padding:20px; border:2px solid #16a34a; background:#f0fdf4; border-radius:15px; }
+.link-box .inline-field input { background:#fff; }
+
+/* Customer card */
+.card { max-width:560px; margin:40px auto; background:rgba(255,255,255,.96); border-radius:20px; padding:36px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,.15); }
+.card i.big { font-size:3rem; margin-bottom:12px; }
+.card .btn-primary { margin:20px auto 0; }
+
+/* Receipt (B/W) */
+.receipt-container { max-width:900px; margin:0 auto; background:#fff; padding:40px; font-family:'Sarabun',sans-serif; color:#000; position:relative; line-height:1.4; }
+.receipt-header { text-align:center; border-bottom:2px solid #000; padding-bottom:20px; margin-bottom:30px; }
+.receipt-header h3 { font-size:2rem; margin:0 0 10px; }
+.receipt-header p { margin:5px 0; font-size:1.05rem; }
+.receipt-title { background:#f2f2f2; padding:12px 15px; border-radius:6px; border:1px solid #000; font-size:1.6rem; font-weight:700; text-align:center; margin:18px 0; }
+.receipt-details { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; padding:16px; background:#fafafa; border:1px solid #000; border-radius:6px; }
+.receipt-details p { margin:6px 0; font-size:1.05rem; }
+.receipt-table { width:100%; border-collapse:collapse; margin-bottom:24px; border:1px solid #000; }
+.receipt-table th { background:#e6e6e6; padding:12px; font-weight:700; text-align:left; border-bottom:1px solid #000; }
+.receipt-table td { padding:10px 12px; border-bottom:1px solid #ccc; }
+.receipt-table tr:nth-child(even) { background:#fafafa; }
+.text-right { text-align:right !important; }
+.total-row { font-weight:700; font-size:1.1rem; background:#e0e0e0 !important; }
+.total-text { font-weight:700; padding:14px; font-size:1.15rem; background:#f6f6f6; border-radius:6px; text-align:center; border:1px solid #000; }
+.signature-section { display:flex; justify-content:flex-end; margin-top:36px; padding-top:18px; border-top:1px dashed #000; }
+.signature-box { text-align:center; width:45%; }
+.signature-line { border-bottom:1px solid #000; width:80%; margin:0 auto 8px; height:1px; }
+.signature-box p { font-weight:600; margin:4px 0; }
+.sig-img { max-width:80%; max-height:120px; display:block; margin:0 auto 6px; }
+.thankyou-line { text-align:center; font-size:1.05rem; margin-top:14px; font-weight:600; }
+.print-note { text-align:right; font-size:.95rem; margin-top:10px; font-weight:600; }
+.ref-code { font-size:.85rem; margin-top:6px; }
+.barcode-head { position:absolute; top:20px; right:20px; text-align:right; }
+.barcode-head img { display:block; height:28px; margin-left:auto; }
+.barcode-text { font-size:.7rem; letter-spacing:.06em; margin-top:2px; }
+.copy-mark { font-size:1rem; font-weight:700; margin-top:6px; }
+
+/* Modal */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:9999; }
+.modal { width:min(960px,95vw); background:#fff; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,.25); overflow:hidden; }
+.modal-header { background:linear-gradient(145deg,#1976d2,#1565c0); color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+.modal-header h3 { margin:0; }
+.modal-body { padding:16px 20px; max-height:75vh; overflow:auto; background:#f7f9ff; }
+.modal-footer { padding:12px 20px; display:flex; justify-content:flex-end; gap:8px; background:#f1f4fb; }
+.close-btn { background:transparent; color:#fff; border:none; font-size:1.1rem; cursor:pointer; }
+.canvas-wrap { background:#fff; border:1px solid #d1d5db; border-radius:10px; padding:10px; }
+.sig-canvas { width:100%; height:240px; touch-action:none; cursor:crosshair; background:#fff; display:block; }
+
+#renderStage { position:absolute; left:-9999px; top:0; width:900px; }
+
+@media (max-width:768px){
+  .form-container { padding:20px; } h1 { font-size:1.8rem; }
+  .item-row,.items-header { grid-template-columns:1fr; gap:8px; }
+  .receipt-details { grid-template-columns:1fr; }
+  .button-container { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><i class="fa-solid fa-file-invoice"></i> ระบบใบเสร็จรับเงิน</h1>
+
+  <!-- Loader -->
+  <div id="loadingView" class="card"><i class="fa-solid fa-spinner fa-spin big" style="color:#1976d2"></i><div>กำลังโหลด...</div></div>
+
+  <!-- ===== โหมด Customer ===== -->
+  <div id="customerView" class="card hidden">
+    <i id="cIcon" class="fa-solid fa-spinner fa-spin big" style="color:#1976d2"></i>
+    <h2 id="cTitle" style="margin:0 0 8px">กำลังเตรียมใบเสร็จ...</h2>
+    <div id="cMsg" style="color:#555"></div>
+    <button id="cRedownload" class="btn-primary hidden"><i class="fa-solid fa-download"></i> ดาวน์โหลด PDF อีกครั้ง</button>
+  </div>
+
+  <!-- ===== โหมด Admin ===== -->
+  <div id="adminView" class="form-container hidden">
+    <form id="invoiceForm">
+      <fieldset>
+        <legend><i class="fa-solid fa-building"></i> ข้อมูลบริษัท</legend>
+        <label for="companyName">ชื่อบริษัท</label>
+        <input type="text" id="companyName" required value="wanflorist.net" />
+        <label for="companyAddress">ที่อยู่บริษัท</label>
+        <input type="text" id="companyAddress" required value="698 ถนน บางแค แขวงบางแค บางแค กรุงเทพมหานคร 10160" />
+        <label for="companyPhone">เบอร์โทรศัพท์</label>
+        <input type="text" id="companyPhone" value="02-455-4747" />
+        <label for="companyTaxId">เลขประจำตัวผู้เสียภาษี</label>
+        <input type="text" id="companyTaxId" value="-" />
+      </fieldset>
+
+      <fieldset>
+        <legend><i class="fa-solid fa-user"></i> ข้อมูลลูกค้า</legend>
+        <label for="customerName">ชื่อลูกค้า</label>
+        <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
+        <label for="customerAddress">ที่อยู่ลูกค้า</label>
+        <input type="text" id="customerAddress" placeholder="ที่อยู่ลูกค้า" />
+        <label for="customerTaxId">เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label>
+        <input type="text" id="customerTaxId" placeholder="เลขประจำตัวผู้เสียภาษี" />
+      </fieldset>
+
+      <fieldset>
+        <legend><i class="fa-solid fa-file-invoice"></i> ข้อมูลใบเสร็จ</legend>
+        <label for="invoiceNumber">เลขที่ใบเสร็จ</label>
+        <div class="inline-field">
+          <input type="text" id="invoiceNumber" required placeholder="เช่น INV-2026-000001" />
+          <button type="button" id="autoGenInvoiceBtn" class="btn-mini btn-light"><i class="fa-solid fa-hashtag"></i> เลขอัตโนมัติ</button>
+        </div>
+        <label for="invoiceDate">วันที่ออกใบเสร็จ</label>
+        <input type="date" id="invoiceDate" required />
+        <label for="dueDate">ครบกำหนดชำระ (ถ้ามี)</label>
+        <input type="date" id="dueDate" />
+        <label for="payeeName">ชื่อผู้รับเงิน</label>
+        <input type="text" id="payeeName" placeholder="ชื่อผู้รับเงิน" required />
+      </fieldset>
+
+      <fieldset>
+        <legend><i class="fa-solid fa-signature"></i> ลายเซ็นผู้รับเงิน</legend>
+        <div class="sig-controls">
+          <button type="button" id="openSigPad" class="btn-mini btn-grey"><i class="fa-solid fa-pen"></i> วาดลายเซ็น</button>
+          <button type="button" id="pickSigFile" class="btn-mini btn-light"><i class="fa-solid fa-upload"></i> อัปโหลดรูป</button>
+          <button type="button" id="clearSig" class="btn-mini btn-light"><i class="fa-solid fa-eraser"></i> ล้างลายเซ็น</button>
+        </div>
+        <div class="sig-preview" id="sigPreview"><img id="sigImg" alt="Signature preview" /></div>
+        <span class="hint">ระบบจะย่อขนาดลายเซ็นอัตโนมัติเพื่อให้พอดีกับขีดจำกัดของ Google Sheets</span>
+        <input type="hidden" id="payeeSignatureDataUrl" />
+        <input type="file" id="signatureFile" accept="image/*" style="display:none" />
+      </fieldset>
+
+      <fieldset>
+        <legend><i class="fa-solid fa-cart-shopping"></i> รายการสินค้า/บริการ</legend>
+        <div class="items-header"><div>รายละเอียด</div><div>จำนวน</div><div>ราคาต่อหน่วย</div><div>รวม</div><div>ลบ</div></div>
+        <div id="itemsContainer"></div>
+        <button type="button" id="addItemBtn"><i class="fa-solid fa-plus"></i> เพิ่มรายการ</button>
+      </fieldset>
+
+      <fieldset>
+        <legend><i class="fa-solid fa-link"></i> ลิงก์สำหรับลูกค้า</legend>
+        <label for="expireDate">ลิงก์หมดอายุวันที่</label>
+        <input type="date" id="expireDate" required />
+        <span class="hint">ลูกค้าเปิดลิงก์ได้ถึงสิ้นวันที่นี้ (เวลาไทย)</span>
+        <div id="pinWrap" class="hidden">
+          <label for="adminPin">รหัส Admin</label>
+          <input type="password" id="adminPin" autocomplete="off" />
+        </div>
+      </fieldset>
+
+      <div class="button-container">
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-eye"></i> ดูตัวอย่างใบเสร็จ</button>
+        <button type="button" id="saveBtn" class="btn-secondary"><i class="fa-solid fa-cloud-arrow-up"></i> บันทึกและสร้างลิงก์</button>
+      </div>
+
+      <div id="linkBox" class="link-box hidden">
+        <strong><i class="fa-solid fa-circle-check" style="color:#16a34a"></i> สร้างลิงก์สำเร็จ</strong>
+        <div class="inline-field" style="margin-top:10px">
+          <input type="text" id="linkOut" readonly />
+          <button type="button" id="copyLinkBtn" class="btn-mini btn-grey"><i class="fa-solid fa-copy"></i> คัดลอก</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Preview -->
+<div id="previewModal" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header"><h3><i class="fa-solid fa-eye"></i> ตัวอย่างใบเสร็จ</h3><button class="close-btn" id="previewClose"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body" id="previewBody"></div>
+    <div class="modal-footer"><button class="btn-mini btn-light" id="previewClose2">ปิด</button></div>
+  </div>
+</div>
+
+<!-- Modal: Signature -->
+<div id="sigModal" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header"><h3><i class="fa-solid fa-pen"></i> วาดลายเซ็นผู้รับเงิน</h3><button class="close-btn" id="sigClose"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="canvas-wrap"><canvas id="sigCanvas" class="sig-canvas"></canvas></div>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button type="button" id="sigClearBtn" class="btn-mini btn-light"><i class="fa-solid fa-eraser"></i> ล้าง</button>
+        <button type="button" id="sigSaveBtn" class="btn-mini btn-grey"><i class="fa-solid fa-check"></i> ใช้ลายเซ็นนี้</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-mini btn-light" id="sigClose2">ปิด</button></div>
+  </div>
+</div>
+
+<div id="renderStage"></div>
+
+<script>
+/* ================= Utils ================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const todayStr = (add = 0) => { const d = new Date(Date.now() + add * 864e5); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const randStr = (len, chars) => { const a = new Uint32Array(len); crypto.getRandomValues(a); return Array.from(a, (n) => chars[n % chars.length]).join(''); };
+const show = (id) => { ['loadingView', 'customerView', 'adminView'].forEach((v) => $(v).classList.toggle('hidden', v !== id)); };
+const gas = (fn, ...args) => new Promise((ok, fail) => google.script.run.withSuccessHandler(ok).withFailureHandler(fail)[fn](...args));
+
+function convertNumberToThaiText(amount) {
+  const txtnum = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"], txtdigit = ["","สิบ","ร้อย","พัน","หมื่น","แสน","ล้าน"];
+  if (typeof amount !== 'number') amount = parseFloat(amount); if (isNaN(amount)) return "";
+  amount = amount.toFixed(2);
+  const [ip, dp] = amount.split('.'); let t = ""; const len = ip.length;
+  for (let i = 0; i < len; i++) {
+    const d = parseInt(ip.charAt(i)), p = len - i - 1;
+    if (d !== 0) {
+      if (p === 0 && d === 1 && len > 1) t += "เอ็ด"; else if (p === 1 && d === 2) t += "ยี่"; else if (p === 1 && d === 1) t += ""; else t += txtnum[d];
+      t += txtdigit[p] || "";
+    }
+  }
+  if (t === "") t = txtnum[0]; t += "บาท";
+  if (dp === "00") t += "ถ้วน";
+  else {
+    let s = ""; const d1 = parseInt(dp.charAt(0)), d2 = parseInt(dp.charAt(1));
+    if (d1 !== 0) { if (d1 === 1) s += "สิบ"; else if (d1 === 2) s += "ยี่สิบ"; else s += txtnum[d1] + "สิบ"; }
+    if (d2 !== 0) { if (d2 === 1 && d1 !== 0) s += "เอ็ด"; else s += txtnum[d2]; }
+    t += s + "สตางค์";
+  }
+  return t;
+}
+
+function barcodeDataUrl(code) {
+  try {
+    const c = document.createElement('canvas');
+    JsBarcode(c, code || '', { format: 'CODE128', width: 1, height: 28, displayValue: false, margin: 0 });
+    return c.toDataURL('image/png');
+  } catch (e) { return ''; }
+}
+
+/* ================= Receipt renderer (ใช้ทั้ง preview และ PDF) ================= */
+function buildReceiptHTML(d, printNo) {
+  let total = 0;
+  const rows = (d.items || []).map((it) => {
+    const q = Number(it.quantity) || 0, p = Number(it.price) || 0, a = q * p; total += a;
+    return `<tr><td>${esc(it.description)}</td><td class="text-right">${q}</td><td class="text-right">${p.toFixed(2)}</td><td class="text-right">${a.toFixed(2)}</td></tr>`;
+  }).join('');
+  const bc = d.serial ? barcodeDataUrl(d.serial) : '';
+  const printLabel = printNo ? `พิมพ์ครั้งที่ ${printNo}` : 'ตัวอย่าง (ยังไม่นับครั้งที่พิมพ์)';
+  return `<div class="receipt-container">
+    <div class="barcode-head">
+      ${bc ? `<img src="${bc}" alt="barcode">` : ''}
+      ${d.serial ? `<div class="barcode-text">${esc(d.serial)}</div>` : ''}
+      <div class="copy-mark">${esc(printLabel)}</div>
+    </div>
+    <div class="receipt-header">
+      <h3>${esc(d.companyName)}</h3>
+      <p>${esc(d.companyAddress)}</p>
+      <p>โทรศัพท์: ${esc(d.companyPhone || '-')}</p>
+      <p>เลขประจำตัวผู้เสียภาษี: ${esc(d.companyTaxId || '-')}</p>
+    </div>
+    <div class="receipt-title">ใบเสร็จรับเงิน</div>
+    <div class="receipt-details">
+      <div>
+        <p><strong>ชื่อลูกค้า:</strong> ${esc(d.customerName || '-')}</p>
+        <p><strong>ที่อยู่ลูกค้า:</strong> ${esc(d.customerAddress || '-')}</p>
+        <p><strong>เลขประจำตัวผู้เสียภาษีลูกค้า:</strong> ${esc(d.customerTaxId || '-')}</p>
+      </div>
+      <div>
+        <p><strong>เลขที่ใบเสร็จ:</strong> ${esc(d.invoiceNumber)}</p>
+        <p><strong>วันที่ออกใบเสร็จ:</strong> ${esc(d.invoiceDate)}</p>
+        <p><strong>ครบกำหนดชำระ:</strong> ${esc(d.dueDate || '-')}</p>
+      </div>
+    </div>
+    <table class="receipt-table"><thead><tr>
+      <th>รายการสินค้า/บริการ</th><th style="width:80px;text-align:right">จำนวน</th><th style="width:120px;text-align:right">ราคาต่อหน่วย (บาท)</th><th style="width:140px;text-align:right">รวม (บาท)</th>
+    </tr></thead><tbody>${rows}
+      <tr class="total-row"><td colspan="3" class="text-right">ยอดรวมทั้งสิ้น</td><td class="text-right">${total.toFixed(2)}</td></tr>
+    </tbody></table>
+    <div class="total-text">จำนวนเงิน: ${esc(convertNumberToThaiText(total))}</div>
+    <div class="signature-section"><div class="signature-box">
+      ${d.payeeSignatureDataUrl ? `<img class="sig-img" src="${esc(d.payeeSignatureDataUrl)}" alt="signature">` : ''}
+      <div class="signature-line"></div>
+      <p>(ลงชื่อผู้รับเงิน ${esc(d.payeeName || '-')})</p>
+      <p>วันที่: ${esc(d.invoiceDate)}</p>
+    </div></div>
+    <div class="thankyou-line">ขอบคุณที่อุดหนุนและไว้วางใจเรา</div>
+    <div class="print-note">${printNo ? `เอกสารนี้ถูกพิมพ์เป็นครั้งที่ ${printNo}` : 'ตัวอย่างเอกสาร'}</div>
+  </div>`;
+}
+
+/* ================= Customer mode ================= */
+let lastPdf = null;
+
+async function renderPdf(data, printNo) {
+  const stage = $('renderStage');
+  stage.innerHTML = buildReceiptHTML(data, printNo);
+  await document.fonts.ready;
+  const el = stage.querySelector('.receipt-container');
+  const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#fff', width: 900, windowWidth: 900 });
+  stage.innerHTML = '';
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  let w = 190, h = (canvas.height * w) / canvas.width;
+  if (h > 277) { h = 277; w = (canvas.width * h) / canvas.height; } // ให้พอดี 1 หน้า A4
+  pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (210 - w) / 2, 10, w, h);
+  return pdf;
+}
+
+function setCustomerState(icon, color, title, msg) {
+  $('cIcon').className = 'fa-solid big ' + icon; $('cIcon').style.color = color;
+  $('cTitle').textContent = title; $('cMsg').textContent = msg;
+}
+
+async function startCustomer(id) {
+  show('customerView');
+  try {
+    const res = await gas('getReceiptData', id);
+    if (res.status === 'notfound') return setCustomerState('fa-circle-xmark', '#dc2626', 'ไม่พบเอกสาร', 'ลิงก์ไม่ถูกต้อง กรุณาติดต่อผู้ออกใบเสร็จ');
+    if (res.status === 'expired') return setCustomerState('fa-clock', '#d97706', 'ลิงก์หมดอายุแล้ว', 'ลิงก์นี้หมดอายุเมื่อ ' + res.expire + ' กรุณาติดต่อผู้ออกใบเสร็จ');
+    const pdf = await renderPdf(res.data, res.printCount);
+    const fileName = `ใบเสร็จ_${res.data.invoiceNumber}.pdf`;
+    lastPdf = { pdf, fileName };
+    pdf.save(fileName);
+    setCustomerState('fa-circle-check', '#16a34a', 'ดาวน์โหลดใบเสร็จแล้ว', `เอกสารนี้ถูกพิมพ์เป็นครั้งที่ ${res.printCount} • ลิงก์ใช้ได้ถึง ${res.expire}`);
+    $('cRedownload').classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    setCustomerState('fa-triangle-exclamation', '#dc2626', 'เกิดข้อผิดพลาด', 'ไม่สามารถสร้าง PDF ได้ กรุณารีเฟรชหน้านี้');
+  }
+}
+$('cRedownload').addEventListener('click', () => { if (lastPdf) lastPdf.pdf.save(lastPdf.fileName); }); // ไม่นับครั้งเพิ่ม
+
+/* ================= Admin mode ================= */
+const receiptId = randStr(20, 'abcdefghijklmnopqrstuvwxyz0123456789');
+const serialNo = randStr(15, '0123456789');
+const MAX_JSON = 49000;
+
+function updateItemTotal(row) {
+  const q = parseFloat(row.querySelector('.item-quantity').value) || 0, p = parseFloat(row.querySelector('.item-price').value) || 0;
+  row.querySelector('.item-total').value = (q * p).toFixed(2);
+}
+function addItemRow() {
+  const row = document.createElement('div'); row.className = 'item-row';
+  row.innerHTML = `<input type="text" class="item-description" placeholder="รายละเอียดสินค้า/บริการ" required />
+    <input type="number" class="item-quantity" min="1" step="1" value="1" required />
+    <input type="number" class="item-price" min="0" step="0.01" value="0.00" required />
+    <input type="text" class="item-total" readonly placeholder="0.00" />
+    <button type="button" class="remove-item-btn" title="ลบรายการ"><i class="fa-solid fa-times"></i></button>`;
+  row.addEventListener('input', () => updateItemTotal(row));
+  row.querySelector('.remove-item-btn').addEventListener('click', () => {
+    if ($('itemsContainer').children.length > 1) row.remove(); else alert('ต้องมีรายการอย่างน้อย 1 รายการ');
+  });
+  $('itemsContainer').appendChild(row); updateItemTotal(row);
+}
+
+function getFormData() {
+  const items = Array.from(document.querySelectorAll('.item-row')).map((r) => ({
+    description: r.querySelector('.item-description').value.trim(),
+    quantity: parseFloat(r.querySelector('.item-quantity').value) || 0,
+    price: parseFloat(r.querySelector('.item-price').value) || 0
+  }));
+  const v = (id) => $(id).value.trim();
+  return {
+    companyName: v('companyName'), companyAddress: v('companyAddress'), companyPhone: v('companyPhone'), companyTaxId: v('companyTaxId'),
+    customerName: v('customerName'), customerAddress: v('customerAddress'), customerTaxId: v('customerTaxId'),
+    invoiceNumber: v('invoiceNumber'), invoiceDate: $('invoiceDate').value, dueDate: $('dueDate').value, payeeName: v('payeeName'),
+    payeeSignatureDataUrl: $('payeeSignatureDataUrl').value || '', serial: serialNo, items
+  };
+}
+function validate() {
+  let bad = false;
+  ['companyName', 'companyAddress', 'invoiceNumber', 'invoiceDate', 'payeeName'].forEach((id) => {
+    const f = $(id); const empty = !f.value.trim(); f.style.borderColor = empty ? '#ff4757' : '#e1e5e9'; if (empty) bad = true;
+  });
+  if (bad) alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+  return !bad;
+}
+
+/* ลายเซ็น: ย่อให้เล็กเพื่อให้พอดีเซลล์ Sheets */
+function shrinkSignature(src) {
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 360, r = Math.min(1, maxW / img.width), w = Math.round(img.width * r), h = Math.round(img.height * r);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+      if ('filter' in x) x.filter = 'grayscale(100%)';
+      x.drawImage(img, 0, 0, w, h); res(c.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => res(''); img.src = src;
+  });
+}
+function setSignature(d) {
+  $('payeeSignatureDataUrl').value = d || '';
+  $('sigImg').src = d || ''; $('sigPreview').style.display = d ? 'inline-block' : 'none';
+}
+
+function initSignaturePad() {
+  const modal = $('sigModal'), cv = $('sigCanvas'); let drawing = false, lx = 0, ly = 0;
+  const reset = () => {
+    const ratio = Math.max(devicePixelRatio || 1, 1), w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = Math.round(w * ratio); cv.height = Math.round(h * ratio);
+    const x = cv.getContext('2d'); x.scale(ratio, ratio); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+    x.lineJoin = x.lineCap = 'round'; x.lineWidth = 2; x.strokeStyle = '#000';
+  };
+  const open = () => { modal.style.display = 'flex'; reset(); }, close = () => { modal.style.display = 'none'; };
+  const pt = (e) => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); cv.setPointerCapture(e.pointerId); drawing = true; const p = pt(e); lx = p.x; ly = p.y; });
+  cv.addEventListener('pointermove', (e) => { if (!drawing) return; const p = pt(e), x = cv.getContext('2d'); x.beginPath(); x.moveTo(lx, ly); x.lineTo(p.x, p.y); x.stroke(); lx = p.x; ly = p.y; });
+  ['pointerup', 'pointercancel'].forEach((ev) => cv.addEventListener(ev, () => { drawing = false; }));
+  $('openSigPad').addEventListener('click', open);
+  ['sigClose', 'sigClose2'].forEach((id) => $(id).addEventListener('click', close));
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  $('sigClearBtn').addEventListener('click', reset);
+  $('sigSaveBtn').addEventListener('click', async () => { setSignature(await shrinkSignature(cv.toDataURL('image/png'))); close(); });
+  $('pickSigFile').addEventListener('click', () => $('signatureFile').click());
+  $('signatureFile').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = async () => setSignature(await shrinkSignature(r.result)); r.readAsDataURL(f); e.target.value = '';
+  });
+  $('clearSig').addEventListener('click', () => setSignature(''));
+}
+
+function startAdmin() {
+  show('adminView');
+  $('invoiceDate').value = todayStr(); $('expireDate').value = todayStr(30);
+  addItemRow(); initSignaturePad();
+  $('addItemBtn').addEventListener('click', addItemRow);
+
+  $('autoGenInvoiceBtn').addEventListener('click', () => {
+    $('invoiceNumber').value = `INV-${new Date().getFullYear()}-${randStr(6, '0123456789')}`;
+  });
+
+  // Preview (ไม่นับครั้งพิมพ์ ไม่ติดต่อ Backend)
+  const pm = $('previewModal'), closePrev = () => { pm.style.display = 'none'; };
+  ['previewClose', 'previewClose2'].forEach((id) => $(id).addEventListener('click', closePrev));
+  pm.addEventListener('click', (e) => { if (e.target === pm) closePrev(); });
+  $('invoiceForm').addEventListener('submit', (e) => {
+    e.preventDefault(); if (!validate()) return;
+    $('previewBody').innerHTML = buildReceiptHTML(getFormData(), 0); pm.style.display = 'flex';
+  });
+
+  // Save -> Backend
+  $('saveBtn').addEventListener('click', async function () {
+    if (!validate()) return;
+    if (!$('expireDate').value) return alert('กรุณากำหนดวันหมดอายุของลิงก์');
+    const json = JSON.stringify(getFormData());
+    if (json.length > MAX_JSON) return alert('ข้อมูลใหญ่เกินไป กรุณาลบหรือวาดลายเซ็นใหม่ให้เล็กลง');
+    const btn = this, old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+    try {
+      const res = await gas('saveReceiptToSheet', receiptId, $('expireDate').value, json, $('adminPin').value);
+      if (!res.ok) {
+        if (/รหัส Admin/.test(res.error)) $('pinWrap').classList.remove('hidden');
+        alert(res.error);
+      } else { $('linkOut').value = res.url; $('linkBox').classList.remove('hidden'); $('linkBox').scrollIntoView({ behavior: 'smooth' }); }
+    } catch (err) { console.error(err); alert('บันทึกไม่สำเร็จ: ' + (err.message || err)); }
+    btn.disabled = false; btn.innerHTML = old;
+  });
+  $('copyLinkBtn').addEventListener('click', async () => {
+    $('linkOut').select();
+    try { await navigator.clipboard.writeText($('linkOut').value); } catch (_) { document.execCommand('copy'); }
+    alert('คัดลอกลิงก์แล้ว');
+  });
+}
+
+/* ================= Boot: อ่าน ?id= ผ่าน google.script.url ================= */
+google.script.url.getLocation((loc) => {
+  const id = loc && loc.parameter && loc.parameter.id;
+  if (id) startCustomer(String(Array.isArray(id) ? id[0] : id)); else startAdmin();
+});
+</script>
+</body>
+</html>
