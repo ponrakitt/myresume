@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ลอยกระทง · หลังบ้าน</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1024;--card:#161e3f;--fg:#f1f0e8;--mut:#9aa6cf;--gold:#ffc94d;--ok:#4cd07d;--bad:#ff6b6b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,'Prompt',sans-serif;background:var(--bg);color:var(--fg);padding:14px;max-width:900px;margin:auto}
+h1{font-size:1.3rem;color:var(--gold)}.card{background:var(--card);border-radius:14px;padding:14px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.k b{display:block;font-size:1.5rem}.k span{color:var(--mut);font-size:.8rem}
+input,button{font:inherit;padding:9px 12px;border-radius:10px;border:1px solid #33407a;background:#0d1330;color:var(--fg)}
+button{cursor:pointer}button.p{background:var(--gold);color:#2a1700;border:0;font-weight:600}
+.bar{height:10px;background:#0d1330;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--gold)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mut);margin-right:6px}
+.cols{display:flex;gap:6px;align-items:flex-end;height:110px}.cols div{flex:1;text-align:center;font-size:.7rem;color:var(--mut)}.cols i{display:block;background:var(--gold);border-radius:4px 4px 0 0;margin-bottom:3px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}td{padding:6px 4px;border-top:1px solid #26305f;vertical-align:top;word-break:break-word}
+td button{padding:3px 8px;font-size:.75rem}.mut{color:var(--mut)}.hid{opacity:.45}.wrap{overflow-x:auto}
+.i{width:1.1em;height:1.1em;vertical-align:-.2em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}.i.ok{color:var(--ok,#4cd07d)}.i.bad{color:var(--bad,#ff6b6b)}.i.warn{color:var(--gold,#ffc94d)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol><symbol id="i-flask" viewBox="0 0 24 24"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol><symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol><symbol id="i-checkc" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-sdot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></symbol></svg>
+<h1><svg class="i" aria-hidden="true"><use href="#i-wrench"/></svg> หลังบ้านลอยกระทง</h1>
+<div class="card" id="login">
+  <input id="key" type="password" placeholder="รหัสผู้ดูแล (ADMIN_KEY)" autocomplete="current-password">
+  <button class="p" id="in">เข้าสู่ระบบ</button> <span id="err" class="mut"></span>
+</div>
+<div id="app" hidden>
+  <div class="card"><span class="dot" id="dot"></span><span id="health">ตรวจสอบ…</span> <span class="mut" id="upd"></span>
+    <button id="rf" style="float:right">รีเฟรช</button></div>
+  <div class="grid" id="kpi"></div>
+  <div class="card"><div class="mut" style="margin-bottom:6px">ความจุชีต</div><div class="bar"><i id="cap"></i></div><div class="mut" id="capt"></div></div>
+  <div class="card"><div class="mut" style="margin-bottom:8px">กระทงที่ลอย 7 วันล่าสุด</div><div class="cols" id="days"></div><div class="mut" id="types" style="margin-top:8px"></div></div>
+  <div class="card"><div class="mut" style="margin-bottom:6px">ข้อผิดพลาดล่าสุดของระบบ</div><div id="errs" class="mut">–</div></div>
+  <div class="card" id="mn">
+    <b><svg class="i" aria-hidden="true"><use href="#i-wrench"/></svg> ปิดปรับปรุงเว็บ</b> <span id="mn_st" class="mut"></span><br><br>
+    <button id="mn_on"><svg class="i" aria-hidden="true"><use href="#i-ban"/></svg> ปิดปรับปรุงทันที</button> <button id="mn_off"><svg class="i" aria-hidden="true"><use href="#i-checkc"/></svg> เปิดเว็บตามปกติ</button> <button id="mn_auto"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg> ตามตารางเวลา</button><br><br>
+    <input id="mn_title" maxlength="60" placeholder="หัวข้อประกาศ (เช่น ปิดปรับปรุงระบบชั่วคราว)" style="width:100%"><br><br>
+    <textarea id="mn_msg" maxlength="400" placeholder="ข้อความแนบ เช่น เหตุผลและช่องทางติดตามข่าว" style="width:100%;height:80px;font:inherit;padding:9px 12px;border-radius:10px;border:1px solid #33407a;background:#0d1330;color:var(--fg)"></textarea><br><br>
+    <input id="mn_lt" maxlength="30" placeholder="ข้อความปุ่ม (ไม่บังคับ)"> <input id="mn_lu" placeholder="ลิงก์ https://… (ไม่บังคับ)" style="width:100%;margin-top:8px"><br><br>
+    <label>เริ่มปิด <input type="datetime-local" id="mn_s"></label> <label>คาดว่าจะเปิด <input type="datetime-local" id="mn_e"></label>
+    <div class="mut" style="margin:6px 0 10px">ก่อนถึงเวลาเริ่มปิด ผู้เข้าชมจะเห็นแถบแจ้งล่วงหน้า · เว้นเวลาเปิดว่างได้ถ้ายังไม่ทราบ · ผู้เข้าชมที่ถูกปิดจะไม่เห็นกระทงและลอยกระทงไม่ได้ แต่หน้านี้ยังใช้ได้ตามปกติ</div>
+    <button class="p" id="mn_save">บันทึกข้อความ/ตารางเวลา</button> <span id="mn_err" class="mut"></span>
+  </div>
+  <div class="card" id="an">
+    <b><svg class="i" aria-hidden="true"><use href="#i-megaphone"/></svg> ประกาศ Pop-up</b> <span class="mut">(ขึ้นให้ผู้เข้าชมเห็นเมื่อเปิดหน้าเว็บ)</span>
+    <div class="wrap"><table id="nt"></table></div><br>
+    <input id="n_title" maxlength="60" placeholder="หัวข้อ" style="width:100%"><br><br>
+    <textarea id="n_body" maxlength="400" placeholder="รายละเอียด (ขึ้นบรรทัดใหม่ได้)" style="width:100%;height:80px;font:inherit;padding:9px 12px;border-radius:10px;border:1px solid #33407a;background:#0d1330;color:var(--fg)"></textarea><br><br>
+    <input id="n_lt" maxlength="30" placeholder="ข้อความปุ่ม (ไม่บังคับ)"> <input id="n_lu" placeholder="ลิงก์ https://… (ไม่บังคับ)" style="width:100%;margin-top:8px"><br><br>
+    <label>เริ่มแสดง <input type="datetime-local" id="n_s"></label> <label>หยุดแสดง <input type="datetime-local" id="n_e"></label><br><br>
+    <select id="n_f"><option value="once">แสดงครั้งเดียวต่อคน</option><option value="daily">วันละครั้ง</option><option value="always">ทุกครั้งที่เปิดเว็บ</option></select>
+    <label><input type="checkbox" id="n_a" checked> เปิดใช้งาน</label><br><br>
+    <button class="p" id="n_save">บันทึกประกาศ</button> <button id="n_new">ล้างฟอร์ม/สร้างใหม่</button> <span id="n_err" class="mut"></span>
+  </div>
+  <div class="card" id="cc">
+    <b>ควบคุมการลอยกระทง</b> <span id="cs" class="mut"></span><br><br>
+    <button id="m_open"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg> เปิดทันที</button> <button id="m_closed"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg> ปิดทันที</button> <button id="m_auto"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg> ตามตารางเวลา</button><br><br>
+    <div class="mut" style="margin-bottom:6px">ตารางเวลา (ใช้เมื่อเลือก “ตามตารางเวลา” · เว้นว่าง = ไม่จำกัด · ใช้เวลาตามเครื่องของคุณ)</div>
+    <label>เปิด <input type="datetime-local" id="oa"></label> <label>ปิด <input type="datetime-local" id="ca"></label><br><br>
+    <input id="cm" maxlength="120" placeholder="ข้อความแจ้งผู้เข้าชม (ไม่บังคับ)" style="width:100%"><br><br>
+    <button id="csave">บันทึกตารางเวลา</button> <span id="cerr" class="mut"></span>
+  </div>
+  <div class="card" id="bp" hidden>
+    <b>ระงับสิทธิ์รหัส <span id="bc"></span></b> <span class="mut">(บันทึกเฉพาะรหัสนิรนาม ไม่มี IP/ข้อมูลส่วนตัว)</span><br><br>
+    <select id="br"><option value="abuse">หยาบคาย/ดูหมิ่น</option><option value="hate">เกลียดชัง</option><option value="spam">สแปม</option><option value="pii">ใส่ข้อมูลส่วนตัว</option><option value="other">อื่น ๆ</option></select>
+    <select id="bd"><option value="7">7 วัน</option><option value="30">30 วัน</option><option value="90">90 วัน (สูงสุด)</option></select>
+    <label><input type="checkbox" id="bh" checked> ซ่อนกระทงทั้งหมดของรหัสนี้</label><br><label><input type="checkbox" id="bi" checked> ระงับตามเครือข่ายด้วย (สูงสุด 14 วัน, ผู้ดูแลไม่เห็นค่านี้)</label><br><br>
+    <button class="p" id="bok">ยืนยันระงับ</button> <button id="bno">ยกเลิก</button>
+  </div>
+  <div class="card wrap"><div class="mut" style="margin-bottom:6px">รายการที่ถูกระงับสิทธิ์ (หมดอายุแล้วลบอัตโนมัติ ผู้ใช้อุทธรณ์ด้วยรหัสนี้)</div><table id="bt"></table></div>
+  <div class="card wrap"><div class="mut" style="margin-bottom:6px">กระทงล่าสุด (ซ่อน/ลบเนื้อหาไม่เหมาะสม)</div><table id="tb"></table></div>
+</div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbxKk3y3fuE__BVZrVVQeE3wHuInahxq4cvocYAFWkVYqDMBvDW_hR_lDwYUFW_OuzAi/exec'; // วาง URL Web App ของ Apps Script
+let key='',timer=null;
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+function icon(n,c){const s=document.createElementNS(NS,'svg');s.setAttribute('class','i'+(c?' '+c:''));s.setAttribute('aria-hidden','true');const u=document.createElementNS(NS,'use');u.setAttribute('href','#i-'+n);s.appendChild(u);return s}
+async function call(o){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...o,key})});return r.json()}
+const fmt=ts=>ts?new Date(ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'–';
+function kpi(label,val){const d=document.createElement('div');d.className='card k';d.style.margin='0';const b=document.createElement('b');b.textContent=val;const s=document.createElement('span');s.textContent=label;d.append(b,s);return d}
+async function health(){
+  const t=performance.now();
+  try{const r=await fetch(API_URL+'?action=ping&_='+Date.now());const j=await r.json();const ms=Math.round(performance.now()-t);
+    $('dot').style.background=j.ok?(ms<3000?'var(--ok)':'var(--gold)'):'var(--bad)';$('health').textContent=j.ok?'ระบบปกติ · ตอบสนอง '+ms+' ms':'ระบบผิดปกติ'}
+  catch(e){$('dot').style.background='var(--bad)';$('health').textContent='เชื่อมต่อไม่ได้'}
+}
+async function load(){
+  health();
+  let j;try{j=await call({action:'stats'})}catch(e){return}
+  if(!j.ok){if(j.err==='auth'){logout('รหัสไม่ถูกต้อง')}return}
+  const st=j.status,cf=j.cfg||{};curMode=st.mode;
+  $('cs').replaceChildren(icon('sdot',st.open?'ok':'bad'),' '+((st.open?'เปิดอยู่':'ปิดอยู่')+' · โหมด: '+({open:'เปิดทันที',closed:'ปิดทันที',auto:'ตามตารางเวลา'})[st.mode]));
+  ['open','closed','auto'].forEach(m=>$('m_'+m).className=m===st.mode?'p':'');
+  if(!dirty){$('oa').value=toL(cf.openAt);$('ca').value=toL(cf.closeAt);$('cm').value=cf.msg||''}
+  const mn=j.maint,mc=j.mcfg||{};curMn=mn.mode;
+  $('mn_st').replaceChildren(icon('sdot',mn.active?'bad':mn.upcoming?'warn':'ok'),' '+(mn.active?'กำลังปิดปรับปรุง':mn.upcoming?'มีกำหนดปิดปรับปรุง':'เว็บเปิดตามปกติ'));
+  ['on','off','auto'].forEach(m=>$('mn_'+m).className=m===mn.mode?'p':'');
+  if(!dirtyMn){$('mn_title').value=mc.title||'';$('mn_msg').value=mc.msg||'';$('mn_lt').value=mc.linkText||'';$('mn_lu').value=mc.linkUrl||'';$('mn_s').value=toL(mc.startAt);$('mn_e').value=toL(mc.endAt)}
+  anns=j.anns||[];renderAnns();
+  const k=$('kpi');k.replaceChildren(kpi('กำลังลอย',j.active),kpi('ทั้งหมดในชีต',j.total),kpi('ถูกซ่อน',j.hidden),kpi('อายุกระทงตอนนี้',Math.round(j.life/36e5)+' ชม.'),kpi('ลอยล่าสุด',fmt(j.last)));
+  const pct=Math.min(100,j.total/j.maxRows*100);$('cap').style.width=pct+'%';$('capt').textContent=j.total+' / '+j.maxRows+' แถว ('+Math.round(pct)+'%)';
+  const mx=Math.max(1,...Object.values(j.days));$('days').replaceChildren(...Object.entries(j.days).map(([d,n])=>{const c=document.createElement('div');const i=document.createElement('i');i.style.height=Math.max(2,n/mx*80)+'px';c.append(i,n+' · '+d);return c}));
+  const names={lotus:'ดอกบัว',leaf:'ใบตอง',bread:'ขนมปัง',gold:'ดอกไม้ทอง'};$('types').textContent=Object.entries(j.types).map(([t,n])=>(names[t]||t)+' '+n).join(' · ')||'–';
+  $('errs').textContent=j.errors.length?j.errors.map(e=>fmt(e.ts)+' '+e.msg).join('\n'):'ไม่มี';$('errs').style.whiteSpace='pre-wrap';
+  const tb=$('tb');tb.replaceChildren();
+  j.recent.forEach(r=>{const tr=tb.insertRow();if(r.hidden)tr.className='hid';
+    tr.insertCell().textContent=fmt(r.ts);
+    const c=tr.insertCell();c.textContent=(r.name?r.name+': ':'')+(r.wish||'(ว่าง)')+'  ['+r.code+']';
+    const a=tr.insertCell();
+    [['hide','ซ่อน'],['delete','ลบ'],['ban','แบน']].forEach(([act,l])=>{const b=document.createElement('button');b.textContent=l;b.onclick=async()=>{if(act==='ban'){openBan(r);return}if(act==='delete'&&!confirm('ลบถาวร?'))return;await call({action:act,id:r.id});load()};a.append(b,' ')})});
+  const bt=$('bt');bt.replaceChildren();
+  if(!j.bans.length){bt.insertRow().insertCell().textContent='ไม่มี'}
+  j.bans.forEach(x=>{const tr=bt.insertRow();tr.insertCell().textContent=x.code;tr.insertCell().textContent=({abuse:'หยาบคาย',hate:'เกลียดชัง',spam:'สแปม',pii:'ข้อมูลส่วนตัว',other:'อื่น ๆ'})[x.reason]||x.reason;tr.insertCell().textContent='ถึง '+fmt(x.until);
+    const b=document.createElement('button');b.textContent='ปลดแบน';b.onclick=async()=>{await call({action:'unban',code:x.code});load()};tr.insertCell().append(b)});
+  $('upd').textContent='อัปเดต '+fmt(Date.now());
+}
+function logout(m){key='';clearInterval(timer);$('app').hidden=true;$('login').hidden=false;$('err').textContent=m||''}
+$('in').onclick=async()=>{key=$('key').value;$('key').value='';if(!API_URL){$('err').textContent='ยังไม่ได้ตั้งค่า API_URL';return}
+  $('err').textContent='กำลังตรวจสอบ…';const j=await call({action:'stats'}).catch(()=>({}));
+  if(!j.ok){logout(j.err==='auth'?'รหัสไม่ถูกต้อง':'เชื่อมต่อไม่ได้');return}
+  $('login').hidden=true;$('app').hidden=false;load();timer=setInterval(load,30000)};
+$('key').onkeydown=e=>{if(e.key==='Enter')$('in').click()};
+$('rf').onclick=load;
+const mo=new MutationObserver(l=>l.forEach(m=>{const e=m.target;if(e.childNodes.length===1&&e.textContent==='บันทึกแล้ว')e.prepend(icon('check'),' ')}));
+['cerr','n_err','mn_err'].forEach(i=>mo.observe($(i),{childList:true}));
+let bid='',dirty=false,curMode='auto';
+const toL=ms=>{if(!ms)return'';const d=new Date(+ms-new Date(+ms).getTimezoneOffset()*6e4);return d.toISOString().slice(0,16)};
+const fromL=v=>v?new Date(v).getTime():0;
+['oa','ca','cm'].forEach(i=>$(i).oninput=()=>{dirty=true});
+async function saveCfg(mode){
+  const j=await call({action:'setcfg',mode,openAt:fromL($('oa').value),closeAt:fromL($('ca').value),msg:$('cm').value}).catch(()=>({}));
+  $('cerr').textContent=j.ok?'บันทึกแล้ว':(j.err==='range'?'เวลาปิดต้องอยู่หลังเวลาเปิด':'บันทึกไม่สำเร็จ');
+  if(j.ok){dirty=false;load()}
+}
+$('m_open').onclick=()=>saveCfg('open');
+$('m_closed').onclick=()=>{if(confirm('ปิดการลอยกระทงทันที?'))saveCfg('closed')};
+$('m_auto').onclick=()=>saveCfg('auto');
+$('csave').onclick=()=>saveCfg(curMode);
+let anns=[],editId='';
+const annStatus=a=>!a.active?'ปิด':(a.startAt&&Date.now()<a.startAt)?'รอเวลา':(a.endAt&&Date.now()>=a.endAt)?'หมดอายุ':'กำลังแสดง';
+function renderAnns(){
+  const t=$('nt');t.replaceChildren();
+  if(!anns.length){t.insertRow().insertCell().textContent='ยังไม่มีประกาศ';return}
+  anns.forEach(a=>{const tr=t.insertRow();tr.insertCell().textContent=a.title;
+    tr.insertCell().textContent=annStatus(a)+' · '+({once:'ครั้งเดียว',daily:'วันละครั้ง',always:'ทุกครั้ง'})[a.freq];
+    const c=tr.insertCell();
+    [['แก้ไข',()=>fillAnn(a)],[a.active?'ปิด':'เปิด',()=>saveAnn({...a,active:!a.active})],['ลบ',async()=>{if(confirm('ลบประกาศนี้?')){await call({action:'ann_del',id:a.id});load()}}]]
+      .forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=f;c.append(b,' ')})});
+}
+function fillAnn(a){editId=a?a.id:'';$('n_title').value=a?a.title:'';$('n_body').value=a?a.body:'';$('n_lt').value=a?a.linkText:'';$('n_lu').value=a?a.linkUrl:'';
+  $('n_s').value=a?toL(a.startAt):'';$('n_e').value=a?toL(a.endAt):'';$('n_f').value=a?a.freq:'once';$('n_a').checked=a?a.active:true;$('n_err').textContent=a?'กำลังแก้ไข “'+a.title+'”':''}
+async function saveAnn(o,clear){
+  const j=await call({action:'ann_save',...o}).catch(()=>({}));
+  $('n_err').textContent=j.ok?'บันทึกแล้ว':({title:'ใส่หัวข้อก่อน',range:'เวลาหยุดต้องอยู่หลังเวลาเริ่ม',limit:'ประกาศครบ 20 รายการแล้ว'})[j.err]||'บันทึกไม่สำเร็จ';
+  if(j.ok){if(clear){fillAnn();$('n_err').textContent='บันทึกแล้ว'}load()}
+}
+$('n_save').onclick=()=>saveAnn({id:editId,title:$('n_title').value,body:$('n_body').value,linkText:$('n_lt').value,linkUrl:$('n_lu').value,startAt:fromL($('n_s').value),endAt:fromL($('n_e').value),freq:$('n_f').value,active:$('n_a').checked},true);
+$('n_new').onclick=()=>fillAnn();
+let curMn='off',dirtyMn=false;
+['mn_title','mn_msg','mn_lt','mn_lu','mn_s','mn_e'].forEach(i=>$(i).oninput=()=>{dirtyMn=true});
+async function saveMn(mode){
+  const j=await call({action:'setmaint',mode,title:$('mn_title').value,msg:$('mn_msg').value,linkText:$('mn_lt').value,linkUrl:$('mn_lu').value,startAt:fromL($('mn_s').value),endAt:fromL($('mn_e').value)}).catch(()=>({}));
+  $('mn_err').textContent=j.ok?'บันทึกแล้ว':({range:'เวลาเปิดต้องอยู่หลังเวลาเริ่มปิด',nostart:'โหมดตามตารางเวลาต้องใส่เวลาเริ่มปิด'})[j.err]||'บันทึกไม่สำเร็จ';
+  if(j.ok){dirtyMn=false;load()}
+}
+$('mn_on').onclick=()=>{if(confirm('ปิดปรับปรุงเว็บทันที? ผู้เข้าชมจะเห็นหน้าประกาศแทนเว็บ'))saveMn('on')};
+$('mn_off').onclick=()=>saveMn('off');
+$('mn_auto').onclick=()=>saveMn('auto');
+$('mn_save').onclick=()=>saveMn(curMn);
+function openBan(r){bid=r.id;$('bc').textContent=r.code;$('bp').hidden=false;$('bp').scrollIntoView({behavior:'smooth'})}
+$('bno').onclick=()=>{$('bp').hidden=true};
+$('bok').onclick=async()=>{const j=await call({action:'ban',id:bid,reason:$('br').value,days:+$('bd').value,hideAll:$('bh').checked,ipToo:$('bi').checked});$('bp').hidden=true;load()};
+</script>
+</body>
+</html>
