@@ -25,8 +25,8 @@ td button{padding:3px 8px;font-size:.75rem}.mut{color:var(--mut)}.hid{opacity:.4
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol><symbol id="i-flask" viewBox="0 0 24 24"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol><symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol><symbol id="i-checkc" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-sdot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></symbol></svg>
 <h1><svg class="i" aria-hidden="true"><use href="#i-wrench"/></svg> หลังบ้านลอยกระทง</h1>
 <div class="card" id="login">
-  <input id="key" type="password" placeholder="รหัสผู้ดูแล (ADMIN_KEY)" autocomplete="current-password">
-  <button class="p" id="in">เข้าสู่ระบบ</button> <span id="err" class="mut"></span>
+  <input id="key" type="password" placeholder="รหัสผู้ดูแล (ADMIN_KEY)" autocomplete="off">
+  <label class="mut"><input type="checkbox" id="sk"> แสดงรหัส</label> <button class="p" id="in">เข้าสู่ระบบ</button> <span id="err" class="mut"></span>
 </div>
 <div id="app" hidden>
   <div class="card"><span class="dot" id="dot"></span><span id="health">ตรวจสอบ…</span> <span class="mut" id="upd"></span>
@@ -75,7 +75,7 @@ td button{padding:3px 8px;font-size:.75rem}.mut{color:var(--mut)}.hid{opacity:.4
   <div class="card wrap"><div class="mut" style="margin-bottom:6px">กระทงล่าสุด (ซ่อน/ลบเนื้อหาไม่เหมาะสม)</div><table id="tb"></table></div>
 </div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbxKk3y3fuE__BVZrVVQeE3wHuInahxq4cvocYAFWkVYqDMBvDW_hR_lDwYUFW_OuzAi/exec'; // วาง URL Web App ของ Apps Script
+const API_URL=''; // วาง URL Web App ของ Apps Script
 let key='',timer=null;
 const $=id=>document.getElementById(id);
 const NS='http://www.w3.org/2000/svg';
@@ -92,7 +92,7 @@ async function health(){
 async function load(){
   health();
   let j;try{j=await call({action:'stats'})}catch(e){return}
-  if(!j.ok){if(j.err==='auth'){logout('รหัสไม่ถูกต้อง')}return}
+  if(!j.ok){if(j.err==='auth'||j.err==='nokey'){logout(j.err==='nokey'?'เซิร์ฟเวอร์ยังไม่มี ADMIN_KEY':'รหัสไม่ถูกต้อง')}return}
   const st=j.status,cf=j.cfg||{};curMode=st.mode;
   $('cs').replaceChildren(icon('sdot',st.open?'ok':'bad'),' '+((st.open?'เปิดอยู่':'ปิดอยู่')+' · โหมด: '+({open:'เปิดทันที',closed:'ปิดทันที',auto:'ตามตารางเวลา'})[st.mode]));
   ['open','closed','auto'].forEach(m=>$('m_'+m).className=m===st.mode?'p':'');
@@ -120,10 +120,11 @@ async function load(){
   $('upd').textContent='อัปเดต '+fmt(Date.now());
 }
 function logout(m){key='';clearInterval(timer);$('app').hidden=true;$('login').hidden=false;$('err').textContent=m||''}
-$('in').onclick=async()=>{key=$('key').value;$('key').value='';if(!API_URL){$('err').textContent='ยังไม่ได้ตั้งค่า API_URL';return}
+$('in').onclick=async()=>{key=$('key').value.trim();$('key').value='';if(!API_URL){$('err').textContent='ยังไม่ได้ตั้งค่า API_URL';return}
   $('err').textContent='กำลังตรวจสอบ…';const j=await call({action:'stats'}).catch(()=>({}));
-  if(!j.ok){logout(j.err==='auth'?'รหัสไม่ถูกต้อง':'เชื่อมต่อไม่ได้');return}
+  if(!j.ok){logout(j.err==='nokey'?'เซิร์ฟเวอร์ยังไม่มี ADMIN_KEY (ตั้งผิดโปรเจกต์ หรือยังไม่ได้รัน setAdminKey)':j.err==='auth'?'รหัสไม่ถูกต้อง':'เชื่อมต่อไม่ได้');return}
   $('login').hidden=true;$('app').hidden=false;load();timer=setInterval(load,30000)};
+$('sk').onchange=()=>{$('key').type=$('sk').checked?'text':'password'};
 $('key').onkeydown=e=>{if(e.key==='Enter')$('in').click()};
 $('rf').onclick=load;
 const mo=new MutationObserver(l=>l.forEach(m=>{const e=m.target;if(e.childNodes.length===1&&e.textContent==='บันทึกแล้ว')e.prepend(icon('check'),' ')}));
