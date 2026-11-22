@@ -61,11 +61,51 @@ dialog::backdrop{background:#0b1f1a99}
 :focus-visible{outline:2px solid var(--cu);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:800px){body{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;background-image:none;padding:12px}aside button{border-left:0;border-radius:6px}.brand{padding:0 8px 0 0}.brand small{display:none}#who{margin:0;border:0;padding:0;flex-direction:row;align-items:center}.me{display:none}main{padding:18px}.wide{overflow-x:auto}.authwrap{grid-template-columns:1fr}.hero{padding:28px}.hero h1{font-size:32px}}
+
+:root[data-theme=dark]{--bg:#0e1614;--ink:#e4eee9;--mute:#8da39a;--line:#25352f;--card:#16211e;--pcb:#07251f;--pcb2:#1c8a6f}
+[data-theme=dark] th{background:#1c2a26}[data-theme=dark] tr.k:hover{background:#1f302b}
+[data-theme=dark] button,[data-theme=dark] label input,[data-theme=dark] label select,[data-theme=dark] label textarea{background:#1b2824;color:var(--ink);border-color:var(--line)}
+[data-theme=dark] button:hover{background:#243630}[data-theme=dark] button.pri{background:var(--pcb2);color:#fff}
+[data-theme=dark] aside button{background:none;color:#c4ded5}[data-theme=dark] aside button:hover{background:#ffffff14}[data-theme=dark] aside button.on{background:#ffffff1f}
+[data-theme=dark] .chip,[data-theme=dark] .meter .t,[data-theme=dark] .col{background:#1e2d28}[data-theme=dark] .sn{background:#101a17;border-color:#8da39a}
+[data-theme=dark] .late{background:#3a1d17;color:#f3b4a6}[data-theme=dark] #pr button:hover,[data-theme=dark] #pr button.on{background:#22322d}
+@keyframes up{from{opacity:0;transform:translateY(8px)}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--led) 10%,transparent)}}
+@keyframes grow{from{width:0}}
+.fade{animation:up .28s ease-out}
+tr.k,.card{animation:up .35s ease-out both;animation-delay:calc(var(--i,0)*35ms)}
+.chip.s1:before{animation:pulse 1.8s ease-in-out infinite}.late:before{animation:pulse 1s ease-in-out infinite}
+.meter i{animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.kpis .box{border-top:3px solid var(--line);transition:transform .15s}.kpis .box:hover{transform:translateY(-2px)}.kpi.bad{border-top-color:#d9462f}.kpi.amb{border-top-color:#e0a21b}
+.tool{gap:6px}.search{flex:1 1 220px;min-width:180px;padding:9px 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink)}
+.pill{border-radius:99px;padding:5px 13px;font-size:14px}.pill.on,.seg .on{background:var(--pcb2);color:#fff;border-color:var(--pcb2)}
+.seg{margin-left:auto;display:inline-flex}.seg button{border-radius:0}.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}
+.board{display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:12px;overflow-x:auto}
+.col{background:#e3e8e3;border-radius:8px;padding:10px;min-height:160px;display:flex;flex-direction:column;gap:8px}.col.over{outline:2px dashed var(--cu)}
+.colh{display:flex;justify-content:space-between;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px;cursor:grab;display:flex;flex-direction:column;gap:3px;transition:transform .15s}.card:hover{transform:translateY(-2px)}.card:active{cursor:grabbing}
+.empty{text-align:center;color:var(--mute)}
+.stepper{display:flex;margin:16px 0 8px}.st{flex:1;text-align:center;position:relative;font-size:13px;color:var(--mute)}
+.st i{display:block;width:16px;height:16px;border-radius:50%;background:var(--line);margin:0 auto 4px;position:relative;z-index:1;transition:background .4s}
+.st:not(:last-child):after{content:"";position:absolute;top:7px;left:50%;width:100%;height:2px;background:var(--line)}
+.st.ok i,.st.ok:not(:last-child):after{background:var(--pcb2)}.st b{display:block;color:var(--ink)}.st span{display:block}
+.prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:4px}.prog i{display:block;height:100%;background:var(--cu);animation:grow .9s both}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:16px}.tl div{position:relative;padding-bottom:12px}.tl i{position:absolute;left:-23px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--pcb2)}.tl b{display:block;font-weight:600}
+button.soon{border-style:dashed;color:var(--mute);background:transparent}button.soon em{font:normal 600 11px Sarabun,sans-serif;background:var(--cu);color:#fff;border-radius:99px;padding:1px 7px;margin-left:4px}
+#pal{padding:0;width:min(520px,92vw);margin-top:12vh}#pal input{width:100%;border:0;border-bottom:1px solid var(--line);padding:14px 16px;font-size:17px;background:transparent;color:var(--ink);outline:0}
+#pr{padding:6px;display:flex;flex-direction:column;max-height:50vh;overflow:auto}#pr button{border:0;text-align:left;background:transparent}#pr button.on,#pr button:hover{background:#e3ede8}
+kbd{font:600 11px 'IBM Plex Mono',monospace;border:1px solid #ffffff44;border-radius:3px;padding:0 5px;margin-left:6px}
+.conf{position:fixed;inset:0;pointer-events:none;z-index:99}
+.lnk{cursor:pointer;padding:2px 0}.lnk:hover{text-decoration:underline}
+@media(max-width:800px){.board{grid-template-columns:repeat(4,230px)}}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.card .sn{align-self:flex-start}
+[data-theme=dark] aside button{border-color:transparent}[data-theme=dark] aside button.on{border-left-color:var(--cu)}[data-theme=dark] #t{background:#e4eee9;color:#0e1614}
 </style>
 </head>
 <body>
 <aside><div class="brand"><b>FA-LIMS</b><small>Failure Analysis Lab</small></div><span id="nav" style="display:contents"></span><div id="who"></div></aside>
 <main id="main"></main>
+<dialog id="pal"><input id="pq" placeholder="พิมพ์เพื่อค้นหาเคส หรือไปยังหน้าต่าง ๆ…" oninput="palList()" onkeydown="if(event.key=='Enter'){const b=$('#pr button');if(b)b.click()}"><div id="pr"></div></dialog>
 <div id="t"></div>
 <script>
 /* ใส่ Web App URL (/exec) ที่ได้จากการ Deploy Code.gs */
@@ -90,7 +130,7 @@ async function api(action,data={}){
   }catch(e){toast(e.message=='Failed to fetch'?'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':e.message);throw e}
 }
 async function load(){S=await api('load');render()}
-async function act(a,d,msg){if(busy)return;busy=true;try{await api(a,d);if(msg)toast(msg);await load()}catch(e){}busy=false}
+async function act(a,d,msg){if(busy)return;busy=true;let ok=false;try{await api(a,d);if(msg)toast(msg);await load();ok=true}catch(e){}busy=false;return ok}
 async function login(){
   cred={email:$('#l_e').value.trim(),pass:$('#l_p').value};
   try{await api('login');sessionStorage.setItem('c',JSON.stringify(cred));view='dash';await load()}catch(e){cred=null}
@@ -116,25 +156,33 @@ function render(){
   if(!S.u){$('#nav').innerHTML='';$('#who').innerHTML='';$('#main').innerHTML=authView();return}
   if(!tabs().some(t=>t[0]==view))view='cases';
   $('#nav').innerHTML=tabs().map(([k,l])=>`<button class="${view==k&&!cur?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
-  $('#who').innerHTML=`<div class="me"><b>${esc(S.u.name)}</b>${S.u.role}</div><button onclick="pwDlg()">เปลี่ยนรหัสผ่าน</button><button onclick="logout()">ออกจากระบบ</button>`;
-  $('#main').innerHTML=(cur?V.detail:V[view])();
+  $('#who').innerHTML=`<div class="me"><b>${esc(S.u.name)}</b>${S.u.role}</div><button onclick="palOpen()">ค้นหาด่วน<kbd>Ctrl K</kbd></button><button onclick="toggleTheme()">สลับโหมดมืด/สว่าง</button><button onclick="pwDlg()">เปลี่ยนรหัสผ่าน</button><button onclick="logout()">ออกจากระบบ</button>`;
+  const m=$('#main');m.innerHTML=(cur?V.detail:V[view])();m.classList.remove('fade');void m.offsetWidth;m.classList.add('fade');after();
 }
 const chip=c=>`<span class="chip ${late(c)?'late':'s'+ST.indexOf(c.status)}">${late(c)?'เกินกำหนด · ':''}${c.status}</span>`;
 const V={
 dash(){
-  const cs=S.cases,n=s=>cs.filter(c=>c.status==s).length,mx=Math.max(1,...ST.map(n));
+  const cs=S.cases,open=cs.filter(c=>c.status!='ปิดเคส'),n=s=>cs.filter(c=>c.status==s).length,mx=Math.max(1,...ST.map(n));
+  const od=cs.filter(late),near=open.filter(c=>c.due&&days(c.due)>=0&&days(c.due)<=3);
+  const dn=cs.filter(c=>c.status=='ปิดเคส'&&doneDate(c)).map(c=>Math.max(0,Math.round((new Date(doneDate(c))-new Date(c.received))/864e5)));
+  const avg=dn.length?(dn.reduce((a,b)=>a+b,0)/dn.length).toFixed(1):'-';
   const low=S.inv.filter(i=>+i.qty<=+i.min),exp=S.inv.filter(i=>i.exp&&days(i.exp)<=30);
-  return `<h1>ภาพรวมแลป FA</h1><div class="grid">
+  const kp=(l,v,k)=>`<div class="box kpi ${k||''}"><span class="log">${l}</span><div class="big" ${/^\d+$/.test(v)?`data-n="${v}"`:''}>${v}</div></div>`;
+  const lk=c=>`<div class="lnk" onclick="cur='${c.id}';render()"><span class="sn">${esc(c.id)}</span> ${esc(c.part)} · ${left(c)}</div>`;
+  return `<h1>สวัสดี ${esc(S.u.name)}</h1><p class="log" style="margin:-10px 0 18px">${new Date().toLocaleDateString('th-TH',{dateStyle:'full'})}</p>
+  <div class="grid kpis">${kp('เคสที่ยังเปิดอยู่',String(open.length))}${kp('เกินกำหนด',String(od.length),od.length?'bad':'')}${kp('ครบกำหนดใน 3 วัน',String(near.length),near.length?'amb':'')}${kp('เวลาปิดเคสเฉลี่ย (วัน)',String(avg))}</div>
+  <div class="grid" style="margin-top:16px">
   <div class="box"><b>เคสตามสถานะ</b>${ST.map(s=>`<div class="meter"><span>${s}</span><span class="t"><i style="width:${n(s)/mx*100}%"></i></span>${n(s)}</div>`).join('')}</div>
-  <div class="box"><b>เคสเกินกำหนด</b><div class="big ${cs.some(late)?'warn':''}">${cs.filter(late).length}</div>${cs.filter(late).map(c=>`<div>${esc(c.id)} · เกิน ${-days(c.due)} วัน</div>`).join('')}</div>
+  <div class="box"><b>ต้องรีบจัดการ</b>${[...od,...near].map(lk).join('')||'<div class="log">ไม่มีเคสเร่งด่วน</div>'}</div>
   <div class="box"><b>สต็อกใกล้หมด</b>${low.map(i=>`<div>${esc(i.name)} (${i.qty}/${i.min})</div>`).join('')||'<div class="log">ไม่มี</div>'}</div>
   <div class="box"><b>ใกล้ครบสอบเทียบ/หมดอายุ (30 วัน)</b>${exp.map(i=>`<div>${esc(i.name)} · ${days(i.exp)<0?'เลยกำหนด':'อีก '+days(i.exp)+' วัน'}</div>`).join('')||'<div class="log">ไม่มี</div>'}</div></div>
-  <div class="bar" style="margin-top:16px"><button class="pri" onclick="check()">ตรวจและส่งอีเมลแจ้งเตือนตอนนี้</button><button onclick="load()">รีเฟรชข้อมูล</button></div>`;
+  <div class="bar" style="margin-top:16px"><button class="pri" onclick="check()">ตรวจและส่งอีเมลแจ้งเตือนตอนนี้</button><button onclick="load()">รีเฟรชข้อมูล</button>${soon('รายงานสถิติรายเดือน')}${soon('ส่งสรุปประจำสัปดาห์')}</div>`;
 },
 cases(){
-  return `<h1>${staff()?'เคสทั้งหมด':'เคสของฉัน'}</h1><div class="bar"><button class="pri" onclick="newCase()">เปิดเคสใหม่</button><button onclick="load()">รีเฟรช</button></div>
-  <div class="wide"><table><tr><th>เลขเคส</th><th>ลูกค้า</th><th>ชิ้นงาน / S/N</th><th>กำหนดเสร็จ</th><th>สถานะ</th></tr>
-  ${S.cases.map(c=>`<tr class="k" onclick="cur='${c.id}';render()"><td><span class="sn">${esc(c.id)}</span></td><td>${esc(c.customer)}</td><td>${esc(c.part)}<br><span class="log">${esc(c.sn)}</span></td><td>${esc(c.due)}</td><td>${chip(c)}</td></tr>`).join('')||'<tr><td colspan="5" class="log">ยังไม่มีเคส กด “เปิดเคสใหม่” เพื่อเริ่ม</td></tr>'}</table></div>`;
+  return `<h1>${staff()?'เคสทั้งหมด':'เคสของฉัน'}</h1>
+  <div class="bar"><button class="pri" onclick="newCase()">เปิดเคสใหม่</button><button onclick="load()">รีเฟรช</button><button onclick="exportCsv()">ส่งออก CSV</button>${staff()?soon('นำเข้าจาก Excel'):''}</div>
+  <div class="bar tool"><input class="search" placeholder="ค้นหาเลขเคส ลูกค้า ชิ้นงาน S/N…" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHTML()">${['ทั้งหมด',...ST,'เกินกำหนด'].map(s=>`<button class="pill ${sf==s?'on':''}" onclick="sf='${s}';render()">${s}</button>`).join('')}
+  <span class="seg"><button class="${mode=='list'?'on':''}" onclick="mode='list';render()">รายการ</button><button class="${mode=='board'?'on':''}" onclick="mode='board';render()">บอร์ด</button></span></div><div id="list">${listHTML()}</div>`;
 },
 detail(){
   const c=S.cases.find(x=>x.id==cur);if(!c){cur=null;return V.cases()}
@@ -142,17 +190,17 @@ detail(){
   const F=[['d3','D3 มาตรการกักกัน (Containment)'],['test','D4 ขั้นตอนทดสอบ / ผลที่พบ'],['rc','D4 สาเหตุราก (Root cause)'],['d5','D5 การแก้ไข (Corrective action)'],['d6','D6 การยืนยันผล'],['d7','D7 การป้องกันซ้ำ']];
   return `<div class="bar"><button onclick="go('cases')">← กลับ</button><h1 style="margin:0"><span class="sn">${esc(c.id)}</span> ${esc(c.part)}</h1>${chip(c)}</div>
   <div class="box">ลูกค้า: ${esc(c.customer)} (${esc(c.custEmail)}) · S/N: ${esc(c.sn)} · รับเมื่อ ${esc(c.received)} · กำหนด ${esc(c.due)} · ผู้รับผิดชอบ ${esc(c.owner)}<br>อาการ: ${esc(c.symptom)}</div>
-  ${ed?`<div class="bar" style="margin-top:12px">สถานะ: <select onchange="act('saveCase',{c:{id:'${c.id}',status:this.value}},'เปลี่ยนสถานะแล้ว')">${ST.map(s=>`<option ${s==c.status?'selected':''}>${s}</option>`).join('')}</select></div>`:''}
-  <h2>บันทึกการวิเคราะห์ (8D)</h2>
+  ${ed?`<div class="bar" style="margin-top:12px">สถานะ: <select onchange="setSt('${c.id}',this.value)">${ST.map(s=>`<option ${s==c.status?'selected':''}>${s}</option>`).join('')}</select></div>`:''}
+  ${stepper(c)}<h2>บันทึกการวิเคราะห์ (8D)</h2>
   ${ed?F.map(([k,l])=>`<label>${l}<textarea id="a_${k}" rows="3">${esc(c[k])}</textarea></label>`).join('')+`<div class="bar"><button class="pri" onclick="saveA('${c.id}')">บันทึกการวิเคราะห์</button></div>`
   :F.map(([k,l])=>`<p><b>${l}</b><br>${esc(c[k])||'-'}</p>`).join('')}
   <h2>รูปภาพ</h2><div class="ph">${c.photos.map(p=>`<img src="${esc(p)}" alt="รูปชิ้นงาน">`).join('')||'<span class="log">ยังไม่มีรูป</span>'}</div>
   ${ed?`<div class="bar" style="margin-top:8px"><input type="file" accept="image/*" multiple onchange="addPhotos('${c.id}',this.files)"></div>`:''}
-  <div class="bar" style="margin-top:16px"><button onclick="printRep('${c.id}')">พิมพ์ / บันทึกรายงาน 8D</button>${ed?`<button class="pri" onclick="mailRep('${c.id}')">ส่งรายงานทางอีเมล</button>`:''}</div>
-  <h2>ประวัติ</h2><div class="log">${c.log.map(l=>`${esc(l[0])} · ${esc(l[1])} · ${esc(l[2])}`).join('<br>')}</div>`;
+  <div class="bar" style="margin-top:16px"><button onclick="printRep('${c.id}')">พิมพ์ / บันทึกรายงาน 8D</button>${soon('ป้าย QR ชิ้นงาน')}${ed?soon('AI ช่วยเสนอ Root cause'):''}${ed?`<button class="pri" onclick="mailRep('${c.id}')">ส่งรายงานทางอีเมล</button>`:''}</div>
+  <h2>ไทม์ไลน์เคส</h2><div class="tl">${c.log.slice().reverse().map(l=>`<div><i></i><b>${esc(l[2])}</b><span class="log">${esc(l[0])} · ${esc(l[1])}</span></div>`).join('')}</div>`;
 },
 inv(){
-  return `<h1>เครื่องมือ / สารเคมี / ชิ้นส่วน</h1><div class="bar"><button class="pri" onclick="invDlg()">เพิ่มรายการ</button></div>
+  return `<h1>เครื่องมือ / สารเคมี / ชิ้นส่วน</h1><div class="bar"><button class="pri" onclick="invDlg()">เพิ่มรายการ</button>${soon('สแกนบาร์โค้ด')}${soon('ประวัติการเบิกใช้')}</div>
   <div class="wide"><table><tr><th>ประเภท</th><th>ชื่อ</th><th>คงเหลือ</th><th>ขั้นต่ำ</th><th>สอบเทียบ/หมดอายุ</th><th></th></tr>
   ${S.inv.map(i=>{const w=i.exp&&days(i.exp)<=30;return `<tr><td>${esc(i.type)}</td><td>${esc(i.name)}</td><td class="${+i.qty<=+i.min?'warn':''}">${i.qty}</td><td>${i.min}</td><td class="${w?'warn':''}">${esc(i.exp)||'-'}</td><td><button onclick="invDlg(${i.id})">แก้ไข</button>${boss()?` <button class="x" onclick="invDel(${i.id})">ลบ</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="log">ยังไม่มีรายการ</td></tr>'}</table></div>`;
 },
@@ -164,7 +212,7 @@ set(){
   return `<h1>ตั้งค่าอีเมลแจ้งเตือน</h1><div class="box" style="max-width:560px">
   <label>อีเมลทีมที่รับแจ้งเตือน (คั่นด้วย ,)<input id="s_to" value="${esc(S.to)}"></label>
   <div class="bar"><button class="pri" onclick="act('saveCfg',{to:$('#s_to').value},'บันทึกแล้ว')">บันทึก</button></div>
-  <p class="log">ระบบส่งแจ้งเตือนเคสเกินกำหนด สต็อก และสอบเทียบอัตโนมัติ 08:00 ทุกวัน (ต้องรัน installTrigger ใน Apps Script หนึ่งครั้ง)</p></div>`;
+  <div class="bar">${soon('แจ้งเตือนผ่าน LINE')}${soon('แจ้งเตือนผ่าน Teams')}${soon('ซิงก์ Google Calendar')}</div><p class="log">ระบบส่งแจ้งเตือนเคสเกินกำหนด สต็อก และสอบเทียบอัตโนมัติ 08:00 ทุกวัน (ต้องรัน installTrigger ใน Apps Script หนึ่งครั้ง)</p></div>`;
 }};
 
 function newCase(){
@@ -231,6 +279,48 @@ function pwDlg(){
     try{await api('changePass',{old:f.old,newPass:f.np});cred.pass=f.np;sessionStorage.setItem('c',JSON.stringify(cred));toast('เปลี่ยนรหัสผ่านแล้ว และส่งอีเมลแจ้งไปที่บัญชีของคุณ')}catch(e){}
   });
 }
+
+/* ---- ลูกเล่นและฟีเจอร์เสริม ---- */
+try{document.documentElement.dataset.theme=localStorage.getItem('th')||'light'}catch(e){}
+function toggleTheme(){const d=document.documentElement,t=d.dataset.theme=='dark'?'light':'dark';d.dataset.theme=t;try{localStorage.setItem('th',t)}catch(e){}}
+let q='',sf='ทั้งหมด',mode='list';
+const soon=l=>`<button class="soon" onclick="toast('“${l}” เร็ว ๆ นี้')">${l} <em>soon</em></button>`;
+const left=c=>{if(!c.due||c.status=='ปิดเคส')return'';const n=days(c.due);return n<0?`เกิน ${-n} วัน`:n==0?'ครบกำหนดวันนี้':`อีก ${n} วัน`};
+const doneDate=c=>{const l=c.log.slice().reverse().find(x=>/สถานะเป็น ปิดเคส/.test(x[2]));return l&&l[0]};
+const vis=()=>S.cases.filter(c=>(sf=='ทั้งหมด'||c.status==sf||(sf=='เกินกำหนด'&&late(c)))&&(!q||[c.id,c.customer,c.part,c.sn,c.symptom].join(' ').toLowerCase().includes(q.toLowerCase())));
+function listHTML(){
+  const cs=vis();
+  if(!cs.length)return `<div class="box empty">ไม่พบเคสที่ตรงกับตัวกรอง</div>`;
+  if(mode=='board')return `<div class="board">${ST.map((s,k)=>{const col=cs.filter(c=>c.status==s);return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropCase(event,'${s}')"><div class="colh"><span class="chip s${k}">${s}</span><b>${col.length}</b></div>${col.map((c,i)=>`<div class="card" style="--i:${Math.min(i,10)}" ${staff()?`draggable="true" ondragstart="event.dataTransfer.setData('text','${c.id}')"`:''} onclick="cur='${c.id}';render()"><span class="sn">${esc(c.id)}</span><div>${esc(c.part)}</div><div class="log">${esc(c.customer)}</div><div class="${late(c)?'warn':'log'}">${left(c)}</div></div>`).join('')}</div>`}).join('')}</div>`;
+  return `<div class="wide"><table><tr><th>เลขเคส</th><th>ลูกค้า</th><th>ชิ้นงาน / S/N</th><th>กำหนดเสร็จ</th><th>สถานะ</th></tr>${cs.map((c,i)=>`<tr class="k" style="--i:${Math.min(i,12)}" onclick="cur='${c.id}';render()"><td><span class="sn">${esc(c.id)}</span></td><td>${esc(c.customer)}</td><td>${esc(c.part)}<br><span class="log">${esc(c.sn)}</span></td><td>${esc(c.due)}<br><span class="${late(c)?'warn':'log'}">${left(c)}</span></td><td>${chip(c)}</td></tr>`).join('')}</table></div>`;
+}
+function dropCase(e,s){e.preventDefault();e.currentTarget.classList.remove('over');const id=e.dataTransfer.getData('text'),c=S.cases.find(x=>x.id==id);if(c&&c.status!=s)setSt(id,s)}
+async function setSt(id,s){if(await act('saveCase',{c:{id,status:s}},'เปลี่ยนสถานะแล้ว')&&s=='ปิดเคส')confetti()}
+function stepper(c){
+  const p=[['D1–2','ปัญหา',c.symptom],['D3','กักกัน',c.d3],['D4','ทดสอบ',c.test],['D4','Root cause',c.rc],['D5','แก้ไข',c.d5],['D6','ยืนยัน',c.d6],['D7','ป้องกัน',c.d7],['D8','ปิดเคส',c.status=='ปิดเคส']],k=p.filter(x=>x[2]).length;
+  return `<div class="stepper">${p.map(x=>`<div class="st ${x[2]?'ok':''}"><i></i><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div><div class="log">ความคืบหน้า 8D ${k}/${p.length}</div><div class="prog"><i style="width:${k/p.length*100}%"></i></div>`;
+}
+function exportCsv(){
+  const H=['เลขเคส','ลูกค้า','อีเมล','ชิ้นงาน','S/N','อาการ','รับเมื่อ','กำหนด','สถานะ','ผู้รับผิดชอบ','Root cause'],
+  f=v=>{v=String(v??'');return '"'+(/^[=+\-@]/.test(v)?"'":'')+v.replace(/"/g,'""')+'"'};
+  const t='\ufeff'+[H,...vis().map(c=>[c.id,c.customer,c.custEmail,c.part,c.sn,c.symptom,c.received,c.due,c.status,c.owner,c.rc])].map(r=>r.map(f).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='fa-cases-'+today()+'.csv';a.click();
+}
+function after(){
+  document.querySelectorAll('[data-n]').forEach(el=>{const t=+el.dataset.n,s=performance.now();(function f(now){const p=Math.min(1,(now-s)/700);el.textContent=Math.round(t*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(s)});
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cv=document.createElement('canvas');cv.className='conf';cv.width=innerWidth;cv.height=innerHeight;document.body.append(cv);
+  const x=cv.getContext('2d'),C=['#2fb36d','#e0a21b','#3a82d6','#c0762f','#d9462f'],P=Array.from({length:120},()=>({x:innerWidth/2,y:innerHeight*.6,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,s:4+Math.random()*5,c:C[Math.random()*5|0],r:Math.random()*6}));
+  let f=0;(function a(){x.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.r+=.2;x.fillStyle=p.c;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore()});if(++f<110)requestAnimationFrame(a);else cv.remove()})();
+}
+function palOpen(){if(!S.u)return;$('#pal').showModal();$('#pq').value='';palList();$('#pq').focus()}
+function palList(){
+  const t=$('#pq').value.toLowerCase(),it=[...tabs().map(([k,l])=>({l:'ไปที่: '+l,f:`go('${k}')`})),...S.cases.map(c=>({l:`${c.id} · ${c.part} · ${c.customer}`,f:`cur='${c.id}';render()`}))].filter(x=>x.l.toLowerCase().includes(t)).slice(0,8);
+  $('#pr').innerHTML=it.map((x,i)=>`<button class="${i?'':'on'}" onclick="$('#pal').close();${x.f}">${esc(x.l)}</button>`).join('')||'<div class="log" style="padding:10px">ไม่พบรายการ</div>';
+}
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()=='k'){e.preventDefault();palOpen()}});
 
 if(cred)load().catch(()=>{cred=null;render()});else render();
 </script>
