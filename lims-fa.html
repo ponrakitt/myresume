@@ -100,6 +100,17 @@ kbd{font:600 11px 'IBM Plex Mono',monospace;border:1px solid #ffffff44;border-ra
 @media(max-width:800px){.board{grid-template-columns:repeat(4,230px)}}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.card .sn{align-self:flex-start}
 [data-theme=dark] aside button{border-color:transparent}[data-theme=dark] aside button.on{border-left-color:var(--cu)}[data-theme=dark] #t{background:#e4eee9;color:#0e1614}
+
+.seg2{display:inline-flex;margin-bottom:12px}.seg2 button{border-radius:0}.seg2 button:first-child{border-radius:6px 0 0 6px}.seg2 button:last-child{border-radius:0 6px 6px 0}.seg2 .on{background:var(--pcb2);color:#fff;border-color:var(--pcb2)}
+.qrbody{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}.qrbody>div:last-child{flex:1;min-width:220px}
+.qrimg{width:168px;height:168px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px;flex:none}.qrimg svg{width:100%;height:100%;display:block}
+.tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}.tg{text-align:center}.tg .qrimg{width:128px;height:128px;margin:0 auto 10px}
+body.mob aside{display:none}body.mob{grid-template-columns:1fr}body.mob main{padding:14px;max-width:560px;margin:0 auto}
+.mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.stbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stbtns button{padding:14px 8px;font-size:16px}.stbtns .on{background:var(--pcb2);color:#fff;border-color:var(--pcb2)}
+.cam{display:flex;justify-content:center;padding:14px;border:2px dashed var(--cu);border-radius:8px;color:var(--cu);font-weight:600;cursor:pointer}.cam input{display:none}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:12px 0}summary{cursor:pointer;font-weight:600}
+textarea.q{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:var(--card);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -107,6 +118,11 @@ kbd{font:600 11px 'IBM Plex Mono',monospace;border:1px solid #ffffff44;border-ra
 <main id="main"></main>
 <dialog id="pal"><input id="pq" placeholder="พิมพ์เพื่อค้นหาเคส หรือไปยังหน้าต่าง ๆ…" oninput="palList()" onkeydown="if(event.key=='Enter'){const b=$('#pr button');if(b)b.click()}"><div id="pr"></div></dialog>
 <div id="t"></div>
+<script>
+/* QR encoder: QRCode for JavaScript (c) 2009 Kazuhiko Arase, MIT license (via qrcode-terminal) */
+var QRC=(()=>{var v=(t,e)=>()=>{try{return e||t((e={exports:{}}).exports,e),e.exports}catch(n){throw e=0,n}};var k=v((E1,G)=>{G.exports={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8}});var X=v((m1,U)=>{var u1=k();function K(t){this.mode=u1.MODE_8BIT_BYTE,this.data=t}K.prototype={getLength:function(){return this.data.length},write:function(t){for(var e=0;e<this.data.length;e++)t.put(this.data.charCodeAt(e),8)}};U.exports=K});var I=v((T1,Y)=>{var E={glog:function(t){if(t<1)throw new Error("glog("+t+")");return E.LOG_TABLE[t]},gexp:function(t){for(;t<0;)t+=255;for(;t>=256;)t-=255;return E.EXP_TABLE[t]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)};for(h=0;h<8;h++)E.EXP_TABLE[h]=1<<h;var h;for(h=8;h<256;h++)E.EXP_TABLE[h]=E.EXP_TABLE[h-4]^E.EXP_TABLE[h-5]^E.EXP_TABLE[h-6]^E.EXP_TABLE[h-8];var h;for(h=0;h<255;h++)E.LOG_TABLE[E.EXP_TABLE[h]]=h;var h;Y.exports=E});var b=v((d1,J)=>{var A=I();function c(t,e){if(t.length===void 0)throw new Error(t.length+"/"+e);for(var n=0;n<t.length&&t[n]===0;)n++;this.num=new Array(t.length-n+e);for(var r=0;r<t.length-n;r++)this.num[r]=t[r+n]}c.prototype={get:function(t){return this.num[t]},getLength:function(){return this.num.length},multiply:function(t){for(var e=new Array(this.getLength()+t.getLength()-1),n=0;n<this.getLength();n++)for(var r=0;r<t.getLength();r++)e[n+r]^=A.gexp(A.glog(this.get(n))+A.glog(t.get(r)));return new c(e,0)},mod:function(t){if(this.getLength()-t.getLength()<0)return this;for(var e=A.glog(this.get(0))-A.glog(t.get(0)),n=new Array(this.getLength()),r=0;r<this.getLength();r++)n[r]=this.get(r);for(var i=0;i<t.getLength();i++)n[i]^=A.gexp(A.glog(t.get(i))+e);return new c(n,0).mod(t)}};J.exports=c});var F=v((B1,x)=>{x.exports={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7}});var Z=v((L1,W)=>{var g=k(),V=b(),h1=I(),d=F(),f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(t){for(var e=t<<10;f.getBCHDigit(e)-f.getBCHDigit(f.G15)>=0;)e^=f.G15<<f.getBCHDigit(e)-f.getBCHDigit(f.G15);return(t<<10|e)^f.G15_MASK},getBCHTypeNumber:function(t){for(var e=t<<12;f.getBCHDigit(e)-f.getBCHDigit(f.G18)>=0;)e^=f.G18<<f.getBCHDigit(e)-f.getBCHDigit(f.G18);return t<<12|e},getBCHDigit:function(t){for(var e=0;t!==0;)e++,t>>>=1;return e},getPatternPosition:function(t){return f.PATTERN_POSITION_TABLE[t-1]},getMask:function(t,e,n){switch(t){case d.PATTERN000:return(e+n)%2===0;case d.PATTERN001:return e%2===0;case d.PATTERN010:return n%3===0;case d.PATTERN011:return(e+n)%3===0;case d.PATTERN100:return(Math.floor(e/2)+Math.floor(n/3))%2===0;case d.PATTERN101:return e*n%2+e*n%3===0;case d.PATTERN110:return(e*n%2+e*n%3)%2===0;case d.PATTERN111:return(e*n%3+(e+n)%2)%2===0;default:throw new Error("bad maskPattern:"+t)}},getErrorCorrectPolynomial:function(t){for(var e=new V([1],0),n=0;n<t;n++)e=e.multiply(new V([1,h1.gexp(n)],0));return e},getLengthInBits:function(t,e){if(1<=e&&e<10)switch(t){case g.MODE_NUMBER:return 10;case g.MODE_ALPHA_NUM:return 9;case g.MODE_8BIT_BYTE:return 8;case g.MODE_KANJI:return 8;default:throw new Error("mode:"+t)}else if(e<27)switch(t){case g.MODE_NUMBER:return 12;case g.MODE_ALPHA_NUM:return 11;case g.MODE_8BIT_BYTE:return 16;case g.MODE_KANJI:return 10;default:throw new Error("mode:"+t)}else if(e<41)switch(t){case g.MODE_NUMBER:return 14;case g.MODE_ALPHA_NUM:return 13;case g.MODE_8BIT_BYTE:return 16;case g.MODE_KANJI:return 12;default:throw new Error("mode:"+t)}else throw new Error("type:"+e)},getLostPoint:function(t){var e=t.getModuleCount(),n=0,r=0,i=0;for(r=0;r<e;r++)for(i=0;i<e;i++){for(var a=0,o=t.isDark(r,i),s=-1;s<=1;s++)if(!(r+s<0||e<=r+s))for(var u=-1;u<=1;u++)i+u<0||e<=i+u||s===0&&u===0||o===t.isDark(r+s,i+u)&&a++;a>5&&(n+=3+a-5)}for(r=0;r<e-1;r++)for(i=0;i<e-1;i++){var l=0;t.isDark(r,i)&&l++,t.isDark(r+1,i)&&l++,t.isDark(r,i+1)&&l++,t.isDark(r+1,i+1)&&l++,(l===0||l===4)&&(n+=3)}for(r=0;r<e;r++)for(i=0;i<e-6;i++)t.isDark(r,i)&&!t.isDark(r,i+1)&&t.isDark(r,i+2)&&t.isDark(r,i+3)&&t.isDark(r,i+4)&&!t.isDark(r,i+5)&&t.isDark(r,i+6)&&(n+=40);for(i=0;i<e;i++)for(r=0;r<e-6;r++)t.isDark(r,i)&&!t.isDark(r+1,i)&&t.isDark(r+2,i)&&t.isDark(r+3,i)&&t.isDark(r+4,i)&&!t.isDark(r+5,i)&&t.isDark(r+6,i)&&(n+=40);var L=0;for(i=0;i<e;i++)for(r=0;r<e;r++)t.isDark(r,i)&&L++;var p=Math.abs(100*L/e/e-50)/5;return n+=p*10,n}};W.exports=f});var O=v((A1,$)=>{$.exports={L:1,M:0,Q:3,H:2}});var q=v((p1,z)=>{var C=O();function m(t,e){this.totalCount=t,this.dataCount=e}m.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];m.getRSBlocks=function(t,e){var n=m.getRsBlockTable(t,e);if(n===void 0)throw new Error("bad rs block @ typeNumber:"+t+"/errorCorrectLevel:"+e);for(var r=n.length/3,i=[],a=0;a<r;a++)for(var o=n[a*3+0],s=n[a*3+1],u=n[a*3+2],l=0;l<o;l++)i.push(new m(s,u));return i};m.getRsBlockTable=function(t,e){switch(e){case C.L:return m.RS_BLOCK_TABLE[(t-1)*4+0];case C.M:return m.RS_BLOCK_TABLE[(t-1)*4+1];case C.Q:return m.RS_BLOCK_TABLE[(t-1)*4+2];case C.H:return m.RS_BLOCK_TABLE[(t-1)*4+3];default:return}};z.exports=m});var e1=v((P1,t1)=>{function j(){this.buffer=[],this.length=0}j.prototype={get:function(t){var e=Math.floor(t/8);return(this.buffer[e]>>>7-t%8&1)==1},put:function(t,e){for(var n=0;n<e;n++)this.putBit((t>>>e-n-1&1)==1)},getLengthInBits:function(){return this.length},putBit:function(t){var e=Math.floor(this.length/8);this.buffer.length<=e&&this.buffer.push(0),t&&(this.buffer[e]|=128>>>this.length%8),this.length++}};t1.exports=j});var a1=v((D1,i1)=>{var f1=X(),B=Z(),l1=b(),r1=q(),n1=e1();function T(t,e){this.typeNumber=t,this.errorCorrectLevel=e,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}T.prototype={addData:function(t){var e=new f1(t);this.dataList.push(e),this.dataCache=null},isDark:function(t,e){if(t<0||this.moduleCount<=t||e<0||this.moduleCount<=e)throw new Error(t+","+e);return this.modules[t][e]},getModuleCount:function(){return this.moduleCount},make:function(){if(this.typeNumber<1){var t=1;for(t=1;t<40;t++){for(var e=r1.getRSBlocks(t,this.errorCorrectLevel),n=new n1,r=0,i=0;i<e.length;i++)r+=e[i].dataCount;for(var a=0;a<this.dataList.length;a++){var o=this.dataList[a];n.put(o.mode,4),n.put(o.getLength(),B.getLengthInBits(o.mode,t)),o.write(n)}if(n.getLengthInBits()<=r*8)break}this.typeNumber=t}this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(t,e){this.moduleCount=this.typeNumber*4+17,this.modules=new Array(this.moduleCount);for(var n=0;n<this.moduleCount;n++){this.modules[n]=new Array(this.moduleCount);for(var r=0;r<this.moduleCount;r++)this.modules[n][r]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(t,e),this.typeNumber>=7&&this.setupTypeNumber(t),this.dataCache===null&&(this.dataCache=T.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,e)},setupPositionProbePattern:function(t,e){for(var n=-1;n<=7;n++)if(!(t+n<=-1||this.moduleCount<=t+n))for(var r=-1;r<=7;r++)e+r<=-1||this.moduleCount<=e+r||(0<=n&&n<=6&&(r===0||r===6)||0<=r&&r<=6&&(n===0||n===6)||2<=n&&n<=4&&2<=r&&r<=4?this.modules[t+n][e+r]=!0:this.modules[t+n][e+r]=!1)},getBestMaskPattern:function(){for(var t=0,e=0,n=0;n<8;n++){this.makeImpl(!0,n);var r=B.getLostPoint(this);(n===0||t>r)&&(t=r,e=n)}return e},createMovieClip:function(t,e,n){var r=t.createEmptyMovieClip(e,n),i=1;this.make();for(var a=0;a<this.modules.length;a++)for(var o=a*i,s=0;s<this.modules[a].length;s++){var u=s*i,l=this.modules[a][s];l&&(r.beginFill(0,100),r.moveTo(u,o),r.lineTo(u+i,o),r.lineTo(u+i,o+i),r.lineTo(u,o+i),r.endFill())}return r},setupTimingPattern:function(){for(var t=8;t<this.moduleCount-8;t++)this.modules[t][6]===null&&(this.modules[t][6]=t%2===0);for(var e=8;e<this.moduleCount-8;e++)this.modules[6][e]===null&&(this.modules[6][e]=e%2===0)},setupPositionAdjustPattern:function(){for(var t=B.getPatternPosition(this.typeNumber),e=0;e<t.length;e++)for(var n=0;n<t.length;n++){var r=t[e],i=t[n];if(this.modules[r][i]===null)for(var a=-2;a<=2;a++)for(var o=-2;o<=2;o++)Math.abs(a)===2||Math.abs(o)===2||a===0&&o===0?this.modules[r+a][i+o]=!0:this.modules[r+a][i+o]=!1}},setupTypeNumber:function(t){for(var e=B.getBCHTypeNumber(this.typeNumber),n,r=0;r<18;r++)n=!t&&(e>>r&1)===1,this.modules[Math.floor(r/3)][r%3+this.moduleCount-8-3]=n;for(var i=0;i<18;i++)n=!t&&(e>>i&1)===1,this.modules[i%3+this.moduleCount-8-3][Math.floor(i/3)]=n},setupTypeInfo:function(t,e){for(var n=this.errorCorrectLevel<<3|e,r=B.getBCHTypeInfo(n),i,a=0;a<15;a++)i=!t&&(r>>a&1)===1,a<6?this.modules[a][8]=i:a<8?this.modules[a+1][8]=i:this.modules[this.moduleCount-15+a][8]=i;for(var o=0;o<15;o++)i=!t&&(r>>o&1)===1,o<8?this.modules[8][this.moduleCount-o-1]=i:o<9?this.modules[8][15-o-1+1]=i:this.modules[8][15-o-1]=i;this.modules[this.moduleCount-8][8]=!t},mapData:function(t,e){for(var n=-1,r=this.moduleCount-1,i=7,a=0,o=this.moduleCount-1;o>0;o-=2)for(o===6&&o--;;){for(var s=0;s<2;s++)if(this.modules[r][o-s]===null){var u=!1;a<t.length&&(u=(t[a]>>>i&1)===1);var l=B.getMask(e,r,o-s);l&&(u=!u),this.modules[r][o-s]=u,i--,i===-1&&(a++,i=7)}if(r+=n,r<0||this.moduleCount<=r){r-=n,n=-n;break}}}};T.PAD0=236;T.PAD1=17;T.createData=function(t,e,n){for(var r=r1.getRSBlocks(t,e),i=new n1,a=0;a<n.length;a++){var o=n[a];i.put(o.mode,4),i.put(o.getLength(),B.getLengthInBits(o.mode,t)),o.write(i)}for(var s=0,u=0;u<r.length;u++)s+=r[u].dataCount;if(i.getLengthInBits()>s*8)throw new Error("code length overflow. ("+i.getLengthInBits()+">"+s*8+")");for(i.getLengthInBits()+4<=s*8&&i.put(0,4);i.getLengthInBits()%8!==0;)i.putBit(!1);for(;!(i.getLengthInBits()>=s*8||(i.put(T.PAD0,8),i.getLengthInBits()>=s*8));)i.put(T.PAD1,8);return T.createBytes(i,r)};T.createBytes=function(t,e){for(var n=0,r=0,i=0,a=new Array(e.length),o=new Array(e.length),s=0;s<e.length;s++){var u=e[s].dataCount,l=e[s].totalCount-u;r=Math.max(r,u),i=Math.max(i,l),a[s]=new Array(u);for(var L=0;L<a[s].length;L++)a[s][L]=255&t.buffer[L+n];n+=u;var p=B.getErrorCorrectPolynomial(l),s1=new l1(a[s],p.getLength()-1),y=s1.mod(p);o[s]=new Array(p.getLength()-1);for(var P=0;P<o[s].length;P++){var Q=P+y.getLength()-o[s].length;o[s][P]=Q>=0?y.get(Q):0}}for(var H=0,w=0;w<e.length;w++)H+=e[w].totalCount;for(var N=new Array(H),S=0,D=0;D<r;D++)for(var _=0;_<e.length;_++)D<a[_].length&&(N[S++]=a[_][D]);for(var M=0;M<i;M++)for(var R=0;R<e.length;R++)M<o[R].length&&(N[S++]=o[R][M]);return N};i1.exports=T});var g1=v((_1,o1)=>{o1.exports={QRCode:a1(),ECC:O()}});return g1();})();
+
+</script>
 <script>
 /* ใส่ Web App URL (/exec) ที่ได้จากการ Deploy Code.gs */
 const API='https://script.google.com/macros/s/AKfycbz3xLbD2iWo383x-LYqVKTfXAg41Lx2muqvy8zzueJSHZdEbq0KPD4HkIoR0TS7Aqxi/exec';
@@ -129,7 +145,7 @@ async function api(action,data={}){
     if(!j.ok)throw new Error(j.error);return j;
   }catch(e){toast(e.message=='Failed to fetch'?'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':e.message);throw e}
 }
-async function load(){S=await api('load');render()}
+async function load(){S=await api('load');openDeep();render()}
 async function act(a,d,msg){if(busy)return;busy=true;let ok=false;try{await api(a,d);if(msg)toast(msg);await load();ok=true}catch(e){}busy=false;return ok}
 async function login(){
   cred={email:$('#l_e').value.trim(),pass:$('#l_p').value};
@@ -146,18 +162,18 @@ function dlg(title,f,cb){
 }
 function tabs(){
   if(!staff())return[['cases','เคสของฉัน']];
-  const t=[['dash','ภาพรวม'],['cases','เคส'],['inv','เครื่องมือ/สต็อก']];
+  const t=[['dash','ภาพรวม'],['cases','เคส'],['tags','แท็ก QR'],['inv','เครื่องมือ/สต็อก']];
   if(boss())t.push(['users','ผู้ใช้'],['set','ตั้งค่าอีเมล']);
   return t;
 }
 function go(v){view=v;cur=null;render()}
 function render(){
-  document.body.classList.toggle('auth',!S.u);
+  document.body.classList.toggle('auth',!S.u);document.body.classList.toggle('mob',!!(S.u&&mob));
   if(!S.u){$('#nav').innerHTML='';$('#who').innerHTML='';$('#main').innerHTML=authView();return}
   if(!tabs().some(t=>t[0]==view))view='cases';
   $('#nav').innerHTML=tabs().map(([k,l])=>`<button class="${view==k&&!cur?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
   $('#who').innerHTML=`<div class="me"><b>${esc(S.u.name)}</b>${S.u.role}</div><button onclick="palOpen()">ค้นหาด่วน<kbd>Ctrl K</kbd></button><button onclick="toggleTheme()">สลับโหมดมืด/สว่าง</button><button onclick="pwDlg()">เปลี่ยนรหัสผ่าน</button><button onclick="logout()">ออกจากระบบ</button>`;
-  const m=$('#main');m.innerHTML=(cur?V.detail:V[view])();m.classList.remove('fade');void m.offsetWidth;m.classList.add('fade');after();
+  const m=$('#main');m.innerHTML=(mob?V.m:cur?V.detail:V[view])();m.classList.remove('fade');void m.offsetWidth;m.classList.add('fade');after();
 }
 const chip=c=>`<span class="chip ${late(c)?'late':'s'+ST.indexOf(c.status)}">${late(c)?'เกินกำหนด · ':''}${c.status}</span>`;
 const V={
@@ -184,6 +200,25 @@ cases(){
   <div class="bar tool"><input class="search" placeholder="ค้นหาเลขเคส ลูกค้า ชิ้นงาน S/N…" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHTML()">${['ทั้งหมด',...ST,'เกินกำหนด'].map(s=>`<button class="pill ${sf==s?'on':''}" onclick="sf='${s}';render()">${s}</button>`).join('')}
   <span class="seg"><button class="${mode=='list'?'on':''}" onclick="mode='list';render()">รายการ</button><button class="${mode=='board'?'on':''}" onclick="mode='board';render()">บอร์ด</button></span></div><div id="list">${listHTML()}</div>`;
 },
+tags(){
+  const T=S.tags||[],free=T.filter(t=>!t.caseId);
+  return `<h1>แท็ก QR (วนใช้)</h1><p class="log">พิมพ์แท็กชุดเดียวแล้วเคลือบ ติดกับถาดหรือกล่องชิ้นงาน สแกนครั้งแรกเพื่อผูกกับเคส เมื่อปิดเคสแท็กจะว่างและนำกลับมาใช้ใหม่ได้</p>${baseWarn()}
+  <div class="bar">${boss()?`<button class="pri" onclick="tagNew()">สร้างแท็กใหม่</button>`:''}<button onclick="printTags()" ${free.length?'':'disabled'}>พิมพ์แท็กที่ว่างทั้งหมด (${free.length})</button></div>
+  <div class="tags">${T.map(t=>{const c=S.cases.find(x=>x.id==t.caseId),u=qrUrl('t',t.id);return `<div class="box tg"><div class="qrimg">${u?qrSvg(u):''}</div><span class="sn">${esc(t.id)}</span><div class="log" style="margin:8px 0">${c?'ผูกกับ '+esc(c.id)+' · '+esc(c.part):'ว่าง'}</div><button onclick="printTags('${t.id}')">พิมพ์</button>${c?` <button class="x" onclick="tagRel('${t.id}')">ปล่อย</button>`:''}</div>`}).join('')||'<div class="box empty" style="grid-column:1/-1">ยังไม่มีแท็ก ให้ Manager กด “สร้างแท็กใหม่”</div>'}</div>`;
+},
+m(){
+  const c=mobCase(),t=mobTag(),ed=staff(),top=`<div class="mtop"><b>FA-LIMS</b><button onclick="mobExit()">เมนูเต็ม</button></div>`;
+  if(!c){
+    const op=S.cases.filter(x=>x.status!='ปิดเคส');
+    return top+(mob.k=='t'&&t&&ed?`<div class="box"><h2 style="margin-top:0">แท็ก ${esc(t.id)} ยังว่างอยู่</h2>${op.length?`<label>ผูกกับเคส<select id="bind">${op.map(x=>`<option value="${x.id}">${esc(x.id)} · ${esc(x.part)}</option>`).join('')}</select></label><button class="pri full" onclick="act('tagAssign',{tag:'${t.id}',caseId:$('#bind').value},'ผูกแท็กแล้ว')">ผูกแท็กนี้กับเคส</button>`:'<p class="log">ยังไม่มีเคสที่เปิดอยู่ ให้เปิดเคสใหม่ก่อน</p>'}</div>`:`<div class="box empty">ไม่พบเคส หรือคุณไม่มีสิทธิ์เข้าถึง</div>`);
+  }
+  return top+`<div class="box"><span class="sn">${esc(c.id)}</span> ${chip(c)}${t?` <span class="log">แท็ก ${esc(t.id)}</span>`:''}<h2 style="margin:8px 0 2px">${esc(c.part)}</h2><div class="log">${esc(c.customer)} · S/N ${esc(c.sn)}<br>${esc(c.symptom)}<br>${left(c)}</div></div>`+(ed?
+  `<h2>สถานะ</h2><div class="stbtns">${ST.map(s=>`<button class="${c.status==s?'on':''}" onclick="setSt('${c.id}','${s}')">${s}</button>`).join('')}</div>
+  <h2>หมายเหตุด่วน</h2><textarea class="q" id="qn" rows="3" placeholder="พิมพ์สิ่งที่พบ…"></textarea><button class="pri full" onclick="quickNote('${c.id}')">บันทึกหมายเหตุ</button>
+  <h2>รูปภาพ</h2><div class="ph">${c.photos.map(p=>`<img src="${esc(p)}" alt="รูปชิ้นงาน">`).join('')}</div><label class="cam" style="margin-top:8px">ถ่ายรูป / เลือกรูป<input type="file" accept="image/*" capture="environment" multiple onchange="addPhotos('${c.id}',this.files)"></label>
+  <details><summary>บันทึกผลวิเคราะห์ (8D)</summary>${F8.map(([k,l])=>`<label>${l}<textarea id="a_${k}" rows="3">${esc(c[k])}</textarea></label>`).join('')}<button class="pri full" onclick="saveA('${c.id}')">บันทึกการวิเคราะห์</button></details>`
+  :`<p class="log">หน้านี้ดูได้อย่างเดียวสำหรับผู้ใช้ประเภท Customer</p>`)+`<h2>ไทม์ไลน์</h2><div class="tl">${c.log.slice().reverse().map(l=>`<div><i></i><b>${esc(l[2])}</b><span class="log">${esc(l[0])} · ${esc(l[1])}</span></div>`).join('')}</div>`;
+},
 detail(){
   const c=S.cases.find(x=>x.id==cur);if(!c){cur=null;return V.cases()}
   const ed=staff();
@@ -196,8 +231,8 @@ detail(){
   :F.map(([k,l])=>`<p><b>${l}</b><br>${esc(c[k])||'-'}</p>`).join('')}
   <h2>รูปภาพ</h2><div class="ph">${c.photos.map(p=>`<img src="${esc(p)}" alt="รูปชิ้นงาน">`).join('')||'<span class="log">ยังไม่มีรูป</span>'}</div>
   ${ed?`<div class="bar" style="margin-top:8px"><input type="file" accept="image/*" multiple onchange="addPhotos('${c.id}',this.files)"></div>`:''}
-  <div class="bar" style="margin-top:16px"><button onclick="printRep('${c.id}')">พิมพ์ / บันทึกรายงาน 8D</button>${soon('ป้าย QR ชิ้นงาน')}${ed?soon('AI ช่วยเสนอ Root cause'):''}${ed?`<button class="pri" onclick="mailRep('${c.id}')">ส่งรายงานทางอีเมล</button>`:''}</div>
-  <h2>ไทม์ไลน์เคส</h2><div class="tl">${c.log.slice().reverse().map(l=>`<div><i></i><b>${esc(l[2])}</b><span class="log">${esc(l[0])} · ${esc(l[1])}</span></div>`).join('')}</div>`;
+  <div class="bar" style="margin-top:16px"><button onclick="printRep('${c.id}')">พิมพ์ / บันทึกรายงาน 8D</button>${ed?`<button onclick="printQr('${c.id}')">พิมพ์ป้าย QR</button>`:''}${ed?soon('AI ช่วยเสนอ Root cause'):''}${ed?`<button class="pri" onclick="mailRep('${c.id}')">ส่งรายงานทางอีเมล</button>`:''}</div>
+  ${ed?qrPanel(c):''}<h2>ไทม์ไลน์เคส</h2><div class="tl">${c.log.slice().reverse().map(l=>`<div><i></i><b>${esc(l[2])}</b><span class="log">${esc(l[0])} · ${esc(l[1])}</span></div>`).join('')}</div>`;
 },
 inv(){
   return `<h1>เครื่องมือ / สารเคมี / ชิ้นส่วน</h1><div class="bar"><button class="pri" onclick="invDlg()">เพิ่มรายการ</button>${soon('สแกนบาร์โค้ด')}${soon('ประวัติการเบิกใช้')}</div>
@@ -211,7 +246,8 @@ users(){
 set(){
   return `<h1>ตั้งค่าอีเมลแจ้งเตือน</h1><div class="box" style="max-width:560px">
   <label>อีเมลทีมที่รับแจ้งเตือน (คั่นด้วย ,)<input id="s_to" value="${esc(S.to)}"></label>
-  <div class="bar"><button class="pri" onclick="act('saveCfg',{to:$('#s_to').value},'บันทึกแล้ว')">บันทึก</button></div>
+  <label>URL ของหน้า LIMS นี้ (ใช้สร้าง QR ให้เปิดจากมือถือ)<input id="s_base" value="${esc(S.base)}" placeholder="https://your-site/lims-fa.html"></label>${/^https?:/.test(location.protocol)?`<p class="log" style="margin:-4px 0 8px"><a href="#" onclick="$('#s_base').value=location.origin+location.pathname;return false">ใช้ URL ที่เปิดอยู่ตอนนี้</a></p>`:''}
+  <div class="bar"><button class="pri" onclick="act('saveCfg',{to:$('#s_to').value,base:$('#s_base').value.trim()},'บันทึกแล้ว')">บันทึก</button></div>
   <div class="bar">${soon('แจ้งเตือนผ่าน LINE')}${soon('แจ้งเตือนผ่าน Teams')}${soon('ซิงก์ Google Calendar')}</div><p class="log">ระบบส่งแจ้งเตือนเคสเกินกำหนด สต็อก และสอบเทียบอัตโนมัติ 08:00 ทุกวัน (ต้องรัน installTrigger ใน Apps Script หนึ่งครั้ง)</p></div>`;
 }};
 
@@ -321,6 +357,62 @@ function palList(){
   $('#pr').innerHTML=it.map((x,i)=>`<button class="${i?'':'on'}" onclick="$('#pal').close();${x.f}">${esc(x.l)}</button>`).join('')||'<div class="log" style="padding:10px">ไม่พบรายการ</div>';
 }
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()=='k'){e.preventDefault();palOpen()}});
+
+/* ---- QR Code: แบบเฉพาะเคส / แบบแท็กวนใช้ + กรอกข้อมูลผ่านมือถือ ---- */
+const F8=[['d3','D3 มาตรการกักกัน (Containment)'],['test','D4 ขั้นตอนทดสอบ / ผลที่พบ'],['rc','D4 สาเหตุราก (Root cause)'],['d5','D5 การแก้ไข (Corrective action)'],['d6','D6 การยืนยันผล'],['d7','D7 การป้องกันซ้ำ']];
+let deep=(()=>{const p=new URLSearchParams(location.search);return p.get('c')?{k:'c',v:p.get('c')}:p.get('t')?{k:'t',v:p.get('t')}:null})(),mob=null;
+function openDeep(){if(deep){mob=deep;deep=null}}
+const mobTag=()=>mob&&mob.k=='t'?(S.tags||[]).find(x=>x.id==mob.v):null;
+const mobCase=()=>mob&&S.cases.find(x=>x.id==(mob.k=='c'?mob.v:(mobTag()||{}).caseId));
+function mobExit(){const c=mobCase();mob=null;cur=c?c.id:null;view='cases';render()}
+function quickNote(id){const t=$('#qn').value.trim();if(t)act('note',{id,text:t},'บันทึกหมายเหตุแล้ว')}
+function qrUrl(k,v){
+  const b=(S.base||(/^https?:/.test(location.protocol)?location.origin+location.pathname:'')).trim();
+  return b?b+(b.includes('?')?'&':'?')+k+'='+encodeURIComponent(v):'';
+}
+function qrSvg(t){
+  for(let n=2;n<=20;n++){try{
+    const q=new QRC.QRCode(n,QRC.ECC.M);q.addData(t);q.make();
+    const N=q.getModuleCount(),m=2;let p='';
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(q.isDark(r,c))p+=`M${c+m} ${r+m}h1v1h-1z`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${N+2*m} ${N+2*m}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${p}"/></svg>`;
+  }catch(e){}}
+  return '';
+}
+const baseWarn=()=>qrUrl('c','x')?'':`<div class="box warn" style="margin:0 0 14px">ยังไม่ได้ตั้ง URL ของหน้า LIMS — ให้ Manager ไปที่ “ตั้งค่าอีเมล” แล้วใส่ URL ที่ใช้เปิดระบบ (เช่น https://…/lims-fa.html) QR จึงจะเปิดจากมือถือได้ (เปิดไฟล์จากเครื่องโดยตรงใช้กับมือถือไม่ได้)</div>`;
+const qrMode=id=>{try{return localStorage.getItem('qm:'+id)||localStorage.getItem('qm')||'case'}catch(e){return'case'}};
+function setQr(id,m){try{localStorage.setItem('qm:'+id,m);localStorage.setItem('qm',m)}catch(e){}render()}
+function qrPanel(c){
+  const m=qrMode(c.id),T=S.tags||[],tag=T.find(t=>t.caseId==c.id),free=T.filter(t=>!t.caseId),
+    v=m=='tag'?(tag&&tag.id):c.id,url=v?qrUrl(m=='tag'?'t':'c',v):'';
+  const side=m=='case'?`<p><b>QR เฉพาะเคสนี้</b><br>ผูกกับเลขเคส ${esc(c.id)} ถาวร พิมพ์แล้วติดกับชิ้นงานหรือใบงาน สแกนแล้วเข้าเคสนี้เสมอ</p>`
+   :tag?`<p><b>แท็กวนใช้ ${esc(tag.id)}</b> ผูกกับเคสนี้อยู่<br>ปิดเคสแล้วแท็กจะว่างและนำไปใช้กับเคสอื่นได้</p><button class="x" onclick="tagRel('${tag.id}')">ปล่อยแท็ก</button>`
+   :`<p><b>แท็กวนใช้</b> เลือกแท็กที่ว่างเพื่อผูกกับเคสนี้</p>${free.length?`<div class="bar"><select id="tgsel">${free.map(t=>`<option>${esc(t.id)}</option>`).join('')}</select><button class="pri" onclick="act('tagAssign',{tag:$('#tgsel').value,caseId:'${c.id}'},'ผูกแท็กแล้ว')">ผูกแท็ก</button></div>`:'<p class="log">ไม่มีแท็กว่าง ให้ Manager สร้างที่หน้า “แท็ก QR”</p>'}`;
+  return `<h2>QR Code สำหรับกรอกข้อมูลผ่านมือถือ</h2><div class="box"><div class="seg2"><button class="${m=='case'?'on':''}" onclick="setQr('${c.id}','case')">เฉพาะเคสนี้</button><button class="${m=='tag'?'on':''}" onclick="setQr('${c.id}','tag')">แท็กวนใช้</button></div>${baseWarn()}
+  <div class="qrbody"><div class="qrimg">${url?qrSvg(url):''}</div><div>${side}<div class="bar"><button onclick="printQr('${c.id}')" ${url?'':'disabled'}>พิมพ์ป้าย</button><button onclick="copyQr('${c.id}')" ${url?'':'disabled'}>คัดลอกลิงก์</button></div></div></div></div>`;
+}
+function curQr(id){
+  const c=S.cases.find(x=>x.id==id),m=qrMode(id),tag=(S.tags||[]).find(t=>t.caseId==id),v=m=='tag'?(tag&&tag.id):id;
+  return {c,m,tag,url:v?qrUrl(m=='tag'?'t':'c',v):''};
+}
+function printLabels(items){
+  const w=open('','_blank');
+  w.document.write(`<title>QR</title><meta charset="utf-8"><style>body{font-family:Tahoma,sans-serif;margin:8mm}.g{display:grid;grid-template-columns:repeat(auto-fill,52mm);gap:4mm}.l{width:52mm;border:1px dashed #999;padding:3mm;text-align:center;break-inside:avoid}.l svg{width:40mm;height:40mm}.l b{display:block;font:700 13pt monospace}.l small{display:block;font-size:9pt;line-height:1.25}</style><div class="g">${items.map(i=>`<div class="l">${qrSvg(i.url)}<b>${esc(i.big)}</b><small>${esc(i.small||'')}</small></div>`).join('')}</div>`);
+  w.document.close();setTimeout(()=>w.print(),600);
+}
+function printQr(id){
+  const {c,m,tag,url}=curQr(id);
+  if(!url)return toast(m=='tag'?'ยังไม่ได้ผูกแท็กกับเคสนี้':'ยังไม่ได้ตั้ง URL ของหน้า LIMS');
+  printLabels([{url,big:m=='tag'?tag.id:c.id,small:`${c.part} · ${c.customer}`}]);
+}
+function printTags(id){
+  const T=(S.tags||[]).filter(t=>id?t.id==id:!t.caseId);
+  if(!qrUrl('t','x'))return toast('ยังไม่ได้ตั้ง URL ของหน้า LIMS');
+  printLabels(T.map(t=>({url:qrUrl('t',t.id),big:t.id,small:'สแกนเพื่อกรอกข้อมูลเคส'})));
+}
+function copyQr(id){const u=curQr(id).url;navigator.clipboard.writeText(u).then(()=>toast('คัดลอกลิงก์แล้ว'),()=>toast(u))}
+function tagNew(){dlg('สร้างแท็กใหม่',[{k:'n',l:'จำนวนแท็ก (1–100)',t:'number',v:10,r:1}],f=>act('tagCreate',{n:+f.n},'สร้างแท็กแล้ว'))}
+function tagRel(id){act('tagRelease',{tag:id},'ปล่อยแท็กแล้ว')}
 
 if(cred)load().catch(()=>{cred=null;render()});else render();
 </script>
