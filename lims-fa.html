@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FA-LIMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f3;--ink:#1b2a2f;--mute:#5d6d6b;--pcb:#0e5a4a;--cu:#b4682b;--line:#d5dad6;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 Sarabun,system-ui,sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+aside{background:var(--pcb);color:#fff;padding:18px 12px;display:flex;flex-direction:column;gap:6px}
+aside b{font-size:20px;margin:0 8px 10px}
+aside button{background:none;border:0;color:#cfe5de;text-align:left;padding:9px 10px;border-radius:4px;font:inherit;cursor:pointer}
+aside button.on,aside button:hover{background:#fff2;color:#fff}
+#who{margin-top:auto;font-size:14px;color:#cfe5de}
+main{padding:24px 28px;max-width:1100px;width:100%}
+h1{margin:0 0 16px;font-size:24px}h2{font-size:18px;margin:20px 0 8px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;background:#eef0ed}
+tr.k{cursor:pointer}tr.k:hover{background:#f0f6f3}
+.sn{font:600 13px ui-monospace,Menlo,monospace;border:1.5px solid var(--ink);padding:1px 6px;border-radius:3px;white-space:nowrap}
+.chip{padding:1px 8px;border-radius:10px;background:#e4e9e6;font-size:14px;white-space:nowrap}
+.chip.late{background:#f6dcc8;color:#7a3c0c}.chip.done{background:#cfe8dd;color:#0a3f33}
+button,input,select,textarea{font:inherit}
+button{padding:7px 14px;border:1px solid var(--line);background:#fff;border-radius:4px;cursor:pointer}
+button.pri{background:var(--pcb);color:#fff;border-color:var(--pcb)}
+button.x{color:var(--cu)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.box{background:var(--card);border:1px solid var(--line);padding:14px;border-radius:4px}
+.row{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.meter{display:flex;align-items:center;gap:8px;margin:6px 0}.meter i{display:block;height:10px;background:var(--pcb);border-radius:2px}
+.warn{color:var(--cu);font-weight:600}
+label{display:block;margin:8px 0;font-weight:600;font-size:14px}
+label input,label select,label textarea{display:block;width:100%;padding:7px;border:1px solid var(--line);border-radius:4px;font-weight:400;margin-top:3px}
+dialog{border:0;border-radius:6px;padding:20px;width:min(480px,92vw);box-shadow:0 10px 40px #0005}
+dialog::backdrop{background:#0006}
+.ph{display:flex;gap:8px;flex-wrap:wrap}.ph img{height:90px;border:1px solid var(--line);border-radius:3px}
+#t{position:fixed;bottom:18px;right:18px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:4px;display:none;max-width:80vw}
+.log{font-size:14px;color:var(--mute)}
+:focus-visible{outline:2px solid var(--cu);outline-offset:2px}
+@media(max-width:800px){body{grid-template-columns:1fr}aside{flex-direction:row;flex-wrap:wrap;align-items:center}#who{margin:0}main{padding:16px}.wide{overflow-x:auto}}
+</style>
+</head>
+<body>
+<aside><b>FA-LIMS</b><span id="nav" style="display:contents"></span><div id="who"></div></aside>
+<main id="main"></main>
+<div id="t"></div>
+<script>
+/* ใส่ Web App URL (/exec) ที่ได้จากการ Deploy Code.gs */
+const API='https://script.google.com/macros/s/AKfycbz3xLbD2iWo383x-LYqVKTfXAg41Lx2muqvy8zzueJSHZdEbq0KPD4HkIoR0TS7Aqxi/exec';
+
+const $=s=>document.querySelector(s);
+let S={u:null,cases:[],inv:[],users:[],to:''},cred=JSON.parse(sessionStorage.getItem('c')||'null'),view='dash',cur=null,busy=false;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+const days=d=>Math.ceil((new Date(d)-new Date(today()))/864e5);
+const ST=['รับเคส','กำลังวิเคราะห์','รอลูกค้า','ปิดเคส'],TY=['เครื่องมือ','สารเคมี','ชิ้นส่วน'];
+const late=c=>c.status!='ปิดเคส'&&c.due&&days(c.due)<0;
+const staff=()=>S.u.role!='Customer',boss=()=>S.u.role=='Manager';
+function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',4000)}
+
+async function api(action,data={}){
+  if(API.includes('PASTE')){toast('ยังไม่ได้ใส่ Web App URL ในไฟล์ HTML');throw new Error('no api')}
+  try{
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...cred,...data})}),j=await r.json();
+    if(!j.ok)throw new Error(j.error);return j;
+  }catch(e){toast(e.message=='Failed to fetch'?'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':e.message);throw e}
+}
+async function load(){S=await api('load');render()}
+async function act(a,d,msg){if(busy)return;busy=true;try{await api(a,d);if(msg)toast(msg);await load()}catch(e){}busy=false}
+async function login(){
+  cred={email:$('#l_e').value.trim(),pass:$('#l_p').value};
+  try{await api('login');sessionStorage.setItem('c',JSON.stringify(cred));view='dash';await load()}catch(e){cred=null}
+}
+function logout(){sessionStorage.clear();location.reload()}
+
+function dlg(title,f,cb){
+  const d=document.createElement('dialog');
+  d.innerHTML=`<form method="dialog"><h2>${title}</h2>${f.map(x=>`<label>${x.l}${x.t=='textarea'?`<textarea name="${x.k}" rows="3">${esc(x.v)}</textarea>`:x.t=='select'?`<select name="${x.k}">${x.o.map(o=>`<option ${o==x.v?'selected':''}>${esc(o)}</option>`).join('')}</select>`:`<input name="${x.k}" type="${x.t||'text'}" value="${esc(x.v)}" ${x.r?'required':''}>`}</label>`).join('')}<div class="row"><button type="button" onclick="this.closest('dialog').close()">ยกเลิก</button><button class="pri">บันทึก</button></div></form>`;
+  document.body.append(d);d.showModal();
+  d.querySelector('form').onsubmit=e=>cb(Object.fromEntries(new FormData(e.target)));
+  d.onclose=()=>d.remove();
+}
+function tabs(){
+  if(!staff())return[['cases','เคสของฉัน']];
+  const t=[['dash','ภาพรวม'],['cases','เคส'],['inv','เครื่องมือ/สต็อก']];
+  if(boss())t.push(['users','ผู้ใช้'],['set','ตั้งค่าอีเมล']);
+  return t;
+}
+function go(v){view=v;cur=null;render()}
+function render(){
+  if(!S.u){$('#nav').innerHTML='';$('#who').innerHTML='';
+    $('#main').innerHTML=`<h1>เข้าสู่ระบบ</h1><div class="box" style="max-width:360px" onkeydown="if(event.key=='Enter')login()"><label>อีเมล<input id="l_e" type="email" autocomplete="username"></label><label>รหัสผ่าน<input id="l_p" type="password" autocomplete="current-password"></label><div class="row"><button class="pri" onclick="login()">เข้าสู่ระบบ</button></div></div>`;return}
+  if(!tabs().some(t=>t[0]==view))view='cases';
+  $('#nav').innerHTML=tabs().map(([k,l])=>`<button class="${view==k&&!cur?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+  $('#who').innerHTML=`${esc(S.u.name)} (${S.u.role})<br><button onclick="logout()">ออกจากระบบ</button>`;
+  $('#main').innerHTML=(cur?V.detail:V[view])();
+}
+const chip=c=>`<span class="chip ${late(c)?'late':c.status=='ปิดเคส'?'done':''}">${late(c)?'เกินกำหนด · ':''}${c.status}</span>`;
+const V={
+dash(){
+  const cs=S.cases,n=s=>cs.filter(c=>c.status==s).length,mx=Math.max(1,...ST.map(n));
+  const low=S.inv.filter(i=>+i.qty<=+i.min),exp=S.inv.filter(i=>i.exp&&days(i.exp)<=30);
+  return `<h1>ภาพรวมแลป FA</h1><div class="grid">
+  <div class="box"><b>เคสตามสถานะ</b>${ST.map(s=>`<div class="meter"><span style="width:110px">${s}</span><i style="width:${n(s)/mx*100}px"></i>${n(s)}</div>`).join('')}</div>
+  <div class="box"><b>เคสเกินกำหนด</b><div class="${cs.some(late)?'warn':''}" style="font-size:32px">${cs.filter(late).length}</div>${cs.filter(late).map(c=>`<div>${esc(c.id)} · เกิน ${-days(c.due)} วัน</div>`).join('')}</div>
+  <div class="box"><b>สต็อกใกล้หมด</b>${low.map(i=>`<div>${esc(i.name)} (${i.qty}/${i.min})</div>`).join('')||'<div class="log">ไม่มี</div>'}</div>
+  <div class="box"><b>ใกล้ครบสอบเทียบ/หมดอายุ (30 วัน)</b>${exp.map(i=>`<div>${esc(i.name)} · ${days(i.exp)<0?'เลยกำหนด':'อีก '+days(i.exp)+' วัน'}</div>`).join('')||'<div class="log">ไม่มี</div>'}</div></div>
+  <div class="bar" style="margin-top:16px"><button class="pri" onclick="check()">ตรวจและส่งอีเมลแจ้งเตือนตอนนี้</button><button onclick="load()">รีเฟรชข้อมูล</button></div>`;
+},
+cases(){
+  return `<h1>${staff()?'เคสทั้งหมด':'เคสของฉัน'}</h1><div class="bar"><button class="pri" onclick="newCase()">เปิดเคสใหม่</button><button onclick="load()">รีเฟรช</button></div>
+  <div class="wide"><table><tr><th>เลขเคส</th><th>ลูกค้า</th><th>ชิ้นงาน / S/N</th><th>กำหนดเสร็จ</th><th>สถานะ</th></tr>
+  ${S.cases.map(c=>`<tr class="k" onclick="cur='${c.id}';render()"><td><span class="sn">${esc(c.id)}</span></td><td>${esc(c.customer)}</td><td>${esc(c.part)}<br><span class="log">${esc(c.sn)}</span></td><td>${esc(c.due)}</td><td>${chip(c)}</td></tr>`).join('')||'<tr><td colspan="5" class="log">ยังไม่มีเคส กด “เปิดเคสใหม่” เพื่อเริ่ม</td></tr>'}</table></div>`;
+},
+detail(){
+  const c=S.cases.find(x=>x.id==cur);if(!c){cur=null;return V.cases()}
+  const ed=staff();
+  const F=[['d3','D3 มาตรการกักกัน (Containment)'],['test','D4 ขั้นตอนทดสอบ / ผลที่พบ'],['rc','D4 สาเหตุราก (Root cause)'],['d5','D5 การแก้ไข (Corrective action)'],['d6','D6 การยืนยันผล'],['d7','D7 การป้องกันซ้ำ']];
+  return `<div class="bar"><button onclick="go('cases')">← กลับ</button><h1 style="margin:0"><span class="sn">${esc(c.id)}</span> ${esc(c.part)}</h1>${chip(c)}</div>
+  <div class="box">ลูกค้า: ${esc(c.customer)} (${esc(c.custEmail)}) · S/N: ${esc(c.sn)} · รับเมื่อ ${esc(c.received)} · กำหนด ${esc(c.due)} · ผู้รับผิดชอบ ${esc(c.owner)}<br>อาการ: ${esc(c.symptom)}</div>
+  ${ed?`<div class="bar" style="margin-top:12px">สถานะ: <select onchange="act('saveCase',{c:{id:'${c.id}',status:this.value}},'เปลี่ยนสถานะแล้ว')">${ST.map(s=>`<option ${s==c.status?'selected':''}>${s}</option>`).join('')}</select></div>`:''}
+  <h2>บันทึกการวิเคราะห์ (8D)</h2>
+  ${ed?F.map(([k,l])=>`<label>${l}<textarea id="a_${k}" rows="3">${esc(c[k])}</textarea></label>`).join('')+`<div class="bar"><button class="pri" onclick="saveA('${c.id}')">บันทึกการวิเคราะห์</button></div>`
+  :F.map(([k,l])=>`<p><b>${l}</b><br>${esc(c[k])||'-'}</p>`).join('')}
+  <h2>รูปภาพ</h2><div class="ph">${c.photos.map(p=>`<img src="${esc(p)}" alt="รูปชิ้นงาน">`).join('')||'<span class="log">ยังไม่มีรูป</span>'}</div>
+  ${ed?`<div class="bar" style="margin-top:8px"><input type="file" accept="image/*" multiple onchange="addPhotos('${c.id}',this.files)"></div>`:''}
+  <div class="bar" style="margin-top:16px"><button onclick="printRep('${c.id}')">พิมพ์ / บันทึกรายงาน 8D</button>${ed?`<button class="pri" onclick="mailRep('${c.id}')">ส่งรายงานทางอีเมล</button>`:''}</div>
+  <h2>ประวัติ</h2><div class="log">${c.log.map(l=>`${esc(l[0])} · ${esc(l[1])} · ${esc(l[2])}`).join('<br>')}</div>`;
+},
+inv(){
+  return `<h1>เครื่องมือ / สารเคมี / ชิ้นส่วน</h1><div class="bar"><button class="pri" onclick="invDlg()">เพิ่มรายการ</button></div>
+  <div class="wide"><table><tr><th>ประเภท</th><th>ชื่อ</th><th>คงเหลือ</th><th>ขั้นต่ำ</th><th>สอบเทียบ/หมดอายุ</th><th></th></tr>
+  ${S.inv.map(i=>{const w=i.exp&&days(i.exp)<=30;return `<tr><td>${esc(i.type)}</td><td>${esc(i.name)}</td><td class="${+i.qty<=+i.min?'warn':''}">${i.qty}</td><td>${i.min}</td><td class="${w?'warn':''}">${esc(i.exp)||'-'}</td><td><button onclick="invDlg(${i.id})">แก้ไข</button>${boss()?` <button class="x" onclick="invDel(${i.id})">ลบ</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="log">ยังไม่มีรายการ</td></tr>'}</table></div>`;
+},
+users(){
+  return `<h1>ผู้ใช้และสิทธิ์</h1><p class="log">Engineer แก้ไขเคส/สต็อกได้ · Manager จัดการผู้ใช้และตั้งค่า · Customer เห็นเฉพาะเคสที่อีเมลตรงกับตัวเอง</p><div class="bar"><button class="pri" onclick="userDlg()">เพิ่มผู้ใช้</button></div>
+  <table><tr><th>ชื่อ</th><th>อีเมล</th><th>บทบาท</th><th></th></tr>${S.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${u.role}</td><td><button onclick="userDlg(${u.id})">แก้ไข</button>${u.id==S.u.id?'':` <button class="x" onclick="userDel(${u.id})">ลบ</button>`}</td></tr>`).join('')}</table>`;
+},
+set(){
+  return `<h1>ตั้งค่าอีเมลแจ้งเตือน</h1><div class="box" style="max-width:560px">
+  <label>อีเมลทีมที่รับแจ้งเตือน (คั่นด้วย ,)<input id="s_to" value="${esc(S.to)}"></label>
+  <div class="bar"><button class="pri" onclick="act('saveCfg',{to:$('#s_to').value},'บันทึกแล้ว')">บันทึก</button></div>
+  <p class="log">ระบบส่งแจ้งเตือนเคสเกินกำหนด สต็อก และสอบเทียบอัตโนมัติ 08:00 ทุกวัน (ต้องรัน installTrigger ใน Apps Script หนึ่งครั้ง)</p></div>`;
+}};
+
+function newCase(){
+  const eng=['-',...S.users.filter(u=>u.role=='Engineer').map(u=>u.name)];
+  dlg('เปิดเคสใหม่',[{k:'customer',l:'ลูกค้า/ทีมเจ้าของงาน',v:staff()?'':S.u.name,r:1},...(staff()?[{k:'custEmail',l:'อีเมลลูกค้า',t:'email',r:1}]:[]),{k:'part',l:'ชิ้นงาน (เช่น Server PSU, DIMM)',r:1},{k:'sn',l:'Serial Number'},{k:'symptom',l:'อาการเสีย',t:'textarea'},{k:'due',l:'กำหนดเสร็จ',t:'date',r:1},...(staff()?[{k:'owner',l:'ผู้รับผิดชอบ',t:'select',o:eng}]:[])],
+    f=>act('saveCase',{c:f},'เปิดเคสแล้ว'));
+}
+function saveA(id){
+  const c={id};['d3','test','rc','d5','d6','d7'].forEach(k=>c[k]=$('#a_'+k).value);
+  act('saveCase',{c},'บันทึกแล้ว');
+}
+function shrink(f){return new Promise(res=>{const im=new Image();im.onload=()=>{const r=Math.min(1,800/im.width),cv=document.createElement('canvas');cv.width=im.width*r;cv.height=im.height*r;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);res(cv.toDataURL('image/jpeg',.75))};im.src=URL.createObjectURL(f)})}
+async function addPhotos(id,files){
+  busy=true;toast('กำลังอัปโหลดรูป…');
+  try{for(const f of files)await api('photo',{id,img:await shrink(f)});toast('อัปโหลดแล้ว');await load()}catch(e){}
+  busy=false;
+}
+function rep(c){
+  const R=(t,v)=>`<h3>${t}</h3><p>${esc(v||'-').replace(/\n/g,'<br>')}</p>`;
+  return `<div style="font-family:sans-serif;max-width:720px"><h2>รายงานการวิเคราะห์ความเสียหาย (8D) ${esc(c.id)}</h2>
+  <p>ลูกค้า: ${esc(c.customer)} · ชิ้นงาน: ${esc(c.part)} · S/N: ${esc(c.sn)}<br>รับเมื่อ: ${esc(c.received)} · สถานะ: ${esc(c.status)} · ผู้รับผิดชอบ: ${esc(c.owner)}</p>
+  ${R('D1–D2 ทีมและปัญหา',c.symptom)}${R('D3 มาตรการกักกัน',c.d3)}${R('D4 ขั้นตอนทดสอบ / ผลที่พบ',c.test)}${R('D4 สาเหตุราก',c.rc)}${R('D5 การแก้ไข',c.d5)}${R('D6 การยืนยันผล',c.d6)}${R('D7 การป้องกันซ้ำ',c.d7)}
+  <h3>D8 ปิดเคส</h3><p>${c.status=='ปิดเคส'?'ปิดเคสแล้ว':'ยังไม่ปิดเคส'}</p>${c.photos.map(p=>`<img src="${esc(p)}" style="height:160px;margin:4px">`).join('')}</div>`;
+}
+function printRep(id){const w=open('','_blank');w.document.write(rep(S.cases.find(x=>x.id==id)));w.document.close();setTimeout(()=>w.print(),800)}
+function mailRep(id){
+  const c=S.cases.find(x=>x.id==id);
+  if(confirm(`ส่งรายงาน ${c.id} ไปที่ ${c.custEmail||'(ไม่มีอีเมลลูกค้า)'} และทีมแจ้งเตือน?`))act('sendReport',{id,html:rep(c)},'ส่งรายงานแล้ว');
+}
+function invDlg(id){
+  const i=S.inv.find(x=>x.id==id)||{type:'เครื่องมือ',name:'',qty:0,min:0,exp:''};
+  dlg(id?'แก้ไขรายการ':'เพิ่มรายการ',[{k:'type',l:'ประเภท',t:'select',o:TY,v:i.type},{k:'name',l:'ชื่อ',v:i.name,r:1},{k:'qty',l:'คงเหลือ',t:'number',v:i.qty},{k:'min',l:'ขั้นต่ำก่อนแจ้งเตือน',t:'number',v:i.min},{k:'exp',l:'วันครบสอบเทียบ / หมดอายุ',t:'date',v:i.exp}],f=>act('saveInv',{i:{...f,id:i.id}},'บันทึกแล้ว'));
+}
+function invDel(id){if(confirm('ลบรายการนี้?'))act('delInv',{id},'ลบแล้ว')}
+function userDlg(id){
+  const u=S.users.find(x=>x.id==id)||{name:'',email:'',role:'Engineer'};
+  dlg(id?'แก้ไขผู้ใช้':'เพิ่มผู้ใช้',[{k:'name',l:'ชื่อ',v:u.name,r:1},{k:'email',l:'อีเมล',t:'email',v:u.email,r:1},{k:'role',l:'บทบาท',t:'select',o:['Engineer','Manager','Customer'],v:u.role},{k:'pass',l:id?'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)':'รหัสผ่าน',t:'password',r:!id}],f=>act('saveUser',{u:{...f,id:u.id}},'บันทึกแล้ว'));
+}
+function userDel(id){if(confirm('ลบผู้ใช้นี้?'))act('delUser',{id},'ลบแล้ว')}
+async function check(){try{const j=await api('check');toast(j.sent?'ส่งอีเมลแจ้งเตือนแล้ว':'ไม่มีรายการที่ต้องแจ้งเตือน')}catch(e){}}
+
+if(cred)load().catch(()=>{cred=null;render()});else render();
+</script>
+</body>
+</html>
