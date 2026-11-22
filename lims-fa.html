@@ -4,53 +4,73 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FA-LIMS</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f5f3;--ink:#1b2a2f;--mute:#5d6d6b;--pcb:#0e5a4a;--cu:#b4682b;--line:#d5dad6;--card:#fff}
+:root{--bg:#eceeea;--ink:#16231f;--mute:#66756f;--pcb:#0b3d33;--pcb2:#12594a;--cu:#c0762f;--line:#d3d9d3;--card:#fbfcfa}
 *{box-sizing:border-box}
-body{margin:0;font:16px/1.5 Sarabun,system-ui,sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:210px 1fr;min-height:100vh}
-aside{background:var(--pcb);color:#fff;padding:18px 12px;display:flex;flex-direction:column;gap:6px}
-aside b{font-size:20px;margin:0 8px 10px}
-aside button{background:none;border:0;color:#cfe5de;text-align:left;padding:9px 10px;border-radius:4px;font:inherit;cursor:pointer}
-aside button.on,aside button:hover{background:#fff2;color:#fff}
-#who{margin-top:auto;font-size:14px;color:#cfe5de}
-main{padding:24px 28px;max-width:1100px;width:100%}
-h1{margin:0 0 16px;font-size:24px}h2{font-size:18px;margin:20px 0 8px}
-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
-th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:600;background:#eef0ed}
-tr.k{cursor:pointer}tr.k:hover{background:#f0f6f3}
-.sn{font:600 13px ui-monospace,Menlo,monospace;border:1.5px solid var(--ink);padding:1px 6px;border-radius:3px;white-space:nowrap}
-.chip{padding:1px 8px;border-radius:10px;background:#e4e9e6;font-size:14px;white-space:nowrap}
-.chip.late{background:#f6dcc8;color:#7a3c0c}.chip.done{background:#cfe8dd;color:#0a3f33}
+body{margin:0;font:16px/1.55 Sarabun,system-ui,sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+body.auth{grid-template-columns:1fr}body.auth aside{display:none}body.auth main{padding:0;max-width:none}
+aside{position:sticky;top:0;height:100vh;background:var(--pcb) repeating-linear-gradient(to bottom,transparent 0 43px,#ffffff10 43px 44px);color:#fff;padding:22px 12px;display:flex;flex-direction:column;gap:4px}
+.brand{padding:0 10px 18px}.brand b{display:block;font-size:22px}.brand small{color:#9fc4b9;font-size:13px}
+aside button{height:40px;background:none;border:0;border-left:3px solid transparent;color:#c4ded5;text-align:left;padding:0 12px;border-radius:0 6px 6px 0;font:inherit;cursor:pointer;transition:background .15s}
+aside button:hover{background:#ffffff14;color:#fff}
+aside button.on{background:#ffffff1f;color:#fff;border-left-color:var(--cu);font-weight:600}
+#who{margin-top:auto;display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:1px solid #ffffff22}
+.me{padding:0 12px 6px;font-size:14px;color:#c4ded5}.me b{display:block;color:#fff;font-size:15px}
+main{padding:30px 38px;max-width:1120px;width:100%}
+h1{margin:0 0 18px;font-size:26px;font-weight:700;letter-spacing:-.01em}h2{font-size:18px;margin:24px 0 10px}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:14px;color:var(--mute);background:#e5e9e4}
+tr.k{cursor:pointer;transition:background .12s}tr.k:hover{background:#e9f1ed}
+.sn{font:600 13px 'IBM Plex Mono',ui-monospace,Menlo,monospace;border:1.5px solid var(--ink);border-radius:3px;padding:1px 8px 1px 10px;background:#fff;box-shadow:inset 3px 0 0 var(--cu);white-space:nowrap}
+.chip{--led:#8c9893;display:inline-flex;align-items:center;gap:7px;padding:2px 11px 2px 9px;border-radius:99px;background:#e3e8e3;font-size:14px;white-space:nowrap}
+.chip:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--led);box-shadow:0 0 0 3px color-mix(in srgb,var(--led) 25%,transparent)}
+.s1{--led:#e0a21b}.s2{--led:#3a82d6}.s3{--led:#2fb36d}.late{--led:#d9462f;background:#f7ddd7;color:#7d2412}
 button,input,select,textarea{font:inherit}
-button{padding:7px 14px;border:1px solid var(--line);background:#fff;border-radius:4px;cursor:pointer}
-button.pri{background:var(--pcb);color:#fff;border-color:var(--pcb)}
-button.x{color:var(--cu)}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.box{background:var(--card);border:1px solid var(--line);padding:14px;border-radius:4px}
-.row{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
-.meter{display:flex;align-items:center;gap:8px;margin:6px 0}.meter i{display:block;height:10px;background:var(--pcb);border-radius:2px}
-.warn{color:var(--cu);font-weight:600}
-label{display:block;margin:8px 0;font-weight:600;font-size:14px}
-label input,label select,label textarea{display:block;width:100%;padding:7px;border:1px solid var(--line);border-radius:4px;font-weight:400;margin-top:3px}
-dialog{border:0;border-radius:6px;padding:20px;width:min(480px,92vw);box-shadow:0 10px 40px #0005}
-dialog::backdrop{background:#0006}
-.ph{display:flex;gap:8px;flex-wrap:wrap}.ph img{height:90px;border:1px solid var(--line);border-radius:3px}
-#t{position:fixed;bottom:18px;right:18px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:4px;display:none;max-width:80vw}
+button{padding:8px 16px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;transition:background .15s}
+button:hover{background:#eef2ee}
+button.pri{background:var(--pcb2);color:#fff;border-color:var(--pcb2)}button.pri:hover{background:var(--pcb)}
+button.x{color:#a3441a}button.full{width:100%;padding:10px;margin-top:6px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.box{background:var(--card);border:1px solid var(--line);padding:16px;border-radius:8px}
+.box>b{display:block;margin-bottom:6px}
+.big{font:600 34px 'IBM Plex Mono',monospace;line-height:1.1}
+.row{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+.meter{display:flex;align-items:center;gap:10px;margin:8px 0}.meter span:first-child{width:104px}
+.meter .t{flex:1;height:10px;background:#dde3dd;border-radius:5px;overflow:hidden}.meter i{display:block;height:100%;background:var(--pcb2)}
+.warn{color:#a3441a;font-weight:600}
+label{display:block;margin:10px 0;font-weight:600;font-size:14px}
+label input,label select,label textarea{display:block;width:100%;padding:9px 10px;border:1px solid #c5ccc5;border-radius:6px;font-weight:400;margin-top:4px;background:#fff}
+label input:focus,label select:focus,label textarea:focus{border-color:var(--pcb2);outline:2px solid #12594a33}
+dialog{border:0;border-radius:10px;padding:22px;width:min(480px,92vw);box-shadow:0 12px 48px #0006;background:var(--card);color:var(--ink)}
+dialog[open]{animation:pop .18s ease-out}@keyframes pop{from{opacity:0;transform:scale(.97)}}
+dialog::backdrop{background:#0b1f1a99}
+.ph{display:flex;gap:8px;flex-wrap:wrap}.ph img{height:96px;border:1px solid var(--line);border-radius:6px}
+#t{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;display:none;max-width:80vw}
 .log{font-size:14px;color:var(--mute)}
+.authwrap{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh}
+.hero{background:var(--pcb) repeating-linear-gradient(to bottom,transparent 0 43px,#ffffff10 43px 44px);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.hero h1{font-size:44px;margin:0 0 12px}.hero p{max-width:32ch;color:#c4ded5;margin:0}
+.hero ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.hero .chip{background:#ffffff18;color:#fff}
+.panel{align-self:center;justify-self:center;width:min(380px,88vw);padding:24px 0}
+.panel h2{margin:0 0 14px;font-size:24px}.alt{text-align:center;font-size:14px;margin:14px 0 0}.alt a{color:var(--pcb2)}
 :focus-visible{outline:2px solid var(--cu);outline-offset:2px}
-@media(max-width:800px){body{grid-template-columns:1fr}aside{flex-direction:row;flex-wrap:wrap;align-items:center}#who{margin:0}main{padding:16px}.wide{overflow-x:auto}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:800px){body{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;background-image:none;padding:12px}aside button{border-left:0;border-radius:6px}.brand{padding:0 8px 0 0}.brand small{display:none}#who{margin:0;border:0;padding:0;flex-direction:row;align-items:center}.me{display:none}main{padding:18px}.wide{overflow-x:auto}.authwrap{grid-template-columns:1fr}.hero{padding:28px}.hero h1{font-size:32px}}
 </style>
 </head>
 <body>
-<aside><b>FA-LIMS</b><span id="nav" style="display:contents"></span><div id="who"></div></aside>
+<aside><div class="brand"><b>FA-LIMS</b><small>Failure Analysis Lab</small></div><span id="nav" style="display:contents"></span><div id="who"></div></aside>
 <main id="main"></main>
 <div id="t"></div>
 <script>
 /* ใส่ Web App URL (/exec) ที่ได้จากการ Deploy Code.gs */
 const API='https://script.google.com/macros/s/AKfycbz3xLbD2iWo383x-LYqVKTfXAg41Lx2muqvy8zzueJSHZdEbq0KPD4HkIoR0TS7Aqxi/exec';
+const PUB=['forgot','reset'];
 
 const $=s=>document.querySelector(s);
 let S={u:null,cases:[],inv:[],users:[],to:''},cred=JSON.parse(sessionStorage.getItem('c')||'null'),view='dash',cur=null,busy=false;
@@ -65,7 +85,7 @@ function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearT
 async function api(action,data={}){
   if(API.includes('PASTE')){toast('ยังไม่ได้ใส่ Web App URL ในไฟล์ HTML');throw new Error('no api')}
   try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...cred,...data})}),j=await r.json();
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...(PUB.includes(action)?{}:cred),...data})}),j=await r.json();
     if(!j.ok)throw new Error(j.error);return j;
   }catch(e){toast(e.message=='Failed to fetch'?'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':e.message);throw e}
 }
@@ -92,21 +112,21 @@ function tabs(){
 }
 function go(v){view=v;cur=null;render()}
 function render(){
-  if(!S.u){$('#nav').innerHTML='';$('#who').innerHTML='';
-    $('#main').innerHTML=`<h1>เข้าสู่ระบบ</h1><div class="box" style="max-width:360px" onkeydown="if(event.key=='Enter')login()"><label>อีเมล<input id="l_e" type="email" autocomplete="username"></label><label>รหัสผ่าน<input id="l_p" type="password" autocomplete="current-password"></label><div class="row"><button class="pri" onclick="login()">เข้าสู่ระบบ</button></div></div>`;return}
+  document.body.classList.toggle('auth',!S.u);
+  if(!S.u){$('#nav').innerHTML='';$('#who').innerHTML='';$('#main').innerHTML=authView();return}
   if(!tabs().some(t=>t[0]==view))view='cases';
   $('#nav').innerHTML=tabs().map(([k,l])=>`<button class="${view==k&&!cur?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
-  $('#who').innerHTML=`${esc(S.u.name)} (${S.u.role})<br><button onclick="logout()">ออกจากระบบ</button>`;
+  $('#who').innerHTML=`<div class="me"><b>${esc(S.u.name)}</b>${S.u.role}</div><button onclick="pwDlg()">เปลี่ยนรหัสผ่าน</button><button onclick="logout()">ออกจากระบบ</button>`;
   $('#main').innerHTML=(cur?V.detail:V[view])();
 }
-const chip=c=>`<span class="chip ${late(c)?'late':c.status=='ปิดเคส'?'done':''}">${late(c)?'เกินกำหนด · ':''}${c.status}</span>`;
+const chip=c=>`<span class="chip ${late(c)?'late':'s'+ST.indexOf(c.status)}">${late(c)?'เกินกำหนด · ':''}${c.status}</span>`;
 const V={
 dash(){
   const cs=S.cases,n=s=>cs.filter(c=>c.status==s).length,mx=Math.max(1,...ST.map(n));
   const low=S.inv.filter(i=>+i.qty<=+i.min),exp=S.inv.filter(i=>i.exp&&days(i.exp)<=30);
   return `<h1>ภาพรวมแลป FA</h1><div class="grid">
-  <div class="box"><b>เคสตามสถานะ</b>${ST.map(s=>`<div class="meter"><span style="width:110px">${s}</span><i style="width:${n(s)/mx*100}px"></i>${n(s)}</div>`).join('')}</div>
-  <div class="box"><b>เคสเกินกำหนด</b><div class="${cs.some(late)?'warn':''}" style="font-size:32px">${cs.filter(late).length}</div>${cs.filter(late).map(c=>`<div>${esc(c.id)} · เกิน ${-days(c.due)} วัน</div>`).join('')}</div>
+  <div class="box"><b>เคสตามสถานะ</b>${ST.map(s=>`<div class="meter"><span>${s}</span><span class="t"><i style="width:${n(s)/mx*100}%"></i></span>${n(s)}</div>`).join('')}</div>
+  <div class="box"><b>เคสเกินกำหนด</b><div class="big ${cs.some(late)?'warn':''}">${cs.filter(late).length}</div>${cs.filter(late).map(c=>`<div>${esc(c.id)} · เกิน ${-days(c.due)} วัน</div>`).join('')}</div>
   <div class="box"><b>สต็อกใกล้หมด</b>${low.map(i=>`<div>${esc(i.name)} (${i.qty}/${i.min})</div>`).join('')||'<div class="log">ไม่มี</div>'}</div>
   <div class="box"><b>ใกล้ครบสอบเทียบ/หมดอายุ (30 วัน)</b>${exp.map(i=>`<div>${esc(i.name)} · ${days(i.exp)<0?'เลยกำหนด':'อีก '+days(i.exp)+' วัน'}</div>`).join('')||'<div class="log">ไม่มี</div>'}</div></div>
   <div class="bar" style="margin-top:16px"><button class="pri" onclick="check()">ตรวจและส่งอีเมลแจ้งเตือนตอนนี้</button><button onclick="load()">รีเฟรชข้อมูล</button></div>`;
@@ -185,6 +205,32 @@ function userDlg(id){
 }
 function userDel(id){if(confirm('ลบผู้ใช้นี้?'))act('delUser',{id},'ลบแล้ว')}
 async function check(){try{const j=await api('check');toast(j.sent?'ส่งอีเมลแจ้งเตือนแล้ว':'ไม่มีรายการที่ต้องแจ้งเตือน')}catch(e){}}
+
+let am='login';
+function goAuth(m){const e=$('#l_e')?.value;am=m;render();if(e)$('#l_e').value=e}
+function authView(){
+  const hero=`<section class="hero"><div><h1>FA-LIMS</h1><p>บันทึกเคส ผลวิเคราะห์ 8D สต็อก และการแจ้งเตือนของแลป Failure Analysis ไว้ในที่เดียว</p></div><ul>${ST.map((s,i)=>`<li><span class="chip s${i}">${s}</span></li>`).join('')}</ul></section>`;
+  const back=`<a href="#" onclick="goAuth('login');return false">กลับไปเข้าสู่ระบบ</a>`;
+  const F={
+    login:`<h2>เข้าสู่ระบบ</h2><label>อีเมล<input id="l_e" type="email" autocomplete="username"></label><label>รหัสผ่าน<input id="l_p" type="password" autocomplete="current-password"></label><button class="pri full" onclick="login()">เข้าสู่ระบบ</button><p class="alt"><a href="#" onclick="goAuth('forgot');return false">ลืมรหัสผ่าน?</a></p>`,
+    forgot:`<h2>ลืมรหัสผ่าน</h2><p class="log">กรอกอีเมลของบัญชี ระบบจะส่งรหัสยืนยัน 8 ตัวอักษรให้ทางอีเมล ใช้ได้ 15 นาที</p><label>อีเมล<input id="l_e" type="email"></label><button class="pri full" onclick="forgot()">ส่งรหัสยืนยัน</button><p class="alt"><a href="#" onclick="goAuth('reset');return false">มีรหัสยืนยันแล้ว</a> · ${back}</p>`,
+    reset:`<h2>ตั้งรหัสผ่านใหม่</h2><label>อีเมล<input id="l_e" type="email"></label><label>รหัสยืนยันจากอีเมล<input id="l_c" autocomplete="one-time-code"></label><label>รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)<input id="l_p" type="password" autocomplete="new-password"></label><label>ยืนยันรหัสผ่านใหม่<input id="l_p2" type="password" autocomplete="new-password"></label><button class="pri full" onclick="resetPw()">ตั้งรหัสผ่านใหม่</button><p class="alt">${back}</p>`};
+  return `<div class="authwrap">${hero}<section class="panel" onkeydown="if(event.key=='Enter')({login,forgot,reset:resetPw}[am])()">${F[am]}</section></div>`;
+}
+async function forgot(){
+  const email=$('#l_e').value.trim();if(!email)return toast('กรอกอีเมลก่อน');
+  try{await api('forgot',{email});toast('ถ้ามีบัญชีนี้ในระบบ จะส่งรหัสยืนยันไปทางอีเมล');goAuth('reset')}catch(e){}
+}
+async function resetPw(){
+  const p=$('#l_p').value;if(p!=$('#l_p2').value)return toast('รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน');
+  try{await api('reset',{email:$('#l_e').value.trim(),code:$('#l_c').value,newPass:p});toast('ตั้งรหัสผ่านใหม่แล้ว เข้าสู่ระบบได้เลย');am='login';render()}catch(e){}
+}
+function pwDlg(){
+  dlg('เปลี่ยนรหัสผ่าน',[{k:'old',l:'รหัสผ่านเดิม',t:'password',r:1},{k:'np',l:'รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)',t:'password',r:1},{k:'np2',l:'ยืนยันรหัสผ่านใหม่',t:'password',r:1}],async f=>{
+    if(f.np!=f.np2)return toast('รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน');
+    try{await api('changePass',{old:f.old,newPass:f.np});cred.pass=f.np;sessionStorage.setItem('c',JSON.stringify(cred));toast('เปลี่ยนรหัสผ่านแล้ว และส่งอีเมลแจ้งไปที่บัญชีของคุณ')}catch(e){}
+  });
+}
 
 if(cred)load().catch(()=>{cred=null;render()});else render();
 </script>
