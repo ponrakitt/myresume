@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Showroom – เลือกดีไซน์ แล้วสั่ง AI สร้างเว็บ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--tx:#1c1b1a;--mut:#6b6862;--ac:#5b4bff;--acs:#ece9ff;--bd:#e2dfd8;--on:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--card:#1e1e22;--tx:#f2f1ee;--mut:#a09d97;--ac:#8f84ff;--acs:#2a2748;--bd:#34343a;--on:#101012;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141416;--card:#1e1e22;--tx:#f2f1ee;--mut:#a09d97;--ac:#8f84ff;--acs:#2a2748;--bd:#34343a;--on:#101012;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 "Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+header{padding:12px 0 8px}
+h1{margin:0;font-size:2rem;letter-spacing:-.02em}
+h1 span{color:var(--ac)}
+.sub{color:var(--mut);margin:4px 0 0}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-top:16px}
+.box h2{margin:0 0 10px;font-size:1.05rem}
+label{display:block;font-size:.85rem;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
+textarea{min-height:84px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr;gap:0 12px}
+@media(min-width:640px){.row{grid-template-columns:1fr 1fr}}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;margin-top:16px}
+.tab{flex:none;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:8px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.tab.on{background:var(--ac);color:var(--on);border-color:var(--ac)}
+.tab small{opacity:.8}
+.intro{color:var(--mut);font-size:.92rem;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.item{text-align:left;font:inherit;color:var(--tx);background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:12px 14px;cursor:pointer;display:block;width:100%}
+.item b{display:block}
+.item span{display:block;color:var(--mut);font-size:.88rem;margin-top:2px}
+.item.on{border-color:var(--ac);background:var(--acs)}
+.item.on b::before{content:"";display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px;background:var(--ac);-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>") center/contain no-repeat}
+.ic{vertical-align:-3px;margin-right:6px;flex:none}
+.item[hidden]{display:none}
+.sw{display:flex;gap:4px;margin-top:8px}
+.sw i{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd)}
+.out{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:420px;overflow:auto}
+.btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--ac);color:var(--on)}
+.btn.g{background:var(--acs);color:var(--tx)}
+.hint{font-size:.85rem;color:var(--mut);margin-top:8px}
+.pvl{font-size:.85rem;color:var(--mut);margin:0 0 6px}.pvw{border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:12px;font-size:12px}.pvw .c3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 12px 12px}
+.sel2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;margin-bottom:10px}
+.soonc{border:2px dashed var(--bd);border-radius:14px;padding:12px 14px;opacity:.9}.soonc b{display:block}.soonc span{color:var(--mut);font-size:.88rem}.soonc .badge{display:inline-block;background:var(--acs);color:var(--ac);border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:700;margin-left:6px}
+.sg{margin-top:14px}.sgh{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;color:var(--mut);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}.sgh span{background:var(--bd);border-radius:999px;padding:0 8px;font-size:.72rem}
+.sgl{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:640px){.sgl{grid-template-columns:1fr 1fr}}
+.soonc{display:flex;gap:12px;align-items:flex-start;opacity:1}.soi{flex:none;width:36px;height:36px;border-radius:10px;background:var(--acs);color:var(--ac);display:flex;align-items:center;justify-content:center}.soi .ic{margin:0}
+.sot b{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.sot .badge{margin-left:0}.sot>span{display:block;margin-top:2px}
+@keyframes fh{from{transform:translateY(26px);opacity:0}30%{opacity:1}to{transform:translateY(-30px);opacity:0}}@keyframes rn{50%{transform:translate(20px,-8px)}}
+.lvt{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.bzb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.bcard{border:1px solid var(--bd);border-radius:14px;padding:12px;margin-top:10px}.bsw{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--bd);margin:8px 0}.bsw i{flex:1}.btb{font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--mut)}#bc button.o.sel{border-color:var(--ac);background:var(--acs)}#bc .hint{margin:6px 0}#bc input{margin-top:6px}
+.cw{margin-top:12px;border:2px solid #e6a100;background:rgba(230,161,0,.1);border-radius:14px;padding:12px 14px}.cw[hidden]{display:none}.cwt{display:flex;align-items:center;gap:6px;font-weight:700;color:#d99400}.cwt .ic{margin:0}.cwi{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(230,161,0,.5)}.cwi b{display:block}.cwi span{display:block;color:var(--mut);font-size:.9rem;margin:2px 0 6px}.cwi .btn{padding:5px 10px;font-size:.8rem;margin:0 6px 6px 0}.item.cf{border-color:#e6a100}.item.cf b .ic{color:#e6a100;margin:0 0 0 6px}.lvh{margin:16px 0 2px;padding-top:10px;border-top:1px dashed var(--bd);font-weight:700;color:var(--ac)}
+#qz,#bz{position:fixed;inset:0;z-index:1001;background:rgba(10,10,20,.72);display:flex;align-items:center;justify-content:center;padding:16px}#qz[hidden],#bz[hidden]{display:none}
+#qc,#bc{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:18px;padding:18px;width:100%;max-width:420px;max-height:90vh;overflow:auto}#qc button.o,#bc button.o{display:block;width:100%;text-align:left;margin-top:8px;font:inherit;color:var(--tx);background:var(--bg);border:2px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer}
+.sv-row{display:flex;gap:6px;align-items:center;margin-top:6px}.sv-row span{flex:1;word-break:break-all}.sv-row .btn{padding:6px 12px}
+@keyframes dt{50%{transform:translateY(-4px);opacity:.4}}
+.lang{flex-wrap:wrap;justify-content:flex-end}
+#tvb{position:fixed;inset:0;z-index:998}
+#tvh{position:fixed;z-index:999;pointer-events:none;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,10,20,.72),0 0 0 3px var(--ac),0 0 24px 6px var(--ac);transition:all .3s ease;animation:pls 1.6s ease-in-out infinite}
+@keyframes pls{50%{box-shadow:0 0 0 9999px rgba(10,10,20,.72),0 0 0 6px var(--ac),0 0 34px 10px var(--ac)}}
+#tt{position:fixed;z-index:1000;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+#tt p{margin:6px 0 0;color:var(--mut);font-size:.92rem}#tn{font-size:.78rem;color:var(--ac);font-weight:700}
+.add{margin-top:14px;border-top:1px dashed var(--bd);padding-top:10px}.add summary{cursor:pointer;color:var(--ac);font-weight:600}.add input{margin-top:8px}.add .btn{margin-top:8px}
+@keyframes pg{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes sk{to{background-position:-200% 0}}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.lang{display:flex;gap:6px;padding-top:6px}.lang .tab{padding:6px 12px}
+.ft{text-align:center;color:var(--mut);font-size:.85rem;margin-top:28px;padding-top:16px;border-top:1px solid var(--bd)}.ft a{color:var(--ac);text-decoration:none;font-weight:600}
+.st{height:70px;display:flex;align-items:center;justify-content:center;border-radius:8px;margin-top:8px;overflow:hidden}
+.st div{padding:10px 18px;border-radius:10px;font:600 14px sans-serif}
+.wf{display:flex;flex-direction:column;gap:3px;height:70px;padding:6px;margin-top:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px}
+.wf i{display:block;background:var(--bd);border-radius:3px;font-style:normal}
+.cd{margin:8px 0 0;padding:10px;background:#1b1b22;color:#9ef0c0;border-radius:8px;font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap}
+.pill{background:var(--ac);color:var(--on);padding:8px 16px;border-radius:999px;font:600 13px sans-serif}
+.pxw{position:relative;width:80%;height:50px;overflow:hidden;background:var(--bd);border-radius:8px}
+.pxw u{position:absolute;left:0;width:200%}
+.pb{bottom:0;height:50%;background:repeating-linear-gradient(90deg,#9a93ff 0 20px,transparent 20px 50px);opacity:.5;animation:mvb 3s linear infinite}
+.pf{bottom:0;height:25%;background:repeating-linear-gradient(90deg,var(--ac) 0 20px,transparent 20px 40px);animation:mvf 1s linear infinite}
+.ss{top:0;height:140px;background:repeating-linear-gradient(var(--ac) 0 10px,transparent 10px 22px);animation:sc 2.5s ease-in-out infinite alternate}
+.mq{width:90%;overflow:hidden;white-space:nowrap}.mq span{display:inline-block;font-weight:700;animation:mq 5s linear infinite}
+.tw{font:600 16px ui-monospace,monospace;overflow:hidden;white-space:nowrap;border-right:2px solid var(--ac);width:14ch;animation:ty 3s steps(14) infinite}
+.spin{width:28px;height:28px;border:4px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:rt 1s linear infinite}
+.ct{font:700 24px sans-serif;color:var(--ac)}
+@keyframes mvb{to{transform:translateX(-50px)}}@keyframes mvf{to{transform:translateX(-40px)}}
+@keyframes sc{to{transform:translateY(-80px)}}@keyframes mq{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+@keyframes ty{from{width:0}60%,to{width:14ch}}@keyframes rt{to{transform:rotate(360deg)}}
+@keyframes fd{0%{opacity:0;transform:translateY(8px)}50%,100%{opacity:1;transform:none}}
+@keyframes bob{50%{transform:translateY(-6px);box-shadow:0 8px 12px rgba(0,0,0,.25)}}
+@keyframes mi{50%{transform:scale(.88)}}@keyframes ag{to{background-position:300% 0}}
+.st .spin{padding:0;border-radius:50%}.st .ct{font:700 24px sans-serif;padding:0}.st .tw{font:600 16px ui-monospace,monospace;padding:0 2px 0 0;border-radius:0}.st .mq{padding:0;border-radius:0}.st .pill{border-radius:999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="top"><h1>Show<span>room</span></h1><div class="lang"><button class="tab" data-l="th">ไทย</button><button class="tab" data-l="en">EN</button><button class="tab" id="tourBtn"></button></div></div>
+  <p class="sub">เลือกสไตล์ เลย์เอาต์ สี และส่วนประกอบของเว็บ พร้อมคำอธิบายทุกอย่าง แล้วระบบจะสร้าง Prompt ให้คัดลอกไปสั่ง AI ได้ทันที</p>
+</header>
+
+<section class="box">
+  <h2>1) ข้อมูลเว็บของคุณ</h2>
+  <div class="row">
+    <div><label for="name">ชื่อเว็บ / ธุรกิจ</label><input id="name" placeholder="เช่น ร้านกาแฟบ้านสวน"></div>
+    <div><label for="type">ประเภทเว็บ</label>
+      <select id="type"></select></div>
+  </div>
+  <label for="note">รายละเอียดเพิ่มเติม (กลุ่มเป้าหมาย เนื้อหา ฟีเจอร์พิเศษ)</label>
+  <textarea id="note" placeholder="เช่น ขายกาแฟคั่วบด กลุ่มลูกค้าวัยทำงาน อยากให้ดูอบอุ่น มีปุ่มสั่งซื้อผ่าน LINE"></textarea>
+</section>
+
+<section>
+  <div style="margin-top:16px"><button class="btn" id="rnd" style="width:100%;font-size:1rem;padding:14px"></button><button class="btn g" id="qzb" style="width:100%;font-size:1rem;padding:14px;margin-top:8px"></button></div>
+  <div class="tabs" id="presets" style="margin-top:12px"></div>
+  <div class="tabs" id="tabs" role="tablist" style="margin-top:0"></div>
+  <div class="box" style="margin-top:0">
+    <input id="q" type="search" placeholder="ค้นหาในหมวดนี้..." style="margin-bottom:10px">
+    <p class="intro" id="intro"></p><div id="bzw"></div>
+    <div class="grid" id="grid"></div>
+    <div class="cw" id="cw" hidden></div>
+    <details class="add"><summary id="addT"></summary><input id="cn"><input id="cd"><button class="btn g" id="ca"></button></details>
+  </div>
+</section>
+
+<section class="box" id="lvBox" hidden></section>
+<section class="box" id="beBox" hidden></section>
+<section class="box" id="peBox" hidden></section>
+<section class="box" id="icBox" hidden></section>
+
+<section class="box">
+  <h2>2) Prompt สำหรับสั่ง AI</h2>
+  <p class="pvl" id="pvl"></p><div class="pvw" id="pvw"></div>
+  <div class="sel2"><div><label for="tg" id="tgl"></label><select id="tg"></select></div><div><label for="ln" id="lnl"></label><select id="ln"></select></div></div>
+  <div class="out" id="out"></div>
+  <div class="btns">
+    <button class="btn" id="copy">คัดลอก Prompt</button>
+    <button class="btn g" id="clear">ล้างที่เลือก</button>
+  </div>
+  <p class="hint" id="hint"></p>
+  <details class="add" id="sv"><summary id="svT"></summary><input id="sn"><div class="btns"><button class="btn g" id="ss"></button><button class="btn g" id="sh"></button></div><p class="hint" id="sm"></p><div id="sl"></div><input id="sc" style="margin-top:10px"><button class="btn g" id="sg" style="margin-top:8px"></button></details>
+</section>
+<section class="box"><h2 id="soonT"></h2><p class="pvl" id="soonI"></p><div id="soon"></div></section>
+<footer class="ft" id="ft"></footer>
+</div>
+
+<script>
+var IC={compare:'<rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/>',undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',gauge:'<path d="M12 14l4-4"/><path d="M3.3 17a10 10 0 1 1 17.4 0"/>',rows:'<rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="15" width="18" height="6" rx="1"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>',mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',dice:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="8.5" r="1"/><circle cx="8.5" cy="15.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/>',compass:'<circle cx="12" cy="12" r="10"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/>',help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>',link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',sparkles:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M17 5h4"/><path d="M5 17v4M3 19h4"/>',lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',check:'<path d="M20 6 9 17l-5-5"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',palette:'<circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="6.5" cy="12.5" r="1"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 1.6-3.2 2 2 0 0 1 1.6-3.2H18a4 4 0 0 0 4-4C22 6 17.5 2 12 2z"/>',warn:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',corner:'<path d="M3 21V11a8 8 0 0 1 8-8h10"/>',sparkle:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>',pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'};
+function ic(n,s){s=s||16;return '<svg class="ic" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>'}
+var TYPES=["เว็บไซต์ธุรกิจ / Landing Page","ร้านค้าออนไลน์","พอร์ตโฟลิโอ","บล็อก / ข่าว","Dashboard / ระบบหลังบ้าน","เว็บอีเวนต์ / งานเทศกาล","เว็บแอปพลิเคชัน","อื่น ๆ"];
+var CATS=[
+{k:"style",t:"สไตล์",intro:"บุคลิกภาพโดยรวมของหน้าตาเว็บ เลือกได้หลายแบบผสมกัน",items:[
+["Minimalist","เรียบง่าย พื้นที่ว่างเยอะ ใช้สีน้อย เน้นเนื้อหา ดูสะอาดและทันสมัย"],
+["Glassmorphism","การ์ดโปร่งแสงเหมือนกระจกฝ้า มีเบลอพื้นหลัง ดูล้ำและนุ่มนวล"],
+["Neumorphism","ปุ่มและการ์ดนูนจมแบบพลาสติกนุ่ม ใช้เงาสองด้าน ดูนุ่มตา"],
+["Neo-Brutalism","เส้นขอบหนาสีดำ เงาแข็ง สีจัดจ้าน ดูกล้า สนุก และไม่เหมือนใคร"],
+["Bento Grid","จัดเนื้อหาเป็นช่องสี่เหลี่ยมหลายขนาดเหมือนกล่องเบนโตะ นิยมในเว็บเทคโนโลยี"],
+["Dark Mode","พื้นหลังเข้ม ตัวอักษรสว่าง ถนอมสายตาและดูพรีเมียม"],
+["Aurora Gradient","ไล่สีสดหลายสีเบลอเป็นแสงเหนือ เหมาะกับเว็บสตาร์ทอัพและ AI"],
+["Retro / Y2K","สไตล์ยุค 90-2000 สีฉูดฉาด ฟอนต์พิกเซล ให้อารมณ์คิดถึงอดีต"],
+["Editorial","จัดหน้าแบบนิตยสาร ตัวอักษรใหญ่ มีเส้นคั่น เน้นการอ่านและเล่าเรื่อง"],
+["Thai Traditional Modern","ผสมลายไทยและโทนสีไทยกับดีไซน์ร่วมสมัย เหมาะกับงานวัฒนธรรมและเทศกาล"]]},
+{k:"layout",t:"เลย์เอาต์",intro:"โครงสร้างการวางเนื้อหาในแต่ละหน้า",items:[
+["Single Page Landing","หน้าเดียวเลื่อนลง แบ่งเป็นช่วง ๆ เหมาะกับแนะนำสินค้าหรือบริการ"],
+["Multi-page","หลายหน้า มีเมนูไปยังแต่ละหน้า เหมาะกับเว็บที่มีเนื้อหามาก"],
+["Sticky Navbar","แถบเมนูด้านบนที่ติดหน้าจอตลอดเวลา เข้าถึงเมนูได้ทุกจุด"],
+["Sidebar Layout","เมนูอยู่ด้านข้าง เนื้อหาอยู่ด้านขวา นิยมใน Dashboard"],
+["Split Screen","แบ่งหน้าจอเป็นสองฝั่ง เช่น ข้อความซ้าย รูปขวา ดูโดดเด่น"],
+["Card Grid","จัดเนื้อหาเป็นการ์ดเรียงเป็นตาราง เหมาะกับสินค้าหรือบทความ"],
+["Masonry","การ์ดสูงต่ำไม่เท่ากันเรียงแบบอิฐ เหมาะกับแกลเลอรีรูปภาพ"],
+["Full-screen Sections","แต่ละส่วนสูงเต็มจอ เลื่อนทีละส่วนอย่างลื่นไหล"],
+["Bottom Tab Bar (Mobile)","แถบเมนูด้านล่างแบบแอป ใช้งานด้วยนิ้วโป้งสะดวกบนมือถือ"]]},
+{k:"color",t:"โทนสี",intro:"ชุดสีหลักของเว็บ ระบุให้ AI ใช้ตามนี้",items:[
+["Ocean Blue","น้ำเงิน-ฟ้า ให้ความรู้สึกน่าเชื่อถือ สงบ เหมาะกับธุรกิจและการเงิน",["#0b3d91","#1e88e5","#90caf9","#f4f9ff"]],
+["Sunset Warm","ส้ม-แดง-เหลือง อบอุ่น มีพลัง เหมาะกับอาหารและงานเทศกาล",["#d84315","#ff7043","#ffb74d","#fff6ec"]],
+["Forest Green","เขียวธรรมชาติ สดชื่น เหมาะกับสุขภาพ ออร์แกนิก และสิ่งแวดล้อม",["#1b5e20","#43a047","#a5d6a7","#f3faf3"]],
+["Royal Purple","ม่วง-ทอง หรูหรา ลึกลับ เหมาะกับแบรนด์พรีเมียมและความงาม",["#4a148c","#8e24aa","#e1bee7","#d4af37"]],
+["Mono Black & White","ขาวดำเข้มชัด คลาสสิก เหมาะกับพอร์ตโฟลิโอและแฟชั่น",["#000000","#444444","#bdbdbd","#ffffff"]],
+["Pastel Soft","สีพาสเทลอ่อนหวาน น่ารัก เหมาะกับเด็ก คาเฟ่ และของแฮนด์เมด",["#ffc1d6","#c7e9ff","#d6f5d6","#fff3c4"]],
+["Neon Cyber","นีออนสว่างบนพื้นเข้ม ล้ำสมัย เหมาะกับเกมและเทคโนโลยี",["#0a0a1a","#00f5d4","#f15bb5","#9b5de5"]],
+["Earth Tone","สีดิน น้ำตาล เบจ ครีม ให้ความรู้สึกธรรมชาติและงานคราฟต์",["#5d4037","#a1887f","#d7ccc8","#f7f1e8"]]]},
+{k:"font",t:"ฟอนต์",intro:"บุคลิกของตัวอักษร มีผลต่ออารมณ์ของเว็บมาก",items:[
+["Modern Sans-serif","ตัวไม่มีหัว อ่านง่าย ทันสมัย เช่น Noto Sans Thai, Prompt, Kanit"],
+["Elegant Serif","ตัวมีหัว สง่างาม เป็นทางการ เช่น Playfair Display, Noto Serif Thai"],
+["Rounded Friendly","ปลายมน เป็นกันเอง น่ารัก เช่น Mitr, Sriracha, Nunito"],
+["Monospace Tech","ตัวกว้างเท่ากันแบบโค้ด ให้ความรู้สึกเทคโนโลยี เช่น JetBrains Mono"],
+["Handwriting","ลายมือเขียน เป็นธรรมชาติ ใช้เน้นบางจุด เช่น Pattaya, Charm"],
+["Big Bold Headline","หัวข้อตัวใหญ่หนามาก ๆ สะดุดตา คู่กับเนื้อหาตัวเล็กเรียบ ๆ"]]},
+{k:"anim",t:"แอนิเมชัน",intro:"การเคลื่อนไหวที่ทำให้เว็บมีชีวิต ไม่ควรใส่มากเกินไป",items:[
+["Fade-in on Scroll","เนื้อหาค่อย ๆ ปรากฏเมื่อเลื่อนมาถึง ดูนุ่มนวล"],
+["Parallax","พื้นหลังเลื่อนช้ากว่าเนื้อหา สร้างมิติความลึก"],
+["Hover Lift","ปุ่มหรือการ์ดลอยขึ้นเมื่อเอาเมาส์ชี้หรือแตะ"],
+["Smooth Scroll","คลิกเมนูแล้วเลื่อนไปยังส่วนนั้นอย่างนุ่มนวล"],
+["Marquee / Ticker","ข้อความหรือโลโก้วิ่งต่อเนื่องในแนวนอน"],
+["Typewriter Text","ข้อความพิมพ์ทีละตัวอักษร ใช้กับหัวข้อหลัก"],
+["Animated Counter","ตัวเลขสถิติวิ่งนับขึ้นจนถึงค่าจริง"],
+["Page Loader","หน้าโหลดสั้น ๆ ก่อนเข้าเว็บ แสดงโลโก้หรือแอนิเมชัน"],
+["Micro-interactions","ปฏิกิริยาเล็ก ๆ เช่น ปุ่มกดแล้วยุบ ไอคอนหมุน ช่วยให้ใช้งานรู้สึกดี"]]},
+{k:"comp",t:"ส่วนประกอบ",intro:"บล็อกต่าง ๆ ที่จะวางในเว็บ เลือกได้หลายอัน",items:[
+["Hero Section","ส่วนแรกสุดของเว็บ มีหัวข้อใหญ่ คำอธิบายสั้น และปุ่มหลัก"],
+["Features / Services","แสดงจุดเด่นหรือบริการเป็นไอคอนพร้อมคำอธิบายสั้น ๆ"],
+["Product Cards","การ์ดสินค้า มีรูป ชื่อ ราคา และปุ่มสั่งซื้อ"],
+["Pricing Table","ตารางเปรียบเทียบแพ็กเกจและราคา"],
+["Testimonials","คำรีวิวจากลูกค้า สร้างความน่าเชื่อถือ"],
+["FAQ Accordion","คำถามที่พบบ่อย กดแล้วขยายคำตอบ"],
+["Gallery / Lightbox","แกลเลอรีรูป กดแล้วขยายเต็มจอ"],
+["Image Carousel","สไลด์รูปหรือเนื้อหาที่เลื่อนซ้าย-ขวาได้"],
+["Stats Counter","ตัวเลขสำคัญ เช่น จำนวนลูกค้า ปีที่ให้บริการ"],
+["Contact Form","ฟอร์มติดต่อ พร้อมช่องชื่อ อีเมล และข้อความ"],
+["Timeline / Steps","ขั้นตอนหรือเส้นเวลา เล่าลำดับเหตุการณ์"],
+["Modal / Popup","หน้าต่างลอยขึ้นมาแสดงข้อมูลหรือฟอร์มโดยไม่เปลี่ยนหน้า"],
+["Footer","ส่วนท้ายเว็บ มีลิงก์ ช่องทางติดต่อ และลิขสิทธิ์"]]},
+{k:"btn",t:"ปุ่ม",intro:"รูปแบบปุ่มกด ซึ่งเป็นจุดที่ผู้ใช้โต้ตอบมากที่สุด",items:[
+["Solid Rounded","ปุ่มสีทึบมุมมน ใช้บ่อยที่สุด เด่นชัด เหมาะเป็นปุ่มหลัก (CTA)"],
+["Outline Button","ปุ่มมีแต่เส้นขอบ พื้นโปร่ง ดูเบา ใช้เป็นปุ่มรองได้ดี"],
+["Gradient Pill","ปุ่มทรงแคปซูลไล่สี ดูทันสมัยและดึงดูดสายตา"],
+["3D Push","ปุ่มนูนมีเงาด้านล่าง กดแล้วยุบเหมือนปุ่มจริง"],
+["Neon Glow","ปุ่มเรืองแสงนีออน เหมาะกับธีมมืดและเว็บเกม"],
+["Text Link","ปุ่มแบบข้อความขีดเส้นใต้ ดูเรียบ ใช้กับการกระทำรอง เช่น ดูเพิ่มเติม"]]},
+{k:"bg",t:"พื้นหลัง",intro:"เอฟเฟกต์พื้นหลังที่ช่วยให้หน้าเว็บไม่จืดและมีบรรยากาศ",items:[
+["Gradient Mesh","พื้นหลังไล่สีหลายจุดผสมกันนุ่ม ๆ ดูสดใสและมีมิติ"],
+["Dot Pattern","ลายจุดเล็ก ๆ ซ้ำกัน เพิ่มพื้นผิวโดยไม่รก"],
+["Grid Lines","ลายตารางจาง ๆ ให้ความรู้สึกเชิงเทคนิคหรือแบบแปลน"],
+["Animated Gradient","สีไล่เฉดที่เคลื่อนไหวช้า ๆ ทำให้หน้าเว็บมีชีวิต"],
+["Blob Shapes","ก้อนวงกลมสีสันลอยอยู่ด้านหลัง ดูเป็นมิตรและทันสมัย"],
+["Wave Divider","เส้นคั่นระหว่างส่วนต่าง ๆ แบบโค้งคลื่น แทนเส้นตรงแข็ง ๆ"]]},
+{k:"tech",t:"เทคนิค",intro:"ข้อกำหนดการเขียนโค้ดและการใช้งาน",items:[
+["Mobile-first Responsive","ออกแบบสำหรับมือถือก่อน แล้วขยายรองรับแท็บเล็ตและคอมพิวเตอร์"],
+["Light / Dark Toggle","มีปุ่มสลับธีมสว่างและมืด จดจำการเลือกของผู้ใช้"],
+["Single HTML File","โค้ด HTML CSS และ JS รวมอยู่ในไฟล์เดียว นำไปเปิดใช้ได้ทันที"],
+["Tailwind CSS","ใช้ Tailwind ผ่าน CDN เขียนสไตล์เร็วและเป็นระบบ"],
+["Accessibility (A11y)","รองรับผู้ใช้ทุกกลุ่ม ใช้ alt, สีที่คอนทราสต์พอ และกดด้วยคีย์บอร์ดได้"],
+["SEO Basics","ใส่ title, meta description และโครงสร้างหัวข้อที่ถูกต้อง"],
+["Fast Loading","โค้ดเบา ไม่พึ่งไลบรารีหนัก ๆ เปิดเร็วแม้เน็ตช้า"],
+["Thai Language Support","รองรับภาษาไทย เลือกฟอนต์ไทยและตัดบรรทัดให้อ่านง่าย"]]}
+];
+function ST(bg,card,t){return '<div class="st" style="background:'+bg+'"><div style="'+card+'">'+(t||'Showroom')+'</div></div>'}
+function P(css,k){return '<div class="wf" style="'+css+'">'+k.map(function(s){var a=s.split('|');return '<i style="'+a[0]+'">'+(a[1]||'')+'</i>'}).join('')+'</div>'}
+function AN(h){return '<div class="st" style="background:var(--bg)">'+h+'</div>'}
+function FN(f,x){return '<div class="st" style="background:var(--bg)"><div style="font-family:'+f+';font-size:'+(x||22)+'px;font-weight:400;padding:0">สวัสดี Showroom</div></div>'}
+function CD(s){return '<pre class="cd">'+s.replace(/</g,'&lt;')+'</pre>'}
+var A='background:var(--ac)',G3='display:grid;grid-template-columns:repeat(3,1fr)',PG='background:linear-gradient(var(--ac) 55%,var(--bd) 55%)',S1='display:flex;align-items:center;justify-content:center;font:700 12px sans-serif;background:none;border-bottom:3px solid var(--ac)';
+var PV={
+'Minimalist':ST('#fff','background:#fff;border:1px solid #ddd;color:#111'),
+'Glassmorphism':ST('linear-gradient(135deg,#7f5af0,#2cb1bc)','background:rgba(255,255,255,.25);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.5);color:#fff'),
+'Neumorphism':ST('#e0e5ec','background:#e0e5ec;box-shadow:5px 5px 10px #a3b1c6,-5px -5px 10px #fff;color:#555'),
+'Neo-Brutalism':ST('#ffe66d','background:#fff;border:3px solid #000;box-shadow:4px 4px 0 #000;color:#000;border-radius:0'),
+'Bento Grid':P('display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr',['grid-row:span 2;'+A,'','','grid-column:span 2']),
+'Dark Mode':ST('#0e0e12','background:#1c1c24;border:1px solid #333;color:#eee'),
+'Aurora Gradient':ST('radial-gradient(circle at 20% 30%,#ff6ec4,transparent 50%),radial-gradient(circle at 80% 70%,#7873f5,transparent 50%),#1a1040','background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)'),
+'Retro / Y2K':ST('linear-gradient(45deg,#ff00cc,#3333ff)','background:#c0c0c0;border:2px outset #fff;color:#000;font-family:monospace;border-radius:0'),
+'Editorial':ST('#f4efe6','background:transparent;border-top:3px solid #111;border-bottom:1px solid #111;color:#111;font:700 18px Georgia,serif;border-radius:0','The Story'),
+'Thai Traditional Modern':ST('#7a1f1f','background:#f3d99b;border:2px solid #d4a017;color:#5a1010;font-family:serif','ลายไทย'),
+'Single Page Landing':P('',['height:18px;'+A,'height:10px','height:10px','height:10px']),
+'Multi-page':P('display:grid;grid-template-columns:1fr 1fr 1fr',['',A,'']),
+'Sticky Navbar':P('',['height:10px;'+A,'flex:1','flex:1']),
+'Sidebar Layout':P('display:grid;grid-template-columns:24px 1fr',[A,'']),
+'Split Screen':P('display:grid;grid-template-columns:1fr 1fr',['',A]),
+'Card Grid':P(G3+';grid-template-rows:1fr 1fr',['','','','','','']),
+'Masonry':P(G3+';grid-template-rows:repeat(5,1fr)',['grid-row:span 2',A+';grid-row:span 3','grid-row:span 1','grid-row:span 3','grid-row:span 2','grid-row:span 3']),
+'Full-screen Sections':P('',['flex:1;'+A,'flex:1','flex:1;opacity:.6']),
+'Bottom Tab Bar (Mobile)':P('',['flex:1','height:12px;background:repeating-linear-gradient(90deg,var(--ac) 0 16%,transparent 16% 25%)']),
+'Modern Sans-serif':FN("'Noto Sans Thai',sans-serif"),
+'Elegant Serif':FN('Georgia,serif'),
+'Rounded Friendly':FN("'Trebuchet MS','Arial Rounded MT Bold',sans-serif"),
+'Monospace Tech':FN('ui-monospace,Menlo,monospace',18),
+'Handwriting':FN("'Brush Script MT','Comic Sans MS',cursive",26),
+'Big Bold Headline':FN("Impact,'Arial Black',sans-serif",30),
+'Fade-in on Scroll':AN('<div class="pill" style="animation:fd 2.4s infinite">Fade in</div>'),
+'Parallax':AN('<div class="pxw"><u class="pb"></u><u class="pf"></u></div>'),
+'Hover Lift':AN('<div class="pill" style="animation:bob 2s ease-in-out infinite">ปุ่มลอยขึ้น</div>'),
+'Smooth Scroll':AN('<div class="pxw"><u class="ss"></u></div>'),
+'Marquee / Ticker':AN('<div class="mq"><span>• Showroom • Design • Showroom • Design</span></div>'),
+'Typewriter Text':AN('<div class="tw">Hello Showroom</div>'),
+'Animated Counter':AN('<div class="ct">0</div>'),
+'Page Loader':AN('<div class="spin"></div>'),
+'Micro-interactions':AN('<div class="pill" style="animation:mi 1.6s infinite">กดเลย</div>'),
+'Hero Section':P('justify-content:center',['height:8px;width:65%','height:8px;width:45%','height:12px;width:30%;'+A]),
+'Features / Services':P(G3,['border-top:6px solid var(--ac)','border-top:6px solid var(--ac)','border-top:6px solid var(--ac)']),
+'Product Cards':P(G3,[PG,PG,PG]),
+'Pricing Table':P(G3,['margin:6px 0',A+';margin:0','margin:6px 0']),
+'Testimonials':P('justify-content:center',['height:8px;width:90%','height:8px;width:70%','height:14px;width:14px;border-radius:50%;'+A]),
+'FAQ Accordion':P('justify-content:center',['height:11px','height:11px;'+A,'height:11px']),
+'Gallery / Lightbox':P(G3+';grid-template-rows:1fr 1fr',[A,'','','','opacity:.6;'+A,'']),
+'Image Carousel':P('display:grid;grid-template-columns:.4fr 1fr .4fr',['opacity:.5',A,'opacity:.5']),
+'Stats Counter':P(G3,[S1+'|120+',S1+'|4.9/5',S1+'|15 ปี']),
+'Contact Form':P('',['height:10px','height:10px','height:16px','height:12px;width:40%;'+A]),
+'Timeline / Steps':P('',['flex:1;background:radial-gradient(circle,var(--ac) 5px,transparent 6px) 0 50%/25% 100% repeat-x,linear-gradient(var(--bd),var(--bd)) 0 50%/100% 2px no-repeat']),
+'Modal / Popup':P('align-items:center;justify-content:center;background:rgba(0,0,0,.35)',['width:70%;flex:1;background:var(--card);border:2px solid var(--ac)']),
+'Footer':P('',['flex:1','height:14px;background:var(--tx);opacity:.8']),
+'Mobile-first Responsive':CD('@media (min-width:768px){\n  .grid{columns:3}\n}'),
+'Light / Dark Toggle':CD("document.documentElement\n  .dataset.theme = 'dark'"),
+'Single HTML File':CD('<style>…</style>\n<body>…</body>\n<script>…<\/script>'),
+'Tailwind CSS':CD('<div class="flex p-4 rounded-xl\n  bg-indigo-500 text-white">'),
+'Accessibility (A11y)':CD('<img src="a.jpg" alt="คำอธิบายรูป">\n<button aria-label="ปิด">'),
+'SEO Basics':CD('<title>ชื่อเว็บ</title>\n<meta name="description"\n  content="...">'),
+'Fast Loading':CD('<img loading="lazy">\n<script defer src="app.js">'),
+'Thai Language Support':CD('<html lang="th">\nfont-family:"Noto Sans Thai"')
+};
+var BT='padding:8px 16px;border-radius:10px;font:600 13px sans-serif',CB='background:var(--card);color:var(--tx)';
+PV['Solid Rounded']=AN('<div style="background:var(--ac);color:var(--on);'+BT+'">ปุ่มหลัก</div>');
+PV['Outline Button']=AN('<div style="border:2px solid var(--ac);color:var(--ac);'+BT+'">ปุ่มขอบ</div>');
+PV['Gradient Pill']=AN('<div style="background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;border-radius:999px;padding:8px 18px;font:600 13px sans-serif">Gradient</div>');
+PV['3D Push']=AN('<div style="background:var(--ac);color:var(--on);box-shadow:0 5px 0 rgba(0,0,0,.35);'+BT+'">กดเลย</div>');
+PV['Neon Glow']=ST('#0a0a1a','background:none;border:2px solid #00f5d4;color:#00f5d4;box-shadow:0 0 12px #00f5d4,inset 0 0 8px #00f5d4','NEON');
+PV['Text Link']=AN('<div style="color:var(--ac);text-decoration:underline;padding:0;font:600 14px sans-serif">ดูเพิ่มเติม →</div>');
+PV['Gradient Mesh']=ST('radial-gradient(at 20% 20%,#ffb3c6,transparent 50%),radial-gradient(at 80% 30%,#b3d4ff,transparent 50%),radial-gradient(at 50% 90%,#d6ffb3,transparent 50%),#fff','background:rgba(255,255,255,.7);color:#111');
+PV['Dot Pattern']=ST('radial-gradient(#9a93ff 1.5px,transparent 1.5px) 0 0/14px 14px,var(--bg)',CB);
+PV['Grid Lines']=ST('linear-gradient(var(--bd) 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,var(--bd) 1px,transparent 1px) 0 0/16px 16px,var(--bg)',CB);
+PV['Animated Gradient']=ST('linear-gradient(120deg,#ff6ec4,#7873f5,#2cb1bc,#ff6ec4) 0 0/300% 100%;animation:ag 6s linear infinite','background:rgba(255,255,255,.8);color:#111');
+PV['Blob Shapes']=ST('radial-gradient(circle at 25% 60%,#7873f5 0 22px,transparent 23px),radial-gradient(circle at 75% 35%,#ff6ec4 0 28px,transparent 29px),var(--bg)','background:rgba(255,255,255,.75);color:#111');
+PV['Wave Divider']=ST('radial-gradient(circle at 15px 0,#7873f5 14px,transparent 15px) 0 100%/30px 20px repeat-x,var(--bg)',CB);
+var PR={'คาเฟ่อบอุ่น':['Minimalist','Single Page Landing','Sticky Navbar','Earth Tone','Rounded Friendly','Fade-in on Scroll','Hero Section','Product Cards','Gallery / Lightbox','Contact Form','Footer','Mobile-first Responsive','Thai Language Support'],
+'สตาร์ทอัพ AI':['Aurora Gradient','Dark Mode','Bento Grid','Single Page Landing','Neon Cyber','Modern Sans-serif','Gradient Pill','Fade-in on Scroll','Hero Section','Features / Services','Pricing Table','FAQ Accordion','Mobile-first Responsive','Single HTML File'],
+'พอร์ตโฟลิโอมินิมอล':['Minimalist','Mono Black & White','Elegant Serif','Masonry','Smooth Scroll','Outline Button','Gallery / Lightbox','Contact Form','Mobile-first Responsive','SEO Basics'],
+'ร้านค้าออนไลน์':['Card Grid','Sticky Navbar','Ocean Blue','Modern Sans-serif','Solid Rounded','Hover Lift','Product Cards','Testimonials','FAQ Accordion','Footer','Mobile-first Responsive','Fast Loading','SEO Basics'],
+'งานเทศกาลไทย':['Thai Traditional Modern','Sunset Warm','Full-screen Sections','Parallax','Hero Section','Timeline / Steps','Gallery / Lightbox','Thai Language Support','Mobile-first Responsive']};
+function pv(k,it){if(k=='color'){var c=it[2];return ST(c[3],'background:'+c[0]+';color:'+c[2]+';box-shadow:0 0 0 3px '+c[1])}return PV[it[0]]||''}
+setInterval(function(){var t=Math.min((Date.now()%3000)/2000,1);document.querySelectorAll('.ct').forEach(function(e){e.textContent=Math.round(1280*t).toLocaleString('en-US')})},60);
+var sel={},cur=0;
+CATS.forEach(function(c){sel[c.k]={}});
+var $=function(i){return document.getElementById(i)};
+/* ===== i18n: TH / EN =====  เพิ่มภาษาใหม่: เพิ่ม key ใน UI, CE, TYPES_L, PN และคำอธิบายรายการใน DE ===== */
+var LANG='th';
+var UI={
+th:{title:'Showroom – เลือกดีไซน์ แล้วสั่ง AI สร้างเว็บ',sub:'เลือกสไตล์ เลย์เอาต์ สี และส่วนประกอบของเว็บ พร้อมคำอธิบายทุกอย่าง แล้วระบบจะสร้าง Prompt ให้คัดลอกไปสั่ง AI ได้ทันที',h1:'1) ข้อมูลเว็บของคุณ',h2:'2) Prompt สำหรับสั่ง AI',lname:'ชื่อเว็บ / ธุรกิจ',ltype:'ประเภทเว็บ',lnote:'รายละเอียดเพิ่มเติม (กลุ่มเป้าหมาย เนื้อหา ฟีเจอร์พิเศษ)',pname:'เช่น ร้านกาแฟบ้านสวน',pnote:'เช่น ขายกาแฟคั่วบด กลุ่มลูกค้าวัยทำงาน อยากให้ดูอบอุ่น มีปุ่มสั่งซื้อผ่าน LINE',pq:'ค้นหาในหมวดนี้...',copy:'คัดลอก Prompt',copied:'คัดลอกแล้ว',clear:'ล้างที่เลือก',presets:'ชุดสำเร็จรูป:',hint0:'ยังไม่ได้เลือกรายการ เลือกจากแท็บด้านบนได้เลย',hintN:'เลือกแล้ว {n} รายการ',ft:'© {y} <a href="https://ponrakit.com" target="_blank" rel="noopener">ponrakit.com</a> · ออกแบบและสร้างสรรค์โดย <a href="https://ponrakit.com" target="_blank" rel="noopener">ponrakit.com</a> · สงวนลิขสิทธิ์',
+pi:'คุณคือ UI/UX Designer และ Front-end Developer ระดับมืออาชีพ ช่วยออกแบบและเขียนเว็บไซต์ตามรายละเอียดด้านล่างนี้ ให้โค้ดครบสมบูรณ์ พร้อมใช้งานทันที',si:'ข้อมูลเว็บ',nm:'ชื่อเว็บ',un:'(ยังไม่ระบุ)',ty:'ประเภท',ex:'รายละเอียดเพิ่มเติม',col:'สี',rr:'เงื่อนไขการตอบ',r1:'เขียนโค้ดให้สะอาด มีคอมเมนต์สำคัญ',r2:'ใช้เนื้อหาตัวอย่างภาษาไทยที่สมจริง ไม่ใช้ Lorem ipsum',r3:'หากข้อมูลส่วนไหนไม่ชัดเจน ให้เลือกแบบที่เหมาะสมที่สุดและบอกสิ่งที่ตัดสินใจเอง',r4:'สำคัญ: ที่ท้ายเว็บทุกหน้า ให้ใส่ข้อความเล็ก ๆ ว่า “ออกแบบโดย Showroom” จัดกึ่งกลาง ตัวอักษรเล็ก (ประมาณ 12px) สีจาง (ความโปร่งใสประมาณ 60%) ให้มองเห็นได้แต่ไม่สะดุดตา ไม่ทับเนื้อหาหลัก และห้ามลบออก'},
+en:{title:'Showroom – Pick a design, then prompt AI to build it',sub:'Pick the style, layout, colors and components of your website, each with a clear explanation, and Showroom builds a prompt you can copy straight into any AI.',h1:'1) Your website',h2:'2) Prompt for AI',lname:'Website / business name',ltype:'Website type',lnote:'Extra details (audience, content, special features)',pname:'e.g. Garden Coffee House',pnote:'e.g. Roasted coffee for office workers, warm and cozy look, order button via LINE',pq:'Search this category...',copy:'Copy prompt',copied:'Copied',clear:'Clear selection',presets:'Presets:',hint0:'Nothing selected yet. Pick items from the tabs above.',hintN:'{n} items selected',ft:'© {y} <a href="https://ponrakit.com" target="_blank" rel="noopener">ponrakit.com</a> · Designed and created by <a href="https://ponrakit.com" target="_blank" rel="noopener">ponrakit.com</a> · All rights reserved.',
+pi:'You are a professional UI/UX designer and front-end developer. Design and build a website from the details below. Deliver complete, ready-to-use code.',si:'Website info',nm:'Name',un:'(not specified)',ty:'Type',ex:'Extra details',col:'Colors',rr:'Response rules',r1:'Write clean code with comments where important',r2:'Use realistic sample content, no Lorem ipsum',r3:'If anything is unclear, choose the best option and tell me what you decided',r4:'Required: at the bottom of every page, add a small credit line “Designed by Showroom”, centered, about 12px, in a muted color at roughly 60% opacity. It must be visible but not distracting, must not cover the main content, and must not be removed.'}};
+var CE={style:['Style','Overall personality of the site. Mix as many as you like.'],layout:['Layout','How content is arranged on each page.'],color:['Colors','The main color palette the AI should use.'],font:['Fonts','Typeface personality, which strongly shapes the mood.'],anim:['Animation','Motion that brings the site to life. Use sparingly.'],comp:['Components','Building blocks to place on the site. Pick several.'],btn:['Buttons','Button styles, where users decide to act.'],bg:['Background','Background effects that add atmosphere.'],tech:['Tech','Coding and usability requirements.']};
+var TYPES_L={th:TYPES,en:['Business site / Landing page','Online store','Portfolio','Blog / News','Dashboard / Admin','Event / Festival site','Web application','Other']};
+var PN={'คาเฟ่อบอุ่น':'Warm café','สตาร์ทอัพ AI':'AI startup','พอร์ตโฟลิโอมินิมอล':'Minimal portfolio','ร้านค้าออนไลน์':'Online store','งานเทศกาลไทย':'Thai festival'};
+var DE={};
+/* ===== EXTENSION POINT: เพิ่มรูปแบบใหม่ในอนาคต เพิ่มบรรทัด 'ชื่อ|คำอธิบาย' ใน MORE (สีใส่ |#สีที่ 1,#2,#3,#4 ต่อท้าย) หรือสร้างหมวดใหม่ด้วย newCat() ===== */
+function addItems(k,arr){var c=CATS.filter(function(x){return x.k==k})[0];if(!c)return;arr.forEach(function(s){var a=typeof s=='string'?s.split('|'):s;if(c.items.some(function(i){return i[0]==a[0]}))return;var it=[a[0],a[1]];if(a[2])it.push(typeof a[2]=='string'?a[2].split(','):a[2]);c.items.push(it)})}
+function newCat(k,t,intro,te,ie){CATS.push({k:k,t:t,intro:intro,items:[]});sel[k]={};CE[k]=[te,ie]}
+newCat('future','ล้ำยุค','เทรนด์และเทคโนโลยีใหม่ที่กำลังมา ใส่ไว้ก่อนเพื่อให้เว็บไม่ล้าสมัย','Future','Emerging trends and technologies, so your site stays ahead.');
+var MORE={
+style:['Claymorphism|เหมือนดินน้ำมันนุ่ม พองนูน สีพาสเทล ดูน่ารักเป็นมิตร','Liquid Glass|กระจกเหลวโปร่งแสง ขอบมีแสงสะท้อน ดูล้ำสมัยแบบ UI รุ่นใหม่','Skeuomorphism|เลียนแบบวัสดุจริง เช่น หนัง ไม้ โลหะ ให้ความรู้สึกจับต้องได้','Cyberpunk|เมืองอนาคตมืด นีออนจัด ตัวอักษรกลิตช์ ดุดันและล้ำ','Vaporwave|ม่วง-ชมพู-ฟ้าแบบยุค 80 มีกริดและบรรยากาศฝัน ๆ','Swiss / International|จัดตารางเป๊ะ ตัวอักษรเรียบ สีน้อย เน้นความชัดเจน','Flat Design|ไม่มีเงาไม่มีมิติ สีเรียบ ไอคอนเรียบง่าย โหลดไวอ่านง่าย','Hand-drawn / Doodle|เส้นวาดมือ ลายสเก็ตช์ ดูเป็นกันเองและสร้างสรรค์','Luxury Premium|ดำ-ทอง ตัวอักษรเซอริฟ เว้นระยะกว้าง ดูหรูหราระดับพรีเมียม','Organic Soft|รูปทรงโค้งมนอ่อนนุ่ม สีธรรมชาติ ให้ความรู้สึกผ่อนคลาย'],
+layout:['Horizontal Scroll|เลื่อนเนื้อหาแนวนอน เหมาะกับแกลเลอรีและเล่าเรื่อง','Asymmetric / Broken Grid|จัดวางไม่สมมาตร ซ้อนเหลื่อมกัน ดูแหวกแนวและมีพลัง','Magazine Columns|แบ่งคอลัมน์เหมือนนิตยสาร เหมาะกับบทความยาว','Dashboard Widgets|แผงวิดเจ็ตหลายขนาด ดูข้อมูลหลายอย่างพร้อมกัน','Floating Dock Nav|แถบเมนูลอยด้านล่างแบบ Dock ของ macOS','Scroll Snap Sections|เลื่อนแล้วหยุดพอดีทีละส่วน ควบคุมการดูง่าย'],
+color:['Midnight Gold|น้ำเงินเข้มกับทอง หรูและน่าเชื่อถือ เหมาะกับแบรนด์พรีเมียม|#0a1128,#1c2a5a,#d4af37,#f5efe0','Coral Teal|ปะการังจับคู่เขียวน้ำทะเล สดใสและเป็นมิตร|#ff6f61,#ffa299,#0e9aa7,#fff7f2','Lavender Dream|ม่วงลาเวนเดอร์อ่อน นุ่มนวล เหมาะกับสปาและความงาม|#6a4c93,#a78bd3,#e4d9f7,#faf7ff','Candy Pop|สีขนมหวานสดจัด สนุกสำหรับเด็กและแบรนด์วัยรุ่น|#ff4fa3,#ffd166,#06d6a0,#fff5fb','Sage Cream|เขียวเซจกับครีม ละมุน เหมาะกับสุขภาพและของแต่งบ้าน|#6b8f71,#aec3ae,#f2e8cf,#fffaf0','Retro 70s|ส้มอิฐ เหลืองมัสมัด น้ำตาล ให้อารมณ์วินเทจ|#bc4b23,#e9a23b,#6b4226,#fbf0dc'],
+font:['Pixel / Retro|ตัวพิกเซลแบบเกมเก่า เช่น Press Start 2P','Condensed Display|ตัวสูงแคบหนา สะดุดตา เช่น Bebas Neue','Geometric Sans|ตัวเรขาคณิตกลมเป๊ะ ทันสมัย เช่น Poppins','Slab Serif|ตัวมีเชิงหนาเหลี่ยม แข็งแรงมั่นคง เช่น Roboto Slab','Thai Display|ฟอนต์ไทยหัวข้อมีเอกลักษณ์ เช่น Chonburi, Mali'],
+anim:['Magnetic Cursor|ปุ่มหรือเคอร์เซอร์ถูกดูดเข้าหาเมาส์ ดูมีชีวิต','Scroll Progress Bar|แถบบอกความคืบหน้าการเลื่อนอ่านด้านบนจอ','Split Text Reveal|ข้อความแยกทีละคำหรือตัวอักษรแล้วเผยขึ้นมา','Tilt 3D Card|การ์ดเอียงตามเมาส์หรือการแตะ ดูมีมิติ','Skeleton Loading|โครงเทาวิบวับระหว่างรอโหลด ลดความรู้สึกรอ','Confetti on Success|กระดาษสีโปรยเมื่อทำสำเร็จ เช่น สั่งซื้อเสร็จ','Sticky Scroll Storytelling|ภาพติดค้างแล้วข้อความเปลี่ยนตามการเลื่อน เล่าเรื่องต่อเนื่อง'],
+comp:['Mega Menu|เมนูกว้างเปิดลงมาแสดงหลายหมวดพร้อมรูป','Search Bar|ช่องค้นหาพร้อมคำแนะนำขณะพิมพ์','Newsletter Signup|ช่องสมัครรับข่าวสารทางอีเมล','Team / About Cards|การ์ดแนะนำทีมงานพร้อมรูปและตำแหน่ง','Logo Cloud|แถวโลโก้พันธมิตรหรือลูกค้า สร้างความน่าเชื่อถือ','Before / After Slider|แถบเลื่อนเปรียบเทียบภาพก่อนและหลัง','Video Embed|ฝังวิดีโอแนะนำพร้อมภาพปก','Map & Location|แผนที่และข้อมูลที่ตั้ง เวลาเปิด-ปิด','Cookie / PDPA Banner|แบนเนอร์ขอความยินยอมคุกกี้และข้อมูลส่วนบุคคล','Chat Widget|ปุ่มแชทลอยมุมจอ ติดต่อได้ทันที เช่น LINE','Login / Register Form|ฟอร์มเข้าสู่ระบบและสมัครสมาชิก','Cart Drawer|ตะกร้าสินค้าเลื่อนออกมาจากด้านข้าง','Back-to-top Button|ปุ่มเลื่อนกลับขึ้นด้านบนเมื่อหน้ายาว'],
+btn:['Icon Button|ปุ่มวงกลมมีไอคอนอย่างเดียว ประหยัดพื้นที่','Floating Action Button|ปุ่มกลมลอยมุมจอ สำหรับการกระทำหลัก','Loading Button|ปุ่มมีวงหมุนระหว่างรอ แจ้งว่ากำลังทำงาน','Gradient Border|ปุ่มขอบไล่สี พื้นโปร่ง ดูพรีเมียม'],
+bg:['Noise / Grain|ลายเม็ดละเอียดให้ความรู้สึกฟิล์มและงานกระดาษ','Radial Glow|แสงเรืองวงกลมบนพื้นมืด เน้นจุดสนใจ','Diagonal Stripes|ลายทแยง เพิ่มพลังและทิศทางให้พื้นหลัง','Particle Network|จุดลอยเชื่อมเส้นเคลื่อนไหว ให้ภาพเทคโนโลยี','Spotlight Follow Cursor|แสงสว่างตามเมาส์บนพื้นมืด'],
+tech:['Auto Dark Mode|ตามธีมของเครื่องผู้ใช้โดยอัตโนมัติ (prefers-color-scheme)','PWA / Installable|ติดตั้งลงหน้าจอมือถือได้และใช้ออฟไลน์บางส่วน','Multi-language (i18n)|รองรับหลายภาษาและสลับได้ในหน้าเดียว','Form Validation|ตรวจข้อมูลฟอร์มพร้อมข้อความแจ้งผิดชัดเจน','PDPA / Cookie Consent|ระบบขอความยินยอมตามกฎหมายคุ้มครองข้อมูลส่วนบุคคล','Vanilla JS (No Framework)|ไม่ใช้เฟรมเวิร์ก เบา ติดตั้งง่าย','JSON-LD Structured Data|ข้อมูลโครงสร้างช่วยให้ Google แสดงผลสวยขึ้น'],
+future:['AI-native Chat UI|หน้าตาแบบแชทกับ AI เป็นหลัก มีช่องพิมพ์และคำแนะนำให้กดต่อ','Spatial / 3D Scene|ฉาก 3 มิติหมุนและสำรวจได้ด้วย Three.js เหมาะโชว์สินค้า','Voice Interaction|สั่งงานด้วยเสียงผ่าน Web Speech API','Personalized Theme|ธีมปรับตามผู้ใช้ เช่น เวลากลางวัน-กลางคืน หรือพฤติกรรมการใช้','Scroll-driven Animation|แอนิเมชันผูกกับตำแหน่งการเลื่อน ใช้ CSS ล้วน ลื่นและเบา','View Transitions|เปลี่ยนหน้าหรือสถานะแบบนุ่มนวล ภาพค่อย ๆ แปรสภาพ','Container Queries|คอมโปเนนต์ปรับขนาดตามกล่องที่ใส่ ไม่ใช่ตามหน้าจอ','Generative Art Background|พื้นหลังที่สร้างด้วยโค้ดแบบสุ่ม ไม่ซ้ำกันสักครั้ง','Kinetic Typography|ตัวอักษรที่น้ำหนักและรูปร่างเปลี่ยนตามการเลื่อนหรือเมาส์','Passkey Login|ล็อกอินด้วยลายนิ้วมือหรือใบหน้า ไม่ต้องจำรหัสผ่าน','Haptic / Sound Feedback|เสียงและการสั่นเล็ก ๆ ตอบสนองการกด']
+};
+newCat('chat','แชท','ออกแบบช่องแชทส่วนตัว ตั้งแต่ฟองข้อความไปจนถึงการแจ้งเตือน','Chat','Private chat window designs, from message bubbles to notifications.');
+newCat('pay','ชำระเงิน','ออกแบบหน้าจ่ายเงิน (เป็นการออกแบบหน้าตา ถ้าจะรับเงินจริงต้องเชื่อมผู้ให้บริการ เช่น Stripe หรือ Omise)','Checkout','Payment page designs. Taking real payments needs a payment provider such as Stripe or Omise.');
+MORE.chat=['Bubble Chat|ฟองแชทซ้าย-ขวาแบบแอปแชททั่วไป ข้อความตัวเองสีเด่น คู่สนทนาสีเทา','Chat List + Conversation|รายชื่อห้องแชทด้านซ้าย เปิดห้องแล้วคุยด้านขวา เหมาะกับหน้าจอใหญ่','Floating Chat Widget|ปุ่มแชทลอยมุมจอ กดแล้วเปิดหน้าต่างแชทเล็ก ๆ คุยกับร้านหรือทีมซัพพอร์ต','Typing Indicator & Read Receipt|จุดสามจุดขณะอีกฝ่ายพิมพ์ และเครื่องหมายอ่านแล้ว ให้ความรู้สึกสด','Image / File Sharing|แนบรูปและไฟล์ในแชท พร้อมพรีวิวก่อนส่ง','Voice Message|บันทึกและส่งข้อความเสียง มีคลื่นเสียงให้กดฟัง','Emoji & Sticker Picker|แผงอีโมจิและสติกเกอร์สำหรับส่งอารมณ์','Online Status & Last Seen|จุดสีบอกออนไลน์/ออฟไลน์ และเวลาที่เห็นล่าสุด','Unread Badge & Notification|ตัวเลขข้อความที่ยังไม่อ่านและแจ้งเตือนเมื่อมีข้อความใหม่','Quick Reply Buttons|ปุ่มคำตอบสำเร็จรูปให้แตะตอบเร็ว เหมาะกับแชทบอท','Private & Encrypted Look|สัญลักษณ์กุญแจและข้อความยืนยันความเป็นส่วนตัว สร้างความมั่นใจ','AI Chatbot Assistant|ผู้ช่วย AI ตอบคำถามลูกค้าอัตโนมัติ มีส่งต่อให้เจ้าหน้าที่','Message Search & Pin|ค้นหาข้อความเก่า และปักหมุดข้อความสำคัญ'];
+MORE.pay=['Single-page Checkout|ทุกอย่างอยู่หน้าเดียว ที่อยู่ ขนส่ง และชำระเงิน จบเร็ว','Step-by-step Checkout|แบ่งเป็นขั้นตอนพร้อมแถบความคืบหน้า ลดความสับสน','Order Summary Sidebar|สรุปสินค้า ราคา ส่วนลด และยอดรวมแสดงข้างฟอร์มตลอด','Card Payment Form|ฟอร์มบัตรพร้อมตัวอย่างบัตรแบบเรียลไทม์ และตรวจรูปแบบเลขบัตร','PromptPay QR|แสดง QR พร้อมเพย์ให้สแกนจ่าย พร้อมนับเวลาถอยหลังและยอดเงิน','Wallet & Mobile Banking Buttons|ปุ่มจ่ายด้วยแอปธนาคาร TrueMoney Apple Pay Google Pay','Bank Transfer + Slip Upload|แสดงเลขบัญชีและให้แนบสลิปโอนเงินยืนยัน','Cash on Delivery (COD)|ตัวเลือกเก็บเงินปลายทาง','Coupon / Promo Code|ช่องใส่โค้ดส่วนลดและแสดงยอดที่ประหยัด','Trust Badges & Secure Payment|ไอคอนกุญแจ SSL และโลโก้ผู้ให้บริการ สร้างความมั่นใจก่อนจ่าย','Order Success & Receipt|หน้าขอบคุณหลังจ่าย แสดงเลขที่ออเดอร์ ใบเสร็จ และสถานะ','Subscription Billing Plan|เลือกรายเดือนหรือรายปี พร้อมส่วนลดเมื่อจ่ายรายปี','Guest Checkout|สั่งซื้อได้โดยไม่ต้องสมัครสมาชิก ลดการละทิ้งตะกร้า','Payment Failure Handling|ข้อความเมื่อจ่ายไม่สำเร็จ พร้อมปุ่มลองใหม่หรือเปลี่ยนวิธีจ่าย'];
+var BS='font:12px sans-serif;padding:4px 10px;';
+PV['Bubble Chat']='<div class="st" style="background:var(--bg)"><div style="background:none;padding:0;display:flex;flex-direction:column;gap:4px;width:80%;font-weight:400"><span style="align-self:flex-start;background:var(--bd);color:var(--tx);border-radius:12px 12px 12px 2px;'+BS+'">สวัสดีครับ</span><span style="align-self:flex-end;background:var(--ac);color:var(--on);border-radius:12px 12px 2px 12px;'+BS+'">สนใจครับ</span></div></div>';
+PV['Typing Indicator & Read Receipt']=AN('<div style="display:flex;gap:4px;background:var(--bd);padding:10px 14px;border-radius:14px"><i style="width:7px;height:7px;border-radius:50%;background:var(--mut);animation:dt 1s infinite"></i><i style="width:7px;height:7px;border-radius:50%;background:var(--mut);animation:dt 1s .15s infinite"></i><i style="width:7px;height:7px;border-radius:50%;background:var(--mut);animation:dt 1s .3s infinite"></i></div>');
+PV['Chat List + Conversation']=P('display:grid;grid-template-columns:1fr 2fr',['background:repeating-linear-gradient(var(--ac) 0 8px,transparent 8px 14px);opacity:.6','']);
+PV['Floating Chat Widget']=P('align-items:flex-end;justify-content:flex-end',['width:28px;height:28px;border-radius:50%;'+A]);
+PV['Card Payment Form']=ST('linear-gradient(135deg,#667eea,#764ba2)','background:rgba(255,255,255,.2);color:#fff;font:600 12px ui-monospace,monospace;letter-spacing:1px;border:1px solid rgba(255,255,255,.5)','•••• 4242');
+PV['PromptPay QR']=AN('<div style="width:52px;height:52px;padding:0;border-radius:4px;background:repeating-conic-gradient(#000 0 25%,#fff 0 50%) 0 0/8px 8px;border:4px solid #fff;outline:2px solid #1a4a8a"></div>');
+PV['Order Summary Sidebar']=P('display:grid;grid-template-columns:2fr 1fr',['',A+';opacity:.7']);
+PV['Step-by-step Checkout']=P('justify-content:center',['height:8px;background:linear-gradient(90deg,var(--ac) 0 50%,var(--bd) 50%)','height:10px','height:10px;width:60%']);
+PV['Order Success & Receipt']=ST('#e8fff1','background:#22c55e;color:#fff;border-radius:999px;padding:8px 14px',ic('check',14)+' Paid');
+PV['Coupon / Promo Code']=ST('var(--bg)','background:none;border:2px dashed var(--ac);color:var(--ac)','SAVE20');
+PV['Trust Badges & Secure Payment']=ST('var(--bg)','background:var(--card);color:var(--tx);border:1px solid var(--bd)',ic('lock',14)+' Secure');
+newCat('love','บอกรัก','ไอเดียเว็บบอกรักและของขวัญสำหรับคนพิเศษ น่ารัก ๆ ทำเป็นหน้าเดียวแล้วส่งลิงก์ให้แฟนได้เลย','Love','Cute ideas for a love-letter or gift website for someone special. Works as one page you can send as a link.');
+MORE.love=['Love Letter Envelope|ซองจดหมายที่กดเปิดแล้วจดหมายค่อย ๆ เลื่อนออกมา อ่านข้อความรักทีละบรรทัด','Days Together Counter|นับวันที่คบกัน (ปี เดือน วัน ชั่วโมง) แบบเรียลไทม์','Will You Be Mine?|ถามคำถามสำคัญ มีปุ่ม ใช่ กับ ไม่ ที่ปุ่ม ไม่ หนีนิ้วไปเรื่อย ๆ จนต้องกดใช่','Memory Timeline|ไทม์ไลน์ช่วงเวลาดี ๆ ของเรา มีรูป วันที่ และข้อความสั้น ๆ','Polaroid Photo Wall|ผนังรูปโพลารอยด์เอียง ๆ แตะแล้วขยาย มีคำบรรยายลายมือ','Floating Hearts|หัวใจลอยขึ้นช้า ๆ เป็นพื้นหลัง หรือพุ่งออกมาเมื่อกดปุ่ม','Reasons I Love You|การ์ดเหตุผลที่รักเธอ แตะทีละใบเพื่อพลิกอ่าน','Secret Password Lock|ต้องใส่รหัสลับ เช่น วันครบรอบ ก่อนเข้าเว็บ เป็นเซอร์ไพรส์เฉพาะคนสองคน','Scratch Card Surprise|ขูดการ์ดเพื่อเปิดข้อความหรือคูปองพิเศษ','Love Coupon Book|สมุดคูปองรัก เช่น กอดฟรี เลี้ยงข้าว ให้แฟนเลือกใช้','Our Playlist|เพลย์ลิสต์เพลงของเรา มีชื่อเพลงและเหตุผลที่เลือกแต่ละเพลง','Love Quiz|แบบทดสอบเล็ก ๆ ว่าเธอรู้จักเรามากแค่ไหน พร้อมคะแนนน่ารัก ๆ','Bucket List Together|รายการสิ่งที่อยากทำด้วยกัน ติ๊กเมื่อทำสำเร็จ','Starry Night Message|ท้องฟ้าดาวระยิบ กดดาวแต่ละดวงเพื่ออ่านข้อความ','Anniversary Countdown|นับถอยหลังวันครบรอบหรือวันเกิด พร้อมพลุเมื่อถึงวัน','Cute Pastel Theme|ธีมชมพู-ครีมอ่อนหวาน ขอบมน ตัวอักษรกลม ดูน่ารักอบอุ่น','Cute Mascot Characters|ตัวการ์ตูนน่ารักแทนเราสองคน เช่น หมีกับกระต่าย ทักทายและขยับเมื่อกด','Gentle Music Player|เพลงเบา ๆ มีปุ่มเปิด-ปิด ให้ผู้ชมกดเปิดเอง','LINE-friendly Share Card|ตั้งรูปและข้อความตัวอย่างให้สวยเมื่อส่งลิงก์ใน LINE'];
+function HR(d){return '<span style="display:inline-block;color:#ff5c8a;animation:fh 2.4s '+d+'s infinite">'+ic('heart',20).replace('fill="none"','fill="currentColor"')+'</span>'}
+PV['Floating Hearts']=AN('<div style="display:flex;gap:8px;padding:0">'+HR(0)+HR(.5)+HR(1)+'</div>');
+PV['Will You Be Mine?']=AN('<div style="display:flex;gap:10px;padding:0;align-items:center"><span class="pill">ใช่</span><span class="pill" style="background:var(--bd);color:var(--tx);animation:rn 1.6s ease-in-out infinite">ไม่</span></div>');
+PV['Love Letter Envelope']=ST('#fff1f4','background:#ff8fab;color:#fff;border-radius:12px',ic('mail',22)+' ถึงเธอ');
+PV['Days Together Counter']=AN('<div style="font:700 20px sans-serif;color:#ff5c8a;padding:0">1,024 วัน</div>');
+PV['Polaroid Photo Wall']=ST('#fff1f4','background:#fff;color:#888;box-shadow:0 3px 8px rgba(0,0,0,.2);transform:rotate(-5deg);border-radius:2px;padding:6px 14px 16px','รูปเรา');
+PV['Cute Pastel Theme']=ST('linear-gradient(135deg,#ffe3ec,#fff6e5)','background:#fff;border:2px solid #ffc2d4;color:#d6336c;border-radius:22px','น่ารัก');
+PV['Starry Night Message']=ST('radial-gradient(#fff 1px,transparent 1.5px) 0 0/18px 18px,#0b1030','background:none;color:#ffe9a8','ดาวของเรา');
+PV['Reasons I Love You']=ST('#fff1f4','background:#fff;border:2px solid #ffc2d4;color:#d6336c;border-radius:12px','เหตุผลที่ 1');
+PV['Secret Password Lock']=ST('var(--bg)','background:var(--card);border:1px solid var(--bd);color:var(--tx);letter-spacing:4px',ic('lock',14)+' ••••');
+PR['บอกรักแฟน']=['Cute Pastel Theme','Pastel Soft','Rounded Friendly','Handwriting','Floating Hearts','Love Letter Envelope','Days Together Counter','Memory Timeline','Polaroid Photo Wall','Reasons I Love You','Typewriter Text','Mobile-first Responsive','Single HTML File','LINE-friendly Share Card'];PN['บอกรักแฟน']='Love page';
+newCat('backend','หลังบ้าน (GAS)','ให้เว็บที่ AI สร้างเชื่อมกับ Google Apps Script และ Google Sheets เป็นหลังบ้านโดยไม่ต้องมีเซิร์ฟเวอร์ (Prompt จะสั่งให้ AI เขียนทั้งโค้ดหน้าเว็บและ Code.gs ให้)','Backend (GAS)','Have the website the AI builds use Google Apps Script and Google Sheets as its backend with no server. The prompt asks the AI to write both the page code and Code.gs.');
+MORE.backend=['Google Apps Script Backend|ให้เว็บเชื่อมกับ Google Apps Script (Web App) เป็นหลังบ้าน ไม่ต้องมีเซิร์ฟเวอร์','Save Form to Google Sheets|ส่งข้อมูลจากฟอร์มไปบันทึกเป็นแถวใน Google Sheets','Read Data from Google Sheets|ดึงข้อมูลจากชีต เช่น รายการสินค้า ราคา ข่าว มาแสดงบนเว็บ','Send Email via Gmail (GAS)|ส่งอีเมลแจ้งเตือนหรือตอบกลับอัตโนมัติผ่าน GAS','Image Upload to Google Drive|ให้ผู้ใช้อัปโหลดรูปหรือไฟล์ไปเก็บใน Google Drive','Order / Booking System (GAS)|รับออเดอร์หรือการจอง เก็บในชีต และแจ้งเตือนเจ้าของ','Admin Dashboard from Sheets|หน้าแอดมินดูและจัดการข้อมูลที่เก็บไว้ในชีต','Visitor Counter (GAS)|นับผู้เข้าชมและเก็บสถิติง่าย ๆ ลงชีต โดยไม่เก็บข้อมูลส่วนบุคคล','Spam Protection & Rate Limit|กันสแปมด้วยช่องดักบอท (honeypot) และจำกัดจำนวนครั้งที่ส่ง','GAS Error & Status Handling|แสดงสถานะกำลังส่ง สำเร็จ ผิดพลาด และปุ่มลองใหม่ เมื่อเรียก GAS'];
+PV['Google Apps Script Backend']=ST('var(--bg)','background:var(--card);border:1px solid var(--bd);color:var(--tx);font:600 12px ui-monospace,monospace',ic('link',14)+'fetch · GAS · Sheet');
+PV['Save Form to Google Sheets']=P('display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)',['background:var(--ac)','background:var(--ac)','background:var(--ac)','','','','','','']);
+PV['GAS Error & Status Handling']=ST('var(--bg)','background:#e6a100;color:#fff;border-radius:999px;padding:8px 14px','Sending...');
+PR['ฟอร์ม + GAS']=['Google Apps Script Backend','Save Form to Google Sheets','Send Email via Gmail (GAS)','Spam Protection & Rate Limit','GAS Error & Status Handling','Contact Form','Form Validation','PDPA / Cookie Consent','Single HTML File'];PN['ฟอร์ม + GAS']='Forms with GAS';
+newCat('pages','หน้าพิเศษ','หน้าที่ช่วยให้เว็บครบเครื่อง เช่น เกี่ยวกับเรา จองคิว สมาชิก บล็อก และหน้า 404 เลือกแล้วจะมีช่องกรอกข้อมูลของแต่ละหน้า','Special pages','Pages that make a site complete, such as About, booking, members, blog and 404. Each page you pick gets its own details form.');
+MORE.pages=['About Us Page|หน้าเกี่ยวกับเรา เล่าที่มา ทีมงาน และคุณค่าของแบรนด์','Contact Page|หน้าติดต่อ มีฟอร์ม แผนที่ เวลาเปิด-ปิด และช่องทางโซเชียล','Booking / Reservation Page|หน้าจองคิวหรือจองโต๊ะ เลือกวัน เวลา และบริการ','Member Login & Register|หน้าเข้าสู่ระบบและสมัครสมาชิก พร้อมลืมรหัสผ่าน','Member Profile Page|หน้าโปรไฟล์สมาชิก ดูและแก้ไขข้อมูล ประวัติการใช้งาน','Blog / Article List|หน้ารวมบทความ มีหมวดหมู่ ค้นหา และแบ่งหน้า','Article Detail Page|หน้าอ่านบทความ ตัวอักษรอ่านง่าย สารบัญ และปุ่มแชร์','404 Not Found Page|หน้าเมื่อหาหน้าไม่เจอ ข้อความเป็นมิตรและปุ่มกลับหน้าแรก','Pricing Page|หน้าราคาและแพ็กเกจแบบเต็ม เปรียบเทียบแพ็กเกจและมี FAQ','FAQ & Help Center|ศูนย์ช่วยเหลือ คำถามที่พบบ่อยแบ่งหมวด พร้อมค้นหา','Terms & Privacy Page|หน้าเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว (PDPA)','Thank You Page|หน้าขอบคุณหลังส่งฟอร์มหรือสั่งซื้อ บอกขั้นตอนถัดไป','Coming Soon / Maintenance|หน้าเว็บกำลังจะเปิดหรือปิดปรับปรุง มีนับถอยหลังและช่องสมัครรับข่าว','Portfolio Case Study Page|หน้ารายละเอียดผลงาน เล่าปัญหา วิธีแก้ และผลลัพธ์','Campaign Landing Page|หน้าโปรโมชันเดียวจบ เน้นข้อเสนอและปุ่มสั่งซื้อ','Gallery Page|หน้าแกลเลอรีรูป แยกหมวด ขยายดูได้','Team Page|หน้าแนะนำทีม รูป ตำแหน่ง และช่องทางติดต่อ','Careers / Job Listing|หน้ารับสมัครงาน รายการตำแหน่งและฟอร์มสมัคร','Dashboard Home|หน้าแดชบอร์ดหลังล็อกอิน สรุปตัวเลขและทางลัด','Settings Page|หน้าตั้งค่าบัญชี การแจ้งเตือน และความเป็นส่วนตัว'];
+PV['404 Not Found Page']=ST('var(--bg)','background:none;color:var(--ac);font:800 30px sans-serif','404');
+PV['Member Login & Register']=P('justify-content:center',['height:9px','height:9px','height:12px;width:50%;'+A]);
+PV['Booking / Reservation Page']=P('display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(3,1fr)',Array.apply(null,Array(21)).map(function(_,i){return i==9?A:''}));
+PV['Coming Soon / Maintenance']=ST('var(--bg)','background:none;color:var(--tx);letter-spacing:2px;border:2px dashed var(--ac)','COMING SOON');
+PV['Thank You Page']=ST('#e8fff1','background:#22c55e;color:#fff;border-radius:999px;padding:8px 14px',ic('check',14)+' Thank you');
+PV['Blog / Article List']=P('',['height:10px;width:40%;'+A,'height:8px','height:8px','height:8px;width:70%']);
+PV['About Us Page']=P('display:grid;grid-template-columns:1fr 1fr',[A+';opacity:.6','']);
+PR['เว็บธุรกิจหลายหน้า']=['About Us Page','Contact Page','Blog / Article List','Article Detail Page','404 Not Found Page','Terms & Privacy Page','Sticky Navbar','Multi-page','Footer','Mobile-first Responsive'];PN['เว็บธุรกิจหลายหน้า']='Multi-page business site';
+newCat('icons','ไอคอนและภาพ','สไตล์ไอคอน ชุดไอคอน ภาพประกอบ และรูปถ่าย พร้อมกฎการใช้ภาพอย่างปลอดภัย เลือกแล้วจะมีช่องกรอกว่าต้องการไอคอนหรือภาพอะไรบ้าง','Icons and images','Icon styles, icon sets, illustrations and photos with safe image rules. Each pick adds a form for what icons or images you need.');
+MORE.icons=['Line Icons (Outline)|ไอคอนเส้นบางโปร่ง ดูเบา ทันสมัย ใช้ได้กับเกือบทุกเว็บ','Solid Icons (Filled)|ไอคอนทึบ อ่านง่ายแม้ขนาดเล็ก เด่นชัด','Duotone Icons|ไอคอนสองโทน เส้นสีหนึ่งกับพื้นอีกสีอ่อน ดูมีมิติแต่เรียบ','Gradient Icons|ไอคอนไล่สี ดูล้ำสมัย เหมาะกับสตาร์ทอัพ','3D Icons|ไอคอนสามมิติเงางาม มีแสงเงา เด่นและสนุก','Hand-drawn Icons|ไอคอนวาดมือ เส้นไม่เป๊ะ เป็นกันเองและมีเสน่ห์','Icons in Circles|ไอคอนอยู่ในวงกลมหรือสี่เหลี่ยมมนสีอ่อน จัดกลุ่มสวยและสม่ำเสมอ','Lucide Icons|ชุดไอคอนเส้นโอเพนซอร์ส สะอาด ครบ ใช้ฟรี','Heroicons|ชุดไอคอนจากทีม Tailwind มีทั้งแบบเส้นและแบบทึบ','Phosphor Icons|ชุดไอคอนหลายน้ำหนัก (บาง ปกติ หนา ทึบ สองโทน)','Material Symbols|ไอคอนมาตรฐานของ Google ครบมาก ผู้ใช้คุ้นตา','Flat Illustration|ภาพประกอบเรียบสีแบน ใช้สีน้อย ดูทันสมัยและโหลดเบา','Isometric Illustration|ภาพมุมมองไอโซเมตริก เหมาะอธิบายระบบและผลิตภัณฑ์','3D Illustration|ภาพประกอบสามมิติ นุ่ม เงางาม ดูพรีเมียม','Hand-drawn Illustration|ภาพวาดมือหรือสเก็ตช์ อบอุ่นและเป็นกันเอง','Line Art Illustration|ภาพลายเส้นต่อเนื่อง สง่างามและมินิมอล','Abstract Shapes & Blobs|รูปทรงนามธรรมและก้อนสีโค้งมน ใช้ตกแต่งพื้นหลัง','Watercolor Illustration|ภาพสีน้ำนุ่มนวล เหมาะกับเว็บอบอุ่นและงานคราฟต์','Character & Mascot Illustration|ตัวละครหรือมาสคอตประจำแบรนด์ ช่วยให้จำง่าย','Real Photography|รูปถ่ายจริงของสินค้า สถานที่ หรือทีมงาน สร้างความน่าเชื่อถือ','Duotone Photos|รูปถ่ายใส่โทนสีสองสีให้เข้ากับสีแบรนด์','Rounded & Masked Photos|รูปตัดเป็นวงกลม ทรงโค้ง หรือรูปทรงพิเศษ ดูทันสมัย','Inline SVG Graphics|วาดไอคอนและภาพด้วย SVG ในโค้ด คมชัดทุกขนาดและไม่ต้องโหลดไฟล์','Image Placeholders|ใส่กรอบรูปตัวอย่างแทนรูปจริงจากอินเทอร์เน็ต ให้เปลี่ยนเป็นรูปจริงทีหลัง','Lazy-loaded Responsive Images|โหลดรูปเมื่อเลื่อนถึงและมีหลายขนาดตามหน้าจอ','Consistent Icon Grid|กำหนดไอคอนขนาด 24px เส้นหนา 2px และการจัดวางเดียวกันทั้งเว็บ'];
+function icn(n,m){var s=ic(n,24);if(m=='solid')s=s.replace('fill="none"','fill="currentColor"');if(m=='duo')s=s.replace('fill="none"','fill="var(--acs)"');return s}
+function icrow(m,x){return AN('<div class="icw" style="display:flex;gap:10px;color:var(--ac);padding:0;'+(x||'')+'">'+icn('heart',m)+icn('chat',m)+icn('lock',m)+'</div>')}
+PV['Line Icons (Outline)']=icrow();PV['Solid Icons (Filled)']=icrow('solid');PV['Duotone Icons']=icrow('duo');
+PV['Gradient Icons']=AN('<div class="icw" style="display:flex;gap:10px;padding:0"><svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gri" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6ec4"/><stop offset="1" stop-color="#7873f5"/></linearGradient></defs></svg>'+['heart','chat','lock'].map(function(n){return ic(n,26).replace('stroke="currentColor"','stroke="url(#gri)"')}).join('')+'</div>');
+PV['3D Icons']=AN('<div class="icw" style="display:inline-flex;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#ff9bb5,#ff5c8a);box-shadow:inset -3px -3px 6px rgba(0,0,0,.2),inset 3px 3px 6px rgba(255,255,255,.5),0 6px 10px rgba(0,0,0,.25);color:#fff;align-items:center;justify-content:center;padding:0">'+ic('heart',20).replace('fill="none"','fill="currentColor"')+'</div>');
+PV['Hand-drawn Icons']=icrow('','transform:rotate(-4deg)');
+PV['Icons in Circles']=AN('<div class="icw" style="display:flex;gap:8px;padding:0">'+['heart','chat','lock'].map(function(n){return '<span style="display:inline-flex;width:34px;height:34px;border-radius:50%;background:var(--acs);color:var(--ac);align-items:center;justify-content:center">'+ic(n,18)+'</span>'}).join('')+'</div>');
+PV['Flat Illustration']=AN('<div style="width:120px;height:56px;padding:0;border-radius:10px;background:radial-gradient(circle at 78% 30%,#ffd166 0 9px,transparent 10px),linear-gradient(160deg,transparent 58%,#4caf7a 58%),#cfe8ff"></div>');
+PV['Abstract Shapes & Blobs']=AN('<div style="width:120px;height:56px;padding:0;border-radius:10px;background:radial-gradient(circle at 25% 60%,#7873f5 0 20px,transparent 21px),radial-gradient(circle at 70% 35%,#ff6ec4 0 24px,transparent 25px),var(--bd)"></div>');
+PV['Watercolor Illustration']=AN('<div style="width:120px;height:56px;padding:0;border-radius:10px;filter:blur(1px);background:radial-gradient(circle at 30% 50%,#9fd8ff,transparent 55%),radial-gradient(circle at 70% 40%,#ffc2d4,transparent 55%),#fff8ef"></div>');
+PV['Duotone Photos']=AN('<div style="width:120px;height:56px;padding:0;border-radius:10px;background:linear-gradient(135deg,#7873f5,#ff6ec4)"></div>');
+PV['Rounded & Masked Photos']=AN('<div style="width:56px;height:56px;padding:0;border-radius:50%;background:linear-gradient(135deg,#9fd8ff,#4caf7a)"></div>');
+PV['Image Placeholders']=AN('<div style="width:96px;height:56px;padding:0;border-radius:8px;border:2px dashed var(--ac);display:flex;align-items:center;justify-content:center;color:var(--ac);font:600 11px sans-serif">16:9</div>');
+Object.keys(MORE).forEach(function(k){addItems(k,MORE[k])});
+var CUS={};try{CUS=JSON.parse(localStorage.getItem('showroom_custom')||'{}')}catch(e){}
+Object.keys(CUS).forEach(function(k){addItems(k,CUS[k])});
+PV['Claymorphism']=ST('#ffe9f0','background:#ffc1d6;box-shadow:inset -4px -4px 8px rgba(0,0,0,.15),inset 4px 4px 8px rgba(255,255,255,.6),6px 8px 14px rgba(0,0,0,.18);color:#6b2140;border-radius:22px');
+PV['Liquid Glass']=ST('linear-gradient(120deg,#ff9a8b,#6a82fb)','background:rgba(255,255,255,.22);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8);color:#fff;border-radius:20px');
+PV['Cyberpunk']=ST('#0d0221','background:none;border:2px solid #ff2a6d;color:#05d9e8;text-shadow:2px 0 #ff2a6d;box-shadow:0 0 12px #ff2a6d;border-radius:0','CYBER');
+PV['Vaporwave']=ST('linear-gradient(#2b1055,#ff71ce)','background:rgba(255,255,255,.15);color:#01cdfe;border:1px solid #b967ff','VAPOR');
+PV['Flat Design']=ST('#e8f1ff','background:#3b82f6;color:#fff;border-radius:6px');
+PV['Luxury Premium']=ST('#0b0b0b','background:none;border:1px solid #d4af37;color:#d4af37;font-family:Georgia,serif;letter-spacing:3px;border-radius:0','LUXE');
+PV['Swiss / International']=ST('#fff','background:#e30613;color:#fff;border-radius:0;font-family:Helvetica,Arial,sans-serif');
+PV['Scroll Progress Bar']=AN('<div class="pxw"><u style="top:0;bottom:auto;height:6px;width:100%;background:var(--ac);transform-origin:left;animation:pg 3s linear infinite"></u></div>');
+PV['Skeleton Loading']=AN('<div class="pxw" style="background:linear-gradient(90deg,var(--bd) 30%,var(--card) 50%,var(--bd) 70%) 0 0/200% 100%;animation:sk 1.4s linear infinite"></div>');
+PV['Noise / Grain']=ST('repeating-conic-gradient(#0002 0 25%,#fff0 0 50%) 0 0/4px 4px,#e9e4da',CB);
+PV['Radial Glow']=ST('radial-gradient(circle at 50% 50%,#7873f5aa,transparent 60%),#0e0e12','background:none;color:#fff','Glow');
+PV['Diagonal Stripes']=ST('repeating-linear-gradient(45deg,var(--bd) 0 8px,transparent 8px 16px),var(--bg)',CB); /* คำอธิบายภาษาอังกฤษของแต่ละรายการ: DE['Minimalist']='Clean, simple...'; ถ้ายังไม่มีจะใช้ภาษาไทยแทน */
+function U(k){return UI[LANG][k]}
+function D(it){return LANG=='en'&&DE[it[0]]?DE[it[0]]:it[1]}
+function CT(c){return LANG=='en'?CE[c.k][0]:c.t}
+function CI(c){return LANG=='en'?CE[c.k][1]:c.intro}
+tabs=function(){$('tabs').innerHTML=CATS.map(function(c,i){var n=Object.keys(sel[c.k]).length;return '<button class="tab'+(i==cur?' on':'')+'" data-i="'+i+'">'+CT(c)+(n?' <small>('+n+')</small>':'')+'</button>'}).join('')};
+grid=function(){var c=CATS[cur],q=$('q').value.trim().toLowerCase();$('intro').textContent=CI(c);
+$('grid').innerHTML=c.items.map(function(it,i){var d=D(it),show=!q||(it[0]+d).toLowerCase().indexOf(q)>-1;var sw=it[2]?'<div class="sw">'+it[2].map(function(h){return '<i style="background:'+h+'"></i>'}).join('')+'</div>':'';
+return '<button class="item'+(sel[c.k][i]?' on':'')+'" data-i="'+i+'"'+(show?'':' hidden')+'><b>'+it[0]+'</b><span>'+d+'</span>'+sw+pv(c.k,it)+'</button>'}).join('')};
+build=function(){var u=UI[LANG],L=[u.pi,'','## '+u.si,'- '+u.nm+': '+($('name').value.trim()||u.un),'- '+u.ty+': '+$('type').value];
+if($('note').value.trim())L.push('- '+u.ex+': '+$('note').value.trim());var total=0;
+CATS.forEach(function(c){var ks=Object.keys(sel[c.k]);if(!ks.length)return;L.push('','## '+CT(c));ks.forEach(function(i){var it=c.items[i];total++;L.push('- '+it[0]+': '+D(it)+(it[2]?' ('+u.col+': '+it[2].join(', ')+')':''))})});
+L.push('','## '+u.rr,'- '+u.r1,'- '+u.r2,'- '+u.r3,'- '+u.r4);$('out').textContent=L.join('\n');
+$('hint').textContent=total?u.hintN.replace('{n}',total):u.hint0;tabs()};
+function applyLang(){var u=UI[LANG],h=document.querySelectorAll('h2');document.documentElement.lang=LANG;document.title=u.title;
+document.querySelector('.sub').textContent=u.sub;h[0].textContent=u.h1;h[1].textContent=u.h2;
+document.querySelector('label[for=name]').textContent=u.lname;document.querySelector('label[for=type]').textContent=u.ltype;document.querySelector('label[for=note]').textContent=u.lnote;
+$('name').placeholder=u.pname;$('note').placeholder=u.pnote;$('q').placeholder=u.pq;$('copy').textContent=u.copy;$('clear').textContent=u.clear;
+var ti=Math.max($('type').selectedIndex,0);$('type').innerHTML=TYPES_L[LANG].map(function(t){return '<option>'+t+'</option>'}).join('');$('type').selectedIndex=ti;
+$('presets').innerHTML='<span style="flex:none;align-self:center;font-size:.85rem;color:var(--mut)">'+u.presets+'</span>'+Object.keys(PR).map(function(n){return '<button class="tab" data-p="'+n+'">'+(LANG=='en'?PN[n]:n)+'</button>'}).join('');
+$('ft').innerHTML=u.ft.replace('{y}',new Date().getFullYear());
+document.querySelectorAll('[data-l]').forEach(function(b){b.classList.toggle('on',b.dataset.l==LANG)});tabs();grid();build()}
+document.querySelectorAll('[data-l]').forEach(function(b){b.onclick=function(){LANG=b.dataset.l;applyLang()}});
+applyLang();
+
+function tabs(){
+  $("tabs").innerHTML=CATS.map(function(c,i){
+    var n=Object.keys(sel[c.k]).length;
+    return '<button class="tab'+(i==cur?' on':'')+'" data-i="'+i+'">'+c.t+(n?' <small>('+n+')</small>':'')+'</button>';
+  }).join("");
+}
+function grid(){
+  var c=CATS[cur],q=$("q").value.trim().toLowerCase();
+  $("intro").textContent=c.intro;
+  $("grid").innerHTML=c.items.map(function(it,i){
+    var show=!q||(it[0]+it[1]).toLowerCase().indexOf(q)>-1;
+    var sw=it[2]?'<div class="sw">'+it[2].map(function(h){return '<i style="background:'+h+'"></i>'}).join("")+'</div>':'';
+    return '<button class="item'+(sel[c.k][i]?' on':'')+'" data-i="'+i+'"'+(show?'':' hidden')+'><b>'+it[0]+'</b><span>'+it[1]+'</span>'+sw+pv(c.k,it)+'</button>';
+  }).join("");
+}
+function build(){
+  var L=["คุณคือ UI/UX Designer และ Front-end Developer ระดับมืออาชีพ ช่วยออกแบบและเขียนเว็บไซต์ตามรายละเอียดด้านล่างนี้ ให้โค้ดครบสมบูรณ์ พร้อมใช้งานทันที",""];
+  L.push("## ข้อมูลเว็บ");
+  L.push("- ชื่อเว็บ: "+($("name").value.trim()||"(ยังไม่ระบุ)"));
+  L.push("- ประเภท: "+$("type").value);
+  if($("note").value.trim())L.push("- รายละเอียดเพิ่มเติม: "+$("note").value.trim());
+  var total=0;
+  CATS.forEach(function(c){
+    var ks=Object.keys(sel[c.k]);
+    if(!ks.length)return;
+    L.push("","## "+c.t);
+    ks.forEach(function(i){var it=c.items[i];total++;L.push("- "+it[0]+": "+it[1]+(it[2]?" (สี: "+it[2].join(", ")+")":""))});
+  });
+  L.push("","## เงื่อนไขการตอบ","- เขียนโค้ดให้สะอาด มีคอมเมนต์สำคัญ","- ใช้เนื้อหาตัวอย่างภาษาไทยที่สมจริง ไม่ใช้ Lorem ipsum","- หากข้อมูลส่วนไหนไม่ชัดเจน ให้เลือกแบบที่เหมาะสมที่สุดและบอกสิ่งที่ตัดสินใจเอง");
+  $("out").textContent=L.join("\n");
+  $("hint").textContent=total?"เลือกแล้ว "+total+" รายการ":"ยังไม่ได้เลือกรายการ เลือกจากแท็บด้านบนได้เลย";
+  tabs();
+}
+$("tabs").onclick=function(e){var b=e.target.closest(".tab");if(!b)return;cur=+b.dataset.i;$("q").value="";tabs();grid()};
+$("grid").onclick=function(e){var b=e.target.closest(".item");if(!b)return;var k=CATS[cur].k,i=b.dataset.i;
+  if(sel[k][i])delete sel[k][i];else sel[k][i]=1;grid();build()};
+$("q").oninput=grid;
+["name","type","note"].forEach(function(i){$(i).oninput=build;$(i).onchange=build});
+$("clear").onclick=function(){CATS.forEach(function(c){sel[c.k]={}});grid();build()};
+$("copy").onclick=function(){
+  var t=$("out").textContent,b=$("copy");
+  function ok(){b.innerHTML=ic('check',14)+U('copied');setTimeout(function(){b.textContent=U('copy')},1600)}
+  function fb(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){}document.body.removeChild(a)}
+  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}
+};
+$("presets").innerHTML='<span style="flex:none;align-self:center;font-size:.85rem;color:var(--mut)">ชุดสำเร็จรูป:</span>'+Object.keys(PR).map(function(n){return '<button class="tab" data-p="'+n+'">'+n+'</button>'}).join('');
+$("presets").onclick=function(e){var b=e.target.closest('[data-p]');if(!b)return;CATS.forEach(function(c){sel[c.k]={}});PR[b.dataset.p].forEach(function(n){CATS.forEach(function(c){c.items.forEach(function(it,i){if(it[0]==n)sel[c.k][i]=1})})});tabs();grid();build()};
+var RL={th:'สุ่มดีไซน์ให้เลย (กดซ้ำได้เรื่อย ๆ ไม่ซ้ำแบบเดิม)',en:'Surprise me (tap again for a new combo)'};
+var _al=applyLang;applyLang=function(){_al();$('rnd').innerHTML=ic('dice',18)+RL[LANG]};
+var RC={style:[1,2],layout:[1,1],color:[1,1],font:[1,1],anim:[1,2],comp:[3,5],btn:[1,1],bg:[1,1],tech:[2,3],chat:[0,1],pay:[0,1],love:[0,0],backend:[0,0],pages:[0,0]},lastRoll='';
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function roll(){var r={};CATS.forEach(function(c){var b=RC[c.k]||[1,1],n=b[0]+Math.floor(Math.random()*(b[1]-b[0]+1)),ix=shuf(c.items.map(function(_,i){return i})),f=c.k=='tech'?[0]:[];ix=f.concat(ix.filter(function(i){return f.indexOf(i)<0})).slice(0,n);r[c.k]=ix.sort(function(a,b){return a-b})});return r}
+$('rnd').onclick=function(){var r,s,t=0;do{r=roll();s=JSON.stringify(r);t++}while(s==lastRoll&&t<50);lastRoll=s;
+CATS.forEach(function(c){sel[c.k]={};r[c.k].forEach(function(i){sel[c.k][i]=1})});tabs();grid();build();
+try{$('out').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}};
+var _a2=applyLang;applyLang=function(){_a2();var t=LANG=='en';$('addT').textContent=t?'+ Add your own option to this category':'+ เพิ่มรูปแบบของคุณเองในหมวดนี้';$('cn').placeholder=t?'Name':'ชื่อรูปแบบ';$('cd').placeholder=t?'Short description':'คำอธิบายสั้น ๆ';$('ca').textContent=t?'Add':'เพิ่ม'};
+$('ca').onclick=function(){var n=$('cn').value.trim(),d=$('cd').value.trim()||n;if(!n)return;var c=CATS[cur],k=c.k;(CUS[k]=CUS[k]||[]).push([n,d]);try{localStorage.setItem('showroom_custom',JSON.stringify(CUS))}catch(e){}
+addItems(k,[[n,d]]);for(var i=0;i<c.items.length;i++)if(c.items[i][0]==n)sel[k][i]=1;$('cn').value='';$('cd').value='';tabs();grid();build()};
+/* ===== Guided tour (spotlight) ===== */
+var TS=[
+{s:'.lang',th:['เลือกภาษาและเปิดคู่มือ','สลับไทย/อังกฤษได้ตรงนี้ Prompt ที่สร้างจะเปลี่ยนภาษาตามด้วย และกดปุ่ม “วิธีใช้งาน” เพื่อเปิดคู่มือนี้อีกเมื่อไรก็ได้'],en:['Language and guide','Switch between Thai and English here. The prompt follows your choice. Tap How to use to reopen this guide any time.']},
+{s:'section.box',th:['กรอกข้อมูลเว็บของคุณ','ใส่ชื่อเว็บ เลือกประเภท และเล่ารายละเอียดเพิ่มเติม ไม่ต้องกรอกครบก็ได้ แต่ยิ่งละเอียด AI ยิ่งเข้าใจ'],en:['Describe your website','Add a name, pick a type and write any extra details. All optional, but more detail helps the AI.']},
+{s:'#rnd',th:['คิดไม่ออก? ให้ระบบสุ่ม','กดปุ่มนี้ ระบบจะสุ่มสไตล์ สี ฟอนต์ และส่วนประกอบมาให้ทั้งชุด กดซ้ำกี่ครั้งก็ได้ชุดใหม่ ไม่ซ้ำเดิม'],en:['Out of ideas? Roll the dice','Tap to get a full random combo of styles, colors, fonts and components. Tap again for a new one.']},
+{s:'#qzb',th:['ไม่แน่ใจ? ตอบ 5 คำถาม','ตอบคำถามสั้น ๆ 5 ข้อ เช่น เว็บเกี่ยวกับอะไร อยากให้รู้สึกแบบไหน แล้วระบบเลือกทั้งชุดให้ ย้อนกลับแก้คำตอบได้'],en:['Not sure? Answer 5 questions','Answer 5 short questions, such as what the site is about and how it should feel, and a full set is chosen for you. You can go back and change answers.']},
+{s:'#presets',th:['ชุดสำเร็จรูป','เลือกชุดที่ใกล้เคียงกับเว็บของคุณ ระบบจะติ๊กตัวเลือกให้ทั้งหมด แล้วค่อยปรับเพิ่มเอง'],en:['Presets','Pick one close to your site and everything gets selected for you. Then fine-tune it.']},
+{s:'#tabs',th:['แท็บหมวดหมู่','เลือกดูทีละหมวด เช่น สไตล์ เลย์เอาต์ สี ฟอนต์ รวมถึงแชท ชำระเงิน และล้ำยุค ตัวเลขในวงเล็บคือจำนวนที่เลือกแล้ว เลื่อนซ้าย-ขวาเพื่อดูหมวดอื่น'],en:['Category tabs','Browse one category at a time: style, layout, color, fonts, plus chat, checkout and future trends. The number shows how many you picked. Swipe sideways for more.']},
+{s:'#grid .item:not([hidden])',th:['แตะการ์ดเพื่อเลือก','แต่ละการ์ดมีชื่อ คำอธิบายว่าคืออะไร และตัวอย่างหน้าตา แตะอีกครั้งเพื่อยกเลิก เลือกได้หลายอัน ใช้ช่องค้นหาด้านบนช่วยหาได้'],en:['Tap a card to select','Each card shows its name, what it means and a live preview. Tap again to unselect. Pick as many as you like, and use the search box to find things.']},
+{s:'.add',th:['เพิ่มรูปแบบของคุณเอง','ไม่เจอที่ต้องการ? พิมพ์ชื่อและคำอธิบายเพิ่มเองได้ ระบบจะจำไว้ในเครื่องนี้'],en:['Add your own','Cannot find what you need? Type your own name and description. It is saved on this device.']},
+{s:'#pvw',th:['พรีวิวหน้าเว็บ','หน้าเว็บจำลองที่อัปเดตทันทีตามสไตล์ สี ฟอนต์ ปุ่ม และพื้นหลังที่เลือก เป็นภาพคร่าว ๆ ผลจริงขึ้นกับ AI ที่คุณใช้'],en:['Live preview','A mock page that updates instantly with the style, colors, font, button and background you pick. It is a rough guide, and the real result depends on your AI.']},
+{s:'.sel2',th:['เลือก AI และความยาว','เลือกว่าจะนำ Prompt ไปใช้กับ AI ตัวไหน (Claude, ChatGPT, Cursor, v0) และความยาวแบบสั้น มาตรฐาน หรือละเอียด Prompt จะปรับรูปแบบให้เหมาะ'],en:['Pick your AI and length','Choose which AI you will paste into (Claude, ChatGPT, Cursor, v0) and a short, standard or detailed prompt. The prompt adapts to fit.']},
+{s:'#out',th:['Prompt ของคุณ','ข้อความตรงนี้อัปเดตทันทีตามที่เลือก และมีเครดิต “ออกแบบโดย Showroom” ที่ท้ายเว็บใส่ให้อัตโนมัติทุกครั้ง'],en:['Your prompt','This text updates instantly as you choose. A small Designed by Showroom credit for the page footer is always added for you.']},
+{s:'#copy',th:['คัดลอกไปสั่ง AI','กดคัดลอก แล้วนำไปวางใน Claude, ChatGPT หรือ AI ตัวไหนก็ได้ เพื่อให้สร้างเว็บให้คุณ'],en:['Copy and ask the AI','Tap copy, then paste it into Claude, ChatGPT or any AI to have your website built.']},
+{s:'#sv',th:['บันทึกและแชร์ชุดดีไซน์','กดหัวข้อนี้เพื่อเปิด บันทึกชุดไว้หลายชุดแล้วโหลดกลับมาใหม่ หรือกดแชร์เพื่อรับรหัส (และลิงก์ ถ้าเว็บนี้เชื่อมระบบเก็บข้อมูลไว้) ส่งให้เพื่อนเปิดชุดเดียวกัน'],en:['Save and share','Open this to save several sets and load them later, or tap Share to get a code (and a link, if this site is connected to storage) so a friend can open the same set.']},
+{s:'#soonT',th:['กำลังจะมา','ฟีเจอร์ที่เตรียมไว้ในอนาคต เช่น สีแบรนด์ของตัวเอง ดาวน์โหลด Prompt เป็นไฟล์ และหน้าพิเศษ'],en:['Coming soon','Features planned next, such as your own brand colors, downloading the prompt as a file, and special pages.']}];
+var TU={th:{btn:'วิธีใช้งาน',nx:'ถัดไป',bk:'ย้อนกลับ',dn:'เสร็จสิ้น',cl:'ปิด'},en:{btn:'How to use',nx:'Next',bk:'Back',dn:'Done',cl:'Close'}},TI=-1;
+document.body.insertAdjacentHTML('beforeend','<div id="tvb" hidden></div><div id="tvh" hidden></div><div id="tt" hidden><div id="tn"></div><b id="ttl"></b><p id="tb"></p><div class="btns"><button class="btn g" id="tc"></button><button class="btn g" id="tp"></button><button class="btn" id="tx"></button></div></div>');
+function tplace(){if(TI<0)return;var e=document.querySelector(TS[TI].s);if(!e)return;var r=e.getBoundingClientRect(),h=$('tvh').style,t=$('tt'),p=6,w=Math.min(340,innerWidth-24);
+h.left=(r.left-p)+'px';h.top=(r.top-p)+'px';h.width=(r.width+2*p)+'px';h.height=(r.height+2*p)+'px';
+t.style.width=w+'px';t.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';var th=t.offsetHeight;
+if(innerHeight-r.bottom>=th+20){t.style.top=(r.bottom+p+10)+'px';t.style.bottom='auto'}else if(r.top>=th+20){t.style.top=(r.top-p-10-th)+'px';t.style.bottom='auto'}else{t.style.top='auto';t.style.bottom='12px'}}
+function tres(){var t=$('tt');t.style.transform='';t.style.textAlign='';$('tc').style.display='';$('tp').style.display='';$('tvb').style.background=''}
+var FM={th:['พร้อมแล้ว!','เท่านี้คุณก็พร้อมที่จะทำเว็บไซต์ของตัวเองแล้ว ขอให้สนุกนะ','เริ่มเลย'],en:['You are all set!','That is all you need to start building your own website. Have fun!','Let’s go']};
+function tfin(){TI=-2;var m=FM[LANG],t=$('tt');$('tvh').hidden=true;$('tvb').hidden=false;$('tvb').style.background='rgba(10,10,20,.72)';t.hidden=false;$('tn').textContent='';$('ttl').innerHTML=ic('sparkles',22)+m[0];$('ttl').style.fontSize='1.25rem';$('tb').textContent=m[1];$('tx').textContent=m[2];$('tc').style.display='none';$('tp').style.display='none';
+t.style.width=Math.min(340,innerWidth-24)+'px';t.style.left='50%';t.style.top='50%';t.style.bottom='auto';t.style.transform='translate(-50%,-50%)';t.style.textAlign='center';t.querySelector('.btns').style.justifyContent='center'}
+function tgo(i){tres();$('ttl').style.fontSize='';$('tt').querySelector('.btns').style.justifyContent='';var n=TS.length;TI=i;var s=TS[i],tx=s[LANG],u=TU[LANG];
+$('tn').textContent=(i+1)+' / '+n;$('ttl').textContent=tx[0];$('tb').textContent=tx[1];$('tc').textContent=u.cl;$('tp').textContent=u.bk;$('tx').textContent=i==n-1?u.dn:u.nx;$('tp').style.visibility=i?'visible':'hidden';
+['tvb','tvh','tt'].forEach(function(id){$(id).hidden=false});var e=document.querySelector(s.s);if(e)e.scrollIntoView({block:'center',behavior:'smooth'});tplace();setTimeout(tplace,350);setTimeout(tplace,700)}
+function tend(){TI=-1;tres();['tvb','tvh','tt'].forEach(function(id){$(id).hidden=true})}
+$('tourBtn').onclick=function(){tgo(0)};$('tc').onclick=tend;$('tp').onclick=function(){if(TI>0)tgo(TI-1)};$('tx').onclick=function(){if(TI==-2)tend();else if(TI<TS.length-1)tgo(TI+1);else tfin()};
+addEventListener('scroll',function(){if(TI>=0)requestAnimationFrame(tplace)},true);addEventListener('resize',tplace);addEventListener('keydown',function(e){if(e.key=='Escape')tend()});
+var _a3=applyLang;applyLang=function(){_a3();$('tourBtn').innerHTML=ic('help',16)+TU[LANG].btn;if(TI>=0)tgo(TI);else if(TI==-2)tfin()};
+/* ===== v2: live preview, quiz, target AI, save/share, soon ===== */
+function sn(k){var c=CATS.filter(function(x){return x.k==k})[0];return Object.keys(sel[k]||{}).sort(function(a,b){return a-b}).map(function(i){return c.items[i]})}
+function ct(h){if(h[0]!='#'||h.length<7)return '#111';var n=parseInt(h.slice(1,7),16);return ((n>>16)*299+(n>>8&255)*587+(n&255)*114)/1000>150?'#111':'#fff'}
+var STY={'Minimalist':['#fff','background:#fff;border:1px solid #ddd','#111'],'Glassmorphism':['linear-gradient(135deg,#7f5af0,#2cb1bc)','background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.5)','#fff'],'Neumorphism':['#e0e5ec','background:#e0e5ec;box-shadow:5px 5px 10px #a3b1c6,-5px -5px 10px #fff;border-radius:14px','#555'],'Neo-Brutalism':['#ffe66d','background:#fff;border:3px solid #000;box-shadow:4px 4px 0 #000;border-radius:0','#000'],'Dark Mode':['#0e0e12','background:#1c1c24;border:1px solid #333','#eee'],'Aurora Gradient':['radial-gradient(circle at 20% 30%,#ff6ec4,transparent 50%),radial-gradient(circle at 80% 70%,#7873f5,transparent 50%),#1a1040','background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3)','#fff'],'Retro / Y2K':['linear-gradient(45deg,#ff00cc,#3333ff)','background:#c0c0c0;border:2px outset #fff;border-radius:0;font-family:monospace;color:#000','#fff'],'Editorial':['#f4efe6','background:transparent;border-top:3px solid #111;border-bottom:1px solid #111;border-radius:0','#111'],'Claymorphism':['#ffe9f0','background:#ffc1d6;box-shadow:inset -3px -3px 6px rgba(0,0,0,.15),inset 3px 3px 6px rgba(255,255,255,.6),4px 6px 10px rgba(0,0,0,.15);border-radius:18px','#6b2140'],'Liquid Glass':['linear-gradient(120deg,#ff9a8b,#6a82fb)','background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.7);border-radius:18px','#fff'],'Cyberpunk':['#0d0221','background:none;border:2px solid #ff2a6d;box-shadow:0 0 10px #ff2a6d;border-radius:0','#05d9e8'],'Vaporwave':['linear-gradient(#2b1055,#ff71ce)','background:rgba(255,255,255,.15);border:1px solid #b967ff','#01cdfe'],'Flat Design':['#e8f1ff','background:#3b82f6;color:#fff;border-radius:6px','#0b2a66'],'Luxury Premium':['#0b0b0b','background:none;border:1px solid #d4af37;border-radius:0','#d4af37'],'Swiss / International':['#fff','background:#e30613;color:#fff;border-radius:0','#111']};
+var FMP={'Modern Sans-serif':"'Noto Sans Thai',sans-serif",'Elegant Serif':'Georgia,serif','Rounded Friendly':"'Trebuchet MS',sans-serif",'Monospace Tech':'ui-monospace,Menlo,monospace','Handwriting':"'Brush Script MT','Comic Sans MS',cursive",'Big Bold Headline':"Impact,'Arial Black',sans-serif",'Pixel / Retro':'ui-monospace,monospace','Condensed Display':'Impact,sans-serif','Geometric Sans':"'Trebuchet MS',sans-serif",'Slab Serif':'Rockwell,Georgia,serif'};
+var BTM={'Solid Rounded':'border-radius:10px','Outline Button':'background:transparent;border:2px solid ACC;color:ACC','Gradient Pill':'background:linear-gradient(90deg,ACC,ACC2);border-radius:999px','3D Push':'box-shadow:0 4px 0 rgba(0,0,0,.35);border-radius:10px','Neon Glow':'background:#000;color:ACC;border:2px solid ACC;box-shadow:0 0 10px ACC','Text Link':'background:none;color:ACC;text-decoration:underline;padding:6px 0','Floating Action Button':'border-radius:999px;box-shadow:0 4px 10px rgba(0,0,0,.3)'};
+var BGM={'Gradient Mesh':'radial-gradient(at 20% 20%,#ffb3c6,transparent 50%),radial-gradient(at 80% 30%,#b3d4ff,transparent 50%),#fff','Dot Pattern':'radial-gradient(#9a93ff 1.5px,transparent 1.5px) 0 0/14px 14px,#fff','Grid Lines':'linear-gradient(#ddd 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,#ddd 1px,transparent 1px) 0 0/16px 16px,#fff','Noise / Grain':'repeating-conic-gradient(#0002 0 25%,#fff0 0 50%) 0 0/4px 4px,#e9e4da','Radial Glow':'radial-gradient(circle at 50% 40%,#7873f5aa,transparent 60%),#0e0e12','Diagonal Stripes':'repeating-linear-gradient(45deg,#eee 0 8px,#fff 8px 16px)','Blob Shapes':'radial-gradient(circle at 25% 60%,#7873f5 0 22px,transparent 23px),radial-gradient(circle at 75% 35%,#ff6ec4 0 28px,transparent 29px),#fff'};
+function renderPV(){var el=$('pvw');if(!el)return;var en=LANG=='en',st=sn('style')[0],co=sn('color')[0],fo=sn('font')[0],bt=sn('btn')[0],bg=sn('bg')[0],cp=sn('comp').map(function(i){return i[0]});
+var S=st&&STY[st[0]],c=BRAND?[BRAND.colors.primary,BRAND.colors.accent,BRAND.colors.surface,BRAND.colors.bg]:(co?co[2]:['#5b4bff','#8f84ff','#ece9ff','#ffffff']),nm=($('name').value.trim()||'Showroom').replace(/</g,'&lt;');
+var pbg=(bg&&BGM[bg[0]])||(S?S[0]:c[3]),tx=S?S[2]:ct(c[3]);if(bg&&bg[0]=='Radial Glow')tx='#fff';
+var card=S?S[1]:'background:'+c[2]+';border:1px solid rgba(0,0,0,.08)',ff=(fo&&FMP[fo[0]])||'inherit';
+var bs='background:'+c[1]+';color:'+ct(c[1])+';border:0;padding:6px 14px;border-radius:8px;font:600 12px sans-serif;display:inline-block;'+(bt&&BTM[bt[0]]?BTM[bt[0]].replace(/ACC2/g,c[2]).replace(/ACC/g,c[1]):'');
+var lab=cp.indexOf('Pricing Table')>=0?['฿199','฿499','฿999']:cp.indexOf('Product Cards')>=0?['Item A','Item B','Item C']:en?['Feature 1','Feature 2','Feature 3']:['จุดเด่น 1','จุดเด่น 2','จุดเด่น 3'];
+var chat=sn('chat').length?'<div style="position:absolute;right:10px;bottom:26px;width:30px;height:30px;border-radius:50%;background:'+c[1]+';color:'+ct(c[1])+';display:flex;align-items:center;justify-content:center">'+ic('chat',16)+'</div>':'',pay=sn('pay').length?'<div style="text-align:center;padding:0 12px 8px;opacity:.8">'+ic('lock',12)+' '+(en?'Secure checkout':'ชำระเงินปลอดภัย')+'</div>':'';
+el.innerHTML='<div style="background:'+pbg+';color:'+tx+';font-family:'+ff+';position:relative"><div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:'+c[0]+';color:'+ct(c[0])+'"><b>'+nm+'</b><span style="font-size:11px;opacity:.8">Home · About · Contact</span></div><div style="padding:16px 12px 10px"><div style="font-size:21px;font-weight:700;line-height:1.25">'+(en?'Welcome to ':'ยินดีต้อนรับสู่ ')+nm+'</div><div style="opacity:.75;margin:4px 0 10px">'+(en?'A short line about what you do.':'ข้อความสั้น ๆ อธิบายว่าคุณทำอะไร')+'</div><span style="'+bs+'">'+(en?'Get started':'เริ่มเลย')+'</span></div><div class="c3">'+lab.map(function(l){return '<div style="'+card+';padding:10px;text-align:center;font-weight:600">'+l+'</div>'}).join('')+'</div>'+pay+'<div style="text-align:center;font-size:10px;opacity:.55;padding:6px">'+(en?'Designed by Showroom':'ออกแบบโดย Showroom')+'</div>'+chat+'</div>'}
+var TL={claude:['ตอบเป็นไฟล์ HTML ไฟล์เดียว (HTML, CSS, JS รวมกัน) ในโค้ดบล็อกเดียว พร้อมเปิดดูได้ทันที','Reply with one self-contained HTML file (HTML, CSS and JS together) in a single code block, ready to open.'],gpt:['อธิบายแนวทางออกแบบสั้น ๆ ก่อน แล้วตามด้วยไฟล์ HTML ไฟล์เดียวในโค้ดบล็อกเดียว','Briefly explain the design approach first, then give one self-contained HTML file in a single code block.'],cursor:['แสดงโครงสร้างไฟล์ก่อน (index.html, style.css, script.js) แล้วเขียนทีละไฟล์ให้ครบ ห้ามตัดโค้ด','Show the file structure first (index.html, style.css, script.js), then write each file in full. Do not truncate code.'],v0:['ใช้ React + Tailwind CSS (และ shadcn/ui หากทำได้) แยกเป็นคอมโปเนนต์ที่ใช้ซ้ำได้ และให้เป็นหน้าเดียวที่พรีวิวได้ทันที','Use React with Tailwind CSS (and shadcn/ui if possible), split into reusable components, as one previewable page.']};
+var DX=['ใส่คอมเมนต์อธิบายแต่ละส่วน ใช้ตัวแปร CSS สำหรับสีและฟอนต์ให้แก้ง่าย รองรับ Accessibility (alt, contrast, keyboard) และทดสอบการแสดงผลตั้งแต่จอ 360px ถึง 1440px','Comment each section, use CSS variables for colors and fonts so they are easy to change, support accessibility (alt text, contrast, keyboard), and verify layout from 360px to 1440px wide.'];
+function post(){var en=LANG=='en',ln=$('ln').value,tg=$('tg').value,P=$('out').textContent.split('\n## ').map(function(s){return s.trim()});if(P.length<3||!TL[tg])return;var L=P.length-1;
+if(ln=='s'){P[0]=en?'Build a website from the details below.':'ช่วยสร้างเว็บไซต์ตามรายละเอียดด้านล่าง';for(var i=2;i<L;i++)P[i]=P[i].split('\n').map(function(l){return l.replace(/^(- [^:]+): .*?( \([^()]*\))?$/,'$1$2')}).join('\n');var R=P[L].split('\n');P[L]=R[0]+'\n'+R.filter(function(l){return l.indexOf('Showroom')>=0}).join('\n')}
+P[L]+='\n- '+TL[tg][en?1:0];if(ln=='d')P[L]+='\n- '+DX[en?1:0];$('out').textContent=P.join('\n\n## ')}
+var LV={},lvSig='',TN=[['หวานซึ้ง','ขี้เล่น ตลกน่ารัก','อบอุ่นจริงใจ','กวี โรแมนติก'],['Sweet and tender','Playful and funny','Warm and sincere','Poetic and romantic']];
+var LF={
+'Love Letter Envelope':[['ข้อความในจดหมาย','Letter message','ta'],['ลงชื่อท้ายจดหมาย','Sign-off name','in']],
+'Days Together Counter':[['วันที่เริ่มคบ','Day you got together','date']],
+'Will You Be Mine?':[['คำถามที่จะถาม','The question to ask','in'],['ข้อความเมื่อกดตอบว่า ใช่','Message after they say yes','in']],
+'Memory Timeline':[['เหตุการณ์ (บรรทัดละ 1 เรื่อง เช่น 14 ก.พ. 2565 - เดทแรก)','Events (one per line, e.g. 14 Feb 2022 - first date)','ta']],
+'Polaroid Photo Wall':[['คำบรรยายใต้รูป (บรรทัดละ 1 รูป)','Photo captions (one per line)','ta']],
+'Reasons I Love You':[['เหตุผลที่รัก (บรรทัดละ 1 ข้อ)','Reasons I love you (one per line)','ta']],
+'Secret Password Lock':[['รหัสผ่าน (เช่น วันครบรอบ)','Password (e.g. anniversary date)','in'],['คำใบ้','Hint','in']],
+'Scratch Card Surprise':[['ข้อความที่ซ่อนอยู่ใต้การ์ด','Hidden message under the card','in']],
+'Love Coupon Book':[['รายการคูปอง (บรรทัดละ 1 ใบ เช่น กอดฟรี 1 ครั้ง)','Coupons (one per line, e.g. one free hug)','ta']],
+'Our Playlist':[['เพลง - ศิลปิน - เหตุผล (บรรทัดละ 1 เพลง)','Song - artist - why (one per line)','ta']],
+'Love Quiz':[['คำถาม | คำตอบที่ถูก (บรรทัดละ 1 ข้อ)','Question | right answer (one per line)','ta']],
+'Bucket List Together':[['สิ่งที่อยากทำด้วยกัน (บรรทัดละ 1 ข้อ)','Things to do together (one per line)','ta']],
+'Starry Night Message':[['ข้อความในดาวแต่ละดวง (บรรทัดละ 1 ดวง)','Message in each star (one per line)','ta']],
+'Anniversary Countdown':[['วันที่ครบรอบหรือวันเกิด','Anniversary or birthday date','date'],['ข้อความเมื่อถึงวัน','Message on the day','in']],
+'Cute Mascot Characters':[['ตัวการ์ตูนของเรา (เช่น หมี = ผม กระต่าย = เธอ)','Our characters (e.g. bear = me, bunny = you)','in']],
+'Gentle Music Player':[['ชื่อเพลงที่อยากให้เล่น','Song to play','in'],['ลิงก์ไฟล์เพลงหรือ YouTube (ถ้ามี)','Audio file or YouTube link (optional)','in']],
+'LINE-friendly Share Card':[['ชื่อที่จะโชว์เมื่อส่งลิงก์','Title shown when the link is shared','in'],['ข้อความสั้นใต้ชื่อ','Short description under the title','in']]};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function fld(k,lab,type){var v=esc(LV[k]||'');return '<label>'+lab+'</label>'+(type=='ta'?'<textarea data-k="'+k+'">'+v+'</textarea>':'<input data-k="'+k+'"'+(type=='date'?' type="date"':'')+' value="'+v+'">')}
+function renderLove(){var items=sn('love'),en=LANG=='en',b=$('lvBox');if(!items.length){b.hidden=true;b.innerHTML='';return}b.hidden=false;
+var h='<div class="lvt">'+(en?'Details for your love page':'ข้อมูลสำหรับเว็บบอกรักของคุณ')+'</div><p class="pvl">'+(en?'Fill in what each section should show. Skip anything you want to decide later and the AI will write cute sample text you can edit. Do not paste real photos here. Add them to the finished page yourself.':'กรอกสิ่งที่อยากให้แต่ละส่วนโชว์ ข้ามช่องที่ยังไม่พร้อมได้ AI จะเขียนข้อความตัวอย่างน่ารัก ๆ ให้แก้ทีหลัง ไม่ต้องแปะรูปจริงตรงนี้ ให้เพิ่มรูปในหน้าเว็บที่ได้เองภายหลัง')+'</p>';
+h+=fld('c:from',en?'Your name or nickname':'ชื่อหรือชื่อเล่นของคุณ','in')+fld('c:to',en?'Name or nickname of your loved one':'ชื่อหรือชื่อเล่นของคนที่รัก','in');
+h+='<label>'+(en?'Tone of the messages':'โทนของข้อความ')+'</label><select data-k="c:tone">'+TN[en?1:0].map(function(t,i){return '<option value="'+i+'"'+((LV['c:tone']||'0')==i?' selected':'')+'>'+t+'</option>'}).join('')+'</select>';
+items.forEach(function(it){var f=LF[it[0]];if(!f)return;h+='<div class="lvh">'+it[0]+'</div>'+f.map(function(x,i){return fld(it[0]+':'+i,x[en?1:0],x[2])}).join('')});
+b.innerHTML=h}
+$('lvBox').oninput=$('lvBox').onchange=function(e){var k=e.target.dataset.k;if(!k)return;LV[k]=e.target.value;build()};
+var CR=[
+{g:['Line Icons (Outline)','Solid Icons (Filled)','Duotone Icons','Gradient Icons','3D Icons','Hand-drawn Icons','Icons in Circles'],min:2,th:'ผสมสไตล์ไอคอนหลายแบบทำให้ดูไม่เป็นระเบียบ เลือก 1 แบบหลักจะสม่ำเสมอที่สุด',en:'Mixing icon styles looks untidy. One main style is the most consistent.'},
+{g:['Lucide Icons','Heroicons','Phosphor Icons','Material Symbols'],min:2,th:'ชุดไอคอนต่างกันมีน้ำหนักเส้นและรูปทรงไม่เท่ากัน ควรใช้ชุดเดียว',en:'Different icon sets have different stroke weights and shapes. Use one set.'},
+{g:['Flat Illustration','Isometric Illustration','3D Illustration','Hand-drawn Illustration','Line Art Illustration','Abstract Shapes & Blobs','Watercolor Illustration'],min:2,th:'สไตล์ภาพประกอบหลายแบบในเว็บเดียวทำให้เอกลักษณ์พร่า ควรเลือก 1 แบบ',en:'Several illustration styles on one site blur the identity. Pick one.'},
+{a:['Single Page Landing'],b:['Booking / Reservation Page','Member Login & Register','Blog / Article List','Article Detail Page','Dashboard Home','Settings Page','Member Profile Page'],th:'เลือกเว็บหน้าเดียวแต่ต้องการหลายหน้า ให้เปลี่ยนเป็นหลายหน้า หรือทำเป็นส่วนที่เลื่อนไปหา',en:'A single page was chosen but several pages are needed. Switch to multi-page or use scroll sections.'},
+{a:['Neumorphism'],b:['Neo-Brutalism'],th:'เงานุ่มแบบนูนจมกับกรอบหนาเงาแข็งเข้ากันยาก ลุคจะขัดกันเอง',en:'Soft embossed shadows clash with thick borders and hard shadows.'},
+{a:['Neumorphism'],b:['Flat Design'],th:'Neumorphism ต้องใช้เงาสร้างมิติ แต่ Flat Design ตัดเงาออกหมด',en:'Neumorphism relies on depth shadows, while Flat Design removes them.'},
+{a:['Neumorphism'],b:['Dark Mode'],th:'Neumorphism ดูดีบนพื้นสว่างนุ่ม ๆ พื้นมืดทำให้เงามองไม่เห็น',en:'Neumorphism needs a soft light background. Its shadows vanish on dark.'},
+{a:['Glassmorphism','Liquid Glass'],b:['Neo-Brutalism'],th:'กระจกโปร่งแสงกับกรอบหนาทึบเป็นคนละโลกกัน',en:'Translucent glass and thick opaque borders pull in opposite directions.'},
+{a:['Minimalist'],b:['Cyberpunk','Vaporwave','Retro / Y2K'],th:'Minimalist ต้องการพื้นที่ว่างและสีน้อย แต่สไตล์นี้จัดจ้านและเยอะ',en:'Minimalist wants space and few colors, but these styles are loud and busy.'},
+{a:['Flat Design'],b:['Skeuomorphism'],th:'เรียบไร้มิติกับเลียนแบบวัสดุจริง เป็นปรัชญาที่ตรงข้ามกัน',en:'Flat and material-imitating looks are opposite philosophies.'},
+{a:['Luxury Premium'],b:['Retro / Y2K','Neo-Brutalism','Candy Pop','Claymorphism'],th:'ลุคหรูต้องนิ่งและน่าเชื่อถือ สไตล์นี้ขี้เล่นเกินไป',en:'A luxury look must feel calm and trustworthy. These are too playful.'},
+{a:['Dark Mode'],b:['Pastel Soft','Cute Pastel Theme'],th:'พื้นมืดกับสีพาสเทลอ่อนทำให้คอนทราสต์ต่ำ อ่านยาก',en:'Dark backgrounds with light pastels give low contrast and are hard to read.'},
+{a:['Cute Pastel Theme'],b:['Cyberpunk','Luxury Premium','Neo-Brutalism','Mono Black & White','Neon Cyber'],th:'ธีมหวานน่ารักกับลุคดุดันหรือหรูหราไม่เข้ากัน',en:'A sweet cute theme does not mix with edgy or luxurious looks.'},
+{a:['Swiss / International'],b:['Hand-drawn / Doodle'],th:'ตารางเป๊ะแบบสวิสกับเส้นวาดมือหลุด ๆ ขัดกัน',en:'Precise Swiss grids and loose hand-drawn lines conflict.'},
+{a:['Single Page Landing'],b:['Multi-page'],th:'เลือกได้อย่างเดียว ระหว่างหน้าเดียวกับหลายหน้า',en:'Pick one: a single page or multiple pages.'},
+{a:['Sticky Navbar'],b:['Floating Dock Nav'],th:'มีแถบเมนูสองแบบพร้อมกันจะซ้ำซ้อนและกินพื้นที่',en:'Two navigation bars at once is redundant and takes space.'},
+{a:['Single HTML File'],b:['Multi-page','PWA / Installable'],th:'ไฟล์เดียวทำหลายหน้าหรือ PWA ได้ลำบาก (PWA ต้องมี manifest และ service worker แยกไฟล์)',en:'One file struggles with multiple pages or a PWA, which needs a manifest and service worker.'},
+{a:['Fast Loading'],b:['Spatial / 3D Scene','Particle Network','Parallax','Video Embed','Generative Art Background'],th:'เอฟเฟกต์หนัก ๆ ทำให้เว็บโหลดช้าและขัดกับเป้าหมายโหลดเร็ว',en:'Heavy effects slow the page and defeat the fast-loading goal.'},
+{g:['Floating Chat Widget','Floating Action Button','Back-to-top Button'],min:2,th:'ปุ่มลอยมุมจอหลายปุ่มจะวางทับกัน',en:'Several floating buttons in the corner will overlap.'},
+{a:['Single-page Checkout'],b:['Step-by-step Checkout'],th:'เช็กเอาต์หน้าเดียวกับทีละขั้นเลือกได้อย่างเดียว',en:'Pick one: single-page or step-by-step checkout.'},
+{g:['Dot Pattern','Grid Lines','Diagonal Stripes','Noise / Grain','Blob Shapes'],min:2,th:'ลายพื้นหลังหลายแบบซ้อนกันทำให้ลายตา',en:'Several background patterns stacked together look noisy.'},
+{k:'style',min:3,th:'ผสมสไตล์เกิน 2 แบบ เอกลักษณ์ของเว็บจะพร่า',en:'Mixing more than 2 styles blurs the identity of the site.'},
+{k:'color',min:2,th:'เลือกโทนสีหลายชุด ถ้าตั้งใจผสม ควรมีชุดหลักเพียงชุดเดียว',en:'Several color palettes were picked. If you mix them, keep one as the main palette.'},
+{k:'font',min:3,th:'ใช้ฟอนต์เกิน 2 แบบทำให้หน้าเว็บดูรก',en:'More than 2 fonts makes a page look messy.'},
+{k:'anim',min:6,th:'แอนิเมชันเยอะเกินไป เว็บอาจหน่วงและลายตา',en:'Too many animations can slow the page and feel overwhelming.'},
+{k:'btn',min:3,th:'ปุ่มหลายแบบเกินไป ควรใช้ 1-2 แบบให้สม่ำเสมอ',en:'Too many button styles. Stick to 1 or 2 for consistency.'}];
+function conflicts(){var S={},out=[];CATS.forEach(function(c){Object.keys(sel[c.k]).forEach(function(i){S[c.items[i][0]]=c.k})});
+function inS(a){return a.filter(function(n){return S[n]})}
+CR.forEach(function(r){var inv=[];if(r.a){var x=inS(r.a),y=inS(r.b);if(x.length&&y.length)inv=x.concat(y)}else if(r.g){var z=inS(r.g);if(z.length>=r.min)inv=z}else{var w=Object.keys(S).filter(function(n){return S[n]==r.k});if(w.length>=r.min)inv=w}
+if(inv.length)out.push({n:inv,r:r})});if(typeof BRAND!='undefined'&&BRAND&&sn('color').length)out.push({n:sn('color').map(function(i){return i[0]}),r:{th:'คุณมีสีแบรนด์ของตัวเองแล้ว ชุดสีสำเร็จรูปอาจขัดกับสีแบรนด์ (สีแบรนด์จะมาก่อน)',en:'You already have your own brand palette. A ready-made palette may clash with it (the brand palette wins).'}});return out}
+function renderCW(){var cf=conflicts(),el=$('cw'),en=LANG=='en';if(!cf.length){el.hidden=true;el.innerHTML='';return}el.hidden=false;
+el.innerHTML='<div class="cwt">'+ic('warn',18)+(en?'Some choices may clash ('+cf.length+')':'พบตัวเลือกที่อาจขัดกัน ('+cf.length+')')+'</div>'+cf.map(function(c){return '<div class="cwi"><b>'+c.n.map(esc).join(' + ')+'</b><span>'+(en?c.r.en:c.r.th)+'</span><div>'+c.n.map(function(n){return '<button class="btn g" data-rm="'+esc(n)+'">'+(en?'Remove ':'เอาออก ')+esc(n)+'</button>'}).join('')+'</div></div>'}).join('')+'<p class="hint">'+(en?'These are only suggestions. You can keep them, and the prompt will ask the AI to blend them sensibly.':'เป็นแค่คำแนะนำ จะเก็บไว้ก็ได้ Prompt จะสั่งให้ AI ผสมให้อย่างสมเหตุสมผล')+'</p>'}
+function markConf(){var s={};conflicts().forEach(function(c){c.n.forEach(function(n){s[n]=1})});document.querySelectorAll('#grid .item.on').forEach(function(b){var nm=b.querySelector('b');if(nm&&s[nm.textContent]){b.classList.add('cf');nm.insertAdjacentHTML('beforeend',ic('warn',14))}})}
+/* ===== Brand color wizard: questions -> hue scoring -> harmony -> WCAG contrast fitting ===== */
+var BRAND=null,BS=0,BA={m:[]};
+function h2r(h,s,l){h=((h%360)+360)%360;s/=100;l/=100;var a=s*Math.min(l,1-l);function f(n){var k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))}return [f(0),f(8),f(4)].map(function(x){return Math.round(x*255)})}
+function hx(h,s,l){return '#'+h2r(h,s,l).map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('')}
+function r2h(c){var r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn,h=0,s=0;if(d){s=d/(1-Math.abs(2*l-1));h=mx==r?((g-b)/d)%6:mx==g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}return [h,s*100,l*100]}
+function lum(x){var c=[1,3,5].map(function(i){var v=parseInt(x.substr(i,2),16)/255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function crt(a,b){var x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+function fitL(h,s,l,against,min,dir){var x=l;for(var i=0;i<60;i++){if(crt(hx(h,s,x),against)>=min)break;x+=dir*1.5;if(x<4||x>96)break}return Math.max(4,Math.min(96,x))}
+var BI={food:[[20,25,1],[45,20,.7],[5,15,.5]],tech:[[225,25,1],[265,25,.8],[190,15,.4]],finance:[[215,15,1],[160,15,.6],[230,12,.5]],health:[[160,25,1],[185,20,.8],[140,15,.5]],beauty:[[335,25,1],[300,20,.6],[15,15,.4]],edu:[[50,20,.8],[205,25,1],[130,20,.5]],eco:[[110,25,1],[140,20,.8],[85,15,.5]],luxury:[[270,20,.8],[45,12,.9],[350,10,.5]],creative:[[285,40,.8],[330,30,.7],[20,30,.5]],love:[[345,20,1],[325,20,.8],[10,15,.6]],other:[[0,360,.01]]};
+var BM={warm:[[[20,30,1],[45,20,.7]],0,0],trust:[[[215,20,1]],-5,-3],bold:[[[0,20,.8],[30,15,.7],[275,25,.7]],20,0],calm:[[[190,30,.8],[215,25,.7],[150,20,.5]],-22,4],elegant:[[[275,25,.8],[45,12,.7],[345,12,.5]],-18,-4],playful:[[[330,30,.7],[50,20,.7],[190,25,.6]],18,3],modern:[[[230,25,.8],[260,20,.6]],0,0],natural:[[[100,30,1],[35,15,.5]],-15,-2]};
+var BHN=[[15,'แดง','Red'],[45,'ส้ม','Orange'],[70,'เหลือง','Yellow'],[160,'เขียว','Green'],[190,'เขียวมิ้นต์','Teal'],[215,'ฟ้า','Sky blue'],[255,'น้ำเงิน','Blue'],[290,'ม่วง','Purple'],[345,'ชมพู','Pink'],[361,'แดง','Red']];
+function hn(h){h=((h%360)+360)%360;for(var i=0;i<BHN.length;i++)if(h<BHN[i][0])return BHN[i][LANG=='en'?2:1];return BHN[0][1]}
+function hsc(h,list,k){var t=0;list.forEach(function(p){var d=Math.abs(((h-p[0]+540)%360)-180);t+=k*p[2]*Math.exp(-d*d/(2*p[1]*p[1]))});return t}
+function peaks(ind,ms){var sc=[],i;for(i=0;i<360;i++){var t=hsc(i,BI[ind]||BI.other,1);ms.forEach(function(m){t+=hsc(i,BM[m][0],1.2)});sc.push(t+.02)}
+var idx=sc.map(function(_,j){return j}).sort(function(a,b){return sc[b]-sc[a]}),out=[];idx.forEach(function(j){if(out.length<3&&out.every(function(p){return Math.abs(((j-p+540)%360)-180)>=45}))out.push(j)});return out}
+function mkPal(h,S,Lp,o){var dark=o.dark,bg=dark?hx(h,22,8):hx(h,22,97.5),sf=dark?hx(h,18,13):'#ffffff',bd=dark?hx(h,16,22):hx(h,18,88),tx=dark?hx(h,14,94):hx(h,28,12),
+mu=hx(h,12,fitL(h,12,dark?70:38,bg,4.5,dark?1:-1)),pr,on;
+if(o.fixed){pr=o.fixed;on=crt('#ffffff',pr)>=crt('#111111',pr)?'#ffffff':'#111111'}else if(dark){on='#0b0b10';pr=hx(h,S,fitL(h,S,Math.max(Lp,55),on,4.5,1))}else{var lw=fitL(h,S,Lp,'#ffffff',4.5,-1),lb=fitL(h,S,Lp,'#111111',4.5,1);if(Math.abs(lw-Lp)<=Math.abs(lb-Lp)){on='#ffffff';pr=hx(h,S,lw)}else{on='#111111';pr=hx(h,S,lb)}}
+var h2,h3,s2=Math.max(20,S*.8),s3=Math.min(78,S*.85+5);
+if(o.vr==1){h2=h+28;h3=h-28}else if(o.vr==2){h2=h+30;h3=h+180+(S>55?30:-30)}else{h2=h+120;h3=h+240}
+var d=dark?1:-1,sc=hx(h2,s2,fitL(h2,s2,dark?66:48,bg,3,d)),ac=hx(h3,s3,fitL(h3,s3,dark?68:44,bg,4.5,d));
+return {h:h,S:S,vr:o.vr,colors:{primary:pr,secondary:sc,accent:ac,bg:bg,surface:sf,text:tx,muted:mu,border:bd,onPrimary:on},ratios:{text:crt(tx,bg),onPrimary:crt(on,pr),primary:crt(pr,bg),accent:crt(ac,bg)}}}
+function bkCands(a){var dark=a.theme=='dark',S0=62,Ld=0,out=[];a.m.forEach(function(k){S0+=BM[k][1];Ld+=BM[k][2]});S0+=({kid:12,young:4,adult:0,senior:-4})[a.aud]||0;S0=Math.max(28,Math.min(88,S0));var Lp=(dark?62:46)+Ld,o={dark:dark,vr:a.vr};
+if(a.anchor){var hs=r2h([1,3,5].map(function(i){return parseInt(a.anchor.substr(i,2),16)}));[a.vr,1,2,3].filter(function(v,i,r){return r.indexOf(v)==i}).slice(0,3).forEach(function(v){var p=mkPal(hs[0],hs[1],hs[2],{dark:dark,vr:v,fixed:a.anchor});p.fixed=1;out.push(p)})}
+else peaks(a.ind,a.m).forEach(function(h){out.push(mkPal(h,S0,Lp,o))});return out}
+var BQ=[{k:'ind',t:['ธุรกิจของคุณอยู่ในกลุ่มไหน?','What kind of business is it?'],o:[['food','ร้านอาหาร / คาเฟ่','Food / café'],['tech','เทคโนโลยี / สตาร์ทอัพ','Tech / startup'],['finance','การเงิน / ธุรกิจบริการ','Finance / professional services'],['health','สุขภาพ / สปา','Health / wellness'],['beauty','ความงาม / แฟชั่น','Beauty / fashion'],['edu','การศึกษา / เด็ก','Education / kids'],['eco','ธรรมชาติ / ออร์แกนิก','Nature / organic'],['luxury','แบรนด์หรู / พรีเมียม','Luxury / premium'],['creative','งานสร้างสรรค์ / พอร์ตโฟลิโอ','Creative / portfolio'],['love','เว็บส่วนตัว / บอกรัก','Personal / love page'],['other','อื่น ๆ','Something else']]},
+{k:'m',multi:2,t:['อยากให้แบรนด์ให้ความรู้สึกแบบไหน? (เลือกได้สูงสุด 2)','How should the brand feel? (pick up to 2)'],o:[['warm','อบอุ่น เป็นกันเอง','Warm and friendly'],['trust','น่าเชื่อถือ มืออาชีพ','Trustworthy and professional'],['bold','กล้า มีพลัง','Bold and energetic'],['calm','สงบ ผ่อนคลาย','Calm and relaxing'],['elegant','หรูหรา สง่างาม','Elegant and luxurious'],['playful','สนุก สดใส','Playful and bright'],['modern','ทันสมัย เรียบง่าย','Modern and minimal'],['natural','ธรรมชาติ สดชื่น','Natural and fresh']]},
+{k:'aud',t:['กลุ่มลูกค้าหลักอายุเท่าไร?','How old is your main audience?'],o:[['kid','เด็กและวัยรุ่น (ต่ำกว่า 18)','Kids and teens (under 18)'],['young','วัยรุ่นถึงวัยทำงานตอนต้น (18-29)','Young adults (18-29)'],['adult','วัยทำงาน (30-49)','Adults (30-49)'],['senior','ผู้ใหญ่ (50 ขึ้นไป) เน้นอ่านง่าย','Older adults (50+), extra readable']]},
+{k:'theme',t:['หน้าเว็บโทนสว่างหรือมืด?','Light or dark website?'],o:[['light','โทนสว่าง','Light'],['dark','โทนมืด','Dark']]},
+{k:'vr',t:['อยากให้ใช้สีหลากหลายแค่ไหน?','How varied should the colors be?'],o:[[1,'น้อย โทนเดียวกลมกลืน','Few: harmonious, one family'],[2,'กลาง สมดุล มีสีเน้น','Medium: balanced with an accent'],[3,'มาก สดใสหลายสี','Many: lively, multi-color']]}];
+document.body.insertAdjacentHTML('beforeend','<div id="bz" hidden><div id="bc"></div></div>');
+function bzLabel(q,k){var o=q.o.filter(function(x){return x[0]==k})[0];return o?o[LANG=='en'?2:1]:''}
+function bzWhy(p){var en=LANG=='en',ind=bzLabel(BQ[0],BA.ind),ms=BA.m.map(function(k){return bzLabel(BQ[1],k)}).join(', '),hm=({1:[en?'analogous colors':'สีใกล้เคียงกัน (analogous)'],2:[en?'split-complementary':'สีเสริมแบบแยก (split-complementary)'],3:[en?'triadic':'สามสีเท่ากัน (triadic)']})[p.vr][0];
+return (p.fixed?(en?'Your own brand color is the primary. ':'ใช้สีแบรนด์เดิมของคุณเป็นสีหลัก '):(en?hn(p.h)+' tones suit '+ind+' and feel '+ms+'. ':'โทน'+hn(p.h)+' เหมาะกับ '+ind+' และให้ความรู้สึก '+ms+' '))+(en?'Other colors use '+hm+'. Lightness was tuned so text meets WCAG contrast.':'สีอื่นสร้างด้วยหลัก '+hm+' และปรับความสว่างให้ตัวอักษรผ่านเกณฑ์คอนทราสต์ WCAG')}
+function bzSw(c){return ['primary','secondary','accent','bg','text'].map(function(k){return '<i style="background:'+c[k]+'" title="'+k+' '+c[k]+'"></i>'}).join('')}
+function bzRender(){var en=LANG=='en',el=$('bc'),h='',n=BQ.length,L=function(a,b){return en?b:a};
+if(BS<n){var q=BQ[BS];h='<div style="font-size:.78rem;color:var(--ac);font-weight:700">'+(BS+1)+' / '+(n+1)+'</div><b style="font-size:1.1rem;display:block;margin:4px 0 4px">'+q.t[en?1:0]+'</b>'+q.o.map(function(o){var on=q.multi?(BA.m.indexOf(o[0])>=0):(BA[q.k]==o[0]);return '<button class="o'+(on?' sel':'')+'" data-o="'+o[0]+'">'+o[en?2:1]+'</button>'}).join('')}
+else if(BS==n){h='<div style="font-size:.78rem;color:var(--ac);font-weight:700">'+(n+1)+' / '+(n+1)+'</div><b style="font-size:1.1rem;display:block;margin:4px 0 4px">'+L('มีสีแบรนด์อยู่แล้วไหม? (ไม่บังคับ)','Do you already have a brand color? (optional)')+'</b><p class="hint">'+L('ใส่รหัสสี เช่น #1e88e5 ระบบจะใช้เป็นสีหลักและสร้างสีอื่นให้เข้ากัน หรือกดข้ามเพื่อให้ระบบเลือกให้','Enter a hex code such as #1e88e5 and it becomes the primary, with matching colors built around it. Or skip and let the system choose.')+'</p><input id="ba" placeholder="#1e88e5" value="'+esc(BA.anchor||'')+'">'}
+else{var c=bkCands(BA);h='<b style="font-size:1.1rem;display:block;margin-bottom:2px">'+L('ผลลัพธ์สีแบรนด์ของคุณ','Your brand color results')+'</b>'+c.map(function(p,i){var r=p.ratios,k=p.colors,nm=(p.fixed?L('สีเดิมของคุณ · ','Your color · '):'')+hn(p.h)+' · '+({1:L('กลมกลืน','Harmonious'),2:L('สมดุล','Balanced'),3:L('สดใส','Lively')})[p.vr];
+return '<div class="bcard"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b>'+nm+'</b>'+(i==0?'<span class="badge" style="background:var(--acs);color:var(--ac);border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:700">'+L('แนะนำ','Best match')+'</span>':'')+'</div><div class="bsw">'+bzSw(k)+'</div><div class="btb">primary '+k.primary+' · secondary '+k.secondary+'<br>accent '+k.accent+' · bg '+k.bg+' · text '+k.text+'<br>'+L('คอนทราสต์ ตัวอักษร/พื้น ','contrast text/bg ')+r.text.toFixed(1)+':1 · '+L('ตัวอักษรบนปุ่ม ','text on button ')+r.onPrimary.toFixed(1)+':1</div><p class="hint">'+bzWhy(p)+'</p><button class="btn" data-a="use" data-i="'+i+'">'+L('ใช้ชุดนี้','Use this palette')+'</button></div>'}).join('')}
+h+='<div class="btns" style="justify-content:space-between"><button class="btn g" data-a="x">'+L('ปิด','Close')+'</button>'+(BS?'<button class="btn g" data-a="b">'+L('ย้อนกลับ','Back')+'</button>':'')+((BS<n&&BQ[BS].multi)?'<button class="btn" data-a="n">'+L('ถัดไป','Next')+'</button>':'')+(BS==n?'<button class="btn g" data-a="skip">'+L('ข้าม','Skip')+'</button><button class="btn" data-a="go">'+L('ดูผลลัพธ์','See results')+'</button>':'')+'</div>';el.innerHTML=h}
+function bzStart(){BS=0;BA={m:[]};$('bz').hidden=false;bzRender()}
+$('bc').onclick=function(e){var b=e.target.closest('button');if(!b)return;var a=b.dataset.a,n=BQ.length;
+if(b.dataset.o!=null){var q=BQ[BS],v=b.dataset.o;if(q.multi){var i=BA.m.indexOf(v);if(i>=0)BA.m.splice(i,1);else{BA.m.push(v);if(BA.m.length>q.multi)BA.m.shift()}bzRender()}else{BA[q.k]=(q.k=='vr')?+v:v;BS++;bzRender()}return}
+if(a=='x'){$('bz').hidden=true}else if(a=='b'){BS--;bzRender()}else if(a=='n'){if(BA.m.length){BS++;bzRender()}}
+else if(a=='skip'){BA.anchor='';BS++;bzRender()}
+else if(a=='go'){var v=($('ba').value||'').trim();if(v&&v[0]!='#')v='#'+v;if(v&&!/^#[0-9a-fA-F]{6}$/.test(v)){$('ba').style.borderColor='#d33';return}BA.anchor=v.toLowerCase();BS++;bzRender()}
+else if(a=='use'){BRAND=bkCands(BA)[+b.dataset.i];BRAND.name=hn(BRAND.h);BRAND.theme=BA.theme;$('bz').hidden=true;tabs();grid();build()}};
+function renderBZ(){var el=$('bzw'),en=LANG=='en';if(!el)return;if(CATS[cur].k!='color'){el.innerHTML='';return}
+el.innerHTML='<div class="bzb"><button class="btn g" data-a="start">'+ic('palette',16)+(en?'Find my brand colors (answer questions)':'หาสีแบรนด์ของฉัน (ตอบคำถาม)')+'</button>'+(BRAND?'<div class="bsw" style="flex:1;min-width:120px;max-width:220px;margin:0">'+bzSw(BRAND.colors)+'</div><button class="btn g" data-a="clear">'+(en?'Clear':'ล้าง')+'</button>':'')+'</div>'+(BRAND?'<p class="hint">'+(en?'Brand palette in use. It overrides the ready-made palettes in the preview and prompt.':'กำลังใช้สีแบรนด์ของคุณ ซึ่งมาก่อนชุดสีสำเร็จรูปทั้งในพรีวิวและใน Prompt')+'</p>':'')}
+$('bzw').onclick=function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.a=='start')bzStart();if(b.dataset.a=='clear'){BRAND=null;tabs();grid();build()}};
+function brP(){if(!BRAND)return;var en=LANG=='en',k=BRAND.colors,r=BRAND.ratios,f=function(x){return x.toFixed(1)},
+L=en?['Brand colors (use exactly this palette for the whole site)','- Primary: '+k.primary+' for main buttons and the header bar','- Secondary: '+k.secondary+' for secondary elements and soft highlights','- Accent: '+k.accent+' for links, icons and points that need attention','- Background: '+k.bg+', surface (cards): '+k.surface,'- Text: '+k.text+', muted text: '+k.muted+', border: '+k.border,'- Text on primary buttons: '+k.onPrimary,'- Define them as CSS variables (--primary, --secondary, --accent, --bg, --surface, --text, --muted, --border, --on-primary) and use only these across the site, except status colors (success, warning, error).','- Contrast already meets WCAG AA: text on background '+f(r.text)+':1, text on primary button '+f(r.onPrimary)+':1. Keep it that way.'].concat(BRAND.theme=='dark'?['- Design primarily as a dark theme.']:[]):['สีแบรนด์ (ใช้ชุดนี้เป็นสีของทั้งเว็บ)','- สีหลัก (Primary): '+k.primary+' ใช้กับปุ่มหลักและแถบหัวเว็บ','- สีรอง (Secondary): '+k.secondary+' ใช้กับองค์ประกอบรองและพื้นที่เน้นอ่อน','- สีเน้น (Accent): '+k.accent+' ใช้กับลิงก์ ไอคอน และจุดที่ต้องดึงสายตา','- พื้นหลัง: '+k.bg+' พื้นผิวการ์ด: '+k.surface,'- ข้อความ: '+k.text+' ข้อความรอง: '+k.muted+' เส้นขอบ: '+k.border,'- ตัวอักษรบนปุ่มสีหลัก: '+k.onPrimary,'- กำหนดเป็น CSS variables (--primary, --secondary, --accent, --bg, --surface, --text, --muted, --border, --on-primary) และใช้เฉพาะสีเหล่านี้ทั้งเว็บ ยกเว้นสีสถานะ (สำเร็จ เตือน ผิดพลาด)','- คอนทราสต์ผ่านเกณฑ์ WCAG AA แล้ว: ข้อความบนพื้นหลัง '+f(r.text)+':1 ตัวอักษรบนปุ่มสีหลัก '+f(r.onPrimary)+':1 ให้คงไว้'].concat(BRAND.theme=='dark'?['- ออกแบบเป็นธีมมืดเป็นหลัก']:[]);
+var P=$('out').textContent.split('\n\n## ');P.splice(P.length-1,0,L.join('\n'));$('out').textContent=P.join('\n\n## ')}
+var BF={
+'Google Apps Script Backend':[['GAS Web App URL (ถ้ามีแล้ว เว้นว่างได้)','GAS Web App URL (optional)','in'],['ชื่อชีตที่เก็บข้อมูล','Sheet name','in']],
+'Save Form to Google Sheets':[['ช่องในฟอร์ม (บรรทัดละ 1 ช่อง เช่น ชื่อ, เบอร์โทร, ข้อความ)','Form fields (one per line, e.g. name, phone, message)','ta'],['ข้อความหลังส่งสำเร็จ','Success message','in']],
+'Read Data from Google Sheets':[['คอลัมน์ที่ต้องการแสดง (คั่นด้วยจุลภาค)','Columns to display (comma separated)','in']],
+'Send Email via Gmail (GAS)':[['อีเมลผู้รับแจ้งเตือน','Notification recipient email','in'],['หัวข้ออีเมล','Email subject','in']],
+'Image Upload to Google Drive':[['ชื่อโฟลเดอร์ใน Drive','Drive folder name','in'],['ขนาดไฟล์สูงสุด (MB)','Max file size (MB)','in']],
+'Order / Booking System (GAS)':[['ข้อมูลที่เก็บต่อรายการ (บรรทัดละ 1 ช่อง)','Fields per order or booking (one per line)','ta'],['อีเมลแจ้งเตือนเจ้าของร้าน','Owner notification email','in']],
+'Admin Dashboard from Sheets':[['สิ่งที่แอดมินต้องดูหรือทำ (บรรทัดละ 1 ข้อ)','What the admin needs to see or do (one per line)','ta']]};
+function renderBE(){var items=sn('backend'),en=LANG=='en',b=$('beBox');if(!items.length){b.hidden=true;b.innerHTML='';return}b.hidden=false;
+var h='<div class="lvt">'+(en?'Details for the GAS connection':'ข้อมูลสำหรับการเชื่อมต่อ GAS')+'</div><p class="pvl">'+(en?'Fill in what you know and leave the rest blank. The AI will pick sensible defaults. Never paste real passwords or secret URLs into a prompt.':'กรอกเท่าที่รู้ ช่องไหนเว้นว่างได้ AI จะเลือกค่าที่เหมาะสมให้ อย่าใส่รหัสผ่านหรือ URL ที่เป็นความลับจริงลงใน Prompt')+'</p>';
+items.forEach(function(it){var f=BF[it[0]];if(!f)return;h+='<div class="lvh">'+it[0]+'</div>'+f.map(function(x,i){return fld(it[0]+':'+i,x[en?1:0],x[2])}).join('')});b.innerHTML=h}
+$('beBox').oninput=$('beBox').onchange=function(e){var k=e.target.dataset.k;if(!k)return;LV[k]=e.target.value;build()};
+var beSig='';function beSync(){var sg=sn('backend').map(function(i){return i[0]}).join('|')+LANG;if(sg!==beSig){beSig=sg;renderBE()}}
+var BEL=[['เชื่อมต่อหลังบ้านด้วย Google Apps Script (GAS)','- ให้ตอบเป็น 2 ส่วนแยกกัน: (1) โค้ดหน้าเว็บ (2) ไฟล์ Code.gs สำหรับ Apps Script','- ฝั่งหน้าเว็บ: ประกาศค่า GAS_URL ไว้บนสุด (ใช้ PASTE_YOUR_WEB_APP_URL_HERE หากยังไม่มี URL) เรียกด้วย fetch แบบ POST ตั้ง Content-Type เป็น text/plain;charset=utf-8 และส่ง body เป็น JSON เพื่อเลี่ยง CORS preflight อ่านผลเป็น JSON แสดงสถานะกำลังส่ง/สำเร็จ/ผิดพลาด และกันกดซ้ำ','- ฝั่ง Code.gs: มี doPost และ doGet ที่คืนค่าเป็น JSON ผ่าน ContentService ใช้ SpreadsheetApp เก็บข้อมูล ตรวจและจำกัดความยาวข้อมูลที่รับ ใช้ LockService กันเขียนชนกัน กัน formula injection (ข้อความที่ขึ้นต้นด้วย = + - @) และเก็บข้อมูลเท่าที่จำเป็น','- ความปลอดภัย: ห้ามใส่ความลับหรือรหัสผ่านในโค้ดหน้าเว็บ ให้ถือว่า URL ของ GAS เป็นสาธารณะ และให้ฝั่ง GAS ตรวจสอบข้อมูลทุกครั้ง','- บอกขั้นตอน Deploy สั้น ๆ: Deploy > New deployment > Web app ตั้ง Execute as: Me และ Who has access: Anyone แล้วนำ URL ไปใส่ GAS_URL ถ้าแก้โค้ดภายหลังต้อง Deploy เป็น New version','- หากเก็บข้อมูลส่วนบุคคล ให้มีข้อความขอความยินยอมตาม PDPA'],
+['Backend with Google Apps Script (GAS)','- Reply in 2 separate parts: (1) the page code and (2) a Code.gs file for Apps Script.','- Page side: declare GAS_URL at the top (use PASTE_YOUR_WEB_APP_URL_HERE if there is no URL yet). Call it with fetch POST, set Content-Type to text/plain;charset=utf-8 and send a JSON body to avoid a CORS preflight. Read the JSON reply, show sending, success and error states, and prevent double submits.','- Code.gs side: provide doPost and doGet that return JSON through ContentService, store data with SpreadsheetApp, validate and limit the length of incoming data, use LockService to avoid write collisions, guard against formula injection (text starting with = + - @), and store only what is necessary.','- Security: never put secrets or passwords in the page code. Treat the GAS URL as public and always validate on the GAS side.','- Give short deploy steps: Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone, then put the URL in GAS_URL. After editing the code, deploy a New version.','- If personal data is collected, show a PDPA-style consent notice.']];
+function beP(){var items=sn('backend');if(!items.length)return;var en=LANG=='en',v=function(k){return (LV[k]||'').trim()},L=BEL[en?1:0].slice();
+items.forEach(function(it){var f=BF[it[0]];if(!f)return;var rows=[];f.forEach(function(x,i){var val=v(it[0]+':'+i);if(!val)return;var lab=x[en?1:0];if(x[2]=='ta'){rows.push('- '+lab+':');val.split('\n').forEach(function(l){if(l.trim())rows.push('  - '+l.trim())})}else rows.push('- '+lab+': '+val)});if(rows.length){L.push('','### '+it[0]);rows.forEach(function(r){L.push(r)})}});
+var P=$('out').textContent.split('\n\n## ');P.splice(P.length-1,0,L.join('\n'));$('out').textContent=P.join('\n\n## ')}
+var PF={
+'About Us Page':[['เรื่องราวหรือที่มาของแบรนด์','Brand story','ta'],['คุณค่าหลัก (บรรทัดละ 1 ข้อ)','Core values (one per line)','ta']],
+'Contact Page':[['ที่อยู่','Address','in'],['เวลาเปิด-ปิด','Opening hours','in'],['เบอร์โทร / LINE / อีเมล','Phone / LINE / email','in']],
+'Booking / Reservation Page':[['บริการที่จองได้ (บรรทัดละ 1 อย่าง)','Services that can be booked (one per line)','ta'],['ช่วงเวลาให้จอง (เช่น 10:00-20:00 ทุกวัน)','Available times (e.g. 10:00-20:00 daily)','in'],['ข้อมูลที่ต้องกรอก (เช่น ชื่อ เบอร์ จำนวนคน)','Fields to collect (e.g. name, phone, party size)','in']],
+'Member Login & Register':[['วิธีเข้าสู่ระบบ (เช่น อีเมล+รหัสผ่าน, LINE, Google)','Sign-in methods (e.g. email + password, LINE, Google)','in']],
+'Blog / Article List':[['หมวดหมู่บทความ (บรรทัดละ 1 หมวด)','Article categories (one per line)','ta']],
+'404 Not Found Page':[['ข้อความหน้า 404 ที่อยากให้ขึ้น','Message for the 404 page','in']],
+'Pricing Page':[['แพ็กเกจและราคา (บรรทัดละ 1 แพ็กเกจ เช่น Basic - 199 บาท)','Plans and prices (one per line, e.g. Basic - 199 THB)','ta']],
+'FAQ & Help Center':[['คำถามที่พบบ่อย (บรรทัดละ 1 ข้อ: คำถาม | คำตอบ)','FAQs (one per line: question | answer)','ta']],
+'Coming Soon / Maintenance':[['วันที่เปิดตัว','Launch date','date'],['ข้อความบนหน้า','Message on the page','in']],
+'Thank You Page':[['ข้อความขอบคุณและขั้นตอนถัดไป','Thank-you message and next steps','in']],
+'Team Page':[['รายชื่อทีม (บรรทัดละ 1 คน: ชื่อ - ตำแหน่ง)','Team (one per line: name - role)','ta']],
+'Careers / Job Listing':[['ตำแหน่งที่เปิดรับ (บรรทัดละ 1 ตำแหน่ง)','Open positions (one per line)','ta']],
+'Portfolio Case Study Page':[['ชื่อผลงาน และสรุปปัญหาและผลลัพธ์','Project name and a problem and result summary','ta']]};
+function renderPG(){var items=sn('pages'),en=LANG=='en',b=$('peBox');if(!items.length){b.hidden=true;b.innerHTML='';return}b.hidden=false;
+var h='<div class="lvt">'+(en?'Details for each page':'ข้อมูลของแต่ละหน้า')+'</div><p class="pvl">'+(en?'Fill in what each page should show. Leave blank anything you want to decide later and the AI will write sample content you can edit.':'กรอกสิ่งที่อยากให้แต่ละหน้าแสดง ช่องไหนเว้นว่างได้ AI จะเขียนเนื้อหาตัวอย่างให้แก้ทีหลัง')+'</p>';
+h+='<label>'+(en?'How should the pages be built?':'ทำหลายหน้าแบบไหน?')+'</label><select data-k="p:mode"><option value="0"'+((LV['p:mode']||'0')=='0'?' selected':'')+'>'+(en?'One HTML file, switching pages with the URL hash':'ไฟล์เดียว สลับหน้าด้วย hash ใน URL')+'</option><option value="1"'+(LV['p:mode']=='1'?' selected':'')+'>'+(en?'A separate HTML file per page':'แยกไฟล์ HTML ต่อหน้า')+'</option></select>';
+items.forEach(function(it){var f=PF[it[0]];if(!f)return;h+='<div class="lvh">'+it[0]+'</div>'+f.map(function(x,i){return fld(it[0]+':'+i,x[en?1:0],x[2])}).join('')});b.innerHTML=h}
+$('peBox').oninput=$('peBox').onchange=function(e){var k=e.target.dataset.k;if(!k)return;LV[k]=e.target.value;build()};
+var pgSig='';function pgSync(){var sg=sn('pages').map(function(i){return i[0]}).join('|')+LANG;if(sg!==pgSig){pgSig=sg;renderPG()}}
+function pgP(){var items=sn('pages');if(!items.length)return;var en=LANG=='en',v=function(k){return (LV[k]||'').trim()},m=+(LV['p:mode']||0);
+var L=en?['Pages and the content of each page','- Structure: '+(m?'a separate HTML file per page (for example about.html, contact.html) sharing one stylesheet':'one HTML file that switches pages with the URL hash (#about, #contact)'),'- Add a navigation menu that links every page, highlights the current page, and works on mobile.','- Every page shares the same theme, colors, fonts and components.','- Anything that needs a real backend (login, booking, payments) should be a clear mock-up unless a backend is chosen above. Never store real passwords in the page code.']:['หน้าที่ต้องมีและข้อมูลของแต่ละหน้า','- โครงสร้าง: '+(m?'แยกไฟล์ HTML ต่อหน้า (เช่น about.html, contact.html) ใช้สไตล์ชีตร่วมกัน':'ไฟล์ HTML ไฟล์เดียวที่สลับหน้าด้วย hash ใน URL (#about, #contact)'),'- ทำเมนูนำทางที่เชื่อมทุกหน้า ไฮไลต์หน้าปัจจุบัน และใช้งานบนมือถือได้','- ทุกหน้าใช้ธีม สี ฟอนต์ และคอมโพเนนต์ชุดเดียวกัน','- ส่วนที่ต้องมีหลังบ้านจริง (ล็อกอิน จองคิว ชำระเงิน) ให้ทำเป็นหน้าจำลองที่ชัดเจน เว้นแต่จะเลือกหลังบ้านไว้ด้านบน และห้ามเก็บรหัสผ่านจริงในโค้ดหน้าเว็บ'];
+items.forEach(function(it){var f=PF[it[0]];if(!f)return;var rows=[];f.forEach(function(x,i){var val=v(it[0]+':'+i);if(!val)return;var lab=x[en?1:0];if(x[2]=='ta'){rows.push('- '+lab+':');val.split('\n').forEach(function(l){if(l.trim())rows.push('  - '+l.trim())})}else rows.push('- '+lab+': '+val)});if(rows.length){L.push('','### '+it[0]);rows.forEach(function(r){L.push(r)})}});
+var P=$('out').textContent.split('\n\n## ');P.splice(P.length-1,0,L.join('\n'));$('out').textContent=P.join('\n\n## ')}
+var ICS=['Line Icons (Outline)','Solid Icons (Filled)','Duotone Icons','Gradient Icons','3D Icons','Hand-drawn Icons','Icons in Circles','Lucide Icons','Heroicons','Phosphor Icons','Material Symbols'],ILS=['Flat Illustration','Isometric Illustration','3D Illustration','Hand-drawn Illustration','Line Art Illustration','Abstract Shapes & Blobs','Watercolor Illustration','Character & Mascot Illustration'],PHS=['Real Photography','Duotone Photos','Rounded & Masked Photos'];
+function icHas(a){var s=sn('icons').map(function(i){return i[0]});return s.some(function(n){return a.indexOf(n)>=0})}
+var ICF=[['ic:icons',function(){return icHas(ICS)},'ไอคอนที่ต้องใช้ (บรรทัดละ 1 อัน เช่น ตะกร้า โทรศัพท์ หัวใจ)','Icons needed (one per line, e.g. cart, phone, heart)','ta'],
+['ic:size',function(){return icHas(ICS)},'ขนาดและความหนาเส้นไอคอน (เช่น 24px เส้น 2px)','Icon size and stroke width (e.g. 24px, 2px stroke)','in'],
+['ic:ill',function(){return icHas(ILS)},'ภาพประกอบที่ต้องการ (บรรทัดละ 1 ภาพ เช่น หน้าแรก - คนกำลังทำงาน)','Illustrations needed (one per line, e.g. home - person working)','ta'],
+['ic:char',function(){return icHas(['Character & Mascot Illustration'])},'ตัวละครหรือมาสคอต (เช่น แมวสีส้มใส่แว่น)','Character or mascot (e.g. an orange cat with glasses)','in'],
+['ic:photo',function(){return icHas(PHS)},'รูปถ่ายที่ต้องใช้ (บรรทัดละ 1 รูป เช่น หน้าแรก - ร้านจากด้านนอก)','Photos needed (one per line, e.g. home - storefront from outside)','ta'],
+['ic:tone',function(){return icHas(ILS.concat(PHS))},'โทนภาพ (เช่น สว่างใส อบอุ่น)','Image mood (e.g. bright, warm)','in']];
+function renderIC(){var items=sn('icons'),en=LANG=='en',b=$('icBox');if(!items.length){b.hidden=true;b.innerHTML='';return}var fs=ICF.filter(function(f){return f[1]()});if(!fs.length){b.hidden=true;b.innerHTML='';return}b.hidden=false;
+b.innerHTML='<div class="lvt">'+(en?'Details for icons and images':'ข้อมูลสำหรับไอคอนและภาพ')+'</div><p class="pvl">'+(en?'Tell the AI what to draw or leave as placeholders. Leave blank anything you want to decide later.':'บอก AI ว่าต้องการไอคอนหรือภาพอะไร ช่องไหนเว้นว่างได้')+'</p>'+fs.map(function(f){return fld(f[0],f[en?3:2],f[4])}).join('')}
+$('icBox').oninput=$('icBox').onchange=function(e){var k=e.target.dataset.k;if(!k)return;LV[k]=e.target.value;build()};
+var icSig='';function icSync(){var sg=sn('icons').map(function(i){return i[0]}).join('|')+LANG;if(sg!==icSig){icSig=sg;renderIC()}}
+function icP(){var items=sn('icons');if(!items.length)return;var en=LANG=='en',v=function(k){return (LV[k]||'').trim()},I=icHas(ICS),L=icHas(ILS),H=icHas(PHS);
+var T=en?['Icons and images','- Use one icon style across the whole site with consistent size and stroke width. Use inline SVG or the chosen icon set. Icons that act as buttons need an aria-label.','- Illustrations: keep one style across the site. If there is no image file, draw simple SVG or use a placeholder frame.','- Photos: use placeholder frames with a fixed aspect-ratio and add a note on what kind of photo to shoot or find, so the user can swap in real photos.','- Never hotlink images from the internet that may be copyrighted. Give every image alt text, set width and height to avoid layout shift, and lazy-load below-the-fold images. Remind the user to use images they have the right to use.']:['ไอคอนและภาพประกอบ','- ใช้ไอคอนสไตล์เดียวกันทั้งเว็บ ขนาดและความหนาเส้นสม่ำเสมอ ใช้ SVG แบบ inline หรือชุดไอคอนที่เลือก ไอคอนที่เป็นปุ่มต้องมี aria-label','- ภาพประกอบ: ใช้สไตล์เดียวกันทั้งเว็บ ถ้าไม่มีไฟล์ภาพ ให้วาดด้วย SVG แบบเรียบ ๆ หรือใช้กรอบรูปตัวอย่าง (placeholder)','- รูปถ่าย: ใช้กรอบรูปตัวอย่างที่กำหนดอัตราส่วน (aspect-ratio) แล้วเขียนคำแนะนำว่าควรถ่ายหรือหารูปแบบไหน เพื่อให้ผู้ใช้เปลี่ยนเป็นรูปจริงเอง','- ห้ามลิงก์รูปจากอินเทอร์เน็ตที่อาจมีลิขสิทธิ์ ใส่ alt ทุกภาพ กำหนด width/height กัน layout กระโดด และโหลดรูปแบบ lazy พร้อมเตือนผู้ใช้ให้ใช้ภาพที่มีสิทธิ์ใช้งาน'];
+var out=[T[0]];if(I)out.push(T[1]);if(L)out.push(T[2]);if(H)out.push(T[3]);out.push(T[4]);
+ICF.forEach(function(f){if(!f[1]())return;var val=v(f[0]);if(!val)return;var lab=f[en?3:2];if(f[4]=='ta'){out.push('- '+lab+':');val.split('\n').forEach(function(l){if(l.trim())out.push('  - '+l.trim())})}else out.push('- '+lab+': '+val)});
+var P=$('out').textContent.split('\n\n## ');P.splice(P.length-1,0,out.join('\n'));$('out').textContent=P.join('\n\n## ')}
+function confP(){if(!conflicts().length)return;var en=LANG=='en';$('out').textContent+='\n- '+(en?'If any chosen options seem to clash, blend them sensibly: treat the first listed as the main look and the others as accents.':'หากตัวเลือกบางอย่างขัดกัน ให้ผสมอย่างสมเหตุสมผล โดยถือตัวที่ระบุก่อนเป็นลุคหลัก และตัวอื่นเป็นองค์ประกอบเสริม')}
+function loveP(){var items=sn('love');if(!items.length)return;var en=LANG=='en',v=function(k){return (LV[k]||'').trim()};
+var L=[en?'Content for each section':'ข้อมูลที่ต้องใส่ในแต่ละส่วน'];
+if(v('c:from'))L.push('- '+(en?'From: ':'ผู้ส่ง: ')+v('c:from'));if(v('c:to'))L.push('- '+(en?'To: ':'ถึง: ')+v('c:to'));L.push('- '+(en?'Tone of all messages: ':'โทนข้อความทั้งหมด: ')+TN[en?1:0][+(LV['c:tone']||0)]);
+items.forEach(function(it){var f=LF[it[0]];if(!f)return;var rows=[];f.forEach(function(x,i){var val=v(it[0]+':'+i);if(!val)return;var lab=x[en?1:0];if(x[2]=='ta'){rows.push('- '+lab+':');val.split('\n').forEach(function(l){if(l.trim())rows.push('  - '+l.trim())})}else rows.push('- '+lab+': '+val)});
+L.push('','### '+it[0]);if(rows.length)rows.forEach(function(r){L.push(r)});else L.push('- '+(en?'(not provided: write cute sample text the user can edit)':'(ยังไม่ระบุ: ให้เขียนข้อความตัวอย่างน่ารัก ๆ ที่ผู้ใช้แก้ไขได้)'))});
+L.push('',en?'Keep all of this text in one clearly marked block of variables at the top of the code so it is easy to edit. Use empty placeholders for photos, never real images.':'ให้เก็บข้อความทั้งหมดนี้ไว้เป็นตัวแปรกลุ่มเดียวที่ส่วนบนของโค้ด แก้ไขง่าย และใช้ช่องว่างแทนรูปภาพ (ไม่ต้องมีรูปจริง)');
+var P=$('out').textContent.split('\n\n## ');P.splice(P.length-1,0,L.join('\n'));$('out').textContent=P.join('\n\n## ')}
+var _b=build;build=function(){_b();post();loveP();beP();pgP();icP();brP();confP();renderPV();renderCW();beSync();pgSync();icSync();var sg=sn('love').map(function(i){return i[0]}).join('|')+LANG;if(sg!==lvSig){lvSig=sg;renderLove()}};
+var _g=grid;grid=function(){_g();markConf();renderBZ()};$('q').oninput=grid;
+$('cw').onclick=function(e){var b=e.target.closest('button');if(!b||b.dataset.rm==null)return;CATS.forEach(function(c){c.items.forEach(function(it,i){if(it[0]==b.dataset.rm)delete sel[c.k][i]})});tabs();grid();build()};
+['name','type','note'].forEach(function(i){$(i).oninput=build;$(i).onchange=build});
+var QS=[{q:['เว็บนี้เกี่ยวกับอะไร?','What is your website about?'],o:[['ร้านอาหาร / คาเฟ่','Food / café',['Product Cards','Gallery / Lightbox','Map & Location','Contact Form']],['ขายของออนไลน์','Online store',['Product Cards','Cart Drawer','Testimonials','Single-page Checkout','Card Grid']],['บริการ / บริษัท','Services / company',['Features / Services','Testimonials','Contact Form','Pricing Table']],['ผลงานส่วนตัว','Personal portfolio',['Masonry','Gallery / Lightbox','Contact Form','Smooth Scroll']],['เทคโนโลยี / แอป','Tech / app',['Bento Grid','Features / Services','Pricing Table','FAQ Accordion']],['อีเวนต์ / งานเทศกาล','Event / festival',['Timeline / Steps','Gallery / Lightbox','Map & Location']]]},
+{q:['อยากให้คนเข้าเว็บรู้สึกแบบไหน?','How should visitors feel?'],o:[['อบอุ่น เป็นกันเอง','Warm and friendly',['Organic Soft','Earth Tone','Rounded Friendly']],['ทันสมัย ล้ำ','Modern and futuristic',['Aurora Gradient','Dark Mode','Modern Sans-serif']],['หรูหรา น่าเชื่อถือ','Luxurious and trustworthy',['Luxury Premium','Midnight Gold','Elegant Serif']],['สนุก สดใส','Fun and bright',['Claymorphism','Candy Pop','Rounded Friendly']],['เรียบง่าย สะอาด','Clean and simple',['Minimalist','Mono Black & White','Geometric Sans']]]},
+{q:['คนส่วนใหญ่เปิดเว็บจากอะไร?','What device will most visitors use?'],o:[['มือถือเป็นหลัก','Mostly phones',['Bottom Tab Bar (Mobile)','Floating Action Button']],['คอมพิวเตอร์เป็นหลัก','Mostly desktop',['Sticky Navbar','Split Screen','Mega Menu']],['พอ ๆ กัน','Both equally',['Sticky Navbar','Card Grid']]]},
+{q:['อยากให้เว็บช่วยเรื่องอะไรมากที่สุด?','What should the site do best?'],o:[['ขายของ / รับเงิน','Sell and take payments',['Solid Rounded','Order Summary Sidebar','PromptPay QR','Trust Badges & Secure Payment']],['คุยกับลูกค้า','Chat with customers',['Floating Chat Widget','Bubble Chat','Quick Reply Buttons']],['โชว์ผลงาน','Show off work',['Gradient Pill','Image Carousel']],['ให้ข้อมูล / ติดต่อ','Give info and contact',['Contact Form','FAQ Accordion','Outline Button']]]},
+{q:['อยากให้เว็บเคลื่อนไหวแค่ไหน?','How much motion do you want?'],o:[['นิ่ง เรียบ โหลดเร็ว','Still and fast',['Fast Loading']],['แอนิเมชันนุ่ม ๆ','Soft animations',['Fade-in on Scroll','Hover Lift','Smooth Scroll']],['จัดเต็ม','Go all out',['Parallax','Tilt 3D Card','Magnetic Cursor','Scroll Progress Bar']]]}];
+QS[0].o.push(['เว็บบอกรัก / ของขวัญให้แฟน','Love page / gift for a partner',['Cute Pastel Theme','Pastel Soft','Floating Hearts','Love Letter Envelope','Memory Timeline','Reasons I Love You']]);
+function pkn(a){a.forEach(function(n){CATS.forEach(function(c){c.items.forEach(function(it,i){if(it[0]==n)sel[c.k][i]=1})})})}
+document.body.insertAdjacentHTML('beforeend','<div id="qz" hidden><div id="qc"></div></div>');
+var QA=[],QI=0;
+function qrender(){var en=LANG=='en',q=QS[QI];$('qc').innerHTML='<div style="font-size:.78rem;color:var(--ac);font-weight:700">'+(QI+1)+' / '+QS.length+'</div><b style="font-size:1.1rem;display:block;margin-top:4px">'+q.q[en?1:0]+'</b>'+q.o.map(function(o,i){return '<button class="o" data-i="'+i+'">'+o[en?1:0]+'</button>'}).join('')+'<div class="btns" style="justify-content:space-between"><button class="btn g" data-a="x">'+(en?'Close':'ปิด')+'</button>'+(QI?'<button class="btn g" data-a="b">'+(en?'Back':'ย้อนกลับ')+'</button>':'')+'</div>'}
+function qapply(){CATS.forEach(function(c){sel[c.k]={}});pkn(['Mobile-first Responsive','Footer','Hero Section']);QS.forEach(function(q,i){pkn(q.o[QA[i]][2])});tabs();grid();build();try{$('pvw').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}}
+$('qc').onclick=function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.a=='x'){$('qz').hidden=true;return}if(b.dataset.a=='b'){QA.pop();QI--;qrender();return}if(b.dataset.i==null)return;QA[QI]=+b.dataset.i;if(QI<QS.length-1){QI++;qrender()}else{$('qz').hidden=true;qapply()}};
+$('qzb').onclick=function(){QA=[];QI=0;$('qz').hidden=false;qrender()};addEventListener('keydown',function(e){if(e.key=='Escape')$('qz').hidden=true});
+function enc(){return 'd'+CATS.map(function(c){return Object.keys(sel[c.k]).sort(function(a,b){return a-b}).join('-')}).join('--')}
+function dec(code){var p=code.replace(/^#?d/,'').split('--');CATS.forEach(function(c,i){sel[c.k]={};(p[i]||'').split('-').filter(Boolean).forEach(function(x){if(c.items[+x])sel[c.k][+x]=1})});tabs();grid();build()}
+var SETS=[];try{SETS=JSON.parse(localStorage.getItem('showroom_sets')||'[]')}catch(e){}
+function ssave(){try{localStorage.setItem('showroom_sets',JSON.stringify(SETS))}catch(e){}}
+function slist(){var en=LANG=='en';$('sl').innerHTML=SETS.map(function(s,i){return '<div class="sv-row"><span>'+s.n.replace(/</g,'&lt;')+'</span><button class="btn g" data-ld="'+i+'">'+(en?'Load':'โหลด')+'</button><button class="btn g" data-dl="'+i+'">'+ic('x',14)+'</button></div>'}).join('')}
+$('sl').onclick=function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.ld!=null)dec(SETS[+b.dataset.ld].c);if(b.dataset.dl!=null){SETS.splice(+b.dataset.dl,1);ssave();slist()}};
+$('ss').onclick=function(){SETS.push({n:$('sn').value.trim()||('Set '+(SETS.length+1)),c:enc()});$('sn').value='';ssave();slist()};
+$('sh').onclick=function(){var c=enc(),en=LANG=='en';try{location.hash=c}catch(e){}try{navigator.clipboard.writeText(c)}catch(e){}$('sm').textContent=(en?'Code: ':'รหัส: ')+c+(en?'  (copied; the page link also carries this set, so use Share > Copy link)':'  (คัดลอกแล้ว ลิงก์ของหน้านี้ก็มีชุดนี้ติดไปด้วย ใช้ปุ่ม Share > Copy link ได้)')};
+$('sg').onclick=function(){var v=$('sc').value.trim();if(/^#?d[0-9-]*$/.test(v)){dec(v);$('sc').value=''}};
+addEventListener('hashchange',function(){if(/^#d[0-9-]*$/.test(location.hash)&&location.hash.slice(1)!=enc())dec(location.hash)});
+setTimeout(function(){if(/^#d[0-9-]*$/.test(location.hash))dec(location.hash)},0);
+var G=[['เครื่องมือช่วยเลือก','Selection helpers'],['รูปแบบใหม่ที่จะเพิ่ม','New design options'],['ระบบและการติดต่อ','System and contact']];
+var SOON=[['lock','สุ่มแบบล็อกหมวด','Lock and roll','ล็อกหมวดที่ชอบ แล้วสุ่มเฉพาะส่วนที่เหลือ','Lock the categories you like and randomize the rest.',0],['download','ดาวน์โหลด Prompt เป็นไฟล์','Download prompt file','บันทึก Prompt เป็นไฟล์ .txt หรือ .md','Save your prompt as a .txt or .md file.',0],['corner','มุมโค้งและเงา','Corners and shadows','เลือกมุมเหลี่ยม โค้งมน เงานุ่ม เงาแข็ง','Choose sharp or rounded corners, soft or hard shadows.',1],['pen','โทนภาษาของข้อความ','Writing tone','เป็นทางการ เป็นกันเอง สนุก หรือหรู','Formal, friendly, playful or luxurious.',1],['mail','ส่งอีเมลถึงผู้ใช้','Email to users','ส่งชุดดีไซน์และ Prompt เข้าอีเมลของผู้ใช้ หรือแจ้งเตือนอื่น ๆ (ยังไม่กำหนดรูปแบบ)','Email the design set and prompt to a user, or other notifications (details to be decided).',2],
+['compare','เทียบสองชุดดีไซน์','Compare two sets','วางชุดดีไซน์สองชุดไว้คู่กัน ดูว่าต่างกันตรงไหนแล้วเลือกชุดที่ถูกใจ','Put two design sets side by side, see what differs and pick your favorite.',0],
+['undo','ย้อนกลับและทำซ้ำ','Undo and redo','ย้อนการเลือกกลับได้ ถ้ากดพลาดหรือสุ่มแล้วไม่ถูกใจ','Step back if you misclick or a random roll was not what you wanted.',0],
+['gauge','คะแนนความพร้อมของ Prompt','Prompt readiness score','บอกว่าข้อมูลที่กรอกครบแค่ไหน และควรเติมอะไรเพื่อให้ AI ทำได้ดีขึ้น','Shows how complete your input is and what to add so the AI does better.',0],
+['save','บันทึกข้อมูลที่กรอกไปกับชุด','Save filled details with a set','เก็บสีแบรนด์ ข้อความบอกรัก และรายละเอียดของแต่ละหน้า ไปพร้อมกับชุดที่บันทึกและแชร์','Keep brand colors, love-page text and page details together with saved and shared sets.',0],
+['rows','ระยะห่างและความหนาแน่น','Spacing and density','เลือกความโปร่งสบาย พอดี หรือแน่นกระชับของเนื้อหา','Choose airy, balanced or compact spacing for content.',1],
+['eye','ตรวจการเข้าถึง (Accessibility)','Accessibility check','ตรวจว่าสีและตัวอักษรอ่านยากหรือไม่ พร้อมแนะนำวิธีแก้และตัวเลือกลดแอนิเมชัน','Checks whether colors and text are hard to read, with fixes and a reduce-motion option.',1],
+['file','ใบสรุปงานให้ลูกค้า (PDF)','Client brief (PDF)','สรุปชุดดีไซน์ สี และข้อมูลทั้งหมดเป็นเอกสารหน้าเดียวส่งให้ลูกค้าหรือทีมได้','Summarize the design set, colors and details into a one-page document for a client or team.',2],
+['shield','ตรวจผลลัพธ์จาก AI','Check the AI result','วางโค้ดที่ AI สร้างมา แล้วระบบตรวจว่าทำตามสิ่งที่เลือกไว้ครบไหม','Paste the code the AI built and check whether it follows what you selected.',2]];
+var _a4=applyLang;applyLang=function(){var en=LANG=='en',tv=$('tg').value||'claude',lv=$('ln').value||'m';
+$('tg').innerHTML=[['claude','Claude'],['gpt','ChatGPT'],['cursor','Cursor / Windsurf'],['v0','v0 / Lovable']].map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+$('ln').innerHTML=[['s',en?'Short':'สั้น'],['m',en?'Standard':'มาตรฐาน'],['d',en?'Detailed':'ละเอียด']].map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+$('tg').value=tv;$('ln').value=lv;$('tg').onchange=build;$('ln').onchange=build;
+$('tgl').textContent=en?'Which AI will you use?':'ส่ง Prompt ให้ AI ตัวไหน?';$('lnl').textContent=en?'Prompt length':'ความยาว Prompt';
+$('pvl').textContent=en?'Live preview of your choices':'ตัวอย่างหน้าเว็บของคุณ (จำลองจากที่เลือก)';
+$('qzb').innerHTML=ic('compass',18)+(en?'Not sure? Answer 5 questions':'ไม่แน่ใจ? ตอบ 5 คำถามแล้วระบบเลือกให้');
+$('svT').innerHTML=ic('save',16)+(en?'Save / share your design set':'บันทึก / แชร์ชุดดีไซน์');$('sn').placeholder=en?'Name this set':'ตั้งชื่อชุดนี้';$('ss').textContent=en?'Save':'บันทึก';$('sh').innerHTML=ic('link',16)+(en?'Share (code)':'แชร์ (รหัส)');$('sc').placeholder=en?'Paste a shared code':'วางรหัสชุดที่ได้รับ';$('sg').textContent=en?'Load code':'โหลดรหัส';slist();
+$('soonT').textContent=en?'Coming soon':'กำลังจะมา (Soon)';$('soonI').textContent=en?'Features we plan to add. None of these work yet.':'ฟีเจอร์ที่วางแผนจะเพิ่ม ยังใช้งานไม่ได้ในตอนนี้';$('soon').innerHTML=G.map(function(g,gi){var it=SOON.filter(function(s){return s[5]==gi});return '<div class="sg"><div class="sgh">'+g[en?1:0]+'<span>'+it.length+'</span></div><div class="sgl">'+it.map(function(s){return '<div class="soonc"><div class="soi">'+ic(s[0],20)+'</div><div class="sot"><b>'+s[en?2:1]+'<span class="badge">Soon</span></b><span>'+s[en?4:3]+'</span></div></div>'}).join('')+'</div></div>'}).join('');
+_a4()};
+applyLang();
+/* ===== Google Apps Script storage (self-host) =====
+   1) Deploy Code.gs เป็น Web app  2) วาง URL (ลงท้าย /exec) ที่นี่ */
+var GAS_URL='';
+function gasOn(){return /^https:\/\/script\.google(usercontent)?\.com\//.test(GAS_URL)}
+function baseUrl(){return location.href.split(/[?#]/)[0]}
+$('sh').onclick=async function(){var en=LANG=='en',c=enc(),m=$('sm');
+ try{navigator.clipboard.writeText(c)}catch(e){}
+ if(!gasOn()){m.textContent=(en?'Code (copied): ':'รหัส (คัดลอกแล้ว): ')+c;return}
+ m.textContent=en?'Saving...':'กำลังบันทึก...';
+ try{var r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({a:'save',code:c,name:$('sn').value.trim(),lang:LANG})});
+ var j=await r.json();if(!j.ok)throw new Error(j.error);
+ var link=baseUrl()+'?s='+j.id;try{navigator.clipboard.writeText(link)}catch(e){}
+ m.textContent=(en?'Link copied: ':'คัดลอกลิงก์แล้ว: ')+link}
+ catch(e){m.textContent=(en?'Could not save to the server. Code: ':'บันทึกกับเซิร์ฟเวอร์ไม่ได้ ใช้รหัสแทน: ')+c}};
+(async function(){var s=new URLSearchParams(location.search).get('s');
+ if(!s||!gasOn()||!/^[a-z0-9]{4,12}$/.test(s))return;
+ try{var r=await fetch(GAS_URL+'?id='+s),j=await r.json();
+ if(j.ok&&/^d[0-9-]*$/.test(j.code)){if(UI[j.lang]&&j.lang!=LANG){LANG=j.lang;applyLang()}dec(j.code)}}catch(e){}})();
+
+</script>
+</body>
+</html>
